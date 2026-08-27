@@ -514,16 +514,19 @@ class HarnessRunner:
         accepted_evidence_chunk_ids: list[str] | None = None,
     ) -> ConsultationHandoffResult:
         accepted_ids = list(dict.fromkeys(accepted_evidence_chunk_ids or []))
+        routing_reason = self._context_routing_reason(ctx, reason)
         handoff_input = ConsultationHandoffInput.from_pipeline_context(
             ctx=ctx,
             product_family=product.product_family.value,
             escalation_reason=reason,
             accepted_evidence_chunk_ids=accepted_ids,
+            routing_reason=routing_reason.value,
         )
         context_synthesis = self._synthesize_handoff_context(
             ctx=ctx,
             product=product,
             reason=reason,
+            routing_reason=routing_reason,
             accepted_evidence_chunk_ids=accepted_ids,
         )
         return self.handoff_agent.run(
@@ -537,6 +540,7 @@ class HarnessRunner:
         ctx: Any,
         product: ProductContext,
         reason: str,
+        routing_reason: ContextRoutingReason,
         accepted_evidence_chunk_ids: list[str],
     ) -> HandoffContextSynthesis | None:
         """Best-effort context synthesis; synthesis failure must not block handoff."""
@@ -552,7 +556,7 @@ class HarnessRunner:
                 ctx=ctx,
                 product_family=product.product_family.value,
                 runtime_product_approved=product.runtime_approved,
-                routing_reason=self._context_routing_reason(ctx, reason),
+                routing_reason=routing_reason,
                 escalation_reason=reason,
                 accepted_evidence=accepted_evidence,
             )

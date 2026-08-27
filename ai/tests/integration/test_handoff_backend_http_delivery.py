@@ -31,10 +31,20 @@ class _Receiver(BaseHTTPRequestHandler):
                 "body": body,
             }
         )
-        status = 409 if len(self.server.received) == 1 else 201
+        is_first_attempt = len(self.server.received) == 1
+        status = 409 if is_first_attempt else 201
+        response_body = (
+            json.dumps(
+                {"error": {"code": "AI_HANDOFF_NOT_READY"}}
+            ).encode("utf-8")
+            if is_first_attempt
+            else b""
+        )
         self.send_response(status)
-        self.send_header("Content-Length", "0")
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(response_body)))
         self.end_headers()
+        self.wfile.write(response_body)
 
     def log_message(self, format, *args):
         del format, args
@@ -45,6 +55,8 @@ def _handoff() -> ConsultationHandoffResult:
         inquiry_id=UUID("018f2f9b-7c30-7981-b541-1a987c88b201"),
         correlation_id=UUID("018f2f9b-7c30-7981-b541-1a987c88e001"),
         ai_request_id="ai-handoff-socket-001",
+        state_version=4,
+        routing_reason="HARNESS_ESCALATE",
         model_code="WPUJAC104DWH",
         product_family="DIRECT_WATER_PURIFIER",
         customer_symptom_summary="출수량 저하 상담 확인 필요",
@@ -100,6 +112,10 @@ def test_real_socket_retries_409_then_delivers_201(monkeypatch):
         "ai-handoff-socket-001"
     )
     payload = json.loads(second["body"].decode("utf-8"))
+    assert payload["schema_version"] == "2.0.0"
+    assert payload["state_version"] == 4
+    assert payload["routing_reason"] == "HARNESS_ESCALATE"
+    assert payload["context_synthesis"] is None
     assert payload["model_code"] == "WPUJAC104DWH"
     assert "system_prompt" not in payload
     assert "raw_output_text" not in payload

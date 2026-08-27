@@ -123,6 +123,8 @@ def test_timeout_escalate_creates_consultation_handoff():
     assert result.harness.decision == HarnessDecision.ESCALATE
     assert result.handoff.model_code == "WPU-JAC104"
     assert result.handoff.escalation_reason == "AI_PROCESSING_TIMEOUT"
+    assert result.handoff.state_version == 4
+    assert result.handoff.routing_reason == "HARNESS_ESCALATE"
     assert result.human_review is None
 
 
@@ -176,6 +178,8 @@ def test_rejected_review_routes_to_consultation_handoff():
     assert resolved.guidance is None
     assert resolved.handoff.escalation_reason == "HUMAN_REVIEW_REJECTED"
     assert resolved.handoff.model_code == "WPU-JAC104"
+    assert resolved.handoff.state_version == 4
+    assert resolved.handoff.routing_reason == "FAIL_CLOSED_CONSULTATION"
 
 
 def test_mcp_context_tool_failure_creates_sanitized_consultation_handoff():
@@ -280,6 +284,8 @@ def test_context_synthesis_failure_does_not_block_existing_handoff():
     assert result.handoff is not None
     assert result.handoff.escalation_reason == "AI_PROCESSING_TIMEOUT"
     assert result.handoff.context_synthesis is None
+    assert result.handoff.state_version == 4
+    assert result.handoff.routing_reason == "HARNESS_ESCALATE"
 
 
 def test_danger_handoff_calls_context_synthesis_after_handoff_is_forced():
@@ -326,6 +332,8 @@ def test_danger_handoff_calls_context_synthesis_after_handoff_is_forced():
     assert context_agent.calls[0].routing_reason.value == "DANGER_HANDOFF"
     assert routed.handoff is not None
     assert routed.handoff.context_synthesis is not None
+    assert routed.handoff.state_version == 4
+    assert routed.handoff.routing_reason == "DANGER_HANDOFF"
 
 
 def test_timeout_handoff_preserves_unknown_safety_without_forcing_consultation():
