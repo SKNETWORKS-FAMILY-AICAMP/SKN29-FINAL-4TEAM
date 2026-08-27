@@ -30,6 +30,7 @@ env:
   ECR_WEB_REPOSITORY: ${{ vars.ECR_WEB_REPOSITORY }}
   ECR_BACKEND_REPOSITORY: ${{ vars.ECR_BACKEND_REPOSITORY }}
   ECR_AI_REPOSITORY: ${{ vars.ECR_AI_REPOSITORY }}
+  BACKEND_EMAIL_AUTH_SECRET_ID: ${{ vars.BACKEND_EMAIL_AUTH_SECRET_ID }}
 
 jobs:
   source-guard:
@@ -121,10 +122,46 @@ jobs:
             exit 1
           fi
 
+      - name: Require Backend-owned AWS NONPROD OTP and routing gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$BACKEND_EMAIL_AUTH_SECRET_ID" =~ ^waterbridge/[A-Za-z0-9/_+=.@-]{1,480}$ ]] || {
+            echo "BACKEND_EMAIL_AUTH_SECRET_ID is missing or invalid." >&2
+            exit 1
+          }
+          settings_source="$(cat backend/config/settings/base.py backend/config/settings/production.py)"
+          email_service="$(cat backend/apps/accounts/services/p1_auth_email_service.py)"
+          for key in \
+            P1_AUTH_RUNTIME_ENVIRONMENT \
+            P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED \
+            P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS; do
+            grep -Fq "$key" <<<"$settings_source" || {
+              echo "BACKEND_OWNER_WAIT: runtime setting is missing." >&2
+              exit 1
+            }
+            grep -Fq "$key" <<<"$email_service" || {
+              echo "BACKEND_OWNER_WAIT: delivery gate is missing." >&2
+              exit 1
+            }
+          done
+          for index in 001 002 003 004 005 006; do
+            rg -Fq "SKN-${index}" backend/apps || {
+              echo "BACKEND_OWNER_WAIT: consultant routing is missing." >&2
+              exit 1
+            }
+            rg -Fq "SYN-P1-TEAM-CONTRACT-${index}" backend/apps || {
+              echo "BACKEND_OWNER_WAIT: contract routing is missing." >&2
+              exit 1
+            }
+          done
+          echo "BACKEND_OWNER_GATE_PASS"
+
       - name: Run deployment asset tests
         run: >-
           python -B -m unittest
           tests.deployment.test_production_deployment_assets
+          tests.deployment.test_backend_email_auth_secret_sync
           tests.deployment.test_github_oidc_trust
           tests.deployment.test_backend_ci_workflow
           tests.deployment.test_data_ci_workflow
@@ -178,6 +215,9 @@ jobs:
             P1_AUTH_HMAC_SECRET=ci-p1-auth-secret-at-least-32-bytes \
             P1_AUTH_OTP_ENCRYPTION_KEY=AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI= \
             P1_AUTH_EMAIL_REDIRECT_TO=ci-inbox@example.invalid \
+            P1_AUTH_RUNTIME_ENVIRONMENT=AWS_NONPROD \
+            P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED=true \
+            P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc,dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd,eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee,ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff \
             DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend \
             DJANGO_EMAIL_HOST=smtp.invalid \
             DJANGO_EMAIL_HOST_USER=ci-smtp-user \
@@ -447,13 +487,21 @@ jobs:
         run: |
           set -euo pipefail
           release_root="$RUNNER_TEMP/release"
-          mkdir -p "$release_root/infra/docker/compose/production" "$release_root/scripts/deployment/production"
+          mkdir -p \
+            "$release_root/infra/docker/compose/production" \
+            "$release_root/infra/systemd" \
+            "$release_root/scripts/deployment/production"
           cp infra/docker/compose/production/compose.yml infra/docker/compose/production/tempo.yml \
             "$release_root/infra/docker/compose/production/"
+          cp infra/systemd/waterbridge-p1-auth-email-worker.service \
+            "$release_root/infra/systemd/"
           cp scripts/deployment/production/deploy-release.sh \
             scripts/deployment/production/rollback-release.sh \
+            scripts/deployment/production/run_p1_auth_email_worker.sh \
+            scripts/deployment/production/sync_backend_email_auth_secret.py \
             scripts/deployment/production/validate_backend_runtime.py \
             scripts/deployment/production/validate_ai_readonly_runtime.py \
+            scripts/deployment/production/validate_p1_auth_email_worker_runtime.py \
             scripts/deployment/production/trace_canary.py \
             "$release_root/scripts/deployment/production/"
           {
@@ -508,10 +556,10 @@ jobs:
           printf -v copy_command 'aws s3 cp %q %q --only-show-errors' \
             "$deploy_source" "$deploy_target"
           printf -v chmod_command 'chmod 0750 %q' "$deploy_target"
-          printf -v deploy_command '%q %q %q %q %q %q %q' \
+          printf -v deploy_command '%q %q %q %q %q %q %q %q' \
             "$deploy_target" "$RELEASE_SHA" "$STORAGE_BUCKET" "$AWS_REGION" \
             "/etc/waterbridge/backend.env" "/etc/waterbridge/ai.env" \
-            "/etc/waterbridge/certs/rds-ca.pem"
+            "/etc/waterbridge/certs/rds-ca.pem" "$BACKEND_EMAIL_AUTH_SECRET_ID"
           commands_json="$(jq -cn \
             --arg copy_command "$copy_command" \
             --arg chmod_command "$chmod_command" \

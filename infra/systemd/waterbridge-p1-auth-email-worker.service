@@ -1,0 +1,21 @@
+[Unit]
+Description=WaterBridge P1 Auth Email Outbox Worker
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+ConditionPathIsSymbolicLink=/opt/waterbridge/shared/p1-auth-email-worker.release
+
+[Service]
+Type=simple
+ExecStart=/opt/waterbridge/shared/run-p1-auth-email-worker.sh
+Restart=always
+RestartSec=2s
+TimeoutStopSec=20s
+KillMode=control-group
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

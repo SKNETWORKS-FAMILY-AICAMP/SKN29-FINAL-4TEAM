@@ -21,6 +21,19 @@ OIDC_SMOKE_WORKFLOW = ROOT / ".github/workflows/aws-oidc-smoke.yml"
 BACKEND_PREFLIGHT = ROOT / "scripts/deployment/production/validate_backend_runtime.py"
 AI_PREFLIGHT = ROOT / "scripts/deployment/production/validate_ai_readonly_runtime.py"
 OIDC_TRUST = ROOT / "scripts/deployment/production/validate_github_oidc_trust.py"
+SECRET_SYNC = (
+    ROOT / "scripts/deployment/production/sync_backend_email_auth_secret.py"
+)
+WORKER_PREFLIGHT = (
+    ROOT
+    / "scripts/deployment/production/validate_p1_auth_email_worker_runtime.py"
+)
+WORKER_RUNNER = (
+    ROOT / "scripts/deployment/production/run_p1_auth_email_worker.sh"
+)
+WORKER_UNIT = (
+    ROOT / "infra/systemd/waterbridge-p1-auth-email-worker.service"
+)
 
 
 class ProductionDeploymentAssetTests(unittest.TestCase):
@@ -50,6 +63,77 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             text,
         )
         self.assertNotRegex(text, r"(?m)(?:^|:)latest(?:$|\s)")
+
+    def test_p1_email_worker_reuses_backend_container_under_systemd(self) -> None:
+        compose = COMPOSE.read_text(encoding="utf-8")
+        deploy = DEPLOY.read_text(encoding="utf-8")
+        rollback = ROLLBACK.read_text(encoding="utf-8")
+        runner = WORKER_RUNNER.read_text(encoding="utf-8")
+        unit = WORKER_UNIT.read_text(encoding="utf-8")
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+
+        self.assertNotRegex(compose, r"(?m)^  p1-auth-email-worker:$")
+        self.assertEqual(
+            WORKER_UNIT.name,
+            "waterbridge-p1-auth-email-worker.service",
+        )
+        self.assertIn("Restart=always", unit)
+        self.assertIn("RestartSec=2s", unit)
+        self.assertIn("NoNewPrivileges=true", unit)
+        self.assertIn("ConditionPathIsSymbolicLink=", unit)
+        self.assertIn("compose exec -T backend", runner)
+        self.assertIn(
+            "process_p1_auth_email_outbox --poll-seconds 2",
+            runner,
+        )
+        self.assertIn("duplicate worker process", runner)
+        self.assertIn("P1_AUTH_EMAIL_WORKER_PROCESS_PASS", runner)
+        self.assertNotIn("docker run", runner)
+        for text in (deploy, rollback):
+            self.assertIn("activate_worker_release", text)
+            self.assertIn("deactivate_worker", text)
+            self.assertIn("p1-auth-email-worker.release", text)
+        for asset in (
+            "run_p1_auth_email_worker.sh",
+            "validate_p1_auth_email_worker_runtime.py",
+            "waterbridge-p1-auth-email-worker.service",
+        ):
+            self.assertIn(asset, workflow)
+
+    def test_email_auth_secret_sync_is_fail_closed_and_value_safe(self) -> None:
+        sync = SECRET_SYNC.read_text(encoding="utf-8")
+        deploy = DEPLOY.read_text(encoding="utf-8")
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        preflight = WORKER_PREFLIGHT.read_text(encoding="utf-8")
+
+        self.assertIn("aws", sync)
+        self.assertIn("secretsmanager", sync)
+        self.assertIn("get-secret-value", sync)
+        self.assertIn("SECRET_DOCUMENT_COUNT_INVALID", sync)
+        self.assertIn("SECRET_KEY_DUPLICATED", sync)
+        self.assertIn("SECRET_KEY_UNKNOWN", sync)
+        self.assertIn("ALLOWLIST_COUNT_INVALID", sync)
+        self.assertIn("ALLOWLIST_DUPLICATED", sync)
+        self.assertIn("os.replace", sync)
+        self.assertIn("os.fchmod(temporary.fileno(), 0o600)", sync)
+        self.assertIn("os.fchown(temporary.fileno(), 0, 0)", sync)
+        self.assertIn("secret_values_printed=false", sync)
+        self.assertNotIn("print(secret_string", sync)
+        self.assertIn("BACKEND_EMAIL_AUTH_SECRET_ID", workflow)
+        self.assertIn("${{ vars.BACKEND_EMAIL_AUTH_SECRET_ID }}", workflow)
+        self.assertIn("sync_backend_email_auth_secret.py", workflow)
+        self.assertIn('"$BACKEND_EMAIL_AUTH_SECRET_ID"', workflow)
+        for key in (
+            "P1_AUTH_RUNTIME_ENVIRONMENT",
+            "P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED",
+            "P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS",
+        ):
+            self.assertIn(key, deploy)
+            self.assertIn(key, workflow)
+            self.assertIn(key, preflight)
+        self.assertIn("BACKEND_OWNER_WAIT", deploy)
+        self.assertIn("pending_deliverable=0", preflight)
+        self.assertNotIn("print(approved_hmacs", preflight)
 
     def test_production_compose_never_runs_database_mutation(self) -> None:
         combined = "\n".join(
@@ -238,6 +322,9 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             "P1_AUTH_HMAC_SECRET",
             "P1_AUTH_OTP_ENCRYPTION_KEY",
             "P1_AUTH_EMAIL_REDIRECT_TO",
+            "P1_AUTH_RUNTIME_ENVIRONMENT",
+            "P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED",
+            "P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS",
             "DJANGO_EMAIL_BACKEND",
             "DJANGO_EMAIL_HOST",
             "DJANGO_EMAIL_HOST_USER",
@@ -251,6 +338,14 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             workflow,
         )
         self.assertNotIn("secrets.", workflow)
+
+    def test_host_bootstrap_requires_systemd_and_python_without_secret_access(
+        self,
+    ) -> None:
+        bootstrap = BOOTSTRAP.read_text(encoding="utf-8")
+        self.assertIn("flock python3 systemctl", bootstrap)
+        self.assertIn("systemd=available", bootstrap)
+        self.assertNotIn("get-secret-value", bootstrap)
 
     def test_runtime_preflights_enforce_approved_database_boundary(self) -> None:
         backend = BACKEND_PREFLIGHT.read_text(encoding="utf-8")
@@ -382,7 +477,15 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
     def test_host_scripts_do_not_print_or_copy_secret_values(self) -> None:
         deploy = DEPLOY.read_text(encoding="utf-8")
         combined = "\n".join(
-            path.read_text(encoding="utf-8") for path in (BOOTSTRAP, DEPLOY, ROLLBACK)
+            path.read_text(encoding="utf-8")
+            for path in (
+                BOOTSTRAP,
+                DEPLOY,
+                ROLLBACK,
+                SECRET_SYNC,
+                WORKER_PREFLIGHT,
+                WORKER_RUNNER,
+            )
         )
         self.assertNotRegex(combined, r"(?m)^\s*(?:cat|head|tail)\s+.*runtime.*env")
         self.assertNotIn("set -x", combined)
@@ -423,6 +526,7 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn('git merge-base --is-ancestor "$RELEASE_SHA" origin/main', text)
         self.assertIn("ref: ${{ env.RELEASE_SHA }}", text)
         self.assertIn("tests.deployment.test_production_deployment_assets", text)
+        self.assertIn("tests.deployment.test_backend_email_auth_secret_sync", text)
         self.assertIn("tests.deployment.test_github_oidc_trust", text)
         self.assertIn("tests.deployment.test_backend_ci_workflow", text)
         self.assertIn("tests.deployment.test_data_ci_workflow", text)
