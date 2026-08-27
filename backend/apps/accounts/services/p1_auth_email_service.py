@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 import logging
 
 from django.conf import settings
@@ -17,7 +18,24 @@ logger = logging.getLogger("watercare.auth")
 
 
 class P1AuthEmailService:
-    """합성 Redirect와 PM 승인 로컬 수신자를 명시적으로 분리한다."""
+    """합성 Redirect와 승인된 로컬/AWS 수신자를 분리한다."""
+
+    @staticmethod
+    def _approved_test_recipient_delivery_allowed(
+        contact: ContractEmailContact,
+    ) -> bool:
+        if settings.DEBUG:
+            return True
+        if settings.P1_AUTH_RUNTIME_ENVIRONMENT != "AWS_NONPROD":
+            return False
+        if not settings.P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED:
+            return False
+        return any(
+            hmac.compare_digest(contact.email_lookup_hmac, approved_hmac)
+            for approved_hmac in (
+                settings.P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS
+            )
+        )
 
     @classmethod
     def deliver_otp(
@@ -28,22 +46,25 @@ class P1AuthEmailService:
         otp_code: str,
     ) -> bool:
         protection = ContractEmailProtectionService.from_settings()
-        protected_recipient = protection.decrypt(contact.encrypted_email)
         if (
             contact.delivery_policy
             == ContractEmailContact.DeliveryPolicy.RUNTIME_REDIRECT_ONLY
             and contact.data_classification
             == ContractEmailContact.DataClassification.SYNTHETIC
         ):
+            protection.decrypt(contact.encrypted_email)
             recipient = str(settings.P1_AUTH_EMAIL_REDIRECT_TO or "").strip()
         elif (
-            settings.DEBUG
-            and contact.delivery_policy
+            contact.delivery_policy
             == ContractEmailContact.DeliveryPolicy.APPROVED_TEST_RECIPIENT
             and contact.data_classification
             == ContractEmailContact.DataClassification.APPROVED_TEST_PII
-            and not protected_recipient.rsplit("@", 1)[-1].endswith(".invalid")
         ):
+            if not cls._approved_test_recipient_delivery_allowed(contact):
+                return False
+            protected_recipient = protection.decrypt(contact.encrypted_email)
+            if protected_recipient.rsplit("@", 1)[-1].endswith(".invalid"):
+                return False
             recipient = protected_recipient
         else:
             return False

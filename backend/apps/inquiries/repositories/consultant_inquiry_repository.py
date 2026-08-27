@@ -31,6 +31,7 @@ from apps.inquiries.models import (
     InquiryQA,
     SymptomAssessment,
 )
+from apps.inquiries.p1_team_routing import P1TeamConsultantRouting
 from apps.workflow.models import TransitionHistory
 from apps.visits.models import Visit
 
@@ -54,13 +55,17 @@ class ConsultantInquiryRepository:
         )
 
     @classmethod
-    def unassigned_consultation_queue(cls) -> QuerySet[Inquiry]:
+    def unassigned_consultation_queue(
+        cls,
+        *,
+        actor: Any,
+    ) -> QuerySet[Inquiry]:
         """Return only privacy-safe, currently claimable waiting work."""
 
         latest_consultation = Consultation.objects.filter(
             inquiry_id=OuterRef("pk")
         ).order_by("-sequence", "-id")
-        return cls._with_list_projection(
+        queryset = (
             Inquiry.objects.filter(
                 status_code=Inquiry.Status.CONSULTATION_REQUIRED,
                 assigned_user__isnull=True,
@@ -83,6 +88,18 @@ class ConsultantInquiryRepository:
                 latest_consultation_consultant_id__isnull=True,
             )
         )
+        reserved_contracts = P1TeamConsultantRouting.reserved_contracts()
+        assigned_contract = P1TeamConsultantRouting.assigned_contract(actor)
+        if assigned_contract is None:
+            queryset = queryset.exclude(
+                subscription__contract_no__in=reserved_contracts
+            )
+        else:
+            queryset = queryset.filter(
+                Q(subscription__contract_no=assigned_contract)
+                | ~Q(subscription__contract_no__in=reserved_contracts)
+            )
+        return cls._with_list_projection(queryset)
 
     @staticmethod
     def lock_claimable(inquiry_public_id: UUID) -> Inquiry | None:
@@ -222,6 +239,7 @@ class ConsultantInquiryRepository:
     def list_unassigned_page(
         cls,
         *,
+        actor: Any,
         q: str | None,
         risk_levels: list[str],
         priorities: list[str],
@@ -232,7 +250,7 @@ class ConsultantInquiryRepository:
         limit: int,
     ) -> tuple[list[Inquiry], int]:
         queryset = cls._apply_non_status_filters(
-            cls.unassigned_consultation_queue(),
+            cls.unassigned_consultation_queue(actor=actor),
             q=q,
             risk_levels=risk_levels,
             priorities=priorities,

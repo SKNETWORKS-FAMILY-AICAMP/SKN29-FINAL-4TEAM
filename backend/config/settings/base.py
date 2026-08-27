@@ -263,6 +263,45 @@ def positive_int_env(name: str, default: int) -> int:
     return value
 
 
+def strict_bool_env(name: str, default: bool = False) -> bool:
+    raw_value = os.getenv(name)
+    if raw_value in (None, ""):
+        return default
+    normalized = raw_value.strip().lower()
+    if normalized == "true":
+        return True
+    if normalized == "false":
+        return False
+    raise ImproperlyConfigured(
+        f"{name}은 true 또는 false여야 합니다."
+    )
+
+
+def sha256_hmac_allowlist_env(
+    name: str,
+    *,
+    expected_count: int,
+) -> frozenset[str]:
+    raw_value = os.getenv(name, "").strip()
+    if not raw_value:
+        return frozenset()
+    values = [item.strip() for item in raw_value.split(",")]
+    if (
+        len(values) != expected_count
+        or len(set(values)) != expected_count
+        or any(
+            len(item) != 64
+            or any(character not in "0123456789abcdef" for character in item)
+            for item in values
+        )
+    ):
+        raise ImproperlyConfigured(
+            f"{name}은 중복 없는 소문자 SHA-256 HMAC "
+            f"{expected_count}건이어야 합니다."
+        )
+    return frozenset(values)
+
+
 P1_AUTH_HMAC_SECRET = os.getenv(
     "P1_AUTH_HMAC_SECRET",
     _local_derived_secret("p1-auth-hmac") if IS_LOCAL_SETTINGS else "",
@@ -301,6 +340,19 @@ P1_AUTH_LOGIN_MAX_FAILURES = positive_int_env(
     "P1_AUTH_LOGIN_MAX_FAILURES", 5
 )
 P1_AUTH_EMAIL_REDIRECT_TO = os.getenv("P1_AUTH_EMAIL_REDIRECT_TO", "")
+P1_AUTH_RUNTIME_ENVIRONMENT = os.getenv(
+    "P1_AUTH_RUNTIME_ENVIRONMENT", ""
+).strip()
+P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED = strict_bool_env(
+    "P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED",
+    False,
+)
+P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS = (
+    sha256_hmac_allowlist_env(
+        "P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS",
+        expected_count=6,
+    )
+)
 
 EMAIL_BACKEND = os.getenv(
     "DJANGO_EMAIL_BACKEND",

@@ -35,6 +35,11 @@ PRODUCTION_ENV = {
         "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI="
     ),
     "P1_AUTH_EMAIL_REDIRECT_TO": "test-inbox@example.invalid",
+    "P1_AUTH_RUNTIME_ENVIRONMENT": "AWS_NONPROD",
+    "P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED": "true",
+    "P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS": ",".join(
+        character * 64 for character in "abcdef"
+    ),
     "DJANGO_EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend",
     "DJANGO_EMAIL_HOST": "smtp.internal",
     "DJANGO_EMAIL_HOST_USER": "smtp-user",
@@ -129,3 +134,33 @@ def test_production_settings_use_verify_full_ca():
         "sslmode": "verify-full",
         "sslrootcert": str(TEST_CA_PATH.resolve()),
     }
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED", "yes"),
+        (
+            "P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS",
+            ",".join(character * 64 for character in "abcdeF"),
+        ),
+        (
+            "P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS",
+            ",".join(["a" * 64] * 6),
+        ),
+    ],
+)
+def test_production_settings_reject_invalid_p1_delivery_gate(key, value):
+    result = run_production_import(
+        {
+            "POSTGRES_SSLMODE": "verify-full",
+            "POSTGRES_SSLROOTCERT": str(TEST_CA_PATH),
+            key: value,
+        }
+    )
+    output = result.stdout + result.stderr
+
+    assert result.returncode != 0
+    assert key in output
+    assert "must-not-appear" not in output
+    assert "smtp-secret" not in output
