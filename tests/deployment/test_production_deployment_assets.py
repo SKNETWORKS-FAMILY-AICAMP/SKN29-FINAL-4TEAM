@@ -88,6 +88,12 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         )
         self.assertIn("duplicate worker process", runner)
         self.assertIn("P1_AUTH_EMAIL_WORKER_PROCESS_PASS", runner)
+        self.assertIn('raw.split(b"\\0")', runner)
+        self.assertNotIn('raw.split(b"\\\\0")', runner)
+        self.assertIn(
+            'worker process count=${#running_pids[@]}; expected=1',
+            runner,
+        )
         self.assertNotIn("docker run", runner)
         for text in (deploy, rollback):
             self.assertIn("activate_worker_release", text)
