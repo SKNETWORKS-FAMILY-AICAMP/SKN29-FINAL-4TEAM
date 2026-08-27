@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,6 +57,45 @@ internal fun P1SignupSection(
     var termsAgreed by remember { mutableStateOf(false) }
     var privacyAgreed by remember { mutableStateOf(false) }
     var marketingAgreed by remember { mutableStateOf(false) }
+
+    if (state.signupConflictCode != null) {
+        AlertDialog(
+            onDismissRequest = {
+                viewModel.dismissSignupConflict()
+            },
+            title = {
+                Text(
+                    text = "이미 등록된 정보입니다",
+                )
+            },
+            text = {
+                Text(
+                    text =
+                        "이미 가입된 회원이거나 사용 중인 아이디입니다. 로그인하거나 다른 아이디를 입력해 주세요.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.dismissSignupConflict()
+                        viewModel.cancelSignup()
+                        onBackToLogin()
+                    },
+                ) {
+                    Text("로그인으로 가기")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.dismissSignupConflict()
+                    },
+                ) {
+                    Text("다른 아이디 입력")
+                }
+            },
+        )
+    }
 
     Column(
         modifier =
