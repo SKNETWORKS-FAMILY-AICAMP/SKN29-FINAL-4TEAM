@@ -1,0 +1,59 @@
+title: CustomerInquiryConsultationResult
+type: object
+description: 고객 본인에게 공개하는 최신 완료 상담 결과 Projection
+x-contract-status: CONFIRMED
+additionalProperties: false
+required:
+  - inquiry_id
+  - status_code
+  - state_version
+  - result_code
+  - result_display_label
+  - customer_guidance
+  - usage_guidance_status
+  - usage_guidance_display_label
+  - completed_at
+  - allowed_actions
+properties:
+  inquiry_id:
+    type: string
+    format: uuid
+  status_code:
+    type: string
+    enum:
+      - VISIT_REVIEW_PENDING
+      - VISIT_SCHEDULING
+      - VISIT_SCHEDULED
+      - COMPLETION_PENDING
+      - REVISIT_REQUIRED
+      - REOPENED
+      - RESOLVED
+  state_version:
+    type: integer
+    minimum: 1
+  result_code:
+    type: string
+    enum: [COMPLETED_NO_VISIT, VISIT_REQUIRED, REOPENED_FOLLOWUP]
+  result_display_label:
+    type: string
+    minLength: 1
+    maxLength: 100
+  customer_guidance:
+    type: string
+    minLength: 1
+    maxLength: 2000
+    description: 상담사가 고객 공개 목적으로 저장한 안내만 반환한다.
+  usage_guidance_status:
+    type: string
+    enum: [NORMAL, PARTIAL_STOP, TOTAL_STOP, PENDING_CONSULTATION]
+  usage_guidance_display_label:
+    type: string
+    minLength: 1
+    maxLength: 100
+  completed_at:
+    type: string
+    format: date-time
+  allowed_actions:
+    type: array
+    items:
+      $ref: ../workflow/AllowedAction.yaml

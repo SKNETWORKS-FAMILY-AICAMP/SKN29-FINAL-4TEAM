@@ -231,6 +231,10 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
             "getMyInquiryGuidance",
             "CustomerInquiryGuidance.yaml",
         ),
+        "/me/inquiries/{inquiry_id}/consultation-result": (
+            "getMyInquiryConsultationResult",
+            "CustomerInquiryConsultationResult.yaml",
+        ),
     }
 
     for path, (operation_id, schema_name) in expected.items():
@@ -248,7 +252,7 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
         }
         if path != "/me/inquiries/active":
             expected_responses.add("404")
-        if path.endswith("/guidance"):
+        if path.endswith(("/guidance", "/consultation-result")):
             expected_responses.add("409")
         assert set(operation["responses"]) == expected_responses
         assert load_yaml(INQUIRY_SCHEMA_DIR / schema_name)[
@@ -272,6 +276,12 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
     ]["$ref"] == (
         "./paths/customer-inquiries.yaml"
         "#/~1me~1inquiries~1{inquiry_id}~1guidance"
+    )
+    assert root["paths"][
+        "/me/inquiries/{inquiry_id}/consultation-result"
+    ]["$ref"] == (
+        "./paths/customer-inquiries.yaml"
+        "#/~1me~1inquiries~1{inquiry_id}~1consultation-result"
     )
     questions_schema = load_yaml(
         INQUIRY_SCHEMA_DIR / "CustomerInquiryQuestions.yaml"

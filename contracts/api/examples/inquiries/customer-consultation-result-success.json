@@ -1,0 +1,44 @@
+{
+  "success": true,
+  "data": {
+    "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
+    "status_code": "COMPLETION_PENDING",
+    "state_version": 9,
+    "result_code": "COMPLETED_NO_VISIT",
+    "result_display_label": "상담 처리 완료",
+    "customer_guidance": "필터를 다시 장착한 뒤 냉수 출수량을 확인해 주세요.",
+    "usage_guidance_status": "NORMAL",
+    "usage_guidance_display_label": "정상 사용 가능",
+    "completed_at": "2026-08-27T13:30:00+09:00",
+    "allowed_actions": [
+      {
+        "code": "SUBMIT_RESOLUTION_FEEDBACK",
+        "label": "해결 완료 확인",
+        "operation_id": "submitResolutionFeedback",
+        "style": "PRIMARY",
+        "requires_confirmation": false,
+        "confirmation_message": null
+      },
+      {
+        "code": "CUSTOMER_REPORTED_UNRESOLVED",
+        "label": "아직 해결되지 않았어요",
+        "operation_id": "reportUnresolved",
+        "style": "SECONDARY",
+        "requires_confirmation": false,
+        "confirmation_message": null
+      },
+      {
+        "code": "REQUEST_CONSULTATION",
+        "label": "상담 요청",
+        "operation_id": "requestConsultation",
+        "style": "SECONDARY",
+        "requires_confirmation": false,
+        "confirmation_message": null
+      }
+    ]
+  },
+  "error": null,
+  "metadata": {
+    "correlation_id": "30000000-0000-4000-8000-000000000027"
+  }
+}

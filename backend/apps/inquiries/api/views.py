@@ -21,6 +21,7 @@ from apps.inquiries.api.serializers import (
     ConsultantCustomerSubscriptionSearchSerializer,
     CreateInquirySerializer,
     CustomerActiveInquirySerializer,
+    CustomerInquiryConsultationResultSerializer,
     CustomerInquiryGuidanceSerializer,
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
@@ -481,6 +482,21 @@ class CustomerInquiryGuidanceView(APIView):
             inquiry_public_id=inquiry_id,
         )
         return success_response(CustomerInquiryGuidanceSerializer(data).data)
+
+
+class CustomerInquiryConsultationResultView(APIView):
+    """Return a CUSTOMER-owned completed consultation result projection."""
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request, inquiry_id: UUID):
+        reject_unknown_query_parameters(request, set())
+        data = CustomerInquiryService.consultation_result_for_customer(
+            actor=request.user,
+            inquiry_public_id=inquiry_id,
+        )
+        serializer = CustomerInquiryConsultationResultSerializer(data)
+        return success_response(serializer.data)
 
 
 class CancelInquiryView(APIView):

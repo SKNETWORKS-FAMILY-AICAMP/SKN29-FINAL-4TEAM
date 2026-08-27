@@ -8,6 +8,7 @@ from uuid import UUID
 from django.db.models import F, OuterRef, Prefetch, QuerySet, Subquery
 
 from apps.audit.models import AIRun
+from apps.consultations.models import Consultation
 from apps.inquiries.models import Guidance, GuidanceItem, Inquiry, InquiryQA
 from apps.workflow.models import TransitionHistory
 
@@ -179,6 +180,48 @@ class CustomerInquiryRepository:
                     "guidance_versions",
                     queryset=trusted_guidance,
                     to_attr="customer_guidance_versions",
+                ),
+            )
+            .filter(public_id=inquiry_public_id)
+            .first()
+        )
+
+    @classmethod
+    def find_with_consultation_result(
+        cls,
+        *,
+        actor: Any,
+        inquiry_public_id: UUID,
+    ) -> Inquiry | None:
+        """Load only the latest completed consultation's public result fields."""
+
+        completed_consultations = (
+            Consultation.objects.filter(
+                status=Consultation.Status.COMPLETED,
+                completed_at__isnull=False,
+            )
+            .only(
+                "id",
+                "inquiry_id",
+                "outcome",
+                "customer_guidance",
+                "usage_guidance_status",
+                "completed_at",
+            )
+            .order_by("-completed_at", "-id")
+        )
+        return (
+            cls.visible_for_customer(actor)
+            .prefetch_related(
+                Prefetch(
+                    "qa_entries",
+                    queryset=cls.unanswered_question_rows(),
+                    to_attr="allowed_action_open_questions",
+                ),
+                Prefetch(
+                    "consultations",
+                    queryset=completed_consultations,
+                    to_attr="customer_completed_consultations",
                 ),
             )
             .filter(public_id=inquiry_public_id)

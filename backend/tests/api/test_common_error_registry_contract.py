@@ -14,6 +14,7 @@ from rest_framework.exceptions import (
 from common.exceptions.error_codes import (
     AI_GUIDANCE_NOT_READY,
     AUTH_REQUIRED,
+    CONSULTATION_RESULT_NOT_READY,
     DUPLICATE_EVENT,
     FORBIDDEN,
     INTERNAL_ERROR,
@@ -64,6 +65,7 @@ def test_all_runtime_common_codes_exist_in_registry():
         STATE_CONFLICT,
         DUPLICATE_EVENT,
         AI_GUIDANCE_NOT_READY,
+        CONSULTATION_RESULT_NOT_READY,
     } <= set(registered)
 
 
@@ -111,6 +113,14 @@ def test_new_runtime_common_error_metadata_is_exact():
             "AI 안내가 아직 준비되지 않았습니다. 상담 검토가 필요합니다."
         ),
         "recommended_action": "REFRESH_OR_REQUEST_CONSULTATION",
+    }
+    assert registered[CONSULTATION_RESULT_NOT_READY] == {
+        "code": CONSULTATION_RESULT_NOT_READY,
+        "category": "workflow",
+        "http_status": 409,
+        "retryable": True,
+        "user_message": "상담 처리 결과가 아직 준비되지 않았습니다.",
+        "recommended_action": "REFRESH_RESULT",
     }
 
 

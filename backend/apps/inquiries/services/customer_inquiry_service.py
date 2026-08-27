@@ -8,6 +8,7 @@ from uuid import UUID
 from rest_framework.exceptions import NotFound
 
 from apps.audit.models import AIRun
+from apps.consultations.models import Consultation
 from apps.inquiries.models import Inquiry
 from apps.inquiries.models.inquiry_qa import public_question_options
 from apps.inquiries.repositories.customer_inquiry_repository import (
@@ -21,7 +22,10 @@ from apps.workflow.engine.allowed_action_resolver import (
     AllowedActionResolver,
 )
 from common.exceptions.business import BusinessError
-from common.exceptions.error_codes import AI_GUIDANCE_NOT_READY
+from common.exceptions.error_codes import (
+    AI_GUIDANCE_NOT_READY,
+    CONSULTATION_RESULT_NOT_READY,
+)
 
 
 class CustomerInquiryService:
@@ -45,6 +49,28 @@ class CustomerInquiryService:
         }
     )
     PUBLIC_GUIDANCE_REVIEW_STATUSES = frozenset({"APPROVED", "CONFIRMED"})
+    PUBLIC_CONSULTATION_RESULT_STATES = frozenset(
+        {
+            Inquiry.Status.VISIT_REVIEW_PENDING,
+            Inquiry.Status.VISIT_SCHEDULING,
+            Inquiry.Status.VISIT_SCHEDULED,
+            Inquiry.Status.COMPLETION_PENDING,
+            Inquiry.Status.REVISIT_REQUIRED,
+            Inquiry.Status.REOPENED,
+            Inquiry.Status.RESOLVED,
+        }
+    )
+    CONSULTATION_RESULT_LABELS = {
+        Consultation.Outcome.COMPLETED_NO_VISIT: "상담 처리 완료",
+        Consultation.Outcome.VISIT_REQUIRED: "방문 점검 필요",
+        Consultation.Outcome.REOPENED_FOLLOWUP: "추가 상담 필요",
+    }
+    USAGE_GUIDANCE_LABELS = {
+        Inquiry.UsageGuidanceStatus.NORMAL: "정상 사용 가능",
+        Inquiry.UsageGuidanceStatus.PARTIAL_STOP: "일부 기능 사용 중단",
+        Inquiry.UsageGuidanceStatus.TOTAL_STOP: "제품 사용 중단",
+        Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION: "상담 확인 필요",
+    }
 
     @classmethod
     def latest_active_for_customer(cls, *, actor: Any) -> dict[str, Any]:
@@ -255,6 +281,62 @@ class CustomerInquiryService:
         }
 
     @classmethod
+    def consultation_result_for_customer(
+        cls,
+        *,
+        actor: Any,
+        inquiry_public_id: UUID,
+    ) -> dict[str, Any]:
+        """Return the latest completed consultation's customer-safe result."""
+
+        inquiry = CustomerInquiryRepository.find_with_consultation_result(
+            actor=actor,
+            inquiry_public_id=inquiry_public_id,
+        )
+        if inquiry is None:
+            raise NotFound()
+
+        allowed_actions = cls._allowed_actions(inquiry, actor=actor)
+        if inquiry.status_code not in cls.PUBLIC_CONSULTATION_RESULT_STATES:
+            raise cls._consultation_result_not_ready(inquiry, allowed_actions)
+
+        consultation = next(
+            iter(inquiry.customer_completed_consultations),
+            None,
+        )
+        if consultation is None:
+            raise cls._consultation_result_not_ready(inquiry, allowed_actions)
+
+        customer_guidance = consultation.customer_guidance
+        result_label = cls.CONSULTATION_RESULT_LABELS.get(
+            consultation.outcome
+        )
+        usage_label = cls.USAGE_GUIDANCE_LABELS.get(
+            consultation.usage_guidance_status
+        )
+        if (
+            not isinstance(customer_guidance, str)
+            or not customer_guidance.strip()
+            or len(customer_guidance.strip()) > 2000
+            or result_label is None
+            or usage_label is None
+        ):
+            raise cls._consultation_result_not_ready(inquiry, allowed_actions)
+
+        return {
+            "inquiry_id": inquiry.public_id,
+            "status_code": inquiry.status_code,
+            "state_version": inquiry.state_version,
+            "result_code": consultation.outcome,
+            "result_display_label": result_label,
+            "customer_guidance": customer_guidance.strip(),
+            "usage_guidance_status": consultation.usage_guidance_status,
+            "usage_guidance_display_label": usage_label,
+            "completed_at": consultation.completed_at,
+            "allowed_actions": allowed_actions,
+        }
+
+    @classmethod
     def _allowed_actions(cls, inquiry, *, actor: Any) -> list[dict]:
         open_followup_questions = any(
             cls._question(question) is not None
@@ -289,6 +371,23 @@ class CustomerInquiryService:
         return BusinessError(
             AI_GUIDANCE_NOT_READY,
             "AI 안내가 아직 준비되지 않았습니다. 상담 검토가 필요합니다.",
+            details={
+                "inquiry_id": str(inquiry.public_id),
+                "current_status": inquiry.status_code,
+                "current_state_version": inquiry.state_version,
+                "allowed_actions": allowed_actions,
+            },
+            status_code=409,
+        )
+
+    @staticmethod
+    def _consultation_result_not_ready(
+        inquiry,
+        allowed_actions,
+    ) -> BusinessError:
+        return BusinessError(
+            CONSULTATION_RESULT_NOT_READY,
+            "상담 처리 결과가 아직 준비되지 않았습니다.",
             details={
                 "inquiry_id": str(inquiry.public_id),
                 "current_status": inquiry.status_code,

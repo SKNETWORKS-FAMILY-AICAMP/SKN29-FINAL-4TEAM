@@ -1,5 +1,28 @@
 # Contracts Changelog
 
+## 2026-08-27 — CUSTOMER 최신 상담 처리 결과 조회
+
+### Added
+
+- 고객 본인의 최신 완료 상담 결과를 읽는
+  `GET /me/inquiries/{inquiry_id}/consultation-result`를 추가했다.
+- Mobile 공개 필드를 `result_code`, `result_display_label`,
+  `customer_guidance`, `usage_guidance_status`,
+  `usage_guidance_display_label`, `completed_at`, `state_version`,
+  `allowed_actions`로 고정했다.
+- 완료 상담이나 필수 고객 공개 안내가 준비되지 않은 경우의
+  `CONSULTATION_RESULT_NOT_READY` 409를 추가했다.
+
+### Boundary
+
+- 고객 본인 문의만 조회할 수 있으며 타 고객 문의와 없는 문의는 같은 404로
+  은닉한다.
+- 상담 메모, 추가 확인사항, AI 초안·확정 요약, 상담사 식별자, 내부 Trace와
+  상담 저장 레코드의 멱등·상관관계 값은 반환하지 않는다. 공통 응답
+  metadata의 요청 추적용 correlation_id는 유지한다.
+- AI Guidance를 상담 처리 결과로 대체하지 않으며 신규 Model·Migration·상태
+  전이는 추가하지 않는다.
+
 ## 2026-08-25 — 합성 상담사 ID/PW 로그인 Runtime
 
 ### Changed

@@ -55,6 +55,7 @@ EXPECTED_JSON_FILES = {
     "inquiries/unassigned-consultation-queue-success.json",
     "inquiries/customer-active-inquiry-empty.json",
     "inquiries/customer-active-inquiry-success.json",
+    "inquiries/customer-consultation-result-success.json",
     "inquiries/customer-timeout-snapshot-success.json",
     "inquiries/start-inquiry-replay-response.json",
     "inquiries/start-inquiry-request.json",

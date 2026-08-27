@@ -25,6 +25,7 @@ from apps.inquiries.api.serializers.consultant_phone_inquiry import (
 )
 from apps.inquiries.api.serializers.customer_inquiry import (
     CustomerActiveInquirySerializer,
+    CustomerInquiryConsultationResultSerializer,
     CustomerInquiryGuidanceSerializer,
     CustomerInquiryQuestionsSerializer,
     CustomerInquirySnapshotSerializer,
@@ -74,6 +75,7 @@ __all__ = [
     "ConsultantCustomerSubscriptionSearchSerializer",
     "CreateInquirySerializer",
     "CustomerActiveInquirySerializer",
+    "CustomerInquiryConsultationResultSerializer",
     "CustomerInquiryGuidanceSerializer",
     "CustomerInquiryQuestionsSerializer",
     "CustomerInquirySnapshotSerializer",

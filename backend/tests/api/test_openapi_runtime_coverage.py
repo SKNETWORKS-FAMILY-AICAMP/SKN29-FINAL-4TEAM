@@ -178,6 +178,15 @@ EXPECTED_OPERATIONS = {
         "url_name": "customer-inquiry-guidance",
         "view_name": "CustomerInquiryGuidanceView",
     },
+    ("/me/inquiries/{inquiry_id}/consultation-result", "get"): {
+        "operation_id": "getMyInquiryConsultationResult",
+        "contract_status": "CONFIRMED",
+        "runtime_path": (
+            f"/api/v1/me/inquiries/{INQUIRY_ID}/consultation-result"
+        ),
+        "url_name": "customer-inquiry-consultation-result",
+        "view_name": "CustomerInquiryConsultationResultView",
+    },
     ("/me/questionnaire-sessions", "post"): {
         "operation_id": "startCarePrecheck",
         "contract_status": "CONFIRMED",
@@ -513,7 +522,7 @@ def test_openapi_operation_inventory_separates_runtime_and_p1a_frozen():
     assert set(operations) == (
         set(EXPECTED_OPERATIONS) | set(P1A_FROZEN_OPERATIONS)
     )
-    assert len(operations) == 59
+    assert len(operations) == 60
     assert {
         operation["operationId"] for operation in operations.values()
     } == expected_operation_ids
@@ -536,7 +545,7 @@ def test_openapi_operation_inventory_separates_runtime_and_p1a_frozen():
         )
 
 
-def test_forty_seven_operations_resolve_to_expected_runtime_views():
+def test_forty_eight_operations_resolve_to_expected_runtime_views():
     implemented = [
         (key, expected)
         for key, expected in EXPECTED_OPERATIONS.items()
@@ -545,7 +554,7 @@ def test_forty_seven_operations_resolve_to_expected_runtime_views():
         )
     ]
 
-    assert len(implemented) == 47
+    assert len(implemented) == 48
     for (_, method), expected in implemented:
         match = resolve(expected["runtime_path"])
         assert match.url_name == expected["url_name"]

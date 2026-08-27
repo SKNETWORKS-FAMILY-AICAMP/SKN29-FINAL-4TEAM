@@ -150,3 +150,45 @@
       "409": {$ref: ../components/responses/Conflict.yaml}
       "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
       "500": {$ref: ../components/responses/InternalServerError.yaml}
+
+/me/inquiries/{inquiry_id}/consultation-result:
+  parameters: *customer_inquiry_path_parameters
+  get:
+    operationId: getMyInquiryConsultationResult
+    summary: 고객 본인 문의의 최신 상담 처리 결과 조회
+    description: |
+      완료된 상담 중 가장 최근 결과에서 고객 공개 목적으로 저장된 안내와
+      처리 결과, 사용 제한 상태, 완료 시각 및 Backend Resolver가 계산한
+      allowed_actions만 반환한다. 상담 메모, 추가 확인사항, AI 초안·확정 요약,
+      상담사 식별자와 상담 저장 레코드의 Correlation·Idempotency 값은
+      공개하지 않는다. 공통 응답 metadata의 요청 추적용 correlation_id는
+      기존 규칙대로 유지한다. 완료 상담, 고객 안내 또는 사용 제한 상태가
+      준비되지 않으면 CONSULTATION_RESULT_NOT_READY를 반환하며 AI Guidance로
+      대체하지 않는다.
+    x-contract-status: CONFIRMED
+    x-runtime-status: IMPLEMENTED
+    x-permission-scope: OWN_INQUIRY
+    security: [{BearerAuth: []}]
+    responses:
+      "200":
+        description: 고객 본인 문의의 최신 완료 상담 결과
+        headers:
+          X-Correlation-ID: {$ref: ../components/headers/CorrelationId.yaml}
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: ../components/schemas/common/ApiResponse.yaml
+                - type: object
+                  properties:
+                    data:
+                      $ref: ../components/schemas/inquiry/CustomerInquiryConsultationResult.yaml
+            examples:
+              completedConsultation:
+                externalValue: ../examples/inquiries/customer-consultation-result-success.json
+      "401": {$ref: ../components/responses/Unauthorized.yaml}
+      "403": {$ref: ../components/responses/Forbidden.yaml}
+      "404": {$ref: ../components/responses/NotFound.yaml}
+      "409": {$ref: ../components/responses/Conflict.yaml}
+      "422": {$ref: ../components/responses/UnprocessableEntity.yaml}
+      "500": {$ref: ../components/responses/InternalServerError.yaml}

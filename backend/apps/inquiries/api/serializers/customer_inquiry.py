@@ -2,6 +2,7 @@
 
 from rest_framework import serializers
 
+from apps.consultations.models import Consultation
 from apps.inquiries.api.serializers.inquiry_response import (
     AllowedActionSerializer,
 )
@@ -66,6 +67,29 @@ class CustomerInquiryGuidanceSerializer(serializers.Serializer):
         child=serializers.DictField(),
         max_length=0,
     )
+    allowed_actions = AllowedActionSerializer(many=True)
+
+
+class CustomerInquiryConsultationResultSerializer(serializers.Serializer):
+    """Customer-safe projection of a completed consultation result."""
+
+    inquiry_id = serializers.UUIDField()
+    status_code = serializers.ChoiceField(choices=Inquiry.Status.values)
+    state_version = serializers.IntegerField(min_value=1)
+    result_code = serializers.ChoiceField(
+        choices=(
+            Consultation.Outcome.COMPLETED_NO_VISIT,
+            Consultation.Outcome.VISIT_REQUIRED,
+            Consultation.Outcome.REOPENED_FOLLOWUP,
+        )
+    )
+    result_display_label = serializers.CharField(max_length=100)
+    customer_guidance = serializers.CharField(max_length=2000)
+    usage_guidance_status = serializers.ChoiceField(
+        choices=Inquiry.UsageGuidanceStatus.values
+    )
+    usage_guidance_display_label = serializers.CharField(max_length=100)
+    completed_at = serializers.DateTimeField()
     allowed_actions = AllowedActionSerializer(many=True)
 
 

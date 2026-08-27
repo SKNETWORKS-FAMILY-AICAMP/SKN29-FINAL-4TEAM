@@ -12,3 +12,9 @@ errors:
     retryable: false
     user_message: 동일 Idempotency-Key가 다른 요청에 재사용되었습니다.
     recommended_action: USE_NEW_IDEMPOTENCY_KEY
+  - code: CONSULTATION_RESULT_NOT_READY
+    category: workflow
+    http_status: 409
+    retryable: true
+    user_message: 상담 처리 결과가 아직 준비되지 않았습니다.
+    recommended_action: REFRESH_RESULT

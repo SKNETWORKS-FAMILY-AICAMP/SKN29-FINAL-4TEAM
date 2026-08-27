@@ -54,6 +54,8 @@ paths:
     $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}~1questions
   /me/inquiries/{inquiry_id}/guidance:
     $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}~1guidance
+  /me/inquiries/{inquiry_id}/consultation-result:
+    $ref: ./paths/customer-inquiries.yaml#/~1me~1inquiries~1{inquiry_id}~1consultation-result
   /consultant/customer-subscriptions/search:
     $ref: ./paths/consultant-phone-inquiries.yaml#/~1consultant~1customer-subscriptions~1search
   /consultant/phone-inquiries:

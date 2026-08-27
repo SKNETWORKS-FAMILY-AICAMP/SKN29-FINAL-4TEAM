@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 import hashlib
 from uuid import UUID, uuid4
 
@@ -13,6 +13,7 @@ from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
 from apps.audit.models import AIRun
+from apps.consultations.models import Consultation
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
@@ -196,6 +197,280 @@ def create_ai_guidance(
         instruction_text="냉수 출수량을 확인해 주세요.",
     )
     return guidance
+
+
+def create_completed_consultation(
+    inquiry: Inquiry,
+    sequence: int,
+    *,
+    consultation_sequence: int = 1,
+    outcome: str = Consultation.Outcome.COMPLETED_NO_VISIT,
+    customer_guidance: str | None = (
+        "필터를 다시 장착한 뒤 냉수 출수량을 확인해 주세요."
+    ),
+    usage_guidance_status: str | None = Inquiry.UsageGuidanceStatus.NORMAL,
+    inquiry_status: str = Inquiry.Status.COMPLETION_PENDING,
+    completed_at: datetime | None = None,
+) -> Consultation:
+    consultant = create_user(800 + sequence, role=User.Role.CONSULTANT)
+    now = completed_at or timezone.now()
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=inquiry_status,
+        state_version=9,
+    )
+    inquiry.refresh_from_db()
+    return Consultation.objects.create(
+        consultation_code=(
+            f"CUSTOMER-RESULT-CONSULT-{sequence:03d}-"
+            f"{consultation_sequence:02d}"
+        ),
+        inquiry=inquiry,
+        sequence=consultation_sequence,
+        consultant=consultant,
+        status=Consultation.Status.COMPLETED,
+        outcome=outcome,
+        summary="고객에게 공개하면 안 되는 상담 요약",
+        ai_draft_summary="고객에게 공개하면 안 되는 AI 초안",
+        confirmed_summary="고객에게 공개하면 안 되는 확정 요약",
+        summary_confirmed_at=now - timedelta(minutes=30),
+        consultation_note="고객에게 공개하면 안 되는 상담사 내부 메모",
+        additional_check="고객에게 공개하면 안 되는 추가 확인사항",
+        customer_guidance=customer_guidance,
+        usage_guidance_status=usage_guidance_status,
+        state_version=9,
+        idempotency_key=(
+            f"customer-result-read-{sequence:03d}-{consultation_sequence:02d}"
+        ),
+        correlation_id=uuid4(),
+        started_at=now - timedelta(hours=1),
+        completed_at=now,
+        data_classification=Consultation.DataClassification.SYNTHETIC,
+        created_at=now - timedelta(hours=2),
+    )
+
+
+def test_customer_consultation_result_returns_exact_safe_projection(
+    django_assert_num_queries,
+):
+    owner = create_user(200)
+    inquiry = create_inquiry(owner, 200)
+    consultation = create_completed_consultation(inquiry, 200)
+
+    with django_assert_num_queries(3):
+        response = authenticated_client(owner).get(
+            f"/api/v1/me/inquiries/{inquiry.public_id}/consultation-result"
+        )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert {
+        key: value
+        for key, value in data.items()
+        if key not in {"completed_at", "allowed_actions"}
+    } == {
+        "inquiry_id": str(inquiry.public_id),
+        "status_code": Inquiry.Status.COMPLETION_PENDING,
+        "state_version": 9,
+        "result_code": Consultation.Outcome.COMPLETED_NO_VISIT,
+        "result_display_label": "상담 처리 완료",
+        "customer_guidance": (
+            "필터를 다시 장착한 뒤 냉수 출수량을 확인해 주세요."
+        ),
+        "usage_guidance_status": Inquiry.UsageGuidanceStatus.NORMAL,
+        "usage_guidance_display_label": "정상 사용 가능",
+    }
+    assert parse_datetime(data["completed_at"]) == consultation.completed_at
+    assert [action["code"] for action in data["allowed_actions"]] == [
+        "SUBMIT_RESOLUTION_FEEDBACK",
+        "CUSTOMER_REPORTED_UNRESOLVED",
+        "REQUEST_CONSULTATION",
+    ]
+
+    serialized = str(data)
+    for forbidden in (
+        consultation.summary,
+        consultation.ai_draft_summary,
+        consultation.confirmed_summary,
+        consultation.consultation_note,
+        consultation.additional_check,
+        consultation.consultant.username,
+        str(consultation.correlation_id),
+        consultation.idempotency_key,
+        inquiry.raw_text,
+        inquiry.subscription.contract_no,
+        owner.customer_profile.phone,
+    ):
+        assert forbidden not in serialized
+
+
+@pytest.mark.parametrize(
+    ("outcome", "status", "result_label"),
+    [
+        (
+            Consultation.Outcome.VISIT_REQUIRED,
+            Inquiry.Status.VISIT_REVIEW_PENDING,
+            "방문 점검 필요",
+        ),
+        (
+            Consultation.Outcome.REOPENED_FOLLOWUP,
+            Inquiry.Status.REOPENED,
+            "추가 상담 필요",
+        ),
+    ],
+)
+def test_customer_consultation_result_preserves_approved_result_codes(
+    outcome,
+    status,
+    result_label,
+):
+    sequence = 201 + len(outcome)
+    owner = create_user(sequence)
+    inquiry = create_inquiry(owner, sequence)
+    create_completed_consultation(
+        inquiry,
+        sequence,
+        outcome=outcome,
+        inquiry_status=status,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/consultation-result"
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["result_code"] == outcome
+    assert data["result_display_label"] == result_label
+    assert data["usage_guidance_display_label"] == "일부 기능 사용 중단"
+
+
+def test_customer_consultation_result_selects_latest_completed_result():
+    owner = create_user(239)
+    inquiry = create_inquiry(owner, 239)
+    baseline = timezone.now()
+    create_completed_consultation(
+        inquiry,
+        239,
+        consultation_sequence=1,
+        customer_guidance="이전 상담 안내",
+        completed_at=baseline - timedelta(hours=2),
+    )
+    create_completed_consultation(
+        inquiry,
+        240,
+        consultation_sequence=2,
+        customer_guidance="최신 상담 안내",
+        completed_at=baseline,
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/consultation-result"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["customer_guidance"] == "최신 상담 안내"
+
+
+@pytest.mark.parametrize(
+    ("create_result", "customer_guidance", "usage_guidance_status"),
+    [
+        (False, None, None),
+        (True, "", Inquiry.UsageGuidanceStatus.NORMAL),
+        (True, "안전한 고객 안내", None),
+    ],
+)
+def test_customer_consultation_result_not_ready_fails_closed(
+    create_result,
+    customer_guidance,
+    usage_guidance_status,
+):
+    sequence = 240 + int(create_result) + len(customer_guidance or "")
+    owner = create_user(sequence)
+    inquiry = create_inquiry(owner, sequence)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.COMPLETION_PENDING,
+        state_version=9,
+    )
+    inquiry.refresh_from_db()
+    if create_result:
+        create_completed_consultation(
+            inquiry,
+            sequence,
+            customer_guidance=customer_guidance,
+            usage_guidance_status=usage_guidance_status,
+        )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/consultation-result"
+    )
+
+    assert response.status_code == 409
+    error = response.json()["error"]
+    assert error["code"] == "CONSULTATION_RESULT_NOT_READY"
+    assert error["details"]["current_status"] == (
+        Inquiry.Status.COMPLETION_PENDING
+    )
+    serialized = str(error)
+    assert "고객에게 공개하면 안 되는" not in serialized
+
+
+def test_customer_consultation_result_does_not_substitute_ai_guidance():
+    owner = create_user(259)
+    inquiry = create_inquiry(owner, 259)
+    create_ai_guidance(inquiry, 259)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.COMPLETION_PENDING,
+        state_version=9,
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/consultation-result"
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == (
+        "CONSULTATION_RESULT_NOT_READY"
+    )
+    serialized = str(response.json())
+    assert "온수 기능은 잠시 중지" not in serialized
+    assert "AI 사용 안내 초안" not in serialized
+
+
+def test_customer_consultation_result_read_is_side_effect_free():
+    owner = create_user(260)
+    inquiry = create_inquiry(owner, 260)
+    consultation = create_completed_consultation(inquiry, 260)
+    inquiry_before = Inquiry.objects.values(
+        "status_code",
+        "state_version",
+        "updated_at",
+    ).get(pk=inquiry.pk)
+    consultation_before = Consultation.objects.values(
+        "outcome",
+        "customer_guidance",
+        "usage_guidance_status",
+        "completed_at",
+        "updated_at",
+    ).get(pk=consultation.pk)
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/consultation-result"
+    )
+
+    assert response.status_code == 200
+    assert Inquiry.objects.values(
+        "status_code",
+        "state_version",
+        "updated_at",
+    ).get(pk=inquiry.pk) == inquiry_before
+    assert Consultation.objects.values(
+        "outcome",
+        "customer_guidance",
+        "usage_guidance_status",
+        "completed_at",
+        "updated_at",
+    ).get(pk=consultation.pk) == consultation_before
 
 
 def test_customer_snapshot_returns_exact_owned_projection(
@@ -1149,6 +1424,12 @@ def test_customer_reads_use_same_404_for_other_owner_missing_and_invalid_uuid():
         f"/api/v1/me/inquiries/{other_inquiry.public_id}/guidance",
         f"/api/v1/me/inquiries/{uuid4()}/guidance",
         "/api/v1/me/inquiries/not-a-uuid/guidance",
+        (
+            f"/api/v1/me/inquiries/{other_inquiry.public_id}"
+            "/consultation-result"
+        ),
+        f"/api/v1/me/inquiries/{uuid4()}/consultation-result",
+        "/api/v1/me/inquiries/not-a-uuid/consultation-result",
     )
     responses = [client.get(path) for path in paths]
 
@@ -1191,6 +1472,7 @@ def test_customer_read_auth_role_and_query_boundaries():
         f"/api/v1/me/inquiries/{inquiry.public_id}",
         f"/api/v1/me/inquiries/{inquiry.public_id}/questions",
         f"/api/v1/me/inquiries/{inquiry.public_id}/guidance",
+        f"/api/v1/me/inquiries/{inquiry.public_id}/consultation-result",
     )
 
     for path in paths:
