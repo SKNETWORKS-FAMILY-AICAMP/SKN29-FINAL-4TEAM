@@ -110,12 +110,13 @@ jobs:
           grep -Fq 'VITE_ENABLE_DESIGN_MOCK_FALLBACK=false' web/Dockerfile
           grep -Fxq 'gunicorn==26.0.0' backend/requirements/production.txt
           grep -Fxq 'gunicorn==26.0.0' backend/requirements/constraints-py313.txt
-          if rg -n 'data/(synthetic/fixtures|processed/structured/evidence)' web/src; then
+          if grep -R -n -E \
+            'data/(synthetic/fixtures|processed/structured/evidence)' web/src; then
             echo "Production Web source still statically imports Mock/Evidence files." >&2
             echo "The Web owner must exclude those imports from the production bundle." >&2
             exit 1
           fi
-          if rg -n '(^|[[:space:]])(latest|:latest)([[:space:]]|$)' \
+          if grep -R -n -E '(^|[[:space:]])(latest|:latest)([[:space:]]|$)' \
             web/Dockerfile backend/Dockerfile ai/Dockerfile \
             infra/docker/compose/production; then
             echo "Mutable latest image references are forbidden." >&2
@@ -146,11 +147,11 @@ jobs:
             }
           done
           for index in 001 002 003 004 005 006; do
-            rg -Fq "SKN-${index}" backend/apps || {
+            grep -R -Fq -- "SKN-${index}" backend/apps || {
               echo "BACKEND_OWNER_WAIT: consultant routing is missing." >&2
               exit 1
             }
-            rg -Fq "SYN-P1-TEAM-CONTRACT-${index}" backend/apps || {
+            grep -R -Fq -- "SYN-P1-TEAM-CONTRACT-${index}" backend/apps || {
               echo "BACKEND_OWNER_WAIT: contract routing is missing." >&2
               exit 1
             }
