@@ -50,6 +50,7 @@ internal fun P1SignupSection(
     var otpCode by remember { mutableStateOf("") }
     var signupUsername by remember { mutableStateOf("") }
     var signupPassword by remember { mutableStateOf("") }
+    var signupPasswordConfirm by remember { mutableStateOf("") }
 
     var termsAgreed by remember { mutableStateOf(false) }
     var privacyAgreed by remember { mutableStateOf(false) }
@@ -388,6 +389,14 @@ internal fun P1SignupSection(
                 )
             }
             SignupStage.ACCOUNT_REQUIRED -> {
+                val passwordConfirmationEntered =
+                    signupPasswordConfirm.isNotEmpty()
+
+                val passwordsMatch =
+                    passwordConfirmationEntered &&
+                        signupPassword ==
+                            signupPasswordConfirm
+
                 state.signupMessage?.let { message ->
                     Text(
                         text = message,
@@ -473,7 +482,7 @@ internal fun P1SignupSection(
                             keyboardType =
                                 KeyboardType.Password,
                             imeAction =
-                                ImeAction.Done,
+                                ImeAction.Next,
                         ),
                 )
 
@@ -481,6 +490,52 @@ internal fun P1SignupSection(
                     state.fieldErrors["password"]
                         ?.firstOrNull()
                 )
+
+                P1AuthField(
+                    value = signupPasswordConfirm,
+                    onValueChange = { value ->
+                        signupPasswordConfirm =
+                            value.take(20)
+                    },
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    label = {
+                        Text("비밀번호 확인")
+                    },
+                    singleLine = true,
+                    enabled = !state.submitting,
+                    isError =
+                        passwordConfirmationEntered &&
+                            !passwordsMatch,
+                    visualTransformation =
+                        PasswordVisualTransformation(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType =
+                                KeyboardType.Password,
+                            imeAction =
+                                ImeAction.Done,
+                        ),
+                )
+
+                if (passwordConfirmationEntered) {
+                    Text(
+                        text =
+                            if (passwordsMatch) {
+                                "비밀번호가 일치합니다."
+                            } else {
+                                "입력한 비밀번호가 서로 다릅니다."
+                            },
+                        style =
+                            MaterialTheme.typography.bodySmall,
+                        color =
+                            if (passwordsMatch) {
+                                palette.textMuted
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            },
+                    )
+                }
                 ConsentRow(
                     checked = termsAgreed,
                     onCheckedChange = { termsAgreed = it },
@@ -546,7 +601,8 @@ internal fun P1SignupSection(
                     },
                     enabled =
                         !state.submitting &&
-                            state.backendAvailable == true,
+                            state.backendAvailable == true &&
+                            passwordsMatch,
                     accent = true,
                     modifier = Modifier.fillMaxWidth(),
                 )

@@ -150,6 +150,12 @@ backgroundRes = R.drawable.water_background_customer,
                 onBackToLogin = {
                     usernameRecoveryMode = false
                 },
+                onOpenPasswordReset = {
+                    viewModel.cancelPasswordReset()
+                    signupMode = false
+                    usernameRecoveryMode = false
+                    passwordResetMode = true
+                },
             )
         } else if (passwordResetMode) {
             P1PasswordResetSection(
