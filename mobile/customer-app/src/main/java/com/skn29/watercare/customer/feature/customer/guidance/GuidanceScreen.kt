@@ -152,27 +152,70 @@ fun GuidanceScreen(
         is GuidanceUiState.NoEvidence -> current.guidance
         else -> null
     }
+    val hasSubmittedWorkflowSnapshot =
+        submittedStatusCode != null &&
+            submittedStateVersion != null
+
     val effectiveStateVersion =
-        preferredGuidance?.stateVersion
-            ?: submittedStateVersion
+        if (hasSubmittedWorkflowSnapshot) {
+            submittedStateVersion
+        } else {
+            preferredGuidance?.stateVersion
+        }
+
     val effectiveAllowedActions =
-        preferredGuidance?.allowedActions
-            ?: submittedAllowedActions
+        if (hasSubmittedWorkflowSnapshot) {
+            submittedAllowedActions
+        } else {
+            preferredGuidance
+                ?.allowedActions
+                .orEmpty()
+        }
+
     val effectiveStatusCode =
-        preferredGuidance?.statusCode
-            ?: submittedStatusCode
-
-    val progressStatusCode = when (state) {
-        GuidanceUiState.Loading,
-        is GuidanceUiState.NotReady ->
-            "AI_GUIDANCE"
-
-        else ->
+        if (hasSubmittedWorkflowSnapshot) {
+            submittedStatusCode
+        } else {
             preferredGuidance?.statusCode
-                ?: submittedStatusCode
-    }
+        }
+
+    val showResolutionFirst =
+        effectiveStatusCode
+            ?.trim()
+            ?.uppercase() ==
+            "COMPLETION_PENDING"
+
+    val progressStatusCode =
+        if (hasSubmittedWorkflowSnapshot) {
+            effectiveStatusCode
+        } else {
+            when (state) {
+                GuidanceUiState.Loading,
+                is GuidanceUiState.NotReady ->
+                    "AI_GUIDANCE"
+
+                else ->
+                    preferredGuidance?.statusCode
+            }
+        }
 
     WaterCareScreen(title = "맞춤 해결 안내", onBack = onBack) {
+        if (showResolutionFirst) {
+            CustomerResolutionSection(
+                statusCode = effectiveStatusCode,
+                stateVersion = effectiveStateVersion,
+                allowedActions = effectiveAllowedActions,
+                state = resolutionState,
+                onResolved =
+                    resolutionViewModel::markResolved,
+                onUnresolved =
+                    resolutionViewModel::reportUnresolved,
+                onRetry =
+                    resolutionViewModel::retryLastAction,
+                onDone = onDone,
+            )
+        }
+
         CustomerProgressOverview(
             statusCode = progressStatusCode,
         )
@@ -515,19 +558,21 @@ fun GuidanceScreen(
                 )
         }
 
-        CustomerResolutionSection(
-            statusCode = effectiveStatusCode,
-            stateVersion = effectiveStateVersion,
-            allowedActions = effectiveAllowedActions,
-            state = resolutionState,
-            onResolved =
-                resolutionViewModel::markResolved,
-            onUnresolved =
-                resolutionViewModel::reportUnresolved,
-            onRetry =
-                resolutionViewModel::retryLastAction,
-            onDone = onDone,
-        )
+        if (!showResolutionFirst) {
+            CustomerResolutionSection(
+                statusCode = effectiveStatusCode,
+                stateVersion = effectiveStateVersion,
+                allowedActions = effectiveAllowedActions,
+                state = resolutionState,
+                onResolved =
+                    resolutionViewModel::markResolved,
+                onUnresolved =
+                    resolutionViewModel::reportUnresolved,
+                onRetry =
+                    resolutionViewModel::retryLastAction,
+                onDone = onDone,
+            )
+        }
 
         if (showCancelDialog) {
             val action = effectiveAllowedActions.firstOrNull {
