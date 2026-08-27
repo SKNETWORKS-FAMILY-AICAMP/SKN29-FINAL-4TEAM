@@ -39,10 +39,33 @@ from .verifier import HarnessVerifier
 _HARNESS_TRACER = trace.get_tracer("waterbridge.ai.harness", "1.0.0")
 
 
+_EXTERNAL_FALLBACK_REASON_PRECEDENCE = (
+    "RUNTIME_PRODUCT_NOT_APPROVED",
+    "MCP_TOOL_FAILURE",
+    "OUTPUT_SCHEMA_INVALID",
+    "NO_EVIDENCE",
+)
+_FAIL_CLOSED_REASONS_WITH_DIRECT_AUTHORITY = frozenset(
+    {
+        "RUNTIME_PRODUCT_NOT_APPROVED",
+        "AI_PROCESSING_TIMEOUT",
+        "HUMAN_REVIEW_REJECTED",
+    }
+)
+_HARNESS_ESCALATE_REASONS = frozenset(
+    {
+        "MCP_TOOL_FAILURE",
+        "OUTPUT_SCHEMA_INVALID",
+        "UNSPECIFIED_FALLBACK",
+    }
+)
+
+
 class HarnessErrorCode(str, Enum):
     NO_EVIDENCE = "NO_EVIDENCE"
     AI_PROCESSING_TIMEOUT = "AI_PROCESSING_TIMEOUT"
     MCP_TOOL_FAILURE = "MCP_TOOL_FAILURE"
+    OUTPUT_SCHEMA_INVALID = "OUTPUT_SCHEMA_INVALID"
 
 
 class HarnessResult(BaseModel):
@@ -375,7 +398,7 @@ class HarnessRunner:
                     handoff=self._create_handoff(
                         ctx=ctx,
                         product=product,
-                        reason="HUMAN_REVIEW_WITHOUT_GUIDANCE",
+                        reason=self._canonical_escalation_reason(harness),
                         accepted_evidence_chunk_ids=(
                             harness.verification.accepted_evidence_chunk_ids
                         ),
@@ -405,7 +428,7 @@ class HarnessRunner:
                 handoff=self._create_handoff(
                     ctx=ctx,
                     product=product,
-                    reason=self._escalation_reason(harness),
+                    reason=self._canonical_escalation_reason(harness),
                     accepted_evidence_chunk_ids=(
                         harness.verification.accepted_evidence_chunk_ids
                     ),
@@ -570,16 +593,42 @@ class HarnessRunner:
 
     @staticmethod
     def _context_routing_reason(ctx: Any, reason: str) -> ContextRoutingReason:
+        # These reasons have Backend authority that is more specific than the
+        # safety projection. In particular, an unapproved product may retain a
+        # valid danger/TOTAL_STOP projection while the state event remains
+        # PRODUCT_VALIDATION_FAILED.
+        if reason in _FAIL_CLOSED_REASONS_WITH_DIRECT_AUTHORITY:
+            return ContextRoutingReason.FAIL_CLOSED_CONSULTATION
+
         safety = getattr(ctx, "safety_assessment", None)
         risk_level = getattr(getattr(safety, "risk_level", None), "value", None)
         if risk_level == "danger":
             return ContextRoutingReason.DANGER_HANDOFF
-        if reason in {
-            "HUMAN_REVIEW_REJECTED",
-            "HUMAN_REVIEW_WITHOUT_GUIDANCE",
-        }:
+        if reason == "NO_EVIDENCE":
+            return ContextRoutingReason.FAIL_CLOSED_CONSULTATION
+        if (
+            reason in _HARNESS_ESCALATE_REASONS
+            and HarnessRunner._uses_retrieving_failure_stage(ctx)
+        ):
+            # Backend allows these reasons as HARNESS_ESCALATE only with a
+            # VALIDATING stage. A mixed fallback whose public stage remains
+            # RETRIEVING must use the generic fail-closed authority instead.
             return ContextRoutingReason.FAIL_CLOSED_CONSULTATION
         return ContextRoutingReason.HARNESS_ESCALATE
+
+    @staticmethod
+    def _uses_retrieving_failure_stage(ctx: Any) -> bool:
+        retrieval_outcome = getattr(ctx, "retrieval_outcome", None)
+        retrieval_value = getattr(retrieval_outcome, "value", retrieval_outcome)
+        guidance = getattr(ctx, "usage_guidance", None)
+        guidance_status = getattr(guidance, "guidance_status", None)
+        guidance_value = getattr(guidance_status, "value", guidance_status)
+        return (
+            retrieval_value == "NO_MATCH"
+            and not (getattr(ctx, "evidence_references", []) or [])
+            and not bool(getattr(ctx, "awaiting_customer_input", False))
+            and guidance_value == "PENDING_CONSULTATION"
+        )
 
     @staticmethod
     def _review_evidence_chunk_ids(
@@ -610,6 +659,8 @@ class HarnessRunner:
         issue_codes = {issue.code.value for issue in verification.issues}
         if "MCP_TOOL_FAILURE" in issue_codes:
             return HarnessErrorCode.MCP_TOOL_FAILURE
+        if "OUTPUT_SCHEMA_INVALID" in issue_codes:
+            return HarnessErrorCode.OUTPUT_SCHEMA_INVALID
         return HarnessErrorCode.NO_EVIDENCE
 
     @staticmethod
@@ -618,9 +669,19 @@ class HarnessRunner:
         return f"HARNESS_HUMAN_REVIEW:{suffix}"
 
     @staticmethod
-    def _escalation_reason(harness: HarnessResult) -> str:
+    def _canonical_escalation_reason(harness: HarnessResult) -> str:
+        """Return the exact reason Backend can bind to the authoritative AI run."""
+
+        if harness.error_code == HarnessErrorCode.AI_PROCESSING_TIMEOUT:
+            return HarnessErrorCode.AI_PROCESSING_TIMEOUT.value
+
+        issue_codes = {
+            issue.code.value for issue in harness.verification.issues
+        }
+        for reason in _EXTERNAL_FALLBACK_REASON_PRECEDENCE:
+            if reason in issue_codes:
+                return reason
+
         if harness.error_code is not None:
             return harness.error_code.value
-        issue_codes = [issue.code.value for issue in harness.verification.issues]
-        suffix = ",".join(issue_codes) if issue_codes else "UNSPECIFIED"
-        return f"HARNESS_ESCALATE:{suffix}"
+        return "UNSPECIFIED_FALLBACK"

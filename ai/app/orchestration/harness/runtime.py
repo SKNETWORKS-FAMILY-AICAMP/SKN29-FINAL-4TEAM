@@ -346,13 +346,19 @@ class ReliabilityRuntime:
         original_guidance = getattr(ctx, "usage_guidance", None)
 
         if harness.decision == HarnessDecision.HUMAN_REVIEW:
+            if original_guidance is None:
+                # route_runtime will fail closed instead of starting HITL. Set
+                # the same public fallback guidance before deriving the route
+                # so its failure-stage authority matches PipelineResult.
+                ctx.usage_guidance = self._safe_blocking_guidance(ctx)
             routed = self.runner.route_runtime(
                 ctx=ctx,
                 product=product,
                 harness=harness,
                 guidance=original_guidance,
             )
-            ctx.usage_guidance = self._safe_blocking_guidance(ctx)
+            if original_guidance is not None:
+                ctx.usage_guidance = self._safe_blocking_guidance(ctx)
             return routed
 
         if harness.decision == HarnessDecision.ESCALATE:
