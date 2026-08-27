@@ -1,0 +1,21 @@
+{
+  "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b301",
+  "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e301",
+  "ai_request_id": "ai-handoff-v1-example-001",
+  "model_code": "WPUJAC104DWH",
+  "product_family": "DIRECT_WATER_PURIFIER",
+  "customer_symptom_summary": "출수량이 줄어 상담 확인이 필요합니다.",
+  "questionnaire_answers": [],
+  "self_help_actions": [
+    "고객이 출수 버튼을 다시 눌러 상태를 확인했습니다."
+  ],
+  "evidence": [],
+  "safety_level": "unknown",
+  "safety_requires_consultation": false,
+  "safety_notes": [],
+  "escalation_reason": "NO_EVIDENCE",
+  "consultant_priority_checks": [
+    "출수 환경과 증상 발생 시점을 확인합니다."
+  ],
+  "source_chunk_ids": []
+}

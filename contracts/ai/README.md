@@ -5,6 +5,7 @@ Backend와 AI 서비스 사이의 요청·응답 JSON Schema 단일 진실원칙
 ## 현재 버전
 
 - 계약 버전: `4.0.0`
+- 상담 Handoff Envelope: `2.0.0` — 분석 계약과 별도 버전
 - `SafetyAssessment.matched_safety_rule_ids`는 위험 규칙의 안정적인 ID 배열이며
   필수 필드다. 자연어 `detected_risks`를 규칙 ID로 재해석하지 않는다.
 - JSON Schema: Draft 2020-12
@@ -14,6 +15,29 @@ Backend와 AI 서비스 사이의 요청·응답 JSON Schema 단일 진실원칙
 각 `*.schema.json`은 `$id`와 `x-contract-version`을 가진다. 계약을 변경할
 때는 Runtime Pydantic 모델, 실제 JSON 예시, 검증 테스트와 이 문서를 같은
 Commit에서 갱신한다.
+
+## 상담 Handoff Envelope
+
+AI 분석이 끝난 뒤 실제 상담 Handoff가 확정된 경우에만 별도 내부 Callback
+계약을 사용한다.
+
+- Schema: `handoff/ConsultationHandoffRequest.schema.json`
+- 예시: `examples/handoff/`
+- v1 legacy payload: `schema_version` 생략 시 Backend가 `1.0.0`으로 정규화
+- v2 payload: `schema_version=2.0.0`, `state_version`, `routing_reason`,
+  `context_synthesis` 필수
+- 허용 분기: `DANGER_HANDOFF`, `FAIL_CLOSED_CONSULTATION`,
+  `HARNESS_ESCALATE`
+- 금지 분기: 최초 검토 시작점인 `PRE_SEND_HUMAN_REVIEW`
+
+`HARNESS_ESCALATE` 권위는 HTTP `error.code`가 아니라 같은
+`AIRun.validated_output_payload`의 `fallback_reason_code`와 `failure_stage`
+조합으로 검증한다. 상세 Crosswalk, Human Review 거절 결속, Handoff 전송
+재시도 규칙은 [handoff/README.md](handoff/README.md)를 따른다.
+
+Handoff Background Delivery 재시도는 분석 API의 Backend 자동 재시도 `0회`와
+별도다. Handoff는 최초 1회와 재시도 1회로 최대 2번 시도하지만, Outbox와
+Reconciliation이 없으므로 영구 전달을 보장하지 않는다.
 
 ## 추적·멱등·상태 버전
 
@@ -106,6 +130,7 @@ Stack Trace, Secret, 개인정보는 오류 상세에 포함하지 않는다.
 
 - `requests/`: Backend → AI
 - `responses/`: AI → Backend
+- `handoff/`: AI → Backend 내부 상담 Handoff Envelope
 - `common/`: 공통 하위 객체 및 오류 응답
 - `examples/`: 정상·위험·근거 없음·검증 오류·Timeout·요약 예시
 

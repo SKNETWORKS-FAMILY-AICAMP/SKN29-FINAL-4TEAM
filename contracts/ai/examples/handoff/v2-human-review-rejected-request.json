@@ -1,0 +1,87 @@
+{
+  "schema_version": "2.0.0",
+  "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b305",
+  "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e305",
+  "ai_request_id": "ai-handoff-v2-review-reject-001",
+  "state_version": 6,
+  "model_code": "WPUJAC104DWH",
+  "product_family": "DIRECT_WATER_PURIFIER",
+  "routing_reason": "FAIL_CLOSED_CONSULTATION",
+  "customer_symptom_summary": "간헐적 냉수 출수 중단에 대한 가이드 초안이 검토에서 거절됐습니다.",
+  "questionnaire_answers": [
+    {
+      "field_name": "occurrence_time",
+      "answer": "최근 이틀 동안 세 차례 발생했습니다."
+    }
+  ],
+  "self_help_actions": [
+    "고객이 출수 버튼을 다시 눌러 보았으나 같은 증상이 반복됐습니다."
+  ],
+  "evidence": [
+    {
+      "chunk_id": "WPUJAC104DWH-MANUAL-041-002",
+      "document_title": "WPUJAC104DWH 사용설명서",
+      "page": 41,
+      "summary": "출수가 반복적으로 중단되면 사용 조건을 확인하고 상담을 요청하도록 안내합니다."
+    }
+  ],
+  "safety_level": "caution",
+  "safety_requires_consultation": true,
+  "safety_notes": [
+    "거절된 가이드는 고객에게 전송하지 않습니다."
+  ],
+  "escalation_reason": "HUMAN_REVIEW_REJECTED",
+  "consultant_priority_checks": [
+    "검토 거절 사유와 실제 출수 중단 조건을 확인합니다."
+  ],
+  "source_chunk_ids": [
+    "WPUJAC104DWH-MANUAL-041-002"
+  ],
+  "context_synthesis": {
+    "status": "SUCCEEDED",
+    "fallback_reason": null,
+    "brief": {
+      "safety_constraints": [
+        {
+          "text": "검토에서 거절된 가이드 내용은 고객 안내로 사용하지 않습니다."
+        }
+      ],
+      "issue_summary": {
+        "text": "반복되는 냉수 출수 중단과 가이드 검토 거절 때문에 상담 확인이 필요합니다."
+      },
+      "customer_reported_facts": [
+        {
+          "text": "최근 이틀 동안 냉수 출수 중단이 세 차례 발생했다고 답했습니다."
+        }
+      ],
+      "attempted_actions_and_outcomes": [
+        {
+          "text": "출수 버튼을 다시 눌렀지만 같은 증상이 반복됐습니다."
+        }
+      ],
+      "unresolved_questions": [
+        {
+          "text": "검토자가 가이드를 거절한 세부 업무 사유는 이 Handoff payload에 포함하지 않습니다."
+        }
+      ],
+      "evidence_based_findings": [
+        {
+          "text": "공식 설명서는 반복적인 출수 중단 시 사용 조건 확인과 상담 요청을 안내합니다.",
+          "source_chunk_ids": [
+            "WPUJAC104DWH-MANUAL-041-002"
+          ]
+        }
+      ],
+      "consultant_priority_checks": [
+        {
+          "text": "실제 출수 중단 조건과 검토 거절 상태를 우선 확인합니다."
+        }
+      ],
+      "uncertainty_notes": [
+        {
+          "text": "가이드 거절은 고장 진단 확정을 의미하지 않습니다."
+        }
+      ]
+    }
+  }
+}

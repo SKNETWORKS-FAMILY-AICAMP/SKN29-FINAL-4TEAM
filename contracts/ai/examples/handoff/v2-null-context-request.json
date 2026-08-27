@@ -1,0 +1,25 @@
+{
+  "schema_version": "2.0.0",
+  "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b304",
+  "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88e304",
+  "ai_request_id": "ai-handoff-v2-null-001",
+  "state_version": 5,
+  "model_code": "WPUJAC104DWH",
+  "product_family": "DIRECT_WATER_PURIFIER",
+  "routing_reason": "FAIL_CLOSED_CONSULTATION",
+  "customer_symptom_summary": "출수 이상 증상은 확인됐지만 승인된 안내 근거가 없습니다.",
+  "questionnaire_answers": [],
+  "self_help_actions": [],
+  "evidence": [],
+  "safety_level": "caution",
+  "safety_requires_consultation": true,
+  "safety_notes": [
+    "근거가 없어 자가조치 안내를 확정하지 않았습니다."
+  ],
+  "escalation_reason": "NO_EVIDENCE",
+  "consultant_priority_checks": [
+    "증상 발생 조건과 제품 상태를 상담 중 다시 확인합니다."
+  ],
+  "source_chunk_ids": [],
+  "context_synthesis": null
+}
