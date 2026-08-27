@@ -22,9 +22,15 @@ pytestmark = pytest.mark.django_db
 QUEUE_PATH = "/api/v1/inquiries/unassigned-consultations"
 
 
-def create_user(sequence: int, *, role: str, synthetic: bool = True) -> User:
+def create_user(
+    sequence: int,
+    *,
+    role: str,
+    synthetic: bool = True,
+    username: str | None = None,
+) -> User:
     user = User.objects.create_user(
-        username=f"CLAIM-{role}-{sequence:03d}",
+        username=username or f"CLAIM-{role}-{sequence:03d}",
         password=None,
         full_name=f"Claim {role} {sequence}",
         role_code=role,
@@ -57,6 +63,7 @@ def create_queue_item(
     assigned_consultant: User | None = None,
     consultation_status: str = Consultation.Status.WAITING,
     consultation_consultant: User | None = None,
+    contract_no: str | None = None,
 ) -> tuple[Inquiry, Consultation]:
     owner = owner or create_user(sequence, role=User.Role.CUSTOMER)
     product = ProductModel.objects.create(
@@ -67,7 +74,7 @@ def create_queue_item(
         is_active=True,
     )
     subscription = CustomerSubscription.objects.create(
-        contract_no=f"CLAIM-CONTRACT-{sequence:03d}",
+        contract_no=contract_no or f"CLAIM-CONTRACT-{sequence:03d}",
         customer=owner.customer_profile,
         product_model=product,
         serial_no=f"CLAIM-SERIAL-{sequence:03d}",
@@ -221,6 +228,63 @@ def test_queue_auth_role_and_query_boundaries():
         response = client.get(QUEUE_PATH, query)
         assert response.status_code == 422, query
         assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+def test_p1_team_contract_routes_queue_and_claim_to_numbered_consultant():
+    skn_001 = create_user(
+        91,
+        role=User.Role.CONSULTANT,
+        username="SKN-001",
+    )
+    skn_002 = create_user(
+        92,
+        role=User.Role.CONSULTANT,
+        username="SKN-002",
+    )
+    public_consultant = create_user(93, role=User.Role.CONSULTANT)
+    inquiry_001, _ = create_queue_item(
+        91,
+        contract_no="SYN-P1-TEAM-CONTRACT-001",
+    )
+    inquiry_002, _ = create_queue_item(
+        92,
+        contract_no="SYN-P1-TEAM-CONTRACT-002",
+    )
+    public_inquiry, _ = create_queue_item(93)
+
+    queue_001 = client_for(skn_001).get(QUEUE_PATH).json()["data"]
+    queue_002 = client_for(skn_002).get(QUEUE_PATH).json()["data"]
+    public_queue = client_for(public_consultant).get(QUEUE_PATH).json()[
+        "data"
+    ]
+
+    assert {
+        item["inquiry_id"] for item in queue_001["items"]
+    } == {str(inquiry_001.public_id), str(public_inquiry.public_id)}
+    assert {
+        item["inquiry_id"] for item in queue_002["items"]
+    } == {str(inquiry_002.public_id), str(public_inquiry.public_id)}
+    assert {
+        item["inquiry_id"] for item in public_queue["items"]
+    } == {str(public_inquiry.public_id)}
+
+    denied = claim(
+        actor=skn_002,
+        inquiry=inquiry_001,
+        key="p1-team-wrong-consultant-001",
+    )
+    assert denied.status_code == 404
+    inquiry_001.refresh_from_db()
+    assert inquiry_001.assigned_user is None
+
+    allowed = claim(
+        actor=skn_001,
+        inquiry=inquiry_001,
+        key="p1-team-correct-consultant-001",
+    )
+    assert allowed.status_code == 200
+    inquiry_001.refresh_from_db()
+    assert inquiry_001.assigned_user == skn_001
 
 
 def test_claim_assigns_both_rows_without_starting_consultation():

@@ -88,6 +88,12 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         )
         self.assertIn("duplicate worker process", runner)
         self.assertIn("P1_AUTH_EMAIL_WORKER_PROCESS_PASS", runner)
+        self.assertIn('raw.split(b"\\0")', runner)
+        self.assertNotIn('raw.split(b"\\\\0")', runner)
+        self.assertIn(
+            'worker process count=${#running_pids[@]}; expected=1',
+            runner,
+        )
         self.assertNotIn("docker run", runner)
         for text in (deploy, rollback):
             self.assertIn("activate_worker_release", text)
@@ -134,6 +140,25 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("BACKEND_OWNER_WAIT", deploy)
         self.assertIn("pending_deliverable=0", preflight)
         self.assertNotIn("print(approved_hmacs", preflight)
+
+    def test_source_guard_uses_runner_builtin_search_tools(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+
+        self.assertNotRegex(workflow, r"(?m)^[ \t]*rg(?:[ \t]|$)")
+        self.assertIn(
+            "grep -R -n -E \\\n"
+            "            'data/(synthetic/fixtures|processed/structured/evidence)'",
+            workflow,
+        )
+        self.assertIn(
+            "grep -R -n -E '(^|[[:space:]])(latest|:latest)([[:space:]]|$)'",
+            workflow,
+        )
+        self.assertIn('grep -R -Fq -- "SKN-${index}" backend/apps', workflow)
+        self.assertIn(
+            'grep -R -Fq -- "SYN-P1-TEAM-CONTRACT-${index}" backend/apps',
+            workflow,
+        )
 
     def test_production_compose_never_runs_database_mutation(self) -> None:
         combined = "\n".join(

@@ -14,6 +14,7 @@ from apps.consultations.repositories.consultation_repository import (
     ConsultationRepository,
 )
 from apps.inquiries.models import Inquiry
+from apps.inquiries.p1_team_routing import P1TeamConsultantRouting
 from apps.inquiries.repositories.consultant_inquiry_repository import (
     ConsultantInquiryRepository,
 )
@@ -75,6 +76,11 @@ class ConsultationClaimService:
             inquiry_public_id
         )
         if inquiry is None:
+            raise NotFound()
+        if not P1TeamConsultantRouting.can_access_contract(
+            actor=actor,
+            contract_no=inquiry.subscription.contract_no,
+        ):
             raise NotFound()
 
         existing = WorkflowRepository.lock_idempotency_scope(

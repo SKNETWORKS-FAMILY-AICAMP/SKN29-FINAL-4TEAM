@@ -37,7 +37,7 @@ for name in os.listdir("/proc"):
         raw=open(f"/proc/{name}/cmdline","rb").read()
     except OSError:
         continue
-    args=[part.decode("utf-8","replace") for part in raw.split(b"\\0") if part]
+    args=[part.decode("utf-8","replace") for part in raw.split(b"\0") if part]
     if "process_p1_auth_email_outbox" in args:
         matches.append(int(name))
 print(" ".join(str(pid) for pid in sorted(matches)))'
@@ -62,7 +62,7 @@ for value in sys.argv[1:]:
 if [[ "${1:-}" == "--check" ]]; then
   read -r -a running_pids <<<"$(worker_pids)"
   [[ "${#running_pids[@]}" -eq 1 ]] \
-    || fail "worker process count is not exactly one"
+    || fail "worker process count=${#running_pids[@]}; expected=1"
   printf 'P1_AUTH_EMAIL_WORKER_PROCESS_PASS\n'
   printf 'worker_process_count=1\n'
   exit 0

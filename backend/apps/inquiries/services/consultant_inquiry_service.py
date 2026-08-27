@@ -61,6 +61,7 @@ class ConsultantInquiryService:
     ) -> dict[str, Any]:
         inquiries, total = (
             ConsultantInquiryRepository.list_unassigned_page(
+                actor=actor,
                 q=q,
                 risk_levels=risk_levels,
                 priorities=priorities,

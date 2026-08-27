@@ -275,6 +275,85 @@ def test_approved_test_contact_delivery_fails_closed_outside_debug(
     assert outbox.last_error_code == "DELIVERY_FAILED"
 
 
+def test_approved_test_contact_delivers_in_approved_aws_nonprod(
+    client,
+    django_capture_on_commit_callbacks,
+    settings,
+):
+    approved_email = "approved-aws-recipient@example.com"
+    settings.DEBUG = False
+    settings.P1_AUTH_RUNTIME_ENVIRONMENT = "AWS_NONPROD"
+    settings.P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED = True
+    _seed()
+    contact = _convert_seed_contact_to_approved_test(approved_email)
+    settings.P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS = frozenset(
+        {contact.email_lookup_hmac}
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        challenge = _challenge(
+            client,
+            "/api/v1/auth/contract-verification/challenges",
+            payload={"name": CUSTOMER_NAME, "email": approved_email},
+        )
+    _process_outbox()
+
+    assert challenge.status_code == 202
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == [approved_email]
+    assert P1AuthEmailOutbox.objects.get().status == (
+        P1AuthEmailOutbox.Status.SENT
+    )
+
+
+@pytest.mark.parametrize(
+    ("runtime_environment", "delivery_enabled", "allowlist_matches"),
+    [
+        ("PRODUCTION", True, True),
+        ("AWS_NONPROD", False, True),
+        ("AWS_NONPROD", True, False),
+    ],
+)
+def test_approved_aws_nonprod_delivery_fails_closed_when_gate_mismatches(
+    client,
+    django_capture_on_commit_callbacks,
+    settings,
+    runtime_environment,
+    delivery_enabled,
+    allowlist_matches,
+):
+    approved_email = "approved-aws-recipient@example.com"
+    settings.DEBUG = False
+    settings.P1_AUTH_RUNTIME_ENVIRONMENT = runtime_environment
+    settings.P1_AUTH_APPROVED_TEST_RECIPIENT_DELIVERY_ENABLED = (
+        delivery_enabled
+    )
+    _seed()
+    contact = _convert_seed_contact_to_approved_test(approved_email)
+    settings.P1_AUTH_APPROVED_TEST_RECIPIENT_ALLOWLIST_HMACS = frozenset(
+        {
+            contact.email_lookup_hmac
+            if allowlist_matches
+            else "f" * 64
+        }
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        challenge = _challenge(
+            client,
+            "/api/v1/auth/contract-verification/challenges",
+            payload={"name": CUSTOMER_NAME, "email": approved_email},
+        )
+    _process_outbox()
+    outbox = P1AuthEmailOutbox.objects.get()
+
+    assert challenge.status_code == 202
+    assert len(mail.outbox) == 0
+    assert outbox.status == P1AuthEmailOutbox.Status.PENDING
+    assert outbox.attempt_count == 1
+    assert outbox.last_error_code == "DELIVERY_FAILED"
+
+
 def test_signup_creates_real_password_account_link_consents_and_session(
     client,
     django_capture_on_commit_callbacks,
