@@ -52,6 +52,7 @@ data class AuthUiState(
     val signupStage: SignupStage = SignupStage.IDLE,
     val signupMessage: String? = null,
     val signupCompletedUsername: String? = null,
+    val signupConflictCode: String? = null,
     val challengeExpiresInSeconds: Int? = null,
     val resendAfterSeconds: Int? = null,
     val signupChallengeVersion: Int = 0,
@@ -631,17 +632,36 @@ class AuthViewModel(
                             resendAfterSeconds = null,
                             signupCompletedUsername =
                                 normalizedUsername,
+                            signupConflictCode = null,
                         )
                     }
                 }
 
                 is ApiResult.Failure -> {
-                    _state.value = _state.value.copy(
-                        submitting = false,
-                        error = result.message,
-                        fieldErrors = result.fieldErrors,
-                        retryAfterSeconds = result.retryAfterSeconds,
-                    )
+                    val conflictCode =
+                        result.code.takeIf { code ->
+                            code ==
+                                "AUTH_IDENTIFIER_UNAVAILABLE" ||
+                                code ==
+                                    "AUTH_SIGNUP_CONFLICT"
+                        }
+
+                    _state.value =
+                        _state.value.copy(
+                            submitting = false,
+                            error =
+                                if (conflictCode == null) {
+                                    result.message
+                                } else {
+                                    null
+                                },
+                            fieldErrors =
+                                result.fieldErrors,
+                            retryAfterSeconds =
+                                result.retryAfterSeconds,
+                            signupConflictCode =
+                                conflictCode,
+                        )
                 }
             }
         }
@@ -1343,6 +1363,21 @@ class AuthViewModel(
         )
     }
 
+    fun dismissSignupConflict() {
+        if (
+            _state.value.signupConflictCode ==
+                null
+        ) {
+            return
+        }
+
+        _state.value =
+            _state.value.copy(
+                signupConflictCode = null,
+                error = null,
+            )
+    }
+
     fun cancelSignup() {
         if (_state.value.submitting) return
 
@@ -1355,6 +1390,7 @@ class AuthViewModel(
         _state.value = _state.value.copy(
             signupStage = SignupStage.IDLE,
             signupMessage = null,
+            signupConflictCode = null,
             challengeExpiresInSeconds = null,
             resendAfterSeconds = null,
             error = null,
