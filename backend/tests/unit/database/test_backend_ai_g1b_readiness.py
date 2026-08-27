@@ -158,6 +158,7 @@ def test_three_model_profile_requires_exact_53_row_runtime_gate(
             "source_variant_id",
             "parent_id",
             "retrieval_role",
+            "record_type",
         ],
         "expected_complete": 53,
         "complete": 53,
