@@ -13,6 +13,9 @@ from rest_framework.exceptions import (
 
 from common.exceptions.error_codes import (
     AI_GUIDANCE_NOT_READY,
+    AI_HANDOFF_EVIDENCE_REJECTED,
+    AI_HANDOFF_NOT_READY,
+    AI_HANDOFF_STALE,
     AUTH_REQUIRED,
     CONSULTATION_RESULT_NOT_READY,
     DUPLICATE_EVENT,
@@ -65,6 +68,9 @@ def test_all_runtime_common_codes_exist_in_registry():
         STATE_CONFLICT,
         DUPLICATE_EVENT,
         AI_GUIDANCE_NOT_READY,
+        AI_HANDOFF_NOT_READY,
+        AI_HANDOFF_STALE,
+        AI_HANDOFF_EVIDENCE_REJECTED,
         CONSULTATION_RESULT_NOT_READY,
     } <= set(registered)
 
@@ -166,6 +172,46 @@ def test_runtime_http_mapping_records_handler_precedence():
             "http_status": 500,
         },
     }
+
+
+def test_handoff_runtime_error_metadata_and_categories_are_exact():
+    registered = registry_by_code()
+    expected = {
+        AI_HANDOFF_NOT_READY: {
+            "code": AI_HANDOFF_NOT_READY,
+            "category": "ai",
+            "http_status": 409,
+            "retryable": True,
+            "user_message": "AI 상담 인계 기록이 아직 준비되지 않았습니다.",
+            "recommended_action": "RETRY_HANDOFF_ONCE",
+        },
+        AI_HANDOFF_STALE: {
+            "code": AI_HANDOFF_STALE,
+            "category": "workflow",
+            "http_status": 409,
+            "retryable": False,
+            "user_message": "AI 상담 인계 요청이 원래 실행 기록과 일치하지 않습니다.",
+            "recommended_action": "DO_NOT_RETRY_HANDOFF",
+        },
+        AI_HANDOFF_EVIDENCE_REJECTED: {
+            "code": AI_HANDOFF_EVIDENCE_REJECTED,
+            "category": "evidence",
+            "http_status": 422,
+            "retryable": False,
+            "user_message": "AI 상담 인계 근거를 확인할 수 없습니다.",
+            "recommended_action": "REVIEW_EVIDENCE_BINDING",
+        },
+    }
+
+    assert {code: registered[code] for code in expected} == expected
+    for code, metadata in expected.items():
+        category_data = load_yaml(
+            REGISTRY_DIR / "categories" / f"{metadata['category']}.yaml"
+        )
+        category_entries = {
+            item["code"]: item for item in category_data["errors"]
+        }
+        assert category_entries[code] == metadata
 
 
 def test_new_category_files_match_top_level_registry():

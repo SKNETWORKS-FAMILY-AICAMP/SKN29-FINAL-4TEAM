@@ -18,3 +18,9 @@ errors:
     retryable: true
     user_message: 상담 처리 결과가 아직 준비되지 않았습니다.
     recommended_action: REFRESH_RESULT
+  - code: AI_HANDOFF_STALE
+    category: workflow
+    http_status: 409
+    retryable: false
+    user_message: AI 상담 인계 요청이 원래 실행 기록과 일치하지 않습니다.
+    recommended_action: DO_NOT_RETRY_HANDOFF
