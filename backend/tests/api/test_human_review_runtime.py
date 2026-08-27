@@ -256,6 +256,95 @@ def test_modify_creates_a_new_public_guidance_and_preserves_the_ai_draft():
     assert Guidance.objects.filter(inquiry=review.inquiry).count() == 2
 
 
+@pytest.mark.parametrize(
+    ("sequence", "summary_text", "instruction_text"),
+    (
+        (31, "가" * 3001, "안전한 확인 조치"),
+        (32, "안전한 합성 안내", "나" * 1001),
+    ),
+)
+def test_modify_rejects_text_beyond_customer_guidance_contract_without_writes(
+    sequence,
+    summary_text,
+    instruction_text,
+):
+    consultant = create_user(sequence, role=User.Role.CONSULTANT)
+    _inquiry, original, review = create_review(
+        sequence,
+        assigned_consultant=consultant,
+    )
+    key = f"human-review-public-limit-{sequence:03d}"
+
+    response = decide(
+        actor=consultant,
+        review=review,
+        key=key,
+        body={
+            "decision": HumanReview.Decision.MODIFY,
+            "review_state_version": 1,
+            "reason_code": "SAFETY_TEXT_CORRECTED",
+            "modified_guidance": {
+                "title": "상담사가 확인한 안내",
+                "summary_text": summary_text,
+                "safety_notice": "제품을 직접 분해하지 마세요.",
+                "items": [
+                    {
+                        "instruction_text": instruction_text,
+                        "requires_confirmation": True,
+                    }
+                ],
+            },
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+    review.refresh_from_db()
+    original.refresh_from_db()
+    assert review.status_code == HumanReview.Status.PENDING
+    assert review.review_state_version == 1
+    assert review.published_guidance is None
+    assert original.review_status_code == "PENDING"
+    assert Guidance.objects.filter(inquiry=review.inquiry).count() == 1
+    assert not IdempotencyRecord.objects.filter(idempotency_key=key).exists()
+
+
+def test_modify_accepts_exact_customer_guidance_contract_limits():
+    consultant = create_user(33, role=User.Role.CONSULTANT)
+    _inquiry, _original, review = create_review(
+        33,
+        assigned_consultant=consultant,
+    )
+
+    response = decide(
+        actor=consultant,
+        review=review,
+        key="human-review-public-limit-033",
+        body={
+            "decision": HumanReview.Decision.MODIFY,
+            "review_state_version": 1,
+            "reason_code": "SAFETY_TEXT_CORRECTED",
+            "modified_guidance": {
+                "title": "상담사가 확인한 안내",
+                "summary_text": "가" * 3000,
+                "safety_notice": "제품을 직접 분해하지 마세요.",
+                "items": [
+                    {
+                        "instruction_text": "나" * 1000,
+                        "requires_confirmation": True,
+                    }
+                ],
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    review.refresh_from_db()
+    assert review.status_code == HumanReview.Status.MODIFIED
+    assert len(review.published_guidance.summary_text) == 3000
+    assert len(review.published_guidance.items.get().instruction_text) == 1000
+
+
 def test_reject_hides_guidance_and_stale_version_writes_nothing():
     consultant = create_user(40, role=User.Role.CONSULTANT)
     _inquiry, guidance, stale_review = create_review(

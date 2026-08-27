@@ -17,9 +17,11 @@ from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
     GuidanceItem,
+    HumanReview,
     Inquiry,
     InquiryQA,
 )
+from apps.inquiries.services.human_review_service import HumanReviewService
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.models import TransitionHistory
@@ -457,7 +459,7 @@ def test_customer_guidance_returns_latest_safe_projection_without_evidence(
         payload=guidance_payload(),
     )
 
-    with django_assert_num_queries(3):
+    with django_assert_num_queries(4):
         response = authenticated_client(owner).get(
             f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
         )
@@ -497,6 +499,70 @@ def test_customer_guidance_returns_latest_safe_projection_without_evidence(
         "correlation_id",
     ):
         assert forbidden not in serialized
+
+
+def test_customer_guidance_uses_human_review_modified_public_copy():
+    owner = create_user(158)
+    consultant = create_user(159, role=User.Role.CONSULTANT)
+    inquiry = create_inquiry(owner, 158)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        assigned_user=consultant,
+        assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+        status_code=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+    inquiry.refresh_from_db()
+    draft = create_ai_guidance(
+        inquiry,
+        158,
+        review_status="PENDING",
+        payload=guidance_payload(message="상담사 수정 전 AI 안내"),
+    )
+    review = HumanReviewService.create_pending(
+        guidance=draft,
+        ai_request_id="customer-guidance-human-review-158",
+        source_inquiry_state_version=inquiry.state_version,
+    )
+
+    decided = authenticated_client(consultant).post(
+        f"/api/v1/inquiries/human-reviews/{review.public_id}/decision",
+        {
+            "decision": HumanReview.Decision.MODIFY,
+            "review_state_version": 1,
+            "reason_code": "SAFETY_TEXT_CORRECTED",
+            "modified_guidance": {
+                "title": "상담사가 확인한 안내",
+                "summary_text": "온수 기능을 중단하고 안전 상태를 확인해 주세요.",
+                "safety_notice": "제품을 직접 분해하지 마세요.",
+                "items": [
+                    {
+                        "instruction_text": "온수 버튼을 사용하지 마세요.",
+                        "requires_confirmation": True,
+                    }
+                ],
+            },
+        },
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="customer-guidance-human-review-158",
+        HTTP_X_CORRELATION_ID=str(uuid4()),
+    )
+    assert decided.status_code == 200
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["usage_guidance_message"] == (
+        "온수 기능을 중단하고 안전 상태를 확인해 주세요."
+    )
+    assert data["safe_actions"] == ["온수 버튼을 사용하지 마세요."]
+    assert data["next_action"] == "온수 버튼을 사용하지 마세요."
+    assert "상담사 수정 전 AI 안내" not in str(data)
+    assert "냉수 출수량을 확인해 주세요." not in str(data)
 
 
 def test_customer_guidance_uses_latest_workflow_state_after_completion():

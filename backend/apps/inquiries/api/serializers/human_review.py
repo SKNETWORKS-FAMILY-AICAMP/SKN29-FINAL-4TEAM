@@ -5,6 +5,10 @@ from rest_framework import serializers
 from apps.inquiries.models import HumanReview
 
 
+CUSTOMER_GUIDANCE_MESSAGE_MAX_LENGTH = 3000
+CUSTOMER_GUIDANCE_ACTION_MAX_LENGTH = 1000
+
+
 class HumanReviewGuidanceItemSerializer(serializers.Serializer):
     step_no = serializers.IntegerField(min_value=1)
     instruction_text = serializers.CharField(max_length=2000)
@@ -57,7 +61,12 @@ class HumanReviewListDataSerializer(serializers.Serializer):
 
 
 class ModifiedGuidanceItemSerializer(serializers.Serializer):
-    instruction_text = serializers.CharField(max_length=2000)
+    # A MODIFY decision is published through CustomerInquiryGuidance.
+    # Reject text that the customer projection cannot represent instead of
+    # accepting the decision and returning AI_GUIDANCE_NOT_READY on GET.
+    instruction_text = serializers.CharField(
+        max_length=CUSTOMER_GUIDANCE_ACTION_MAX_LENGTH
+    )
     caution_text = serializers.CharField(
         required=False,
         allow_blank=True,
@@ -69,7 +78,9 @@ class ModifiedGuidanceItemSerializer(serializers.Serializer):
 
 class ModifiedGuidanceSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=200)
-    summary_text = serializers.CharField(max_length=4000)
+    summary_text = serializers.CharField(
+        max_length=CUSTOMER_GUIDANCE_MESSAGE_MAX_LENGTH
+    )
     safety_notice = serializers.CharField(
         required=False,
         allow_blank=True,

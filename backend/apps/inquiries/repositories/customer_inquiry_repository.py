@@ -8,7 +8,7 @@ from uuid import UUID
 from django.db.models import F, OuterRef, Prefetch, QuerySet, Subquery
 
 from apps.audit.models import AIRun
-from apps.inquiries.models import Guidance, Inquiry, InquiryQA
+from apps.inquiries.models import Guidance, GuidanceItem, Inquiry, InquiryQA
 from apps.workflow.models import TransitionHistory
 
 
@@ -152,6 +152,19 @@ class CustomerInquiryRepository:
                 generated_by_ai_run__validated_output_payload__isnull=False,
             )
             .select_related("generated_by_ai_run")
+            .prefetch_related(
+                Prefetch(
+                    "items",
+                    queryset=(
+                        GuidanceItem.objects.only(
+                            "guidance_id",
+                            "step_no",
+                            "instruction_text",
+                        ).order_by("step_no", "public_id")
+                    ),
+                    to_attr="customer_public_items",
+                )
+            )
             .order_by("-guidance_version", "-created_at", "-public_id")
         )
         return (
