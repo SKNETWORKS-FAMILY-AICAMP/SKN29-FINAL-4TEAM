@@ -208,7 +208,7 @@ class PipelineRouter:
 
         selected_runtime = runtime_name or os.getenv(
             "AI_PIPELINE_RUNTIME",
-            "single_rag",
+            "multi_agent",
         )
         if selected_runtime not in {"single_rag", "multi_agent"}:
             raise RuntimeError(
