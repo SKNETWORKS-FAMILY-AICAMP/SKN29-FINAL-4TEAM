@@ -1,9 +1,4 @@
-import {
-  type ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ReactNode, useState } from "react";
 
 import "./ConsultationStepNavigator.css";
 
@@ -22,21 +17,12 @@ export default function ConsultationStepNavigator({
   steps,
 }: ConsultationStepNavigatorProps) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-  const shouldFocusStepHeading = useRef(false);
-  const stepHeadingRefs = useRef<Array<HTMLHeadingElement | null>>([]);
   const activeStep = steps[activeStepIndex];
-
-  useEffect(() => {
-    if (!shouldFocusStepHeading.current) return;
-    stepHeadingRefs.current[activeStepIndex]?.focus();
-    shouldFocusStepHeading.current = false;
-  }, [activeStepIndex]);
 
   if (!activeStep) return null;
 
   const moveToStep = (nextStepIndex: number) => {
     if (nextStepIndex < 0 || nextStepIndex >= steps.length) return;
-    shouldFocusStepHeading.current = true;
     setActiveStepIndex(nextStepIndex);
   };
 
@@ -48,7 +34,6 @@ export default function ConsultationStepNavigator({
     >
       <header className="consultation-stepper__progress">
         <div>
-          <small>GUIDED CONSULTATION</small>
           <strong>
             {activeStepIndex + 1} / {steps.length} 단계
           </strong>
@@ -68,6 +53,7 @@ export default function ConsultationStepNavigator({
             return (
               <li key={step.id}>
                 <button
+                  id={`consultation-step-tab-${step.id}`}
                   type="button"
                   className={isActive ? "is-active" : ""}
                   aria-current={isActive ? "step" : undefined}
@@ -97,46 +83,12 @@ export default function ConsultationStepNavigator({
               key={step.id}
               id={`consultation-step-panel-${step.id}`}
               className="consultation-stepper__panel"
-              aria-labelledby={`consultation-step-title-${step.id}`}
+              aria-labelledby={`consultation-step-tab-${step.id}`}
               hidden={!isActive}
             >
-              <header className="consultation-stepper__panel-head">
-                <small>STEP {String(index + 1).padStart(2, "0")}</small>
-                <h3
-                  id={`consultation-step-title-${step.id}`}
-                  ref={(element) => {
-                    stepHeadingRefs.current[index] = element;
-                  }}
-                  tabIndex={-1}
-                >
-                  {step.title}
-                </h3>
-                <p>{step.description}</p>
-              </header>
-
               <div className="consultation-stepper__panel-body">
                 {step.content}
               </div>
-
-              <footer className="consultation-stepper__footer">
-                <button
-                  type="button"
-                  className="v6-button v6-button--secondary"
-                  disabled={index === 0}
-                  onClick={() => moveToStep(index - 1)}
-                >
-                  이전 단계
-                </button>
-                {index < steps.length - 1 && (
-                  <button
-                    type="button"
-                    className="v6-button v6-button--primary"
-                    onClick={() => moveToStep(index + 1)}
-                  >
-                    다음: {steps[index + 1]?.title}
-                  </button>
-                )}
-              </footer>
             </section>
           );
         })}

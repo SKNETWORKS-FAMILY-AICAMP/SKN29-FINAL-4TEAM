@@ -30,15 +30,21 @@ FROM dependencies AS qa
 ARG RELEASE_SHA
 ENV RELEASE_SHA=${RELEASE_SHA}
 
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/* \
+    && /usr/bin/git init --quiet /workspace
+
 COPY scripts/deployment/production/qa-git-metadata.sh /usr/local/bin/git
 RUN chmod 0755 /usr/local/bin/git \
     && python -c "import os,re; assert re.fullmatch(r'[0-9a-f]{40}', os.environ['RELEASE_SHA'])"
 
+COPY --chown=waterbridge:waterbridge .gitignore /workspace/.gitignore
 COPY --chown=waterbridge:waterbridge .gitattributes /workspace/.gitattributes
 COPY --chown=waterbridge:waterbridge ai/ /workspace/ai/
 COPY --chown=waterbridge:waterbridge contracts/ /workspace/contracts/
 COPY --chown=waterbridge:waterbridge data/ /workspace/data/
-RUN chown waterbridge:waterbridge /workspace
+RUN chown --recursive waterbridge:waterbridge /workspace
 
 USER waterbridge
 

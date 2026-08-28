@@ -79,6 +79,14 @@ describe("Remote 상담사 문의 상세", () => {
     expect(
       screen.getByRole("progressbar", { name: "상담 처리 진행률" }),
     ).toHaveValue(1);
+    expect(screen.queryByText("GUIDED CONSULTATION")).not.toBeInTheDocument();
+    expect(screen.queryByText("STEP 01")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "이전 단계" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /다음:/ }),
+    ).not.toBeInTheDocument();
     expect(
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
     ).toEqual([
@@ -96,19 +104,17 @@ describe("Remote 상담사 문의 상세", () => {
     expect(screen.queryByText("CONSULTATION_REQUIRED")).not.toBeInTheDocument();
   });
 
-  it("세 단계를 자유롭게 이동하고 단계 제목으로 초점을 옮긴다", async () => {
+  it("상단 단계 선택으로 세 단계를 자유롭게 이동한다", async () => {
     const user = userEvent.setup();
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "상담 2단계: 안전·상담 가이드 확인",
-      }),
-    );
+    const secondStep = screen.getByRole("button", {
+      name: "상담 2단계: 안전·상담 가이드 확인",
+    });
+    await user.click(secondStep);
 
-    expect(
-      screen.getByRole("heading", { name: "안전·상담 가이드 확인" }),
-    ).toHaveFocus();
+    expect(secondStep).toHaveFocus();
+    expect(secondStep).toHaveAttribute("aria-current", "step");
     expect(
       screen.getByRole("heading", { name: "고객에게 안내할 내용" }),
     ).toBeVisible();
@@ -116,21 +122,19 @@ describe("Remote 상담사 문의 상세", () => {
       screen.getByRole("progressbar", { name: "상담 처리 진행률" }),
     ).toHaveValue(2);
 
-    await user.click(
-      screen.getByRole("button", { name: "다음: 상담 기록·최종 처리" }),
-    );
+    const thirdStep = screen.getByRole("button", {
+      name: "상담 3단계: 상담 기록·최종 처리",
+    });
+    await user.click(thirdStep);
 
-    expect(
-      screen.getByRole("heading", { name: "상담 기록·최종 처리" }),
-    ).toHaveFocus();
+    expect(thirdStep).toHaveFocus();
+    expect(thirdStep).toHaveAttribute("aria-current", "step");
     expect(
       screen.getByText("현재 진행할 상담 작업이 없습니다."),
     ).toBeVisible();
 
-    await user.click(screen.getByRole("button", { name: "이전 단계" }));
-    expect(
-      screen.getByRole("heading", { name: "안전·상담 가이드 확인" }),
-    ).toHaveFocus();
+    await user.click(secondStep);
+    expect(secondStep).toHaveAttribute("aria-current", "step");
   });
 
   it("재개 문의는 3단계에서 Backend가 허용한 상담 대기열 복귀 작업을 표시한다", async () => {

@@ -39,6 +39,7 @@ Backend 코드·Migration·테스트를 우선한다.
 | [Login·JWT·RBAC·계정관리](인증_권한/로그인_JWT_RBAC_계정관리_가이드.md) | 인증·역할·객체 권한·합성계정 |
 | [계정 UUID·JWT 전환](인증_권한/계정_UUID_JWT_전환_복구_가이드.md) | 식별자 Migration·Token·Rollback |
 | [계정 수명주기·감사·Row Lock](인증_권한/계정_수명주기_감사_RowLock_가이드.md) | 상태 변경·최종 관리자 보호·감사 원장·동시성 |
+| [Django Admin 단일 Supervisor 운영관리](인증_권한/Django_Admin_Supervisor_운영관리_가이드.md) | Supervisor 전용 Admin·고객·구독·상담 운영·배포 인계 |
 
 ### API
 

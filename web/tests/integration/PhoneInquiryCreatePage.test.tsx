@@ -169,7 +169,10 @@ describe("PhoneInquiryCreatePage", () => {
     expect(
       screen.queryByLabelText("전화 문의 등록 안내"),
     ).not.toBeInTheDocument();
-    expect(screen.getByLabelText("상담 내용")).toBeDisabled();
+    expect(screen.queryByLabelText("상담 내용")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/상담 기록 저장 기능 연결 후/),
+    ).not.toBeInTheDocument();
 
     const [searchUrl, searchOptions] = fetchMock.mock.calls[0];
     expect(String(searchUrl)).toBe(

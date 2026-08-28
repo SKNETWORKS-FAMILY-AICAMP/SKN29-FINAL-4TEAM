@@ -307,7 +307,8 @@ def test_claim_assigns_both_rows_without_starting_consultation():
     assert data["idempotent_replay"] is False
     assert data["resource"] is None
     assert [action["code"] for action in data["allowed_actions"]] == [
-        "START_CONSULTATION"
+        "START_CONSULTATION",
+        "CANCEL_INQUIRY",
     ]
 
     inquiry.refresh_from_db()

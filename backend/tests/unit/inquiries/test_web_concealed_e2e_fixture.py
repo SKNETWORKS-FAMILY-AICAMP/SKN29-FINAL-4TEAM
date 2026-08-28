@@ -43,7 +43,10 @@ def test_command_creates_other_consultant_assignment():
     result = create_fixture("playwright-concealed-001")
 
     assert result == {
-        "allowed_actions_for_assignee": ["START_CONSULTATION"],
+        "allowed_actions_for_assignee": [
+            "START_CONSULTATION",
+            "CANCEL_INQUIRY",
+        ],
         "assigned_consultant": "SYN-WEB-G4-CONSULTANT-404",
         "concealed_from": "DEMO-CONSULTANT-001",
         "consultation_status": "ASSIGNED",

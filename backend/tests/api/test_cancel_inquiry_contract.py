@@ -207,7 +207,13 @@ def test_cancel_action_matches_read_only_pm_state_machine_contract():
     transitions = {
         item["id"]: item
         for item in transition_contract["transitions"]
-        if item["id"] in {"TR-INQ-004", "TR-INQ-005"}
+        if item["id"]
+        in {
+            "TR-INQ-004",
+            "TR-INQ-005",
+            "TR-INQ-038",
+            "TR-INQ-039",
+        }
     }
     draft_customer_actions = action_contract["state_role_actions"][
         "DRAFT"
@@ -230,10 +236,20 @@ def test_cancel_action_matches_read_only_pm_state_machine_contract():
         "exposed": True,
         "operation_id": "cancelInquiry",
     }
-    assert set(transitions) == {"TR-INQ-004", "TR-INQ-005"}
+    assert set(transitions) == {
+        "TR-INQ-004",
+        "TR-INQ-005",
+        "TR-INQ-038",
+        "TR-INQ-039",
+    }
     assert {
         transition["from_inquiry_state"] for transition in transitions.values()
-    } == {"DRAFT", "QUESTIONNAIRE_IN_PROGRESS"}
+    } == {
+        "DRAFT",
+        "QUESTIONNAIRE_IN_PROGRESS",
+        "CONSULTATION_REQUIRED",
+        "CONSULTATION_IN_PROGRESS",
+    }
     for transition in transitions.values():
         assert transition["event"] == "CANCEL_INQUIRY"
         assert transition["to_inquiry_state"] == "CANCELLED"
@@ -247,8 +263,18 @@ def test_cancel_action_matches_read_only_pm_state_machine_contract():
     assert cancelled_state["terminal"] is True
     assert operation["x-state-machine"] == {
         "event": "CANCEL_INQUIRY",
-        "transition_rules": ["TR-INQ-004", "TR-INQ-005"],
-        "from_states": ["DRAFT", "QUESTIONNAIRE_IN_PROGRESS"],
+        "transition_rules": [
+            "TR-INQ-004",
+            "TR-INQ-005",
+            "TR-INQ-038",
+            "TR-INQ-039",
+        ],
+        "from_states": [
+            "DRAFT",
+            "QUESTIONNAIRE_IN_PROGRESS",
+            "CONSULTATION_REQUIRED",
+            "CONSULTATION_IN_PROGRESS",
+        ],
         "to_state": "CANCELLED",
         "actor_roles": ["CUSTOMER", "CONSULTANT", "OPERATOR"],
     }

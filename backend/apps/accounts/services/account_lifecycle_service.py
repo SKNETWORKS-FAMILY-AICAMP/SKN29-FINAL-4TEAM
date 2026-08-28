@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from django.contrib.auth.models import Group, Permission
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
@@ -17,6 +18,10 @@ from apps.accounts.account_admin_policy import (
     ACCOUNT_ADMIN_PERMISSION_CODES,
 )
 from apps.accounts.account_admin_guards import allow_account_admin_m2m_change
+from apps.accounts.credential_policy import (
+    normalize_synthetic_username,
+    validate_consultant_password,
+)
 from apps.accounts.models import (
     AccountAuditEvent,
     AccountLifecycleLock,
@@ -321,6 +326,100 @@ class AccountLifecycleService:
             event_type=AccountAuditEvent.EventType.REACTIVATE,
             before=before,
             changed_fields=["is_active", "auth_version"],
+            reason=reason,
+            correlation_id=correlation_id,
+        )
+        return target
+
+    @classmethod
+    @transaction.atomic
+    def update_consultant_credentials(
+        cls,
+        *,
+        actor: User,
+        target: User,
+        username: str | None,
+        new_password: str | None,
+        reason: str,
+        correlation_id: UUID | str,
+    ) -> User:
+        """Change a synthetic consultant ID and/or reset its password safely."""
+
+        reason = cls._reason(reason)
+        correlation_id = cls._correlation_id(correlation_id)
+        actor, target = cls._lock_users(actor, target)
+        group = cls._ensure_policy_group()
+        cls._authorize_actor(actor, group)
+        cls._require_synthetic_target(target)
+        if target.role_code != User.Role.CONSULTANT:
+            raise AccountLifecycleError(
+                "CONSULTANT_ACCOUNT_REQUIRED",
+                "Only synthetic consultant credentials can be changed here.",
+            )
+
+        try:
+            normalized_username = (
+                normalize_synthetic_username(username)
+                if username is not None
+                else target.username
+            )
+            if new_password:
+                validate_consultant_password(new_password)
+        except ValidationError as exc:
+            raise AccountLifecycleError(
+                "CONSULTANT_CREDENTIAL_INVALID",
+                " ".join(exc.messages),
+            ) from exc
+
+        duplicate = (
+            User.objects.filter(username__iexact=normalized_username)
+            .exclude(pk=target.pk)
+            .exists()
+        )
+        if duplicate:
+            raise AccountLifecycleError(
+                "CONSULTANT_USERNAME_CONFLICT",
+                "The consultant username is already in use.",
+            )
+
+        username_changed = normalized_username != target.username
+        password_changed = bool(new_password)
+        if not username_changed and not password_changed:
+            raise AccountLifecycleError(
+                "ACCOUNT_STATE_CONFLICT",
+                "No consultant credential change was requested.",
+            )
+
+        before = cls._snapshot(target)
+        before["credential_changed"] = False
+        target.username = normalized_username
+        if new_password:
+            target.set_password(new_password)
+        target.auth_version += 1
+        try:
+            target.full_clean()
+        except ValidationError as exc:
+            raise AccountLifecycleError(
+                "CONSULTANT_CREDENTIAL_INVALID",
+                "; ".join(
+                    f"{field}: {', '.join(messages)}"
+                    for field, messages in exc.message_dict.items()
+                ),
+            ) from exc
+        target.save(
+            update_fields=["username", "password", "auth_version", "updated_at"]
+        )
+        cls._revoke_all_refresh_tokens(target)
+        target.refresh_from_db()
+        after = cls._snapshot(target)
+        after["credential_changed"] = True
+        cls.audit_repository.record(
+            actor=actor,
+            target=target,
+            event_type=AccountAuditEvent.EventType.CREDENTIAL_RECOVERY,
+            before_values=before,
+            after_values=after,
+            changed_fields=["auth_version", "credential_changed"],
             reason=reason,
             correlation_id=correlation_id,
         )

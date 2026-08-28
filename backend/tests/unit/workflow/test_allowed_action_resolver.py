@@ -45,7 +45,7 @@ def test_request_consultation_is_available_in_all_confirmed_states():
     )
 
     assert guidance == ["REQUEST_CONSULTATION"]
-    assert required == ["REQUEST_CONSULTATION"]
+    assert required == ["REQUEST_CONSULTATION", "CANCEL_INQUIRY"]
     assert "REQUEST_CONSULTATION" in completion_pending
 
 
@@ -130,6 +130,50 @@ def test_cancel_availability_uses_owner_assignment_and_operator_capability():
     assert operator_without_permission == []
 
 
+def test_consultation_state_cancel_follows_selected_actor_and_visit_policy():
+    for state in {"CONSULTATION_REQUIRED", "CONSULTATION_IN_PROGRESS"}:
+        _actions, owner_codes = resolve_codes(
+            inquiry_state=state,
+            state_version=5,
+        )
+        _actions, assigned_codes = resolve_codes(
+            inquiry_state=state,
+            state_version=5,
+            actor_role="CONSULTANT",
+            actor_id=20,
+            owner_id=10,
+            assigned_user_id=20,
+        )
+        _actions, unassigned_codes = resolve_codes(
+            inquiry_state=state,
+            state_version=5,
+            actor_role="CONSULTANT",
+            actor_id=21,
+            owner_id=10,
+            assigned_user_id=20,
+        )
+        _actions, operator_codes = resolve_codes(
+            inquiry_state=state,
+            state_version=5,
+            actor_role="OPERATOR",
+            actor_id=30,
+            owner_id=10,
+            actor_permissions=frozenset({"INQUIRY_CANCEL"}),
+        )
+        _actions, visit_blocked = resolve_codes(
+            inquiry_state=state,
+            state_version=5,
+            visit_exists=True,
+            visit_status="ASSIGNING",
+        )
+
+        assert "CANCEL_INQUIRY" in owner_codes
+        assert "CANCEL_INQUIRY" in assigned_codes
+        assert "CANCEL_INQUIRY" not in unassigned_codes
+        assert operator_codes == ["CANCEL_INQUIRY"]
+        assert "CANCEL_INQUIRY" not in visit_blocked
+
+
 def test_consultation_actions_follow_persisted_summary_and_result_guards():
     _actions, missing_consultation = resolve_codes(
         inquiry_state="CONSULTATION_IN_PROGRESS",
@@ -172,16 +216,21 @@ def test_consultation_actions_follow_persisted_summary_and_result_guards():
         consultation_outcome="VISIT_REQUIRED",
     )
 
-    assert missing_consultation == []
-    assert editable == ["UPDATE_CONSULTATION_SUMMARY"]
+    assert missing_consultation == ["CANCEL_INQUIRY"]
+    assert editable == [
+        "UPDATE_CONSULTATION_SUMMARY",
+        "CANCEL_INQUIRY",
+    ]
     assert confirmable == [
         "UPDATE_CONSULTATION_SUMMARY",
         "CONFIRM_CONSULTATION_SUMMARY",
+        "CANCEL_INQUIRY",
     ]
     assert confirmed_visit_result == [
         "UPDATE_CONSULTATION_SUMMARY",
         "CONSULTATION_COMPLETED",
         "VISIT_REVIEW_REQUIRED",
+        "CANCEL_INQUIRY",
     ]
 
 

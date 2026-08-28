@@ -38,6 +38,16 @@ def create_operator(
     )
 
 
+def create_supervisor() -> User:
+    return User.objects.create_superuser(
+        username="SYN-WATERBRIDGE-SUPERVISOR",
+        password=PASSWORD,
+        full_name="Synthetic Water Bridge supervisor",
+        employee_no="SYN-SUPERVISOR-001",
+        is_synthetic=True,
+    )
+
+
 def grant_account_admin(user: User) -> None:
     actor, _ = User.objects.get_or_create(
         username="SYN-ACCOUNT-ADMIN-BOOTSTRAP-SUPERUSER",
@@ -93,7 +103,7 @@ def test_bootstrap_group_is_idempotent_and_grants_only_fixed_permissions():
 @pytest.mark.parametrize(
     ("role_code", "is_staff", "expected_status"),
     [
-        (User.Role.OPERATOR, False, 302),
+        (User.Role.OPERATOR, False, 403),
         (User.Role.CUSTOMER, True, 403),
     ],
 )
@@ -130,8 +140,7 @@ def test_operator_without_model_permission_is_denied(client):
 
 
 def test_granted_operator_sees_only_synthetic_accounts(client):
-    operator = create_operator("SYN-OPERATOR-VIEW")
-    grant_account_admin(operator)
+    operator = create_supervisor()
     synthetic = User.objects.create_user(
         username="SYN-CUSTOMER-VISIBLE",
         full_name="Synthetic visible",
@@ -155,8 +164,7 @@ def test_granted_operator_sees_only_synthetic_accounts(client):
 
 
 def test_admin_add_forces_synthetic_and_blocks_privilege_escalation(client):
-    operator = create_operator("SYN-OPERATOR-ADD")
-    grant_account_admin(operator)
+    operator = create_supervisor()
     client.force_login(operator)
 
     response = client.post(
@@ -187,8 +195,7 @@ def test_admin_add_forces_synthetic_and_blocks_privilege_escalation(client):
 
 
 def test_admin_change_preserves_identity_role_and_access_fields(client):
-    operator = create_operator("SYN-OPERATOR-CHANGE")
-    grant_account_admin(operator)
+    operator = create_supervisor()
     target = User.objects.create_user(
         username="SYN-CUSTOMER-IMMUTABLE",
         full_name="Before",
@@ -229,8 +236,7 @@ def test_admin_change_preserves_identity_role_and_access_fields(client):
 
 
 def test_admin_rejects_values_that_could_be_real_personal_information(client):
-    operator = create_operator("SYN-OPERATOR-PRIVACY")
-    grant_account_admin(operator)
+    operator = create_supervisor()
     client.force_login(operator)
 
     response = client.post(
@@ -255,8 +261,7 @@ def test_admin_rejects_values_that_could_be_real_personal_information(client):
 
 
 def test_physical_delete_and_superuser_change_are_denied(client):
-    operator = create_operator("SYN-OPERATOR-PROTECT")
-    grant_account_admin(operator)
+    operator = create_supervisor()
     target = User.objects.create_user(
         username="SYN-CUSTOMER-NO-DELETE",
         full_name="No delete",
@@ -295,8 +300,7 @@ def test_physical_delete_and_superuser_change_are_denied(client):
 
 
 def test_deactivate_action_skips_self_and_superuser(client):
-    operator = create_operator("SYN-OPERATOR-ACTION")
-    grant_account_admin(operator)
+    operator = create_supervisor()
     target = User.objects.create_user(
         username="SYN-CUSTOMER-DEACTIVATE",
         full_name="Deactivate target",
@@ -334,8 +338,7 @@ def test_deactivate_action_skips_self_and_superuser(client):
 def test_admin_mutation_requires_csrf(client):
     from django.test import Client
 
-    operator = create_operator("SYN-OPERATOR-CSRF")
-    grant_account_admin(operator)
+    operator = create_supervisor()
     csrf_client = Client(enforce_csrf_checks=True)
     csrf_client.force_login(operator)
 

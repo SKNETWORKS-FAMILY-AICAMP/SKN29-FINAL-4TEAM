@@ -293,7 +293,8 @@ def test_consultant_list_returns_only_assigned_synthetic_projection(
     assert item["current_assignee_type"] == "CONSULTANT"
     assert item["waiting_seconds"] >= 0
     assert [action["code"] for action in item["allowed_actions"]] == [
-        "START_CONSULTATION"
+        "START_CONSULTATION",
+        "CANCEL_INQUIRY",
     ]
     third_item = next(
         item
@@ -668,7 +669,7 @@ def test_consultant_detail_returns_closed_assigned_projection(
     assert data["workflow"]["state_version"] == 2
     assert [
         action["code"] for action in data["workflow"]["allowed_actions"]
-    ] == ["START_CONSULTATION"]
+    ] == ["START_CONSULTATION", "CANCEL_INQUIRY"]
 
     serialized = str(data)
     for forbidden in (

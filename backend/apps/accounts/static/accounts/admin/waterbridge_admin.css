@@ -1,0 +1,110 @@
+:root {
+  --wb-deep: #0d3155;
+  --wb-primary: #2b93c5;
+  --wb-primary-strong: #1875a8;
+  --wb-aqua: #65d9e5;
+  --wb-canvas: #edf7fc;
+  --wb-surface: #ffffff;
+  --wb-ink: #172b43;
+  --wb-muted: #698096;
+  --wb-line: #c9dfeb;
+}
+
+html,
+body {
+  font-family: "NanumSquare", "Malgun Gothic", sans-serif;
+  color: var(--wb-ink);
+  background: var(--wb-canvas);
+}
+
+#header {
+  background: linear-gradient(135deg, #207fad, #135e91 74%, #104f7c);
+  border-bottom: 3px solid var(--wb-aqua);
+  box-shadow: 0 10px 28px rgb(40 93 124 / 18%);
+}
+
+.waterbridge-brand__eyebrow {
+  display: block;
+  color: rgb(255 255 255 / 72%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+#site-name a,
+#site-name a:visited {
+  color: #fff;
+  font-weight: 800;
+}
+
+div.breadcrumbs {
+  background: var(--wb-primary-strong);
+}
+
+.module,
+.inline-group,
+#content-related,
+.login #container {
+  overflow: hidden;
+  border: 1px solid var(--wb-line);
+  border-radius: 16px;
+  background: var(--wb-surface);
+  box-shadow: 0 14px 36px rgb(40 93 124 / 13%);
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: linear-gradient(90deg, var(--wb-primary), var(--wb-primary-strong));
+  color: #fff;
+}
+
+a:link,
+a:visited {
+  color: var(--wb-primary-strong);
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--wb-primary), var(--wb-primary-strong));
+  color: #fff;
+  font-weight: 700;
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default {
+  background: linear-gradient(135deg, var(--wb-primary), var(--wb-primary-strong));
+}
+
+input,
+textarea,
+select {
+  border-color: var(--wb-line) !important;
+  border-radius: 9px !important;
+}
+
+.waterbridge-login-heading {
+  margin-bottom: 20px;
+}
+
+.waterbridge-login-heading span {
+  color: var(--wb-primary-strong);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.waterbridge-login-heading h2 {
+  margin: 6px 0;
+  color: var(--wb-deep);
+}
+
+.waterbridge-login-heading p {
+  margin: 0;
+  color: var(--wb-muted);
+}

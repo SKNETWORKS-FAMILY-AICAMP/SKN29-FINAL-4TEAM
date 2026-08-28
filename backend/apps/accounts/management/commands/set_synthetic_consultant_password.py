@@ -8,10 +8,12 @@ import re
 from typing import Any
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from apps.accounts.models import User
+from apps.accounts.credential_policy import validate_consultant_password
 
 
 DEFAULT_PASSWORD_ENV = "WATERBRIDGE_CONSULTANT_PASSWORD"
@@ -19,10 +21,10 @@ ENV_NAME_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]{2,80}$")
 
 
 def _validate_password(value: str) -> None:
-    if not 12 <= len(value) <= 64:
-        raise CommandError("상담사 비밀번호는 12~64자여야 합니다.")
-    if re.search(r"[A-Za-z]", value) is None or re.search(r"[0-9]", value) is None:
-        raise CommandError("상담사 비밀번호에는 영문과 숫자가 모두 포함되어야 합니다.")
+    try:
+        validate_consultant_password(value)
+    except ValidationError as exc:
+        raise CommandError(" ".join(exc.messages)) from exc
 
 
 class Command(BaseCommand):

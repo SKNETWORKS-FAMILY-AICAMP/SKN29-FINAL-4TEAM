@@ -33,11 +33,11 @@
     },
     "transition_rules": {
       "path": "contracts/state-machine/transition-rules.yaml",
-      "sha256": "FB4E1CEB2D23038F496CEA658074F979D78092458EFEABB5839537716B9632EC"
+      "sha256": "AF5CA23DF0FF47CDF6B78FD33D9CBEA32A64F6A83174AFC03DE9D0F5811B34E1"
     },
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",
-      "sha256": "8240D1BAD8D4396493C2E00FF5A9A8905F1932979EC4C22FCFCE78D824756263"
+      "sha256": "0A119B79D13F1D80905E087185F4FE60B3BD5D74FE322FB1D72D436D911114DA"
     },
     "data_state_crosswalk": {
       "path": "contracts/state-machine/data-state-crosswalk.yaml",
