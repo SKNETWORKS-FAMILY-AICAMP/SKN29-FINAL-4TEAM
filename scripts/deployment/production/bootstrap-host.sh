@@ -57,12 +57,19 @@ required_ai_keys=(
   AI_EMBEDDING_REVISION
   AI_VECTOR_TABLE_NAME
   AI_HANDOFF_INTERNAL_TOKEN
+  AI_HANDOFF_BACKEND_ENABLED
+  AI_BACKEND_BASE_URL
+  AI_HANDOFF_TIMEOUT_SECONDS
 )
 
 for key in "${required_backend_keys[@]}"; do
   grep -Eq "^[[:space:]]*${key}=.+$" "$backend_env_file" \
     || fail "required Backend runtime key is missing: ${key}"
 done
+grep -Eq '^[[:space:]]*AI_HANDOFF_BACKEND_ENABLED=false[[:space:]]*$' "$ai_env_file" \
+  || fail "AI Handoff must start disabled"
+grep -Eq '^[[:space:]]*AI_BACKEND_BASE_URL=http://backend:8000/?[[:space:]]*$' "$ai_env_file" \
+  || fail "AI Backend URL must use the internal production service"
 for key in "${required_ai_keys[@]}"; do
   grep -Eq "^[[:space:]]*${key}=.+$" "$ai_env_file" \
     || fail "required AI runtime key is missing: ${key}"

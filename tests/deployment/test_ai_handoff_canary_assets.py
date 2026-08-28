@@ -12,6 +12,10 @@ SCRIPT = ROOT / "scripts/deployment/production/manage-ai-handoff-canary.sh"
 DISPATCH = ROOT / ".github/workflows/production-ai-handoff-canary.yml"
 TRUSTED = ROOT / ".github/workflows/production-deploy.yml"
 DEPLOY = ROOT / "scripts/deployment/production/deploy-release.sh"
+ENV_PREPARE = (
+    ROOT
+    / "scripts/deployment/production/prepare_ai_handoff_runtime_env.py"
+)
 ROLLBACK = ROOT / "scripts/deployment/production/rollback-release.sh"
 RUNBOOK = ROOT / "docs/deployment/production-deployment-runbook.md"
 
@@ -65,6 +69,25 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
         self.assertIn("steps.deploy.outputs.mutation_started == 'true'", trusted)
         self.assertIn("DEPLOYMENT_BLOCKED: active AI Handoff Canary window", trusted)
         self.assertIn("ROLLBACK_BLOCKED: active AI Handoff Canary window", rollback)
+
+    def test_release_prepares_fail_closed_handoff_environment(self) -> None:
+        trusted = TRUSTED.read_text(encoding="utf-8")
+        deploy = DEPLOY.read_text(encoding="utf-8")
+        prepare = ENV_PREPARE.read_text(encoding="utf-8")
+
+        self.assertIn("prepare_ai_handoff_runtime_env.py", trusted)
+        self.assertIn("prepare_ai_handoff_runtime_env.py", deploy)
+        self.assertLess(
+            deploy.index("DEPLOYMENT_MUTATION_STARTED"),
+            deploy.index('python3 "$ai_handoff_env_prepare_script"'),
+        )
+        self.assertIn('"AI_HANDOFF_BACKEND_ENABLED": "false"', prepare)
+        self.assertIn('"AI_BACKEND_BASE_URL": "http://backend:8000"', prepare)
+        self.assertIn('"AI_HANDOFF_TIMEOUT_SECONDS": "2.0"', prepare)
+        self.assertIn("os.replace", prepare)
+        self.assertIn("os.fsync", prepare)
+        self.assertNotIn("print(secret_value", prepare)
+        self.assertIn("secret_values_printed=false", prepare)
 
     def test_script_has_exact_target_gate_and_denies_all_other_ai_entries(self) -> None:
         script = SCRIPT.read_text(encoding="utf-8")

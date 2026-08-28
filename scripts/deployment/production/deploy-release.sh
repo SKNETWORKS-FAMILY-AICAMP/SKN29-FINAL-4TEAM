@@ -83,11 +83,13 @@ tar -xzf "$archive_path" -C "$payload_dir"
   exit 1
 }
 secret_sync_script="${payload_dir}/scripts/deployment/production/sync_backend_email_auth_secret.py"
+ai_handoff_env_prepare_script="${payload_dir}/scripts/deployment/production/prepare_ai_handoff_runtime_env.py"
 worker_preflight_script="${payload_dir}/scripts/deployment/production/validate_p1_auth_email_worker_runtime.py"
 worker_runner_source="${payload_dir}/scripts/deployment/production/run_p1_auth_email_worker.sh"
 worker_unit_source="${payload_dir}/infra/systemd/${worker_service}"
 for required_asset in \
   "$secret_sync_script" \
+  "$ai_handoff_env_prepare_script" \
   "$worker_preflight_script" \
   "$worker_runner_source" \
   "$worker_unit_source"; do
@@ -287,6 +289,25 @@ print('BACKEND_OWNER_GATE_PASS')"; then
 fi
 
 printf 'DEPLOYMENT_MUTATION_STARTED\n'
+python3 "$ai_handoff_env_prepare_script" \
+  --ai-env-file "$ai_env_file"
+for key in \
+  AI_HANDOFF_BACKEND_ENABLED \
+  AI_BACKEND_BASE_URL \
+  AI_HANDOFF_TIMEOUT_SECONDS; do
+  grep -Eq "^[[:space:]]*${key}=.+$" "$ai_env_file" || {
+    echo "DEPLOYMENT_FAILED: required AI Handoff runtime key is missing: ${key}" >&2
+    false
+  }
+done
+grep -Eq '^[[:space:]]*AI_HANDOFF_BACKEND_ENABLED=false[[:space:]]*$' "$ai_env_file" || {
+  echo "DEPLOYMENT_FAILED: AI Handoff must be disabled after release preparation" >&2
+  false
+}
+grep -Eq '^[[:space:]]*AI_BACKEND_BASE_URL=http://backend:8000/?[[:space:]]*$' "$ai_env_file" || {
+  echo "DEPLOYMENT_FAILED: AI Backend URL is not the internal production service" >&2
+  false
+}
 python3 "$secret_sync_script" \
   --secret-id "$backend_email_auth_secret_id" \
   --region "$aws_region" \

@@ -129,6 +129,13 @@ Compose command. The only approved entry point is the `Production AI Handoff
 Canary` workflow, and the default and final state is always
 `AI_HANDOFF_BACKEND_ENABLED=false`.
 
+Every official release atomically normalizes the non-secret Handoff runtime
+settings to the fail-closed production values: the flag is `false`, the Backend
+address is the internal `backend:8000` service, and the timeout is bounded. The
+release fails without changing the token when the pre-provisioned
+`AI_HANDOFF_INTERNAL_TOKEN` is missing, empty, duplicated, or exposed through
+unsafe file permissions. Do not append these keys manually on the host.
+
 Before the first Canary, the owner-approved `waterbridge.site` host Nginx server
 block must contain this include inside that server block:
 
