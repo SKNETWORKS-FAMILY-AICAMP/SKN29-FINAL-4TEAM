@@ -39,7 +39,6 @@ import com.skn29.watercare.core.model.SymptomTopic
 import com.skn29.watercare.core.repository.FakeCustomerCareRepository
 import com.skn29.watercare.core.ui.components.CustomerReferencePalette
 import com.skn29.watercare.core.ui.components.ErrorCard
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.ReferenceGlassButton
 import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
 import com.skn29.watercare.customer.BuildConfig
@@ -313,9 +312,7 @@ fun CustomerHomeContent(
                 !emptySubscription
 
         if (initialLoading) {
-            LoadingBlock(
-                "정수기 정보를 불러오고 있어요"
-            )
+            // Visible loading UI intentionally hidden.
         }
 
         if (emptySubscription) {
@@ -421,9 +418,7 @@ fun CustomerHomeContent(
             state.loading &&
             state.home != null
         ) {
-            LoadingBlock(
-                "최신 정수기 정보를 확인하고 있어요"
-            )
+            // Visible loading UI intentionally hidden.
         }
 
         if (
@@ -431,9 +426,7 @@ fun CustomerHomeContent(
             !state.loading &&
             state.home != null
         ) {
-            LoadingBlock(
-                "선택한 정수기를 불러오고 있어요"
-            )
+            // Visible loading UI intentionally hidden.
         }
 
         if (

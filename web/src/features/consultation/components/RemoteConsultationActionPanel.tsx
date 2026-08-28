@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { useConsultationForm } from "../hooks/useConsultationForm";
 import { useSaveConsultation } from "../hooks/useSaveConsultation";
@@ -10,6 +10,31 @@ interface Props {
   inquiry: ConsultantInquiryDetailViewModel;
   onOpenVisit: (entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED") => void;
   onRefresh: () => void;
+}
+
+const UNIFIED_CONSULTATION_RECORD_MAX_LENGTH = 2000;
+
+function buildUnifiedConsultationRecord(
+  consultation: ConsultantInquiryDetailViewModel["consultation"],
+) {
+  if (!consultation) return "";
+
+  const seenValues = new Set<string>();
+  const entries = [
+    ["상담 기록", consultation.consultationNote],
+    ["고객 안내 내용", consultation.customerGuidance],
+    ["추가 확인사항", consultation.additionalCheck],
+  ].flatMap(([label, rawValue]) => {
+    const value = rawValue?.trim();
+    if (!value || seenValues.has(value)) return [];
+    seenValues.add(value);
+    return [{ label, value }];
+  });
+
+  if (entries.length === 1) return entries[0].value;
+  return entries
+    .map(({ label, value }) => `${label}\n${value}`)
+    .join("\n\n");
 }
 
 export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, onRefresh }: Props) {
@@ -33,6 +58,11 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
     inquiry.workflow.status,
   ]);
   const consultation = inquiry.consultation;
+  const [consultationRecord, setConsultationRecord] = useState(() =>
+    buildUnifiedConsultationRecord(consultation),
+  );
+  const [isConsultationRecordEdited, setIsConsultationRecordEdited] =
+    useState(false);
   const form = useConsultationForm(
     {
       consultationNote: consultation?.consultationNote ?? "",
@@ -66,6 +96,17 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
     save.allowedActions.length === 1 &&
     save.allowedActions[0]?.code === "START_CONSULTATION";
 
+  const updateUnifiedConsultationRecord = (value: string) => {
+    setConsultationRecord(value);
+    setIsConsultationRecordEdited(true);
+    form.updateField("consultationNote", value);
+    // Backend와 고객 앱은 기존 공개 계약의 세 필드를 각각 소비한다. 화면은
+    // 하나로 합치되 새 입력은 동일한 원문으로 매핑해 어느 경로에서도 빠지지
+    // 않게 한다.
+    form.updateField("customerGuidance", value);
+    form.updateField("additionalCheck", value);
+  };
+
   const handleAction = async (action: CounselorAllowedAction) => {
     if (action.code === "VISIT_REVIEW_REQUIRED" || action.code === "VISIT_NEEDED") {
       onOpenVisit(action.code);
@@ -75,15 +116,17 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
       onOpenVisit();
       return;
     }
-    if (
-      action.requiresConfirmation &&
-      !window.confirm(
-        action.confirmationMessage ?? `${action.label} 작업을 진행하시겠습니까?`,
-      )
-    ) {
-      return;
-    }
-    if (!form.validate(action.code)) return;
+    // 확인 다이얼로그는 useSaveConsultation에서 한 번만 처리한다. 여기에서도
+    // 확인하면 requires_confirmation 작업이 이중 팝업으로 실행된다.
+    const valuesForValidation = isConsultationRecordEdited
+      ? form.values
+      : {
+          ...form.values,
+          consultationNote: consultationRecord,
+          customerGuidance: consultationRecord,
+          additionalCheck: consultationRecord,
+        };
+    if (!form.validate(action.code, valuesForValidation)) return;
     const outcome = await save.execute({ action, values: form.values, scenario: "SUCCESS" });
     if (outcome.ok) onRefresh();
     if (
@@ -114,43 +157,35 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
         >
           <section className="v6-action-form-section">
             <h4>상담 내용</h4>
-            {([
-              ["consultationNote", "상담 기록"],
-              ["customerGuidance", "고객 안내 내용"],
-            ] as const).map(([field, label]) => (
-              <label className="v6-form-field" key={field}>
-                {label}
-                <textarea
-                  data-testid={`consultation-field-${field}`}
-                  name={field}
-                  value={form.values[field]}
-                  onChange={(event) =>
-                    form.updateField(field, event.target.value)
-                  }
-                />
-                {form.fieldErrors[field] && <span className="v6-field-error">{form.fieldErrors[field]}</span>}
-              </label>
-            ))}
-          </section>
-          <details className="v6-action-form-details">
-            <summary>추가 확인사항 입력</summary>
             <label className="v6-form-field">
-              추가 확인사항
+              상담 기록
               <textarea
-                data-testid="consultation-field-additionalCheck"
-                name="additionalCheck"
-                value={form.values.additionalCheck}
+                data-testid="consultation-field-consultationNote"
+                name="consultationNote"
+                maxLength={UNIFIED_CONSULTATION_RECORD_MAX_LENGTH}
+                value={consultationRecord}
                 onChange={(event) =>
-                  form.updateField("additionalCheck", event.target.value)
+                  updateUnifiedConsultationRecord(event.target.value)
                 }
               />
-              {form.fieldErrors.additionalCheck && (
+              {form.fieldErrors.consultationNote && (
                 <span className="v6-field-error">
-                  {form.fieldErrors.additionalCheck}
+                  {form.fieldErrors.consultationNote}
                 </span>
               )}
+              {!form.fieldErrors.consultationNote &&
+                (form.fieldErrors.customerGuidance ||
+                  form.fieldErrors.additionalCheck) && (
+                  <span className="v6-field-error">
+                    {form.fieldErrors.customerGuidance ??
+                      form.fieldErrors.additionalCheck}
+                  </span>
+                )}
             </label>
-          </details>
+            <small className="v6-form-field__hint">
+              고객 안내와 추가 확인 내용을 이곳에 함께 기록해 주세요.
+            </small>
+          </section>
           <section className="v6-action-form-section">
             <h4>상담 요약 확인</h4>
             <label className="v6-form-field">

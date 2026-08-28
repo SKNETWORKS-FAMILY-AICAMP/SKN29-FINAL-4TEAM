@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   MemoryRouter,
@@ -10,6 +10,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../src/app/providers/AuthProvider";
 import { ApiClientError } from "../../src/common/api/apiError";
+import type {
+  ConsultantInquiryListQuery,
+} from "../../src/features/consultation/api/consultantWorkspaceRemoteTypes";
 import type {
   ConsultantInquiryDetailViewModel,
   ConsultantInquiryListViewModel,
@@ -160,6 +163,25 @@ const LIST: ConsultantInquiryListViewModel = {
   statusCounts: { CONSULTATION_REQUIRED: 1 },
 };
 
+const DASHBOARD_OVERVIEW_LIST: ConsultantInquiryListViewModel = {
+  items: [],
+  pageInfo: { page: 1, size: 100, total: 11 },
+  statusCounts: {
+    CONSULTATION_REQUIRED: 2,
+    REOPENED: 1,
+    DRAFT: 1,
+    CONSULTATION_IN_PROGRESS: 2,
+    VISIT_SCHEDULING: 1,
+    COMPLETION_PENDING: 1,
+    RESOLVED: 2,
+    CANCELLED: 1,
+  },
+};
+
+const isDashboardOverviewQuery = (
+  query?: ConsultantInquiryListQuery,
+): boolean => query?.page === 1 && query.size === 100;
+
 const REMOTE_DASHBOARD_DATA = {
   ...MOCK_SYNTHETIC_CONSULTANT_DASHBOARD_DATA,
   generatedAt: "2026-08-24T10:00:00+09:00",
@@ -248,9 +270,12 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       data: DETAIL,
     });
     remoteMocks.listInquiries.mockReset();
-    remoteMocks.listInquiries.mockResolvedValue({
-      correlationId: "corr-list",
-      data: LIST,
+    remoteMocks.listInquiries.mockImplementation((query) => {
+      const isOverview = isDashboardOverviewQuery(query);
+      return Promise.resolve({
+        correlationId: isOverview ? "corr-overview" : "corr-list",
+        data: isOverview ? DASHBOARD_OVERVIEW_LIST : LIST,
+      });
     });
     remoteMocks.listUnassignedConsultations.mockReset();
     remoteMocks.listUnassignedConsultations.mockResolvedValue({
@@ -277,8 +302,12 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     });
   });
 
-  it("Backend Dashboard 응답을 업무 요약·공지·직원·방문기사 화면에 표시한다", async () => {
+  it("문의 목록 overview 집계로 업무 요약·사이드바 숫자를 통일하고 Dashboard 부가 기능은 유지한다", async () => {
     const user = userEvent.setup();
+    remoteMocks.getDashboard.mockResolvedValue({
+      ...REMOTE_DASHBOARD_DATA,
+      summary: { total: 0, new: 0, inProgress: 0, completed: 0 },
+    });
     renderPage("dashboard");
 
     expect(
@@ -287,15 +316,26 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       }),
     ).toBeVisible();
     expect(
-      screen.getByRole("button", { name: "전체 문의 수7" }),
+      await screen.findByRole("button", { name: "전체 문의 수11" }),
     ).toBeEnabled();
-    expect(screen.getByRole("button", { name: "새 문의2" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "새 문의3" })).toBeEnabled();
     expect(
-      screen.getByRole("button", { name: "처리 중인 문의3" }),
+      screen.getByRole("button", { name: "처리 중인 문의5" }),
     ).toBeEnabled();
     expect(
-      screen.getByRole("button", { name: "처리 완료된 문의2" }),
+      screen.getByRole("button", { name: "처리 완료된 문의3" }),
     ).toBeEnabled();
+    expect(screen.getByRole("tab", { name: "전체 문의11" })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "새 문의3" })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "처리 중인 문의5" })).toBeVisible();
+    expect(
+      screen.getByRole("tab", { name: "처리 완료된 문의3" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", {
+        name: /누수 긴급 점검 요청.*다시 열기/,
+      }),
+    ).toBeVisible();
     expect(screen.getByText("Backend에서 받은 상담사 공지")).toBeVisible();
 
     const contactSearch = screen.getByRole("searchbox", {
@@ -310,16 +350,22 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     );
     expect(screen.getByRole("cell", { name: "원격 방문기사" })).toBeVisible();
     expect(remoteMocks.getDashboard).toHaveBeenCalledTimes(1);
+    expect(
+      remoteMocks.listInquiries.mock.calls.filter(([query]) =>
+        isDashboardOverviewQuery(query),
+      ),
+    ).toHaveLength(1);
   });
 
-  it("Dashboard 응답 대기 중에는 집계 카드를 비활성화하고 로딩 상태를 표시한다", () => {
+  it("Dashboard 응답 대기 중에도 문의 목록 overview가 성공하면 집계 숫자를 활성 표시한다", async () => {
     remoteMocks.getDashboard.mockReturnValue(new Promise(() => undefined));
 
     renderPage("dashboard");
 
     expect(
-      screen.getByRole("button", { name: "전체 문의 수—" }),
-    ).toBeDisabled();
+      await screen.findByRole("button", { name: "전체 문의 수11" }),
+    ).toBeEnabled();
+    expect(screen.getByRole("tab", { name: "전체 문의11" })).toBeVisible();
     expect(
       screen.getByText("대시보드 공지를 불러오고 있습니다."),
     ).toBeVisible();
@@ -343,6 +389,10 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       await screen.findByText("대시보드 공지를 불러오지 못했습니다."),
     ).toBeVisible();
     expect(
+      screen.getByRole("button", { name: "전체 문의 수11" }),
+    ).toBeEnabled();
+    expect(screen.getByRole("tab", { name: "전체 문의11" })).toBeVisible();
+    expect(
       screen.queryByText("긴급 문의 응대 절차 안내"),
     ).not.toBeInTheDocument();
 
@@ -354,6 +404,74 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       await screen.findByText("Backend에서 받은 상담사 공지"),
     ).toBeVisible();
     expect(remoteMocks.getDashboard).toHaveBeenCalledTimes(2);
+  });
+
+  it("업무 빠른 필터를 변경해도 전체 overview 집계와 고정 query를 유지한다", async () => {
+    renderPage("dashboard");
+
+    expect(
+      await screen.findByRole("button", { name: "전체 문의 수11" }),
+    ).toBeEnabled();
+    expect(screen.getByRole("button", { name: "새 문의3" })).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "처리 중인 문의5" }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "처리 완료된 문의3" }),
+    ).toBeEnabled();
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "처리 중인 문의",
+        hidden: true,
+      }),
+    );
+
+    await waitFor(() =>
+      expect(remoteMocks.listInquiries).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: expect.arrayContaining([
+            "CONSULTATION_IN_PROGRESS",
+            "VISIT_SCHEDULING",
+            "COMPLETION_PENDING",
+          ]),
+          page: 1,
+          size: 30,
+        }),
+      ),
+    );
+    expect(screen.getByRole("button", { name: "전체 문의 수11" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "새 문의3" })).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "처리 중인 문의5" }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole("button", { name: "처리 완료된 문의3" }),
+    ).toBeEnabled();
+
+    const overviewCalls = remoteMocks.listInquiries.mock.calls.filter(
+      ([query]) => isDashboardOverviewQuery(query),
+    );
+    expect(overviewCalls).toHaveLength(1);
+    expect(overviewCalls[0]?.[0]).toEqual({
+      status: [
+        "CONSULTATION_REQUIRED",
+        "REOPENED",
+        "DRAFT",
+        "QUESTIONNAIRE_IN_PROGRESS",
+        "AI_GUIDANCE",
+        "CONSULTATION_IN_PROGRESS",
+        "VISIT_REVIEW_PENDING",
+        "VISIT_SCHEDULING",
+        "VISIT_SCHEDULED",
+        "COMPLETION_PENDING",
+        "REVISIT_REQUIRED",
+        "RESOLVED",
+        "CANCELLED",
+      ],
+      page: 1,
+      size: 100,
+    });
   });
 
   it("Dashboard API 403은 일반 오류가 아닌 상담사 권한 안내로 구분한다", async () => {
@@ -478,7 +596,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     renderPage("list");
     await user.click(
       await screen.findByRole("button", {
-        name: "SYN-INQ-0102 내가 상담하기",
+        name: "합성 고객 02 미배정 누수 상담 상담 시작",
       }),
     );
 
@@ -720,7 +838,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     renderPage("list");
     await user.click(
       await screen.findByRole("button", {
-        name: `${unassignedItem.inquiryCode} 내가 상담하기`,
+        name: `${unassignedItem.customerDisplayNameMasked} ${unassignedItem.symptomSummary} 상담 시작`,
       }),
     );
 
@@ -728,18 +846,23 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       await screen.findByText("현재 기다리는 미배정 상담이 없습니다."),
     ).toBeVisible();
     expect(await screen.findByRole("dialog")).toBeVisible();
-    expect(screen.getByText("WPUJAC104DWH")).toBeVisible();
+    expect(
+      screen.getAllByText(
+        "WPUJAC104DWH · 초소형 직수 냉온 정수기",
+      ),
+    ).not.toHaveLength(0);
 
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 3단계: 상담 기록·최종 처리",
+      }),
+    );
     await user.click(
       await screen.findByRole("button", { name: "상담 시작" }),
     );
     await user.type(
       await screen.findByLabelText("상담 기록"),
-      "고객과 출수 상태를 확인했습니다.",
-    );
-    await user.type(
-      screen.getByLabelText("고객 안내 내용"),
-      "필터 상태를 확인하고 정상 사용을 안내했습니다.",
+      "고객과 출수 상태를 확인하고 필터 상태 및 정상 사용 방법을 안내했습니다.",
     );
     await user.type(
       screen.getByLabelText("상담 요약 수정본"),
@@ -798,7 +921,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       await user.click(
         await screen.findByRole("button", {
           name: page === "dashboard"
-            ? /SYN-INQ-0101.*다시 열기/
+            ? /누수 긴급 점검 요청.*다시 열기/
             : /SYN-INQ-0101.*상세 열기/,
         }),
       );
@@ -806,18 +929,32 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       expect(screen.getByLabelText("현재 경로")).toHaveTextContent(expectedPath);
       expect(await screen.findByRole("dialog")).toBeVisible();
       expect(screen.getByLabelText("상담 문의 상세")).toBeInTheDocument();
-      expect(screen.getByLabelText("상담 처리 작업")).toBeInTheDocument();
       expect(
         screen.queryByRole("button", { name: "전체 기록 보기" }),
       ).not.toBeInTheDocument();
-      [
-        "합성 고객 01",
-        "고객 증상과 답변",
-        "고객에게 안내할 내용",
-        "제품·관리 정보",
-      ].forEach((heading) =>
+      ["합성 고객 01", "고객 증상과 답변", "제품·관리 정보"].forEach(
+        (heading) =>
         expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
       );
+      expect(
+        screen.queryByRole("heading", { name: "고객에게 안내할 내용" }),
+      ).not.toBeInTheDocument();
+
+      await user.click(
+        screen.getByRole("button", {
+          name: "상담 2단계: 안전·상담 가이드 확인",
+        }),
+      );
+      expect(
+        screen.getByRole("heading", { name: "고객에게 안내할 내용" }),
+      ).toBeVisible();
+
+      await user.click(
+        screen.getByRole("button", {
+          name: "상담 3단계: 상담 기록·최종 처리",
+        }),
+      );
+      expect(screen.getByLabelText("상담 처리 작업")).toBeVisible();
       expect(screen.queryByText("현재 할 일")).not.toBeInTheDocument();
       expect(screen.queryByText(/현재 상태 ·/)).not.toBeInTheDocument();
       expect(screen.getByText("제품 사용 중단")).toBeInTheDocument();

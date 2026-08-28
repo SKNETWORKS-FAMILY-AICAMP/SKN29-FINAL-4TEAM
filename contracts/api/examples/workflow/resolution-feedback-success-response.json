@@ -5,7 +5,16 @@
     "inquiry_id": "a40c8360-5de5-44a3-8970-8aaea12cbe79",
     "status": "COMPLETION_PENDING",
     "state_version": 8,
-    "allowed_actions": [],
+    "allowed_actions": [
+      {
+        "code": "CUSTOMER_REPORTED_UNRESOLVED",
+        "label": "아직 해결되지 않았어요",
+        "operation_id": "reportUnresolved",
+        "style": "SECONDARY",
+        "requires_confirmation": false,
+        "confirmation_message": null
+      }
+    ],
     "idempotent_replay": false,
     "resource": null
   },

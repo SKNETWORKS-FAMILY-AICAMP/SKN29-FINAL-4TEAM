@@ -4,6 +4,7 @@ import { ApiClientError } from "../../../common/api/apiError";
 import { createRequestContext } from "../../../common/api/requestContext";
 import { useUnassignedConsultationQueueQuery } from "../hooks/useConsultantWorkspaceQueries";
 import type { UnassignedConsultationQueueItemViewModel } from "../model/consultantWorkspaceRemoteMapper";
+import { formatProductModelAndName } from "../model/productDisplayName";
 import {
   consultantWorkspaceDataRepository,
   type ConsultantWorkspaceDataRepository,
@@ -89,6 +90,9 @@ function getClaimErrorFeedback(
 function getQueueErrorMessage(error: unknown): string {
   if (!(error instanceof ApiClientError)) {
     return "미배정 상담 목록을 불러오지 못했습니다.";
+  }
+  if (error.kind === "NETWORK_ERROR" || error.kind === "TIMEOUT") {
+    return "네트워크 오류가 발생했습니다. 네트워크 연결을 확인해 주세요.";
   }
   if (error.status === 401) {
     return "로그인이 필요하거나 로그인 정보가 만료되었습니다.";
@@ -199,11 +203,7 @@ export default function UnassignedConsultationQueue({
     >
       <header className="unassigned-consultation-queue__header">
         <div>
-          <span className="unassigned-consultation-queue__eyebrow">
-            UNASSIGNED
-          </span>
           <h2>미배정 상담 대기</h2>
-          <p>원하는 문의를 가져오면 내 상담 목록에서 이어서 처리할 수 있습니다.</p>
         </div>
         <div className="unassigned-consultation-queue__summary">
           <strong>{total}</strong>
@@ -262,8 +262,8 @@ export default function UnassignedConsultationQueue({
                   </div>
                   <strong>{inquiry.symptomSummary}</strong>
                   <p>
-                    {inquiry.inquiryCode} · {inquiry.customerDisplayNameMasked} ·{" "}
-                    {inquiry.productModel}
+                    {inquiry.customerDisplayNameMasked} ·{" "}
+                    {formatProductModelAndName(inquiry.productModel)}
                   </p>
                 </div>
                 {canClaim(inquiry) ? (
@@ -271,7 +271,7 @@ export default function UnassignedConsultationQueue({
                     className="unassigned-consultation-card__claim"
                     type="button"
                     disabled={claimingInquiryId !== null || !isClaimEnabled}
-                    aria-label={`${inquiry.inquiryCode} 내가 상담하기${
+                    aria-label={`${inquiry.customerDisplayNameMasked} ${inquiry.symptomSummary} 상담 시작${
                       isClaimEnabled ? "" : " (실제 API 연결 필요)"
                     }`}
                     title={
@@ -281,7 +281,7 @@ export default function UnassignedConsultationQueue({
                     }
                     onClick={() => void handleClaim(inquiry)}
                   >
-                    {isClaiming ? "가져오는 중" : "내가 상담하기"}
+                    {isClaiming ? "시작하는 중" : "상담 시작"}
                   </button>
                 ) : (
                   <span className="unassigned-consultation-card__unavailable">

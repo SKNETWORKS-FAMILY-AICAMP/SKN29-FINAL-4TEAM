@@ -85,6 +85,11 @@ class ConsultationRequestService:
             return replay
 
         current_consultation = ConsultationRepository.lock_latest(inquiry)
+        allowed_action_context = AllowedActionContext.from_models(
+            inquiry=inquiry,
+            actor=actor,
+            consultation=current_consultation,
+        )
         snapshot = WorkflowSnapshot(
             inquiry_state=inquiry.status_code,
             state_version=inquiry.state_version,
@@ -130,7 +135,12 @@ class ConsultationRequestService:
                 correlation_id=str(correlation_id),
                 idempotency_key=idempotency_key,
                 requested_state_version=validated_data["state_version"],
-                domain_results={"G-INQUIRY-OWNER": True},
+                domain_results={
+                    "G-INQUIRY-OWNER": True,
+                    "G-NO-FRESH-RESOLVED-CUSTOMER-FEEDBACK": (
+                        not allowed_action_context.fresh_resolved_feedback_exists
+                    ),
+                },
             ),
         )
         cls._raise_guard_failure(
@@ -246,7 +256,10 @@ class ConsultationRequestService:
                 details={},
                 status_code=500,
             )
-        if failure.guard_id == "G-STATE-VERSION":
+        if failure.guard_id in {
+            "G-STATE-VERSION",
+            "G-NO-FRESH-RESOLVED-CUSTOMER-FEEDBACK",
+        }:
             cls._raise_state_conflict(
                 inquiry,
                 actor=actor,

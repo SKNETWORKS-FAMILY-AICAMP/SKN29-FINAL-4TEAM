@@ -31,9 +31,12 @@ export function useConsultationForm(
     });
   };
 
-  const validate = (actionCode: CounselorActionCode) => {
+  const validate = (
+    actionCode: CounselorActionCode,
+    valuesToValidate: ConsultationFormValues = values,
+  ) => {
     const nextErrors = validateConsultation(
-      values,
+      valuesToValidate,
       actionCode,
       validationOptions,
     );

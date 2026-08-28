@@ -5,6 +5,7 @@ import type {
   CounselorRisk,
   CounselorStatus,
 } from "../../consultation/model/consultantWorkspaceTypes";
+import { formatProductModelAndName } from "../../consultation/model/productDisplayName";
 import type { OperationsFilters } from "../model/operationsDashboardTypes";
 
 interface OperationsDashboardFiltersProps {
@@ -74,7 +75,9 @@ export default function OperationsDashboardFilters({
           >
             <option value="ALL">전체 모델</option>
             {options.productModels.map((value) => (
-              <option key={value} value={value}>{value}</option>
+              <option key={value} value={value}>
+                {formatProductModelAndName(value)}
+              </option>
             ))}
           </select>
         </label>

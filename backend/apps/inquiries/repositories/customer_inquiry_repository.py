@@ -9,7 +9,14 @@ from django.db.models import F, OuterRef, Prefetch, QuerySet, Subquery
 
 from apps.audit.models import AIRun
 from apps.consultations.models import Consultation
-from apps.inquiries.models import Guidance, GuidanceItem, Inquiry, InquiryQA
+from apps.inquiries.models import (
+    FollowupConfirmation,
+    Guidance,
+    GuidanceItem,
+    Inquiry,
+    InquiryQA,
+)
+from apps.visits.models import Visit
 from apps.workflow.models import TransitionHistory
 
 
@@ -18,6 +25,20 @@ class CustomerInquiryRepository:
 
     @staticmethod
     def visible_for_customer(actor: Any) -> QuerySet[Inquiry]:
+        latest_completed_consultation = Consultation.objects.filter(
+            inquiry_id=OuterRef("pk"),
+            status=Consultation.Status.COMPLETED,
+            completed_at__isnull=False,
+        ).order_by("-completed_at", "-id")
+        latest_completed_visit = Visit.objects.filter(
+            inquiry_id=OuterRef("pk"),
+            status=Visit.Status.COMPLETED,
+            completed_at__isnull=False,
+        ).order_by("-completed_at", "-id")
+        latest_resolved_feedback = FollowupConfirmation.objects.filter(
+            inquiry_id=OuterRef("pk"),
+            resolution_status_code=FollowupConfirmation.ResolutionStatus.RESOLVED,
+        ).order_by("-created_at", "-id")
         return (
             Inquiry.objects.filter(
                 initiated_by=actor,
@@ -28,6 +49,23 @@ class CustomerInquiryRepository:
                 "subscription",
                 "subscription__customer",
                 "subscription__product_model",
+            )
+            .annotate(
+                allowed_action_latest_completed_consultation_at=Subquery(
+                    latest_completed_consultation.values("completed_at")[:1]
+                ),
+                allowed_action_latest_completed_consultation_handler_id=Subquery(
+                    latest_completed_consultation.values("consultant_id")[:1]
+                ),
+                allowed_action_latest_completed_visit_at=Subquery(
+                    latest_completed_visit.values("completed_at")[:1]
+                ),
+                allowed_action_latest_completed_visit_handler_id=Subquery(
+                    latest_completed_visit.values("technician_id")[:1]
+                ),
+                allowed_action_latest_resolved_feedback_at=Subquery(
+                    latest_resolved_feedback.values("created_at")[:1]
+                ),
             )
         )
 
@@ -203,6 +241,7 @@ class CustomerInquiryRepository:
             .only(
                 "id",
                 "inquiry_id",
+                "consultant_id",
                 "outcome",
                 "customer_guidance",
                 "usage_guidance_status",

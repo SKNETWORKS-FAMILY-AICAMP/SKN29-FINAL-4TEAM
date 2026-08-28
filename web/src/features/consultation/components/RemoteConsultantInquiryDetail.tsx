@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+
 import type { ConsultantInquiryDetailViewModel } from "../model/consultantWorkspaceRemoteMapper";
 import {
   getManagementTypeLabel,
@@ -10,8 +13,11 @@ import {
   RISK_LABELS,
   STATUS_LABELS,
 } from "../model/consultantWorkspaceModel";
+import { formatProductModelAndName } from "../model/productDisplayName";
 import { hasRemoteConsultationAction } from "../model/remoteConsultationActions";
+import ConsultationStepNavigator from "./ConsultationStepNavigator";
 import RemoteConsultationActionPanel from "./RemoteConsultationActionPanel";
+import "./RemoteConsultantInquiryDetail.css";
 
 interface RemoteConsultantInquiryDetailProps {
   inquiry: ConsultantInquiryDetailViewModel;
@@ -116,11 +122,185 @@ function getSafeContractLabel(value: string, label: string, fallback: string) {
   return label === value ? fallback : label;
 }
 
+interface ConsultationHistoryModalProps {
+  inquiry: ConsultantInquiryDetailViewModel;
+  onClose: () => void;
+}
+
+function ConsultationHistoryModal({
+  inquiry,
+  onClose,
+}: ConsultationHistoryModalProps) {
+  const consultation = inquiry.consultation;
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
+
+  return createPortal(
+    <div className="consultation-history-modal">
+      <button
+        type="button"
+        className="consultation-history-modal__backdrop"
+        aria-label="상담 기록 팝업 닫기"
+        onClick={onClose}
+      />
+      <section
+        className="consultation-history-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="consultation-history-modal-title"
+      >
+        <header className="consultation-history-modal__head">
+          <div>
+            <small>상담 상세</small>
+            <h2 id="consultation-history-modal-title">
+              이전 상담 기록·처리 이력
+            </h2>
+          </div>
+          <button
+            type="button"
+            className="consultation-history-modal__close"
+            aria-label="상담 기록 팝업 닫기"
+            onClick={onClose}
+            autoFocus
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+        </header>
+
+        <div className="consultation-history-modal__body" data-e2e-sensitive="true">
+          {consultation ? (
+            <>
+              <section className="consultation-history-modal__section">
+                <h3>상담 결과와 요약</h3>
+                <dl className="consultation-history-modal__content-list">
+                  <div>
+                    <dt>상담 결과</dt>
+                    <dd>
+                      {CONSULTATION_RESULT_LABELS[consultation.resultCode] ??
+                        "상담 결과 확인 필요"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>AI 상담 요약 초안</dt>
+                    <dd>{consultation.summary.aiDraftSummary ?? "미저장"}</dd>
+                  </div>
+                  <div>
+                    <dt>상담사 수정 요약</dt>
+                    <dd>{consultation.summary.editedSummary ?? "미저장"}</dd>
+                  </div>
+                  <div>
+                    <dt>확정 상담 요약</dt>
+                    <dd data-testid="consultation-detail-confirmed-summary">
+                      {consultation.summary.confirmedSummary ?? "미확정"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>요약 확정 일시</dt>
+                    <dd>
+                      {consultation.summary.confirmedAt
+                        ? formatWorkspaceDateTime(
+                            consultation.summary.confirmedAt,
+                          )
+                        : "미확정"}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className="consultation-history-modal__section">
+                <h3>상담 내용</h3>
+                <dl className="consultation-history-modal__content-list">
+                  <div>
+                    <dt>상담 기록</dt>
+                    <dd data-testid="consultation-detail-note">
+                      {consultation.consultationNote ?? "미저장"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>고객 안내 내용</dt>
+                    <dd data-testid="consultation-detail-customer-guidance">
+                      {consultation.customerGuidance ?? "미저장"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>추가 확인사항</dt>
+                    <dd data-testid="consultation-detail-additional-check">
+                      {consultation.additionalCheck ?? "미저장"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>제품 사용 상태</dt>
+                    <dd>
+                      {consultation.usageGuidanceStatus
+                        ? USAGE_GUIDANCE_STATUS_LABELS[
+                            consultation.usageGuidanceStatus
+                          ]
+                        : "미저장"}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+            </>
+          ) : (
+            <p className="consultation-history-modal__empty">
+              저장된 상담 내용은 아직 없습니다.
+            </p>
+          )}
+
+          <section className="consultation-history-modal__section">
+            <h3>처리 이력</h3>
+            {inquiry.stateHistory.length > 0 ? (
+              <ol className="remote-inquiry-detail__history-list">
+                {inquiry.stateHistory.map((history, index) => (
+                  <li
+                    key={`${history.changedAt}-${history.toStatus}-${history.actorRole}-${index}`}
+                  >
+                    <span>
+                      {history.fromStatus
+                        ? STATUS_LABELS[
+                            normalizeCounselorStatus(history.fromStatus)
+                          ]
+                        : "접수"}
+                      {" → "}
+                      {
+                        STATUS_LABELS[
+                          normalizeCounselorStatus(history.toStatus)
+                        ]
+                      }
+                    </span>
+                    <small>
+                      {ACTOR_ROLE_LABELS[history.actorRole] ?? "담당자"} ·{" "}
+                      {formatWorkspaceDateTime(history.changedAt)}
+                    </small>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="consultation-history-modal__empty">
+                저장된 처리 이력이 없습니다.
+              </p>
+            )}
+          </section>
+        </div>
+      </section>
+    </div>,
+    document.body,
+  );
+}
+
 export default function RemoteConsultantInquiryDetail({
   inquiry,
   onOpenVisit,
   onRefresh,
 }: RemoteConsultantInquiryDetailProps) {
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const historyTriggerRef = useRef<HTMLButtonElement>(null);
   const productError = inquiry.sectionErrors.find(
     (error) => error.section === "product_and_care",
   );
@@ -154,13 +334,21 @@ export default function RemoteConsultantInquiryDetail({
     normalizeCounselorStatus(inquiry.workflow.status)
   ];
   const riskLabel = RISK_LABELS[normalizedRisk];
-  const productName =
-    inquiry.productAndCare?.productModelName ?? "제품 정보 확인 필요";
+  const productName = inquiry.productAndCare
+    ? formatProductModelAndName(
+        inquiry.productAndCare.productModel,
+        inquiry.productAndCare.productModelName,
+      )
+    : "제품 정보 확인 필요";
   const hasConsultationHistory =
     inquiry.consultation !== null || inquiry.stateHistory.length > 0;
   const showActionPanel = Boolean(
     onOpenVisit && onRefresh && hasRemoteConsultationAction(inquiry),
   );
+  const closeHistory = () => {
+    setIsHistoryOpen(false);
+    historyTriggerRef.current?.focus();
+  };
 
   return (
     <div className="remote-inquiry-detail" aria-label="상담 문의 상세">
@@ -215,261 +403,250 @@ export default function RemoteConsultantInquiryDetail({
         </dl>
       </section>
 
-      <div
-        className={`remote-inquiry-detail__workspace${
-          showActionPanel ? "" : " is-single-column"
-        }`}
-      >
-        <div className="remote-inquiry-detail__content">
-          <section
-            className="remote-inquiry-detail__section"
-            data-e2e-sensitive="true"
-          >
-            <h2>고객 증상과 답변</h2>
-            <p className="remote-inquiry-detail__symptom-detail">
-              {inquiry.symptomAndQuestionnaire.symptomSummary}
-            </p>
-            {inquiry.symptomAndQuestionnaire.answers.length > 0 ? (
-              <dl className="remote-inquiry-detail__answers">
-                {inquiry.symptomAndQuestionnaire.answers.map((answer) => (
-                  <div key={answer.questionCode}>
-                    <dt>{answer.questionText}</dt>
-                    <dd>{answer.answer}</dd>
+      <ConsultationStepNavigator
+        key={inquiry.inquiryId}
+        steps={[
+          {
+            id: "inquiry",
+            title: "고객·문의·제품 확인",
+            description: "고객 증상과 제품 관리 정보를 먼저 확인합니다.",
+            content: (
+              <div className="consultation-stepper__step-grid">
+                <section
+                  className="remote-inquiry-detail__section"
+                  data-e2e-sensitive="true"
+                >
+                  <h2>고객 증상과 답변</h2>
+                  <p className="remote-inquiry-detail__symptom-detail">
+                    {inquiry.symptomAndQuestionnaire.symptomSummary}
+                  </p>
+                  {inquiry.symptomAndQuestionnaire.answers.length > 0 ? (
+                    <dl className="remote-inquiry-detail__answers">
+                      {inquiry.symptomAndQuestionnaire.answers.map((answer) => (
+                        <div key={answer.questionCode}>
+                          <dt>{answer.questionText}</dt>
+                          <dd>{answer.answer}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : (
+                    <p className="remote-inquiry-detail__empty-copy">
+                      등록된 문진 답변이 없습니다.
+                    </p>
+                  )}
+                </section>
+
+                <section
+                  className="remote-inquiry-detail__section"
+                  data-e2e-sensitive="true"
+                >
+                  <h2>제품·관리 정보</h2>
+                  {productError ? (
+                    <p>제품·관리 정보를 확인할 수 없습니다.</p>
+                  ) : inquiry.productAndCare ? (
+                    <dl className="inquiry-v13-remote-summary">
+                      <div>
+                        <dt>제품 모델</dt>
+                        <dd>{productName}</dd>
+                      </div>
+                      <div>
+                        <dt>구독 상태</dt>
+                        <dd>
+                          {getSafeContractLabel(
+                            inquiry.productAndCare.subscriptionStatus,
+                            getSubscriptionStatusLabel(
+                              inquiry.productAndCare.subscriptionStatus,
+                            ),
+                            "구독 상태 확인 필요",
+                          )}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>관리 유형</dt>
+                        <dd>
+                          {getSafeContractLabel(
+                            inquiry.productAndCare.managementType,
+                            getManagementTypeLabel(
+                              inquiry.productAndCare.managementType,
+                            ),
+                            "관리 유형 확인 필요",
+                          )}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>최근 관리일</dt>
+                        <dd>
+                          {recentCareDate.dateTime ? (
+                            <time dateTime={recentCareDate.dateTime}>
+                              {recentCareDate.label}
+                            </time>
+                          ) : (
+                            recentCareDate.label
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+                  ) : (
+                    <p>제품·관리 정보가 아직 제공되지 않았습니다.</p>
+                  )}
+                </section>
+              </div>
+            ),
+          },
+          {
+            id: "guidance",
+            title: "안전·상담 가이드 확인",
+            description: "사용 제한과 고객 안내 내용을 확인한 뒤 상담을 진행합니다.",
+            content: (
+              <div className="consultation-stepper__step-stack">
+                <section
+                  className={`remote-inquiry-detail__section remote-inquiry-detail__section--guidance is-risk-${normalizedRisk.toLowerCase()}`}
+                  data-e2e-sensitive="true"
+                >
+                  <span className="remote-inquiry-detail__section-kicker">
+                    먼저 확인
+                  </span>
+                  <h2>고객에게 안내할 내용</h2>
+                  <div className="remote-inquiry-detail__guidance-status">
+                    <strong>제품 사용 상태</strong>
+                    <p>{usageGuidanceDisplayLabel}</p>
                   </div>
-                ))}
-              </dl>
-            ) : (
-              <p className="remote-inquiry-detail__empty-copy">
-                등록된 문진 답변이 없습니다.
-              </p>
-            )}
-          </section>
+                  <strong>고객 안내 내용</strong>
+                  <p>
+                    {usageGuidanceMessage ||
+                      "AI 안내가 없습니다. 고객 증상과 상담 지침을 직접 확인해 주세요."}
+                  </p>
+                  <strong>사용하면 안 되는 기능</strong>
+                  {inquiry.guidanceAndActions.restrictedFunctions.length > 0 ? (
+                    <ul>
+                      {inquiry.guidanceAndActions.restrictedFunctions.map(
+                        (item) => <li key={item}>{item}</li>,
+                      )}
+                    </ul>
+                  ) : (
+                    <p>현재 제공된 제한 기능 정보가 없습니다.</p>
+                  )}
+                  <p className="remote-inquiry-detail__evidence-empty">
+                    공식 근거는 아직 제공되지 않았습니다.
+                  </p>
+                </section>
 
-          <section
-            className={`remote-inquiry-detail__section remote-inquiry-detail__section--guidance is-risk-${normalizedRisk.toLowerCase()}`}
-            data-e2e-sensitive="true"
-          >
-            <span className="remote-inquiry-detail__section-kicker">
-              먼저 확인
-            </span>
-            <h2>고객에게 안내할 내용</h2>
-            <div className="remote-inquiry-detail__guidance-status">
-              <strong>제품 사용 상태</strong>
-              <p>{usageGuidanceDisplayLabel}</p>
-            </div>
-            <strong>고객 안내 내용</strong>
-            <p>
-              {usageGuidanceMessage ||
-                "AI 안내가 없습니다. 고객 증상과 상담 지침을 직접 확인해 주세요."}
-            </p>
-            <strong>사용하면 안 되는 기능</strong>
-            {inquiry.guidanceAndActions.restrictedFunctions.length > 0 ? (
-              <ul>
-                {inquiry.guidanceAndActions.restrictedFunctions.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>현재 제공된 제한 기능 정보가 없습니다.</p>
-            )}
-            <p className="remote-inquiry-detail__evidence-empty">
-              공식 근거는 아직 제공되지 않았습니다.
-            </p>
-          </section>
-
-          <section
-            className="remote-inquiry-detail__section"
-            data-e2e-sensitive="true"
-          >
-            <h2>제품·관리 정보</h2>
-            {productError ? (
-              <p>제품·관리 정보를 확인할 수 없습니다.</p>
-            ) : inquiry.productAndCare ? (
-              <dl className="inquiry-v13-remote-summary">
-                <div>
-                  <dt>제품 모델</dt>
-                  <dd>{inquiry.productAndCare.productModel}</dd>
-                </div>
-                <div>
-                  <dt>구독 상태</dt>
-                  <dd>
-                    {getSafeContractLabel(
-                      inquiry.productAndCare.subscriptionStatus,
-                      getSubscriptionStatusLabel(
-                        inquiry.productAndCare.subscriptionStatus,
-                      ),
-                      "구독 상태 확인 필요",
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt>관리 유형</dt>
-                  <dd>
-                    {getSafeContractLabel(
-                      inquiry.productAndCare.managementType,
-                      getManagementTypeLabel(
-                        inquiry.productAndCare.managementType,
-                      ),
-                      "관리 유형 확인 필요",
-                    )}
-                  </dd>
-                </div>
-                <div>
-                  <dt>최근 관리일</dt>
-                  <dd>
-                    {recentCareDate.dateTime ? (
-                      <time dateTime={recentCareDate.dateTime}>
-                        {recentCareDate.label}
-                      </time>
-                    ) : (
-                      recentCareDate.label
-                    )}
-                  </dd>
-                </div>
-              </dl>
-            ) : (
-              <p>제품·관리 정보가 아직 제공되지 않았습니다.</p>
-            )}
-          </section>
-
-          {(isVisitRequired || inquiry.visit) && (
-            <section
-              className="remote-inquiry-detail__section"
-              data-e2e-sensitive="true"
-            >
-              <h2>방문 정보</h2>
-              <dl className="inquiry-v13-remote-summary">
-                <div>
-                  <dt>방문 필요 여부</dt>
-                  <dd>{isVisitRequired ? "방문 필요" : "방문 검토 중"}</dd>
-                </div>
-                <div>
-                  <dt>방문 등록 상태</dt>
-                  <dd>
-                    {inquiry.visit
-                      ? "방문 정보 등록됨"
-                      : "방문 정보 등록 대기"}
-                  </dd>
-                </div>
-                {inquiry.visit && (
-                  <>
+                {hasConsultationHistory && (
+                  <section className="remote-inquiry-detail__history-launcher">
                     <div>
-                      <dt>일정 상태</dt>
-                      <dd>
-                        {VISIT_SCHEDULE_STATUS_LABELS[
-                          inquiry.visit.schedule.scheduleStatus
-                        ] ?? "방문 일정 확인 필요"}
-                      </dd>
+                      <h2>이전 상담 기록·처리 이력</h2>
+                      <p>
+                        상담 내용과 상태 변경 내역을 상세 화면에서 확인합니다.
+                      </p>
                     </div>
-                    <div>
-                      <dt>희망 방문일</dt>
-                      <dd>
-                        {visitPreferredDate.dateTime ? (
-                          <time dateTime={visitPreferredDate.dateTime}>
-                            {visitPreferredDate.label}
-                          </time>
-                        ) : (
-                          visitPreferredDate.label
-                        )}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>확정 방문일</dt>
-                      <dd>
-                        {visitConfirmedDate.dateTime ? (
-                          <time dateTime={visitConfirmedDate.dateTime}>
-                            {visitConfirmedDate.label}
-                          </time>
-                        ) : (
-                          visitConfirmedDate.label
-                        )}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>담당 기사</dt>
-                      <dd>
-                        {inquiry.visit.technician?.displayName ?? "기사 미배정"}
-                      </dd>
-                    </div>
-                  </>
+                    <button
+                      ref={historyTriggerRef}
+                      type="button"
+                      className="v6-button v6-button--secondary"
+                      onClick={() => setIsHistoryOpen(true)}
+                    >
+                      상세 보기
+                    </button>
+                  </section>
                 )}
-              </dl>
-            </section>
-          )}
+              </div>
+            ),
+          },
+          {
+            id: "action",
+            title: "상담 기록·최종 처리",
+            description: "상담 내용을 기록하고 현재 상태에서 가능한 처리를 진행합니다.",
+            content: (
+              <div className="consultation-stepper__step-stack">
+                {(isVisitRequired || inquiry.visit) && (
+                  <section
+                    className="remote-inquiry-detail__section"
+                    data-e2e-sensitive="true"
+                  >
+                    <h2>방문 정보</h2>
+                    <dl className="inquiry-v13-remote-summary">
+                      <div>
+                        <dt>방문 필요 여부</dt>
+                        <dd>
+                          {isVisitRequired ? "방문 필요" : "방문 검토 중"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>방문 등록 상태</dt>
+                        <dd>
+                          {inquiry.visit
+                            ? "방문 정보 등록됨"
+                            : "방문 정보 등록 대기"}
+                        </dd>
+                      </div>
+                      {inquiry.visit && (
+                        <>
+                          <div>
+                            <dt>일정 상태</dt>
+                            <dd>
+                              {VISIT_SCHEDULE_STATUS_LABELS[
+                                inquiry.visit.schedule.scheduleStatus
+                              ] ?? "방문 일정 확인 필요"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>희망 방문일</dt>
+                            <dd>
+                              {visitPreferredDate.dateTime ? (
+                                <time dateTime={visitPreferredDate.dateTime}>
+                                  {visitPreferredDate.label}
+                                </time>
+                              ) : (
+                                visitPreferredDate.label
+                              )}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>확정 방문일</dt>
+                            <dd>
+                              {visitConfirmedDate.dateTime ? (
+                                <time dateTime={visitConfirmedDate.dateTime}>
+                                  {visitConfirmedDate.label}
+                                </time>
+                              ) : (
+                                visitConfirmedDate.label
+                              )}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>담당 기사</dt>
+                            <dd>
+                              {inquiry.visit.technician?.displayName ??
+                                "기사 미배정"}
+                            </dd>
+                          </div>
+                        </>
+                      )}
+                    </dl>
+                  </section>
+                )}
 
-          {hasConsultationHistory && (
-            <details className="remote-inquiry-detail__history">
-              <summary>이전 상담 기록·처리 이력</summary>
-              {inquiry.consultation && (
-                <dl className="inquiry-v13-remote-summary">
-                  <div>
-                    <dt>상담 결과</dt>
-                    <dd>
-                      {CONSULTATION_RESULT_LABELS[
-                        inquiry.consultation.resultCode
-                      ] ?? "상담 결과 확인 필요"}
-                    </dd>
+                {showActionPanel && onOpenVisit && onRefresh ? (
+                  <RemoteConsultationActionPanel
+                    inquiry={inquiry}
+                    onOpenVisit={onOpenVisit}
+                    onRefresh={onRefresh}
+                  />
+                ) : (
+                  <div className="consultation-stepper__empty-action">
+                    <strong>현재 진행할 상담 작업이 없습니다.</strong>
+                    <p>처리 이력과 최신 문의 상태를 확인해 주세요.</p>
                   </div>
-                  <div>
-                    <dt>최종 상담 요약</dt>
-                    <dd data-testid="consultation-detail-confirmed-summary">
-                      {inquiry.consultation.summary.confirmedSummary ??
-                        inquiry.consultation.summary.editedSummary ??
-                        inquiry.consultation.summary.aiDraftSummary ??
-                        "아직 확정된 요약이 없습니다."}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>상담 기록</dt>
-                    <dd data-testid="consultation-detail-note">
-                      {inquiry.consultation.consultationNote ?? "미저장"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>고객 안내</dt>
-                    <dd data-testid="consultation-detail-customer-guidance">
-                      {inquiry.consultation.customerGuidance ?? "미저장"}
-                    </dd>
-                  </div>
-                </dl>
-              )}
-              {inquiry.stateHistory.length > 0 && (
-                <ol className="remote-inquiry-detail__history-list">
-                  {inquiry.stateHistory.map((history) => (
-                    <li key={`${history.changedAt}-${history.toStatus}`}>
-                      <span>
-                        {history.fromStatus
-                          ? STATUS_LABELS[
-                              normalizeCounselorStatus(history.fromStatus)
-                            ]
-                          : "접수"}
-                        {" → "}
-                        {
-                          STATUS_LABELS[
-                            normalizeCounselorStatus(history.toStatus)
-                          ]
-                        }
-                      </span>
-                      <small>
-                        {ACTOR_ROLE_LABELS[history.actorRole] ?? "담당자"} ·{" "}
-                        {formatWorkspaceDateTime(history.changedAt)}
-                      </small>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </details>
-          )}
-        </div>
+                )}
+              </div>
+            ),
+          },
+        ]}
+      />
 
-        {showActionPanel && onOpenVisit && onRefresh && (
-          <RemoteConsultationActionPanel
-            inquiry={inquiry}
-            onOpenVisit={onOpenVisit}
-            onRefresh={onRefresh}
-          />
-        )}
-      </div>
+      {isHistoryOpen && (
+        <ConsultationHistoryModal inquiry={inquiry} onClose={closeHistory} />
+      )}
     </div>
   );
 }

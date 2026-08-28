@@ -14,7 +14,6 @@ import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.customer.feature.shared.SectionCard
 
 @Composable
@@ -70,13 +69,13 @@ fun CustomerResolutionSection(
                     )
 
                     Text(
-                        "?? ??: " +
+                        "사용 상태: " +
                             consultationResult
                                 .usageGuidanceDisplayLabel
                     )
 
                     Text(
-                        "?? ??: " +
+                        "처리 완료: " +
                             KoreanDateTimeFormatter.format(
                                 consultationResult.completedAt
                             ),
@@ -84,7 +83,7 @@ fun CustomerResolutionSection(
                             MaterialTheme.typography.bodySmall,
                     )
                 } else {
-                    LiquidGlassPill("?? ?? ??")
+                    LiquidGlassPill("고객 확인 필요")
                 }
 
                 Text(
@@ -132,9 +131,7 @@ fun CustomerResolutionSection(
             }
 
             is CustomerResolutionUiState.Submitting ->
-                LoadingBlock(
-                    "처리 결과를 저장하고 있어요"
-                )
+                Unit
 
             is CustomerResolutionUiState.Success -> {
                 val resolved =

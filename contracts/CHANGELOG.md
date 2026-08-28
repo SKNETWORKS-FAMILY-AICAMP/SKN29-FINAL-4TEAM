@@ -1,5 +1,23 @@
 # Contracts Changelog
 
+## 2026-08-28 — 고객 해결 피드백 반복 방지와 담당자 최종 완료 연결
+
+### Changed
+
+- 최신 상담·방문 처리 이후 해결됨 피드백이 이미 있으면
+  `SUBMIT_RESOLUTION_FEEDBACK`과 `REQUEST_CONSULTATION`을 다시 노출하거나
+  새 이벤트로 처리하지 않는다.
+- 같은 Idempotency Key의 동일 요청 Replay는 기존 성공 응답을 유지하고,
+  새 Key를 사용한 중복 요청은 최신 Snapshot을 포함한 409로 거절한다.
+- 고객이 판단을 바꿀 수 있도록 `CUSTOMER_REPORTED_UNRESOLVED`는 담당자가
+  최종 완료하기 전까지 유지한다.
+
+### Boundary
+
+- `FINALIZE_INQUIRY`의 마지막 처리 담당자·최신 해결 피드백 Guard는 유지한다.
+- 신규 상태·테이블·Migration을 추가하지 않으며 기존 Follow-up 원장과 문의
+  Row Lock을 사용한다.
+
 ## 2026-08-27 — CUSTOMER 최신 상담 처리 결과 조회
 
 ### Added

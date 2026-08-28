@@ -107,6 +107,7 @@ class AllowedActionContext:
         consultation: Any = _UNSET,
         visit: Any = _UNSET,
         open_followup_questions: Any = _UNSET,
+        completion_facts: Any = _UNSET,
     ) -> "AllowedActionContext":
         """Build a stable projection from locked or preloaded aggregate rows."""
 
@@ -145,47 +146,52 @@ class AllowedActionContext:
         last_handler_id = None
         last_handling_completed_at = None
         latest_resolved_feedback = None
-        if (
-            inquiry.status_code == "COMPLETION_PENDING"
-            and actor_role in {"CONSULTANT", "TECHNICIAN"}
-        ):
-            completed_consultation = (
-                inquiry.consultations.select_related("consultant")
-                .filter(status="COMPLETED", completed_at__isnull=False)
-                .order_by("-completed_at", "-id")
-                .first()
-            )
-            completed_visit = (
-                inquiry.visits.select_related("technician")
-                .filter(status="COMPLETED", completed_at__isnull=False)
-                .order_by("-completed_at", "-id")
-                .first()
-            )
-            if completed_visit is not None and (
-                completed_consultation is None
-                or completed_visit.completed_at
-                >= completed_consultation.completed_at
-            ):
-                completion_source = "VISIT"
-                last_handler_id = completed_visit.technician_id
-                last_handling_completed_at = completed_visit.completed_at
-            elif completed_consultation is not None:
-                completion_source = "CONSULTATION"
-                last_handler_id = completed_consultation.consultant_id
-                last_handling_completed_at = completed_consultation.completed_at
-            latest_resolved_feedback = (
-                inquiry.followup_confirmations.filter(
-                    resolution_status_code="RESOLVED"
+        fresh_resolved_feedback_exists = False
+        if inquiry.status_code == "COMPLETION_PENDING":
+            if completion_facts is not _UNSET:
+                completion_source = completion_facts.get("completion_source")
+                last_handler_id = completion_facts.get("last_handler_id")
+                fresh_resolved_feedback_exists = bool(
+                    completion_facts.get("fresh_resolved_feedback_exists", False)
                 )
-                .order_by("-created_at", "-id")
-                .first()
-            )
-        fresh_resolved_feedback_exists = bool(
-            latest_resolved_feedback is not None
-            and last_handling_completed_at is not None
-            and latest_resolved_feedback.created_at
-            > last_handling_completed_at
-        )
+            else:
+                completed_consultation = (
+                    inquiry.consultations.select_related("consultant")
+                    .filter(status="COMPLETED", completed_at__isnull=False)
+                    .order_by("-completed_at", "-id")
+                    .first()
+                )
+                completed_visit = (
+                    inquiry.visits.select_related("technician")
+                    .filter(status="COMPLETED", completed_at__isnull=False)
+                    .order_by("-completed_at", "-id")
+                    .first()
+                )
+                if completed_visit is not None and (
+                    completed_consultation is None
+                    or completed_visit.completed_at
+                    >= completed_consultation.completed_at
+                ):
+                    completion_source = "VISIT"
+                    last_handler_id = completed_visit.technician_id
+                    last_handling_completed_at = completed_visit.completed_at
+                elif completed_consultation is not None:
+                    completion_source = "CONSULTATION"
+                    last_handler_id = completed_consultation.consultant_id
+                    last_handling_completed_at = completed_consultation.completed_at
+                latest_resolved_feedback = (
+                    inquiry.followup_confirmations.filter(
+                        resolution_status_code="RESOLVED"
+                    )
+                    .order_by("-created_at", "-id")
+                    .first()
+                )
+                fresh_resolved_feedback_exists = bool(
+                    latest_resolved_feedback is not None
+                    and last_handling_completed_at is not None
+                    and latest_resolved_feedback.created_at
+                    > last_handling_completed_at
+                )
         customer = getattr(getattr(inquiry, "subscription", None), "customer", None)
         product_present = bool(
             getattr(getattr(inquiry, "subscription", None), "product_model_id", None)
@@ -381,6 +387,8 @@ class AllowedActionResolver:
             return context.actor_is_last_handler
         if guard_id == "G-RESOLVED-CUSTOMER-FEEDBACK-EXISTS":
             return context.fresh_resolved_feedback_exists
+        if guard_id == "G-NO-FRESH-RESOLVED-CUSTOMER-FEEDBACK":
+            return not context.fresh_resolved_feedback_exists
         if guard_id == "G-SYMPTOM-PAYLOAD-VALID":
             return context.symptom_payload_valid
         if guard_id == "G-FOLLOWUP-ANSWERS-VALID":

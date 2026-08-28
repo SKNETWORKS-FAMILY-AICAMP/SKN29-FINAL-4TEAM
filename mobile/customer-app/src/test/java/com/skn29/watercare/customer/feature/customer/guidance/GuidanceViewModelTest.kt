@@ -279,7 +279,7 @@ class GuidanceViewModelTest {
 
             advanceUntilIdle()
 
-            // init? ?? Snapshot ??? double-click ???? ????.
+            // init's latest Snapshot read is excluded from the double-click assertion.
             snapshotCalls = 0
 
             viewModel.requestConsultation()

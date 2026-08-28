@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,8 +29,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.ui.components.WaterBridgeCustomerPalette
-import com.skn29.watercare.core.ui.components.ErrorCard
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.components.ReferenceCompactBanner
 import com.skn29.watercare.core.ui.components.ReferenceWelcomeCard
 import com.skn29.watercare.core.ui.components.ReferenceDashboardScaffold
@@ -245,6 +244,9 @@ backgroundRes = R.drawable.water_background_customer,
                     value = username,
                     onValueChange = {
                         username = it
+                        if (state.error != null) {
+                            viewModel.consumeError()
+                        }
                     },
                     label = {
                         Text("아이디")
@@ -286,6 +288,9 @@ backgroundRes = R.drawable.water_background_customer,
                     value = password,
                     onValueChange = {
                         password = it
+                        if (state.error != null) {
+                            viewModel.consumeError()
+                        }
                     },
                     label = {
                         Text("비밀번호")
@@ -437,44 +442,37 @@ backgroundRes = R.drawable.water_background_customer,
             }
         }
 
-        if (state.submitting) {
-            LoadingBlock(
-                when {
-                    signupMode ->
-                        "회원가입 요청을 처리하고 있어요"
-
-                    usernameRecoveryMode ->
-                        "아이디 확인 요청을 처리하고 있어요"
-
-                    passwordResetMode ->
-                        "비밀번호 재설정 요청을 처리하고 있어요"
-
-                    else ->
-                        "서비스를 시작하고 있어요"
-                }
-            )
-        }
-
-        if (!signupMode && !usernameRecoveryMode && !passwordResetMode) {
-            state.error?.let {
-                ErrorCard(
-                    message = it,
-                    onRetry =
-                        if (
-                            username.isNotBlank() &&
-                            password.isNotBlank()
+        if (
+            !signupMode &&
+            !usernameRecoveryMode &&
+            !passwordResetMode
+        ) {
+            state.error?.let { loginError ->
+                AlertDialog(
+                    onDismissRequest =
+                        viewModel::consumeError,
+                    title = {
+                        Text(
+                            text = "로그인 실패",
+                            fontWeight =
+                                FontWeight.SemiBold,
+                        )
+                    },
+                    text = {
+                        Text(
+                            customerLoginErrorMessage(
+                                loginError
+                            )
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick =
+                                viewModel::consumeError,
                         ) {
-                            {
-                                viewModel.login(
-                                    username =
-                                        username,
-                                    password =
-                                        password,
-                                )
-                            }
-                        } else {
-                            null
-                        },
+                            Text("확인")
+                        }
+                    },
                 )
             }
         }
@@ -491,10 +489,27 @@ backgroundRes = R.drawable.water_background_customer,
 
 private fun customerLoginErrorMessage(
     message: String,
-): String = when {
-    message.contains("고객 계정", ignoreCase = true) ->
-        "고객 계정으로 로그인해 주세요."
+): String {
+    val normalized = message.trim()
 
-    else ->
-        "서비스를 시작하지 못했어요. 잠시 후 다시 시도해주세요."
+    return when {
+        normalized.contains(
+            "고객 계정",
+            ignoreCase = true,
+        ) ->
+            "고객 계정으로 로그인해 주세요."
+
+        normalized.contains(
+            "credential",
+            ignoreCase = true,
+        ) ||
+            normalized.contains(
+                "아이디 또는 비밀번호",
+                ignoreCase = true,
+            ) ->
+            "아이디 또는 비밀번호가 올바르지 않습니다."
+
+        else ->
+            "로그인에 실패했습니다. 잠시 후 다시 시도해 주세요."
+    }
 }

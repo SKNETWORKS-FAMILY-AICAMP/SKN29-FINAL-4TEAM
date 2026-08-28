@@ -11,6 +11,7 @@ import {
   getStatusBadgeVariant,
   STATUS_LABELS,
 } from "../model/consultantWorkspaceModel";
+import { formatProductModelAndName } from "../model/productDisplayName";
 import type {
   CounselorAllowedAction,
   CounselorInquiry,
@@ -210,7 +211,7 @@ function CompactConsultationDeskContent({
           </span>
           <h2>{inquiry.symptomLabel}</h2>
           <p>
-            {inquiry.customerName} · {inquiry.productCode} · {inquiry.inquiryCode}
+            {inquiry.customerName} · {formatProductModelAndName(inquiry.manualModel)} · {inquiry.inquiryCode}
           </p>
         </div>
       </header>

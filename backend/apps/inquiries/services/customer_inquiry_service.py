@@ -112,19 +112,7 @@ class CustomerInquiryService:
 
     @classmethod
     def _snapshot(cls, inquiry: Inquiry, *, actor: Any) -> dict[str, Any]:
-        open_followup_questions = any(
-            cls._question(question) is not None
-            for question in inquiry.allowed_action_open_questions
-        )
-        allowed_actions = AllowedActionResolver.resolve(
-            context=AllowedActionContext.from_models(
-                inquiry=inquiry,
-                actor=actor,
-                consultation=None,
-                visit=None,
-                open_followup_questions=open_followup_questions,
-            )
-        )
+        allowed_actions = cls._allowed_actions(inquiry, actor=actor)
         return {
             "inquiry_id": inquiry.public_id,
             "status_code": inquiry.status_code,
@@ -337,11 +325,22 @@ class CustomerInquiryService:
         }
 
     @classmethod
-    def _allowed_actions(cls, inquiry, *, actor: Any) -> list[dict]:
+    def _allowed_actions(
+        cls,
+        inquiry,
+        *,
+        actor: Any,
+        completion_facts: Any = None,
+    ) -> list[dict]:
         open_followup_questions = any(
             cls._question(question) is not None
             for question in inquiry.allowed_action_open_questions
         )
+        if completion_facts is None and hasattr(
+            inquiry,
+            "allowed_action_latest_resolved_feedback_at",
+        ):
+            completion_facts = cls._completion_facts_from_annotations(inquiry)
         return AllowedActionResolver.resolve(
             context=AllowedActionContext.from_models(
                 inquiry=inquiry,
@@ -349,8 +348,63 @@ class CustomerInquiryService:
                 consultation=None,
                 visit=None,
                 open_followup_questions=open_followup_questions,
+                **(
+                    {"completion_facts": completion_facts}
+                    if completion_facts is not None
+                    else {}
+                ),
             )
         )
+
+    @staticmethod
+    def _completion_facts_from_annotations(inquiry) -> dict[str, Any]:
+        completed_consultation_at = getattr(
+            inquiry,
+            "allowed_action_latest_completed_consultation_at",
+            None,
+        )
+        completed_visit_at = getattr(
+            inquiry,
+            "allowed_action_latest_completed_visit_at",
+            None,
+        )
+        completion_source = None
+        last_handler_id = None
+        last_handling_completed_at = None
+        if completed_visit_at is not None and (
+            completed_consultation_at is None
+            or completed_visit_at >= completed_consultation_at
+        ):
+            completion_source = "VISIT"
+            last_handler_id = getattr(
+                inquiry,
+                "allowed_action_latest_completed_visit_handler_id",
+                None,
+            )
+            last_handling_completed_at = completed_visit_at
+        elif completed_consultation_at is not None:
+            completion_source = "CONSULTATION"
+            last_handler_id = getattr(
+                inquiry,
+                "allowed_action_latest_completed_consultation_handler_id",
+                None,
+            )
+            last_handling_completed_at = completed_consultation_at
+
+        latest_feedback_at = getattr(
+            inquiry,
+            "allowed_action_latest_resolved_feedback_at",
+            None,
+        )
+        return {
+            "completion_source": completion_source,
+            "last_handler_id": last_handler_id,
+            "fresh_resolved_feedback_exists": bool(
+                latest_feedback_at is not None
+                and last_handling_completed_at is not None
+                and latest_feedback_at > last_handling_completed_at
+            ),
+        }
 
     @staticmethod
     def _validated_public_string_list(value: Any) -> list[str] | None:

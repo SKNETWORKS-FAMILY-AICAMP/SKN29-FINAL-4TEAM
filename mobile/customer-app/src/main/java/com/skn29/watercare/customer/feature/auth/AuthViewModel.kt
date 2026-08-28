@@ -96,6 +96,17 @@ class AuthViewModel(
         checkBackend()
     }
 
+    fun consumeError() {
+        if (_state.value.error == null) {
+            return
+        }
+
+        _state.value =
+            _state.value.copy(
+                error = null,
+            )
+    }
+
     fun checkBackend() {
         viewModelScope.launch {
             _state.value = _state.value.copy(checkingBackend = true, error = null)

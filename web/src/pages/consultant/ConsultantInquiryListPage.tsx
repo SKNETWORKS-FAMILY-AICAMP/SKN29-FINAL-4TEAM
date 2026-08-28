@@ -9,8 +9,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { appEnv } from "../../app/config/env";
 import { useAuth } from "../../app/providers/authContext";
+import { ApiClientError } from "../../common/api/apiError";
 import Pagination from "../../common/components/data-display/Pagination";
-import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
@@ -37,6 +37,7 @@ import {
   getCounselorWorkBucket,
   WORK_BUCKET_LABELS,
 } from "../../features/consultation/model/consultantWorkspaceModel";
+import { formatProductModelAndName } from "../../features/consultation/model/productDisplayName";
 import {
   rememberRecentConsultantInquiryId,
 } from "../../features/consultation/model/recentConsultantInquiryIds";
@@ -137,12 +138,18 @@ function formatBucketElapsedTime(
   return `${Math.max(1, Math.floor(waitingMinutes / 1_440))}일 전`;
 }
 
+function isNetworkError(error: unknown): boolean {
+  return (
+    error instanceof ApiClientError &&
+    (error.kind === "NETWORK_ERROR" || error.kind === "TIMEOUT")
+  );
+}
+
 export default function ConsultantInquiryListPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { filters, hasChangedConditions, resetFilters, setFilters } =
-    useCounselorQueueFilters();
+  const { filters, setFilters } = useCounselorQueueFilters();
   const [activeBucket, setActiveBucket] =
     useState<ConsultantInquiryBucket>(() => getInitialBucket(location.search));
   const [activeRiskSection, setActiveRiskSection] =
@@ -275,6 +282,8 @@ export default function ConsultantInquiryListPage() {
           : listQuery.status === "error"
             ? "error"
             : "ready";
+  const hasNetworkError =
+    mockState === "error" || isNetworkError(listQuery.error);
   const sourceInquiries = useMemo(
     () =>
       mockState === "empty"
@@ -566,8 +575,16 @@ export default function ConsultantInquiryListPage() {
               />
             ) : loadState === "error" ? (
               <ErrorState
-                title="상담 문의 목록을 불러오지 못했습니다."
-                description="잠시 후 다시 시도해 주세요."
+                title={
+                  hasNetworkError
+                    ? "네트워크 오류가 발생했습니다."
+                    : "상담 문의 목록을 불러오지 못했습니다."
+                }
+                description={
+                  hasNetworkError
+                    ? "네트워크 연결을 확인한 뒤 다시 시도해 주세요."
+                    : "잠시 후 다시 시도해 주세요."
+                }
                 onRetry={
                   mockState === "error"
                     ? () => navigate("/consultant/inquiries", { replace: true })
@@ -578,23 +595,6 @@ export default function ConsultantInquiryListPage() {
               <ForbiddenState
                 title="상담 문의 목록을 볼 권한이 없습니다."
                 description="상담사 역할과 담당 범위를 확인해 주세요."
-              />
-            ) : queuePage.items.length === 0 ? (
-              <EmptyState
-                title={
-                  hasChangedConditions
-                    ? "검색 조건에 맞는 문의가 없습니다."
-                    : `${getBucketLabel(activeBucket)}가 없습니다.`
-                }
-                description={
-                  hasChangedConditions
-                    ? "검색어를 바꾸거나 초기화해 주세요."
-                    : activeBucket === "NEW"
-                      ? "새 문의가 들어오면 여기에 바로 표시됩니다."
-                      : "현재 해당 상태의 문의가 없습니다."
-                }
-                actionLabel={hasChangedConditions ? "검색 초기화" : undefined}
-                onAction={hasChangedConditions ? resetFilters : undefined}
               />
             ) : (
               <>
@@ -706,7 +706,7 @@ export default function ConsultantInquiryListPage() {
                     <div className="consultant-risk-section__list">
                       {inquiries.length === 0 ? (
                         <p className="consultant-risk-section__empty">
-                          선택한 조건에 해당하는 문의가 없습니다.
+                          문의가 없습니다.
                         </p>
                       ) : (
                         inquiries.map((inquiry) => (
@@ -727,7 +727,10 @@ export default function ConsultantInquiryListPage() {
                             onClick={() => openInquiry(inquiry.inquiryId)}
                           >
                             <span className="consultant-list-item__subject">
-                              {inquiry.symptomSummary}
+                              <strong>{inquiry.symptomSummary}</strong>
+                              <small className="consultant-list-item__product">
+                                {formatProductModelAndName(inquiry.productModel)}
+                              </small>
                             </span>
 
                             <time
@@ -755,7 +758,7 @@ export default function ConsultantInquiryListPage() {
             )}
           </div>
 
-          {loadState === "ready" && queuePage.totalItems > 0 && (
+          {loadState === "ready" && (
             <Pagination
               page={queuePage.currentPage}
               totalItems={queuePage.totalItems}

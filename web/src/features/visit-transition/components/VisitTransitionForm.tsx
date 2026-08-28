@@ -1,4 +1,5 @@
 import type { CounselorInquiry } from "../../consultation/model/consultantWorkspaceTypes";
+import { formatProductModelAndName } from "../../consultation/model/productDisplayName";
 
 interface VisitTransitionFormProps {
   inquiry: CounselorInquiry;
@@ -37,7 +38,7 @@ export default function VisitTransitionForm({
           <div>
             <dt>고객·제품</dt>
             <dd>{inquiry.customerName}</dd>
-            <dd>{inquiry.productCode}</dd>
+            <dd>{formatProductModelAndName(inquiry.manualModel)}</dd>
           </div>
           <div>
             <dt>사용 안내</dt>

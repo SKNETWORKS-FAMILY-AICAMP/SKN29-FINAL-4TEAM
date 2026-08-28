@@ -112,12 +112,21 @@ describe("미배정 상담 대기 목록", () => {
     );
 
     expect(await screen.findByText("정수기에서 물이 새요")).toBeVisible();
-    expect(screen.getByText(/SYN-INQ-0101/)).toHaveTextContent(
-      "WPUJAC104DWH",
+    expect(screen.getByText(/WPUJAC104DWH/)).toHaveTextContent(
+      "WPUJAC104DWH · 초소형 직수 냉온 정수기",
     );
+    expect(screen.queryByText("SYN-INQ-0101")).not.toBeInTheDocument();
     expect(screen.getByText("15분 대기")).toBeVisible();
+    expect(screen.queryByText("UNASSIGNED")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "SYN-INQ-0101 내가 상담하기" }),
+      screen.queryByText(
+        "원하는 문의를 가져오면 내 상담 목록에서 이어서 처리할 수 있습니다.",
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+      }),
     ).toBeVisible();
     expect(dataRepository.getInquiryDetail).not.toHaveBeenCalled();
   });
@@ -138,7 +147,7 @@ describe("미배정 상담 대기 목록", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "SYN-INQ-0101 내가 상담하기",
+        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
       }),
     );
 
@@ -184,14 +193,14 @@ describe("미배정 상담 대기 목록", () => {
     );
 
     const button = await screen.findByRole("button", {
-      name: "SYN-INQ-0101 내가 상담하기",
+      name: "합성고객 01 정수기에서 물이 새요 상담 시작",
     });
     fireEvent.click(button);
     fireEvent.click(button);
 
     expect(claimConsultation).toHaveBeenCalledTimes(1);
     expect(button).toBeDisabled();
-    expect(button).toHaveTextContent("가져오는 중");
+    expect(button).toHaveTextContent("시작하는 중");
 
     resolveClaim?.(successResponse());
   });
@@ -217,7 +226,7 @@ describe("미배정 상담 대기 목록", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "SYN-INQ-0101 내가 상담하기",
+        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
       }),
     );
 
@@ -260,7 +269,7 @@ describe("미배정 상담 대기 목록", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "SYN-INQ-0101 내가 상담하기",
+        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
       }),
     );
 
@@ -311,7 +320,7 @@ describe("미배정 상담 대기 목록", () => {
 
       await user.click(
         await screen.findByRole("button", {
-          name: "SYN-INQ-0101 내가 상담하기",
+          name: "합성고객 01 정수기에서 물이 새요 상담 시작",
         }),
       );
 
@@ -367,7 +376,7 @@ describe("미배정 상담 대기 목록", () => {
 
       await user.click(
         await screen.findByRole("button", {
-          name: "SYN-INQ-0101 내가 상담하기",
+          name: "합성고객 01 정수기에서 물이 새요 상담 시작",
         }),
       );
 
@@ -380,6 +389,11 @@ describe("미배정 상담 대기 목록", () => {
   );
 
   it.each([
+    [
+      0,
+      "NETWORK_ERROR",
+      "네트워크 오류가 발생했습니다. 네트워크 연결을 확인해 주세요.",
+    ],
     [401, "UNAUTHORIZED", "로그인이 필요하거나 로그인 정보가 만료되었습니다."],
     [403, "FORBIDDEN", "미배정 상담 목록을 볼 권한이 없습니다."],
     [422, "VALIDATION_ERROR", "미배정 상담 목록의 조회 조건을 확인할 수 없습니다."],
@@ -423,7 +437,7 @@ describe("미배정 상담 대기 목록", () => {
 
     expect(await screen.findByText("현재 배정할 수 없음")).toBeVisible();
     expect(
-      screen.queryByRole("button", { name: /내가 상담하기/ }),
+      screen.queryByRole("button", { name: /상담 시작/ }),
     ).not.toBeInTheDocument();
   });
 
@@ -449,7 +463,7 @@ describe("미배정 상담 대기 목록", () => {
       ).toHaveTextContent(productModel);
       expect(screen.getByText("현재 배정할 수 없음")).toBeVisible();
       expect(
-        screen.queryByRole("button", { name: /내가 상담하기/ }),
+        screen.queryByRole("button", { name: /상담 시작/ }),
       ).not.toBeInTheDocument();
     },
   );
@@ -467,7 +481,7 @@ describe("미배정 상담 대기 목록", () => {
     );
 
     const button = await screen.findByRole("button", {
-      name: /SYN-INQ-0101 내가 상담하기.*실제 API 연결 필요/,
+      name: /합성고객 01 정수기에서 물이 새요 상담 시작.*실제 API 연결 필요/,
     });
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute(
@@ -528,7 +542,7 @@ describe("미배정 상담 대기 목록", () => {
     );
     await user.click(
       await screen.findByRole("button", {
-        name: "SYN-INQ-0101 내가 상담하기",
+        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
       }),
     );
 

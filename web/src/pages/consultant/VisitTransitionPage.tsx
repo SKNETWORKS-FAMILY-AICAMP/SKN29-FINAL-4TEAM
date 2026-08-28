@@ -13,6 +13,7 @@ import { toInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
 import { useConsultantInquiryDetailQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
+import { formatProductModelAndName } from "../../features/consultation/model/productDisplayName";
 import { consultantWorkspaceDataRepository } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import { consultantWorkspaceRepository } from "../../features/consultation/repositories/consultantWorkspaceRepository";
 import { getSyntheticConsultantDashboardData } from "../../features/notice/api/consultantNoticeApi";
@@ -211,7 +212,7 @@ export default function VisitTransitionPage() {
             </div>
             <div className="v6-page-head__meta">
               <span>문의 · {inquiry.inquiryCode}</span>
-              <span>제품 · {inquiry.productCode}</span>
+              <span>제품 · {formatProductModelAndName(inquiry.manualModel)}</span>
               <span>기사 선택·배정 API 미지원</span>
             </div>
           </header>

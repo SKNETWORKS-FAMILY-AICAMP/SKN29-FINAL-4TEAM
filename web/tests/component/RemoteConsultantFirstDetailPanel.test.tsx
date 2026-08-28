@@ -109,7 +109,8 @@ function renderPanel(
 }
 
 describe("Remote 첫 문의 상세 패널", () => {
-  it("로딩 후 별도 전체 기록 화면 없이 실제 상세와 상담 처리를 한 화면에 표시한다", async () => {
+  it("로딩 후 실제 상세와 상담 처리를 세 단계로 나누어 표시한다", async () => {
+    const user = userEvent.setup();
     let resolveDetail:
       | ((value: {
           correlationId: string;
@@ -138,17 +139,28 @@ describe("Remote 첫 문의 상세 패널", () => {
     expect(
       await screen.findByLabelText("상담 문의 상세"),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("상담 처리 작업")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "상담 시작" })).toBeInTheDocument();
     expect(screen.queryByText("조회 확인 번호: corr-detail")).not.toBeInTheDocument();
-    [
-      "합성 고객 01",
-      "고객 증상과 답변",
-      "고객에게 안내할 내용",
-      "제품·관리 정보",
-    ].forEach((heading) =>
+    ["합성 고객 01", "고객 증상과 답변", "제품·관리 정보"].forEach(
+      (heading) =>
       expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument(),
     );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 2단계: 안전·상담 가이드 확인",
+      }),
+    );
+    expect(
+      screen.getByRole("heading", { name: "고객에게 안내할 내용" }),
+    ).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 3단계: 상담 기록·최종 처리",
+      }),
+    );
+    expect(screen.getByLabelText("상담 처리 작업")).toBeVisible();
+    expect(screen.getByRole("button", { name: "상담 시작" })).toBeVisible();
     expect(screen.queryByText(/문의번호/)).not.toBeInTheDocument();
     expect(
       screen.queryByText("고객 상황을 확인하고 상담 기록을 남겨 주세요."),

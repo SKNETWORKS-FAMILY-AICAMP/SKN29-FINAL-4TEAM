@@ -131,6 +131,11 @@ describe("ConsultantInquiryListPage", () => {
         const [subject, receivedAt, customer] = Array.from(row.children);
 
         expect(subject).toHaveClass("consultant-list-item__subject");
+        expect(
+          within(subject as HTMLElement).getByText(
+            "WPU-JAC104D · 초소형 직수 냉온 정수기",
+          ),
+        ).toHaveClass("consultant-list-item__product");
         expect(receivedAt).toHaveClass("consultant-list-item__received-at");
         expect(receivedAt).toHaveAttribute("datetime");
         expect(receivedAt).toHaveAttribute("title");
@@ -458,13 +463,30 @@ describe("ConsultantInquiryListPage", () => {
 
   it.each([
     ["loading", "상담 문의 목록을 불러오고 있습니다."],
-    ["error", "상담 문의 목록을 불러오지 못했습니다."],
+    ["error", "네트워크 오류가 발생했습니다."],
     ["forbidden", "상담 문의 목록을 볼 권한이 없습니다."],
-    ["empty", "새 문의가 없습니다."],
   ])("목록 %s 상태를 구분해 안내한다", async (state, message) => {
     renderPage(`/consultant/inquiries?mockState=${state}`);
 
     expect(await screen.findByText(message)).toBeInTheDocument();
+    if (state === "error") {
+      expect(
+        screen.getByText("네트워크 연결을 확인한 뒤 다시 시도해 주세요."),
+      ).toBeVisible();
+      expect(screen.queryByText("문의가 없습니다.")).not.toBeInTheDocument();
+    }
+  });
+
+  it("문의가 0건이어도 탭·검색·정렬·페이지 레이아웃을 유지한다", async () => {
+    renderPage("/consultant/inquiries?mockState=empty");
+
+    expect(await screen.findByText("문의가 없습니다.")).toBeVisible();
+    expect(getRiskTabs().getByRole("tab", { name: /전체 문의0/ })).toBeVisible();
+    expect(screen.getByRole("searchbox", { name: "문의 검색" })).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "문의 정렬" })).toBeVisible();
+    expect(screen.getByRole("navigation", { name: "문의 목록 페이지" })).toHaveTextContent(
+      "총 0건 · 1/1페이지",
+    );
   });
 
   it("상담 완료 후 자동 진행을 사용하면 다음 처리 문의를 연다", async () => {

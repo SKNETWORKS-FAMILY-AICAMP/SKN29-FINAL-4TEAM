@@ -44,6 +44,7 @@ import {
 } from "../../features/consultation/model/consultantWorkspaceModel";
 import { getConsultantDashboardDate } from "../../features/consultation/model/consultantDashboardDate";
 import { getConsultantDisplayName } from "../../features/consultation/model/consultantDisplayName";
+import { formatProductModelAndName } from "../../features/consultation/model/productDisplayName";
 import {
   readRecentConsultantInquiryIds,
   rememberRecentConsultantInquiryId,
@@ -95,6 +96,16 @@ const BUCKET_STATUSES: Record<
   COMPLETED: ["RESOLVED", "CANCELLED"],
 };
 
+const DASHBOARD_OVERVIEW_QUERY: ConsultantInquiryListQuery = {
+  status: [
+    ...BUCKET_STATUSES.NEW,
+    ...BUCKET_STATUSES.IN_PROGRESS,
+    ...BUCKET_STATUSES.COMPLETED,
+  ],
+  page: 1,
+  size: 100,
+};
+
 const RISK_SECTIONS: readonly {
   id: ConsultantRiskLevelDto;
   label: string;
@@ -130,8 +141,8 @@ const RISK_LABELS: Record<ConsultantRiskLevelDto, string> = {
 
 interface RecentInquiryPreview {
   inquiryId: InquiryId;
-  inquiryCode: string;
   title: string;
+  productLabel: string | null;
   status: ConsultantInquiryStatusDto;
   riskLevel: ConsultantRiskLevelDto;
 }
@@ -325,8 +336,13 @@ export default function ConsultantDashboardPage() {
 
           return {
             inquiryId,
-            inquiryCode: result.data.inquiryCode,
             title: result.data.symptomAndQuestionnaire.symptomSummary,
+            productLabel: result.data.productAndCare
+              ? formatProductModelAndName(
+                  result.data.productAndCare.productModel,
+                  result.data.productAndCare.productModelName,
+                )
+              : null,
             status: result.data.status,
             riskLevel: result.data.riskLevel,
           } satisfies RecentInquiryPreview;
@@ -396,6 +412,9 @@ export default function ConsultantDashboardPage() {
     ],
   );
   const listQuery = useConsultantInquiryListQuery(repositoryQuery);
+  const overviewQuery = useConsultantInquiryListQuery(
+    DASHBOARD_OVERVIEW_QUERY,
+  );
   const useDesignMockFallback =
     appEnv.enableDesignMockFallback &&
     import.meta.env.DEV &&
@@ -403,6 +422,13 @@ export default function ConsultantDashboardPage() {
     (listQuery.status === "error" ||
       (listQuery.status === "success" &&
         (listQuery.data?.pageInfo.total ?? 0) === 0));
+  const useOverviewDesignMockFallback =
+    appEnv.enableDesignMockFallback &&
+    import.meta.env.DEV &&
+    consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
+    (overviewQuery.status === "error" ||
+      (overviewQuery.status === "success" &&
+        (overviewQuery.data?.pageInfo.total ?? 0) === 0));
   const useDashboardMockData =
     consultantWorkspaceDataRepository.dataSource === "MOCK" ||
     useDesignMockFallback;
@@ -426,6 +452,18 @@ export default function ConsultantDashboardPage() {
         : listQuery.data;
     },
     [listQuery.data, repositoryQuery, useDesignMockFallback],
+  );
+  const overviewData = useMemo(
+    () =>
+      useOverviewDesignMockFallback
+        ? createMockConsultantInquiryListViewModel(
+            DASHBOARD_OVERVIEW_QUERY,
+            "DESIGN_SCENARIOS",
+          )
+        : consultantWorkspaceDataRepository.dataSource === "MOCK"
+          ? createMockConsultantInquiryListViewModel(DASHBOARD_OVERVIEW_QUERY)
+          : overviewQuery.data,
+    [overviewQuery.data, useOverviewDesignMockFallback],
   );
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
@@ -503,29 +541,21 @@ export default function ConsultantDashboardPage() {
     };
   }, [selectedInquiryId]);
 
-  const bucketCounts = useMemo(
-    () => ({
-      NEW:
-        dashboardData?.summary.new ??
-        BUCKET_STATUSES.NEW.reduce(
-          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
+  const bucketCounts = useMemo(() => {
+    if (!overviewData) return undefined;
+
+    return Object.fromEntries(
+      Object.entries(BUCKET_STATUSES).map(([bucket, statuses]) => [
+        bucket,
+        statuses.reduce(
+          (total, status) =>
+            total + (overviewData.statusCounts[status] ?? 0),
           0,
         ),
-      IN_PROGRESS:
-        dashboardData?.summary.inProgress ??
-        BUCKET_STATUSES.IN_PROGRESS.reduce(
-          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
-          0,
-        ),
-      COMPLETED:
-        dashboardData?.summary.completed ??
-        BUCKET_STATUSES.COMPLETED.reduce(
-          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
-          0,
-        ),
-    }),
-    [dashboardData?.summary, queryData?.statusCounts],
-  );
+      ]),
+    ) as Record<CounselorWorkBucket, number>;
+  }, [overviewData]);
+  const totalInquiryCount = overviewData?.pageInfo.total;
   const queuePage = {
     currentPage: queryData?.pageInfo.page ?? filters.page,
     items: sourceInquiries,
@@ -692,6 +722,7 @@ export default function ConsultantDashboardPage() {
         <ConsultantQueueSidebar
           activeBucket={null}
           bucketCounts={bucketCounts}
+          totalCount={totalInquiryCount}
           dashboardActive
         />
 
@@ -719,38 +750,38 @@ export default function ConsultantDashboardPage() {
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--total"
-              disabled={dashboardLoadState !== "ready"}
+              disabled={!overviewData}
               onClick={() => openInquiryList("ALL")}
             >
               <span>전체 문의 수</span>
-              <strong>{dashboardData?.summary.total ?? "—"}</strong>
+              <strong>{totalInquiryCount ?? "—"}</strong>
             </button>
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--work"
-              disabled={dashboardLoadState !== "ready"}
+              disabled={!overviewData}
               onClick={() => openInquiryList("NEW")}
             >
               <span>새 문의</span>
-              <strong>{dashboardData?.summary.new ?? "—"}</strong>
+              <strong>{bucketCounts?.NEW ?? "—"}</strong>
             </button>
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--waiting"
-              disabled={dashboardLoadState !== "ready"}
+              disabled={!overviewData}
               onClick={() => openInquiryList("IN_PROGRESS")}
             >
               <span>처리 중인 문의</span>
-              <strong>{dashboardData?.summary.inProgress ?? "—"}</strong>
+              <strong>{bucketCounts?.IN_PROGRESS ?? "—"}</strong>
             </button>
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--completed"
-              disabled={dashboardLoadState !== "ready"}
+              disabled={!overviewData}
               onClick={() => openInquiryList("COMPLETED")}
             >
               <span>처리 완료된 문의</span>
-              <strong>{dashboardData?.summary.completed ?? "—"}</strong>
+              <strong>{bucketCounts?.COMPLETED ?? "—"}</strong>
             </button>
           </div>
         </section>
@@ -787,7 +818,7 @@ export default function ConsultantDashboardPage() {
                       data-testid={`consultant-recent-inquiry-${inquiry.inquiryId}`}
                       data-e2e-sensitive="true"
                       onClick={() => openInquiry(inquiry.inquiryId)}
-                      aria-label={`${inquiry.inquiryCode} ${inquiry.title} 다시 열기`}
+                      aria-label={`${inquiry.title} 다시 열기`}
                     >
                       <span
                         className="counselor-dashboard-recent__rail"
@@ -799,7 +830,10 @@ export default function ConsultantDashboardPage() {
                           {inquiry.title}
                         </strong>
                         <small className="counselor-dashboard-recent__meta">
-                          {inquiry.inquiryCode} · {RISK_LABELS[inquiry.riskLevel]}
+                          {inquiry.productLabel
+                            ? `${inquiry.productLabel} · `
+                            : ""}
+                          {RISK_LABELS[inquiry.riskLevel]}
                         </small>
                       </span>
                       <span
@@ -976,6 +1010,19 @@ export default function ConsultantDashboardPage() {
               />
             ) : showContactTable ? (
               <div className="counselor-dashboard-contact-table-wrap">
+                <button
+                  type="button"
+                  className="counselor-dashboard-contact-table__back"
+                  onClick={() => {
+                    setSelectedContactDepartment(null);
+                    setContactQuery("");
+                  }}
+                >
+                  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                    <path d="m14.5 6-6 6 6 6" />
+                  </svg>
+                  <span>뒤로가기</span>
+                </button>
                 <strong className="counselor-dashboard-contact-table__title">
                   {selectedContactDepartment ?? "검색 결과"}
                 </strong>
@@ -1358,7 +1405,9 @@ export default function ConsultantDashboardPage() {
 
                             <span className="consultant-list-item__customer">
                               <strong>{inquiry.customerDisplayNameMasked}</strong>
-                              <small>{inquiry.productModel}</small>
+                              <small>
+                                {formatProductModelAndName(inquiry.productModel)}
+                              </small>
                             </span>
 
                             <span className="consultant-list-item__progress">

@@ -20,7 +20,6 @@ import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
@@ -79,9 +78,7 @@ fun CarePrecheckScreen(
         }
 
         if (state.loading) {
-            LoadingBlock(
-                "사전 점검을 준비하고 있어요"
-            )
+            // Visible loading UI intentionally hidden.
             return@WaterCareScreen
         }
 

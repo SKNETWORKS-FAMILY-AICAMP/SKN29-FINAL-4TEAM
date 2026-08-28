@@ -86,7 +86,10 @@ async function searchAndSelectCandidate(user: ReturnType<typeof userEvent.setup>
   await user.type(screen.getByRole("combobox", { name: "고객명 또는 연락처 *" }), "0001");
   const option = await screen.findByRole("option", { name: /합성 전화 고객 1/ });
   expect(option).toHaveTextContent("010-****-0001");
-  expect(option).toHaveTextContent("제품 모델 WPUJAC104DWH · 이용 중");
+  expect(option).toHaveTextContent(
+    "WPUJAC104DWH · 초소형 직수 정수기",
+  );
+  expect(option).toHaveTextContent("이용 중");
   expect(option).not.toHaveTextContent("010-1234-0001");
   await user.click(option);
 }
@@ -145,7 +148,11 @@ describe("PhoneInquiryCreatePage", () => {
 
     const selected = screen.getByRole("region", { name: "고객 정보" });
     expect(within(selected).getByText("합성 전화 고객 1")).toBeInTheDocument();
-    expect(within(selected).getByText("초소형 직수 정수기")).toBeInTheDocument();
+    expect(
+      within(selected).getByText(
+        "WPUJAC104DWH · 초소형 직수 정수기",
+      ),
+    ).toBeInTheDocument();
     expect(within(selected).getByText("방문 관리")).toBeInTheDocument();
     expect(within(selected).queryByText("VISIT_CARE")).not.toBeInTheDocument();
     expect(screen.queryByText("긴급도 *")).not.toBeInTheDocument();
@@ -155,6 +162,12 @@ describe("PhoneInquiryCreatePage", () => {
     expect(screen.queryByText("신규 접수")).not.toBeInTheDocument();
     expect(
       screen.queryByText("고객과 구독을 먼저 확인해 주세요"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "등록 전 확인" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText("전화 문의 등록 안내"),
     ).not.toBeInTheDocument();
     expect(screen.getByLabelText("상담 내용")).toBeDisabled();
 
