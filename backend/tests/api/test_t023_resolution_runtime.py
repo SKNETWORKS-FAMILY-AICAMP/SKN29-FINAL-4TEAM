@@ -13,6 +13,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.consultations.models import Consultation
 from apps.inquiries.models import FollowupConfirmation, Inquiry
+from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.inquiries.repositories.resolution_repository import (
     ResolutionRepository,
 )
@@ -143,6 +144,29 @@ def concurrent_finalize(
         connections.close_all()
 
 
+def concurrent_feedback(
+    *,
+    actor_id: int,
+    inquiry_id: UUID,
+    key: str,
+    barrier: Barrier,
+) -> tuple[int, dict]:
+    connections.close_all()
+    try:
+        actor = User.objects.get(pk=actor_id)
+        barrier.wait(timeout=10)
+        response = client_for(actor).post(
+            f"/api/v1/inquiries/{inquiry_id}/resolution-feedback",
+            feedback_body(),
+            format="json",
+            HTTP_IDEMPOTENCY_KEY=key,
+            HTTP_X_CORRELATION_ID=str(uuid4()),
+        )
+        return response.status_code, response.json()
+    finally:
+        connections.close_all()
+
+
 def staff_lock_barrier(barrier: Barrier):
     """Force both PostgreSQL requests to contend for the inquiry row lock."""
 
@@ -158,6 +182,25 @@ def staff_lock_barrier(barrier: Barrier):
     return patch.object(
         ResolutionRepository,
         "lock_staff_inquiry",
+        side_effect=synchronized_lock,
+    )
+
+
+def customer_lock_barrier(barrier: Barrier):
+    """Force both customer feedback requests onto the inquiry row lock."""
+
+    original = InquiryRepository.lock_owned_inquiry
+    thread_state = local()
+
+    def synchronized_lock(*args, **kwargs):
+        if not getattr(thread_state, "lock_attempted", False):
+            thread_state.lock_attempted = True
+            barrier.wait(timeout=10)
+        return original(*args, **kwargs)
+
+    return patch.object(
+        InquiryRepository,
+        "lock_owned_inquiry",
         side_effect=synchronized_lock,
     )
 
@@ -322,6 +365,49 @@ def test_postgresql_concurrent_finalize_new_keys_have_one_version_winner():
     ).count() == 1
 
 
+@pytest.mark.django_db(transaction=True)
+def test_postgresql_concurrent_feedback_new_keys_store_one_confirmation():
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL row-lock verification only")
+
+    customer, _consultant, inquiry, _consultation = (
+        prepare_consultation_completion(314)
+    )
+    request_barrier = Barrier(2)
+    lock_barrier = Barrier(2)
+    keys = (
+        "t023-concurrent-feedback-key-a",
+        "t023-concurrent-feedback-key-b",
+    )
+    with customer_lock_barrier(lock_barrier), ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+        futures = [
+            executor.submit(
+                concurrent_feedback,
+                actor_id=customer.pk,
+                inquiry_id=inquiry.public_id,
+                key=key,
+                barrier=request_barrier,
+            )
+            for key in keys
+        ]
+        results = [future.result(timeout=30) for future in futures]
+
+    assert sorted(status for status, _payload in results) == [200, 409]
+    conflict = next(payload for status, payload in results if status == 409)
+    assert conflict["error"]["code"] == "STATE-CONFLICT-01"
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.COMPLETION_PENDING
+    assert inquiry.state_version == 8
+    assert FollowupConfirmation.objects.filter(inquiry=inquiry).count() == 1
+    assert IdempotencyRecord.objects.filter(
+        actor=customer,
+        operation_id="submitResolutionFeedback",
+        idempotency_key__in=keys,
+    ).count() == 1
+
+
 def test_resolved_feedback_then_last_consultant_finalizes_with_replay():
     customer, consultant, inquiry, consultation = (
         prepare_consultation_completion(301)
@@ -346,6 +432,10 @@ def test_resolved_feedback_then_last_consultant_finalizes_with_replay():
     assert accepted.status_code == replay.status_code == 200
     assert accepted.json()["data"]["status"] == "COMPLETION_PENDING"
     assert accepted.json()["data"]["state_version"] == 8
+    assert [
+        action["code"]
+        for action in accepted.json()["data"]["allowed_actions"]
+    ] == ["CUSTOMER_REPORTED_UNRESOLVED"]
     assert accepted.json()["data"]["idempotent_replay"] is False
     assert replay.json()["data"]["idempotent_replay"] is True
     inquiry.refresh_from_db()
@@ -357,6 +447,39 @@ def test_resolved_feedback_then_last_consultant_finalizes_with_replay():
     assert followup.next_action == "FINALIZE_INQUIRY"
     assert followup.customer_response == "안내 후 정상 작동합니다."
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 0
+
+    duplicate = post_action(
+        customer_client,
+        inquiry,
+        "resolution-feedback",
+        feedback_body(version=8),
+        key="t023-feedback-new-key",
+    )
+    reconsult = post_action(
+        customer_client,
+        inquiry,
+        "request-consultation",
+        {"state_version": 8},
+        key="t023-reconsult-after-resolved",
+    )
+
+    assert duplicate.status_code == 409
+    assert duplicate.json()["error"]["code"] == "STATE-CONFLICT-01"
+    assert duplicate.json()["error"]["details"]["allowed_actions"] == [
+        "CUSTOMER_REPORTED_UNRESOLVED"
+    ]
+    assert reconsult.status_code == 409
+    assert reconsult.json()["error"]["code"] == "STATE-CONFLICT-01"
+    assert FollowupConfirmation.objects.filter(inquiry=inquiry).count() == 1
+    assert Consultation.objects.filter(inquiry=inquiry).count() == 1
+    workflow_snapshot = customer_client.get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}"
+    )
+    assert workflow_snapshot.status_code == 200
+    assert [
+        action["code"]
+        for action in workflow_snapshot.json()["data"]["allowed_actions"]
+    ] == ["CUSTOMER_REPORTED_UNRESOLVED"]
 
     final_body = {"state_version": 8, "final_note": "고객 확인 후 종결"}
     finalized = post_action(

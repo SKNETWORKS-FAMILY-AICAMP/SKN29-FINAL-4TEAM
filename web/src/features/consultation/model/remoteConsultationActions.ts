@@ -11,6 +11,7 @@ const REMOTE_CONSULTATION_ACTION_CODES = new Set<CounselorActionCode>([
   "VISIT_NOT_NEEDED",
   "UPDATE_VISIT_SCHEDULE",
   "CONFIRM_VISIT",
+  "FINALIZE_INQUIRY",
 ]);
 
 export function isRemoteConsultationActionCode(

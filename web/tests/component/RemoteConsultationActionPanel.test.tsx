@@ -430,4 +430,41 @@ describe("Remote 상담 처리 Panel", () => {
       "CONSULTATION_IN_PROGRESS",
     );
   });
+
+  it("Backend가 허용한 문의 최종 완료 Action을 실행한다", async () => {
+    const user = userEvent.setup();
+    const inquiry = createDetail(8);
+    inquiry.status = "COMPLETION_PENDING";
+    inquiry.workflow = {
+      status: "COMPLETION_PENDING",
+      stateVersion: 8,
+      allowedActions: [
+        {
+          code: "FINALIZE_INQUIRY",
+          label: "문의 최종 완료",
+          operationId: "finalizeInquiry",
+          style: "PRIMARY",
+          requiresConfirmation: true,
+          confirmationMessage: "고객 해결 확인 후 문의를 완료하시겠습니까?",
+        },
+      ],
+    };
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    render(
+      <RemoteConsultationActionPanel
+        inquiry={inquiry}
+        onOpenVisit={vi.fn()}
+        onRefresh={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "문의 최종 완료" }));
+
+    expect(hookMocks.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: expect.objectContaining({ code: "FINALIZE_INQUIRY" }),
+      }),
+    );
+  });
 });

@@ -462,6 +462,15 @@ guards:
     http_status: 422
     error_code: INVALID_RESOLVED_FEEDBACK
     message: 해결 여부와 의견을 확인해 주세요.
+- id: G-NO-FRESH-RESOLVED-CUSTOMER-FEEDBACK
+  category: COMPLETION
+  description: 최신 처리 이후 해결됨 피드백이 이미 저장됐다면 같은 해결 확인이나 재상담 요청을 반복하지 않는다.
+  conditions:
+  - inquiry.latest_resolution_feedback is null or inquiry.latest_resolution_feedback.created_at <= inquiry.last_handling_completed_at
+  failure:
+    http_status: 409
+    error_code: STATE-CONFLICT-01
+    message: 이미 처리된 고객 확인입니다. 최신 문의 상태를 확인해 주세요.
 - id: G-UNRESOLVED-FEEDBACK-VALID
   category: PAYLOAD
   description: 미해결 보고에는 미해결 표시와 선택 사유가 유효해야 한다.

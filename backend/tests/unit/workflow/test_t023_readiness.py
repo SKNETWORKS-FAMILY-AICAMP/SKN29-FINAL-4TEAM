@@ -117,7 +117,7 @@ def test_current_contract_and_runtime_files_are_present_but_owner_gates_remain()
         "states": 13,
         "events": 33,
         "transitions": 37,
-        "guards": 42,
+        "guards": 43,
         "allowed_actions": 24,
         "role_permissions": 5,
     }

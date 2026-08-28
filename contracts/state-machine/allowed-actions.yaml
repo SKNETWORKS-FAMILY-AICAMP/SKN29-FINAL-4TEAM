@@ -340,12 +340,16 @@ state_role_actions:
     - action: SUBMIT_RESOLUTION_FEEDBACK
       transition_rule_ids:
       - TR-INQ-029
+      dynamic_requirements:
+      - 최신 처리 이후 해결됨 고객 피드백이 아직 없어야 한다.
     - action: CUSTOMER_REPORTED_UNRESOLVED
       transition_rule_ids:
       - TR-INQ-030
     - action: REQUEST_CONSULTATION
       transition_rule_ids:
       - TR-INQ-031
+      dynamic_requirements:
+      - 최신 처리 이후 해결됨 고객 피드백이 아직 없어야 한다.
     CONSULTANT:
     - action: FINALIZE_INQUIRY
       transition_rule_ids:

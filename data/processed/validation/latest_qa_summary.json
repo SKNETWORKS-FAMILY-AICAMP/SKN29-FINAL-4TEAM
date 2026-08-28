@@ -5,23 +5,23 @@
   "reports": [
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "sha256": "96B174B581CA6D68C881AE9D17017B31474320B485589B7B38F80CE081721361"
+      "sha256": "CC5CC5C6E5D394127E602F5A7F9C09D52D666741DBD515EF3C754EF53A090075"
     },
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
-      "sha256": "D786351F7EFEB37C9247EC437FB64870A7011086FBEE82780C6A8A848644EDA9"
+      "sha256": "08B584C1CD3409CDCB918B36A07B4B77E62D753FC80F73A35ADDCDC343A0017A"
     },
     {
       "path": "processed/validation/quality/latest_quality_report.json",
-      "sha256": "45E8FD4BF4733F4F9B23746123E25F3D85FB5A2E419B4363DD9BADC50990AB63"
+      "sha256": "1551C9E944B0B127CC6711997D48CDF6C4558F59C5BD95F9EB5A7BDBBE7FC56A"
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "sha256": "4B13138BFFDFC8157A34BF8506A27C8A8131A884C3BBDE52E38905A620E3689C"
+      "sha256": "E75F93903191DA4FB68B0937B8FF7190F944F2B9A7BBC139DB6C61A99D6B768A"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "9D19B99B1DA5CDEC886B3290E867D64DE050CC261FF1603DE17F60CD8B2F4598"
+      "sha256": "2CAB04BE33A008B8CDFCEEB5EAEB4B810517BBE02F81ABE6915896AAD9975D86"
     }
   ],
   "totals": {
@@ -236,14 +236,14 @@
       "regenerated_files": [],
       "status": "PASS"
     },
-    "source_commit": "cdbccd84290d7ad8b3cdd7cf9f88446a860076b3",
+    "source_commit": "5fec1cfcc45deb2a23bacef7b39a93f9b2a7e2e7",
     "contract_alignment": {
       "version": "1.0.0",
       "status": "TEAM_APPROVED",
       "data_projection_consumes_contract": true,
       "backend_runtime_verified": true,
       "pipeline_config_sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74",
-      "contract_mapping_sha256": "F5356DE3D9B56E1EEE9333A6696ECBB654629505765C9FB44046505F368B0F20",
+      "contract_mapping_sha256": "C54F0FE2FFF0F1BAC144AA6B20161F5EA76E43FFE4DBEAB70723BAC938EF91A0",
       "source_hashes_verified": true
     },
     "error_categories": {
@@ -261,14 +261,14 @@
       }
     }
   },
-  "source_commit": "cdbccd84290d7ad8b3cdd7cf9f88446a860076b3",
+  "source_commit": "5fec1cfcc45deb2a23bacef7b39a93f9b2a7e2e7",
   "contract_alignment": {
     "version": "1.0.0",
     "status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true,
     "pipeline_config_sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74",
-    "contract_mapping_sha256": "F5356DE3D9B56E1EEE9333A6696ECBB654629505765C9FB44046505F368B0F20",
+    "contract_mapping_sha256": "C54F0FE2FFF0F1BAC144AA6B20161F5EA76E43FFE4DBEAB70723BAC938EF91A0",
     "source_hashes_verified": true
   },
   "error_categories": {
