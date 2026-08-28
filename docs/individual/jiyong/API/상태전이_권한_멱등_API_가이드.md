@@ -1,8 +1,8 @@
 # 상태 전이·권한·멱등 API 구현 가이드
 
-> 관련 업무: T-023 Workflow·완료 피드백·최종 완료·미해결 재개
+> 관련 업무: T-023 Workflow·완료 피드백·최종 완료·미해결 재개·문의 취소
 >
-> 최신 반영일: 2026-08-17
+> 최신 반영일: 2026-08-28
 
 ## 1. Source of Truth
 
@@ -97,7 +97,26 @@ Route·Service·권한·이력·PostgreSQL 동시성 Test까지 존재해야
 - `backend/apps/inquiries/api/serializers/resolution_feedback.py`
 - `backend/tests/api/test_t023_resolution_runtime.py`
 
-## 8. 2026-08-17 자체 검증
+## 8. 상담 단계 문의 취소 Runtime
+
+| 항목 | 적용 기준 |
+| --- | --- |
+| API | `POST /api/v1/inquiries/{id}/cancel` 재사용 |
+| 허용 상태 | `DRAFT`, `QUESTIONNAIRE_IN_PROGRESS`, `CONSULTATION_REQUIRED`, `CONSULTATION_IN_PROGRESS` |
+| Actor | 본인 고객, 현재 배정 상담원, `INQUIRY_CANCEL` 권한 운영자 |
+| 원자적 변경 | Inquiry와 존재하는 최신 활성 Consultation을 함께 `CANCELLED` 처리 |
+| 방문 경계 | 활성 Visit이 존재하면 409, 상태·이력·멱등 기록 없음 |
+| 종료 정책 | terminal, 재개하지 않고 필요 시 새 Inquiry 생성 |
+
+상담 단계 전이는 `TR-INQ-038/039`이며 별도 취소 Endpoint나 신규 Migration을
+추가하지 않는다. Consultation에는 전이 후 `state_version`, 요청
+`idempotency_key`, `correlation_id`를 함께 저장한다. 응답 완료 전 오류가 발생하면
+Inquiry·Consultation·TransitionHistory·IdempotencyRecord가 전부 Rollback된다.
+
+Web·Mobile은 상태명을 임의 해석하지 않고 Backend가 반환한
+`allowed_actions`의 `CANCEL_INQUIRY` 노출 여부를 사용한다.
+
+## 9. 자체 검증
 
 - T-023 신규 표적: `12 passed / 0 failed`
 - 상담·방문·Workflow·Migration 확대 회귀: `137 passed / 1 skipped / 0 failed`
@@ -108,8 +127,12 @@ Route·Service·권한·이력·PostgreSQL 동시성 Test까지 존재해야
 - OpenAPI·State Machine·Action Crosswalk 검증 통과
 - Crosswalk: Runtime 17, OpenAPI-only 2, Deferred 4
 - 고객 `COMPLETION_PENDING` Snapshot: 2 Query 유지, 불필요한 최종 처리자 조회 없음
+- 2026-08-28 취소 표적: `91 passed / 2 skipped / 0 failed`
+- 취소 Skip 2건: SQLite 실행에서 제외된 기존 PostgreSQL 동시 Row-lock 검증
+- 실제 PostgreSQL 취소 표적: `32 passed / 0 failed`, 동시 Row-lock 2건 포함
+- Backend CI 동일 3 Shard: `1,650 passed / 45 skipped / 0 failed`
 
-## 9. 검증 명령
+## 10. 검증 명령
 
 ```powershell
 .\backend\.venv\Scripts\python.exe -B .\scripts\contracts\validate_state_machine.py
@@ -118,7 +141,7 @@ Route·Service·권한·이력·PostgreSQL 동시성 Test까지 존재해야
   .\backend\tests\unit\workflow\test_state_machine.py
 ```
 
-## 10. 판정
+## 11. 판정
 
 전 상태의 Action·Guard·권한·409·Replay·History·Rollback이 계약과 일치하면
 상태 전이 공통 Runtime 작성자 검증 완료다.

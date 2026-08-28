@@ -379,6 +379,14 @@ DEMO_LOGIN_CODES = {
     if code.strip()
 }
 
+# The username is not a secret. It selects the only account allowed to enter
+# the internal Django Admin. The password is consumed only by the bootstrap
+# command and is never loaded into application settings.
+WATERBRIDGE_SUPERVISOR_USERNAME = os.getenv(
+    "WATERBRIDGE_SUPERVISOR_USERNAME",
+    "",
+).strip()
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
         minutes=positive_int_env("JWT_ACCESS_TTL_MINUTES", 60)

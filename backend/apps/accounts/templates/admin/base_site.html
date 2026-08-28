@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | Water Bridge Admin{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'accounts/admin/waterbridge_admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+  <div class="waterbridge-brand">
+    <span class="waterbridge-brand__eyebrow">WATER BRIDGE · OPERATIONS</span>
+    <h1 id="site-name"><a href="{% url 'admin:index' %}">Water Bridge 운영 관리</a></h1>
+  </div>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

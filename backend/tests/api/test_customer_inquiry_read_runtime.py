@@ -896,7 +896,8 @@ def test_customer_guidance_accepts_valid_no_evidence_fallback():
     assert data["usage_guidance_status"] == "PENDING_CONSULTATION"
     assert data["evidence"] == []
     assert [action["code"] for action in data["allowed_actions"]] == [
-        "REQUEST_CONSULTATION"
+        "REQUEST_CONSULTATION",
+        "CANCEL_INQUIRY",
     ]
 
 

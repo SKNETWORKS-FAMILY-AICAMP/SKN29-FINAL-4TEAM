@@ -6,13 +6,15 @@ from uuid import UUID, uuid4
 
 from django.contrib import admin, messages
 from django.db import transaction
+from django.utils import timezone
 
 from apps.accounts.admin_forms import (
     AccountLifecycleActionForm,
     SyntheticUserAddForm,
     SyntheticUserChangeForm,
 )
-from apps.accounts.models import AccountAuditEvent, User
+from apps.accounts.admin_site import waterbridge_admin_site
+from apps.accounts.models import AccountAuditEvent, CustomerProfile, User
 from apps.accounts.repositories.account_audit_repository import (
     AccountAuditRepository,
 )
@@ -20,9 +22,10 @@ from apps.accounts.services.account_lifecycle_service import (
     AccountLifecycleError,
     AccountLifecycleService,
 )
+from apps.accounts.supervisor_policy import is_waterbridge_supervisor
 
 
-@admin.register(User)
+@admin.register(User, site=waterbridge_admin_site)
 class SyntheticUserAdmin(admin.ModelAdmin):
     """Operate synthetic users without exposing privilege escalation fields."""
 
@@ -49,6 +52,7 @@ class SyntheticUserAdmin(admin.ModelAdmin):
         "is_synthetic",
         "is_active",
         "is_staff",
+        "is_superuser",
         "date_joined",
         "last_login",
         "created_at",
@@ -57,14 +61,7 @@ class SyntheticUserAdmin(admin.ModelAdmin):
 
     @staticmethod
     def _is_operator_staff(request) -> bool:
-        user = request.user
-        return bool(
-            user
-            and user.is_authenticated
-            and user.is_active
-            and user.is_staff
-            and user.role_code == User.Role.OPERATOR
-        )
+        return is_waterbridge_supervisor(request.user)
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(is_synthetic=True)
@@ -110,7 +107,15 @@ class SyntheticUserAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         del request
-        return self.protected_change_fields if obj else ()
+        if obj is None:
+            return ()
+        if obj.role_code == User.Role.CONSULTANT:
+            return tuple(
+                field
+                for field in self.protected_change_fields
+                if field != "username"
+            )
+        return self.protected_change_fields
 
     def get_fieldsets(self, request, obj=None):
         del request
@@ -140,21 +145,28 @@ class SyntheticUserAdmin(admin.ModelAdmin):
                     },
                 ),
             )
+        editable_profile_fields = ["full_name", "email", "phone"]
+        if obj.role_code == User.Role.CONSULTANT:
+            editable_profile_fields = [
+                "username",
+                *editable_profile_fields,
+                "new_password1",
+                "new_password2",
+            ]
+        editable_profile_fields.append("change_reason")
+        immutable_fields = self.protected_change_fields
+        if obj.role_code == User.Role.CONSULTANT:
+            immutable_fields = tuple(
+                field for field in immutable_fields if field != "username"
+            )
         return (
             (
                 "Immutable identity and access",
-                {"fields": self.protected_change_fields},
+                {"fields": immutable_fields},
             ),
             (
                 "Editable profile",
-                {
-                    "fields": (
-                        "full_name",
-                        "email",
-                        "phone",
-                        "change_reason",
-                    )
-                },
+                {"fields": tuple(editable_profile_fields)},
             ),
         )
 
@@ -166,10 +178,16 @@ class SyntheticUserAdmin(admin.ModelAdmin):
         except (TypeError, ValueError, AttributeError):
             return uuid4()
 
+    @transaction.atomic
     def save_model(self, request, obj, form, change):
         original = None
+        requested_username = None
+        requested_password = None
         if change:
             original = User.objects.get(pk=obj.pk)
+            if original.role_code == User.Role.CONSULTANT:
+                requested_username = form.cleaned_data.get("username")
+                requested_password = form.cleaned_data.get("new_password1") or None
             for field_name in self.protected_change_fields:
                 if field_name in {"created_at", "updated_at", "last_login"}:
                     continue
@@ -185,10 +203,38 @@ class SyntheticUserAdmin(admin.ModelAdmin):
             changed_fields = sorted(
                 set(form.changed_data) & {"full_name", "email", "phone"}
             )
-            if not changed_fields:
-                return
-            event_type = AccountAuditEvent.EventType.UPDATE
-            before_values = AccountLifecycleService._snapshot(original)
+            if changed_fields:
+                AccountAuditRepository.record(
+                    actor=request.user,
+                    target=obj,
+                    event_type=AccountAuditEvent.EventType.UPDATE,
+                    before_values=AccountLifecycleService._snapshot(original),
+                    after_values=AccountLifecycleService._snapshot(obj),
+                    changed_fields=changed_fields,
+                    reason=reason,
+                    correlation_id=self._correlation_id(request),
+                )
+            credential_requested = bool(
+                original.role_code == User.Role.CONSULTANT
+                and (
+                    requested_username != original.username
+                    or requested_password
+                )
+            )
+            if credential_requested:
+                try:
+                    AccountLifecycleService.update_consultant_credentials(
+                        actor=request.user,
+                        target=obj,
+                        username=requested_username,
+                        new_password=requested_password,
+                        reason=reason,
+                        correlation_id=self._correlation_id(request),
+                    )
+                except AccountLifecycleError as exc:
+                    raise ValueError(f"{exc.code}: {exc}") from exc
+                obj.refresh_from_db()
+            return
         else:
             changed_fields = ["account_created"]
             event_type = AccountAuditEvent.EventType.CREATE
@@ -204,7 +250,7 @@ class SyntheticUserAdmin(admin.ModelAdmin):
             correlation_id=self._correlation_id(request),
         )
 
-    @admin.action(description="Deactivate selected synthetic accounts")
+    @admin.action(description="선택한 합성 계정 비활성화")
     def deactivate_accounts(self, request, queryset):
         reason = str(request.POST.get("lifecycle_reason") or "").strip()
         candidates = list(
@@ -235,7 +281,7 @@ class SyntheticUserAdmin(admin.ModelAdmin):
             level=messages.SUCCESS,
         )
 
-    @admin.action(description="Reactivate selected synthetic accounts")
+    @admin.action(description="선택한 합성 계정 재활성화")
     def reactivate_accounts(self, request, queryset):
         reason = str(request.POST.get("lifecycle_reason") or "").strip()
         candidates = list(
@@ -266,7 +312,81 @@ class SyntheticUserAdmin(admin.ModelAdmin):
             level=messages.SUCCESS,
         )
 
+@admin.register(CustomerProfile, site=waterbridge_admin_site)
+class SyntheticCustomerProfileAdmin(admin.ModelAdmin):
+    """Manage synthetic customer profiles while preserving referenced rows."""
 
-admin.site.site_header = "WaterCare Internal Administration"
-admin.site.site_title = "WaterCare Admin"
-admin.site.index_title = "Synthetic account operations"
+    list_display = (
+        "customer_no",
+        "customer_name",
+        "user",
+        "is_deleted",
+        "updated_at",
+    )
+    list_filter = ("deleted_at",)
+    search_fields = ("customer_no", "customer_name", "user__username")
+    ordering = ("customer_no",)
+    actions = ("deactivate_profiles", "reactivate_profiles")
+    action_form = AccountLifecycleActionForm
+    readonly_fields = (
+        "public_id",
+        "legacy_id",
+        "is_synthetic",
+        "deleted_at",
+        "deleted_by",
+        "created_at",
+        "updated_at",
+    )
+
+    @admin.display(boolean=True, description="비활성")
+    def is_deleted(self, obj) -> bool:
+        return obj.deleted_at is not None
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(is_synthetic=True)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            kwargs["queryset"] = User.objects.filter(
+                role_code=User.Role.CUSTOMER,
+                is_synthetic=True,
+            ).order_by("username")
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def has_delete_permission(self, request, obj=None):
+        del request, obj
+        return False
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        actions.pop("delete_selected", None)
+        return actions
+
+    def save_model(self, request, obj, form, change):
+        obj.is_synthetic = True
+        obj.full_clean()
+        super().save_model(request, obj, form, change=change)
+
+    @admin.action(description="선택한 고객 프로필 비활성화(논리 삭제)")
+    def deactivate_profiles(self, request, queryset):
+        reason = str(request.POST.get("lifecycle_reason") or "").strip()
+        if not reason:
+            self.message_user(request, "변경 사유가 필요합니다.", messages.ERROR)
+            return
+        for profile in queryset.filter(deleted_at__isnull=True):
+            profile.deleted_at = timezone.now()
+            profile.deleted_by = request.user
+            profile.save(update_fields=["deleted_at", "deleted_by", "updated_at"])
+            self.log_change(request, profile, f"비활성화: {reason}")
+
+    @admin.action(description="선택한 고객 프로필 재활성화")
+    def reactivate_profiles(self, request, queryset):
+        reason = str(request.POST.get("lifecycle_reason") or "").strip()
+        if not reason:
+            self.message_user(request, "변경 사유가 필요합니다.", messages.ERROR)
+            return
+        for profile in queryset.filter(deleted_at__isnull=False):
+            profile.deleted_at = None
+            profile.deleted_by = None
+            profile.save(update_fields=["deleted_at", "deleted_by", "updated_at"])
+            self.log_change(request, profile, f"재활성화: {reason}")

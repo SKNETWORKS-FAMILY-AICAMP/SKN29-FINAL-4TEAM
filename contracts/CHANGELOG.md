@@ -1,5 +1,24 @@
 # Contracts Changelog
 
+## 2026-08-28 — 상담 단계 문의 취소 원자성 확장
+
+### Changed
+
+- 기존 `CANCEL_INQUIRY` Operation을 `CONSULTATION_REQUIRED`와
+  `CONSULTATION_IN_PROGRESS`까지 확장하고 `TR-INQ-038/039`를 추가했다.
+- 본인 고객, 현재 배정 상담원, `INQUIRY_CANCEL` 권한 운영자만 같은 API를
+  사용할 수 있으며 별도 취소 Endpoint는 추가하지 않았다.
+- 상담 단계 취소 시 Inquiry와 최신 활성 Consultation을 같은 트랜잭션에서
+  `CANCELLED`로 전환하고 Version·Idempotency Key·Correlation ID를 맞춘다.
+
+### Boundary
+
+- 활성 Visit이 존재하면 취소를 409로 차단하고 Inquiry·Consultation을
+  변경하지 않는다.
+- 취소는 terminal 처리이며 재개 대신 새 Inquiry를 생성한다.
+- 기존 Model 컬럼을 사용하므로 신규 Migration은 없다.
+- Web·Mobile은 Backend `allowed_actions`를 기준으로 취소 UI를 연결한다.
+
 ## 2026-08-28 — 고객 해결 피드백 반복 방지와 담당자 최종 완료 연결
 
 ### Changed

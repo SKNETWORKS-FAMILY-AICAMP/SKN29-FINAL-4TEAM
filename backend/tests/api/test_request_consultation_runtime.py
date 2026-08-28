@@ -112,7 +112,8 @@ def test_request_from_ai_guidance_creates_waiting_consultation():
     assert data["idempotent_replay"] is False
     assert data["resource"] is None
     assert [item["code"] for item in data["allowed_actions"]] == [
-        "REQUEST_CONSULTATION"
+        "REQUEST_CONSULTATION",
+        "CANCEL_INQUIRY",
     ]
 
     inquiry.refresh_from_db()

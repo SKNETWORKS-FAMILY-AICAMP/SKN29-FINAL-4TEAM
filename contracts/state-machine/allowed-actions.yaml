@@ -260,6 +260,9 @@ state_role_actions:
       - TR-INQ-013
       dynamic_requirements:
       - 시스템 전환으로 생성된 상담 필요 상태에서 고객의 상담 요청 확인을 기록할 수 있다.
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-038
     CONSULTANT:
     - action: CLAIM_CONSULTATION
       transition_rule_ids:
@@ -271,7 +274,22 @@ state_role_actions:
       - TR-INQ-014
       dynamic_requirements:
       - 현재 문의의 담당 상담사여야 한다.
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-038
+      dynamic_requirements:
+      - 현재 문의에 상담사로 배정되어 있어야 한다.
+    OPERATOR:
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-038
+      dynamic_requirements:
+      - INQUIRY_CANCEL 권한이 있어야 한다.
   CONSULTATION_IN_PROGRESS:
+    CUSTOMER:
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-039
     CONSULTANT:
     - action: UPDATE_CONSULTATION_SUMMARY
       transition_rule_ids:
@@ -285,6 +303,17 @@ state_role_actions:
     - action: VISIT_REVIEW_REQUIRED
       transition_rule_ids:
       - TR-INQ-018
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-039
+      dynamic_requirements:
+      - 현재 문의에 상담사로 배정되어 있어야 한다.
+    OPERATOR:
+    - action: CANCEL_INQUIRY
+      transition_rule_ids:
+      - TR-INQ-039
+      dynamic_requirements:
+      - INQUIRY_CANCEL 권한이 있어야 한다.
   VISIT_REVIEW_PENDING:
     CONSULTANT:
     - action: VISIT_NEEDED

@@ -28,7 +28,9 @@ class ConsultationService:
         validated_data: dict,
         idempotency_key: str,
         correlation_id: UUID,
+        assigned_consultant: Any | None = None,
     ) -> WorkflowActionOutcome:
+        consultant_actor = assigned_consultant or actor
         return cls._execute(
             actor=actor,
             inquiry_public_id=inquiry_public_id,
@@ -42,13 +44,14 @@ class ConsultationService:
             mutation=lambda inquiry, transition, context: (
                 ConsultationRepository.start(
                     inquiry=inquiry,
-                    actor=actor,
+                    actor=consultant_actor,
                     state_version=transition.state_version_after,
                     idempotency_key=idempotency_key,
                     correlation_id=correlation_id,
                     current=context["consultation"],
                 )
             ),
+            assigned_consultant=assigned_consultant,
         )
 
     @classmethod
@@ -60,6 +63,7 @@ class ConsultationService:
         validated_data: dict,
         idempotency_key: str,
         correlation_id: UUID,
+        assigned_consultant: Any | None = None,
     ) -> WorkflowActionOutcome:
         def domain_results(_inquiry, context):
             return {
@@ -89,6 +93,7 @@ class ConsultationService:
             message="상담 내용을 저장했습니다.",
             domain_results=domain_results,
             mutation=mutation,
+            assigned_consultant=assigned_consultant,
         )
 
     @classmethod
@@ -100,6 +105,7 @@ class ConsultationService:
         validated_data: dict,
         idempotency_key: str,
         correlation_id: UUID,
+        assigned_consultant: Any | None = None,
     ) -> WorkflowActionOutcome:
         def domain_results(_inquiry, context):
             consultation = context["consultation"]
@@ -130,6 +136,7 @@ class ConsultationService:
             message="상담 요약을 확정했습니다.",
             domain_results=domain_results,
             mutation=mutation,
+            assigned_consultant=assigned_consultant,
         )
 
     @classmethod
@@ -141,6 +148,7 @@ class ConsultationService:
         validated_data: dict,
         idempotency_key: str,
         correlation_id: UUID,
+        assigned_consultant: Any | None = None,
     ) -> WorkflowActionOutcome:
         def domain_results(_inquiry, context):
             consultation = context["consultation"]
@@ -178,6 +186,7 @@ class ConsultationService:
             message="상담 처리를 완료했습니다.",
             domain_results=domain_results,
             mutation=mutation,
+            assigned_consultant=assigned_consultant,
         )
 
     @classmethod
@@ -194,6 +203,7 @@ class ConsultationService:
         message: str,
         domain_results,
         mutation,
+        assigned_consultant: Any | None = None,
     ) -> WorkflowActionOutcome:
         return AssignedConsultantActionService.execute(
             actor=actor,
@@ -213,6 +223,7 @@ class ConsultationService:
             resource_builder=lambda resource, _context: (
                 cls.build_resource(resource)
             ),
+            assignment_actor=assigned_consultant,
         )
 
     @staticmethod

@@ -25,6 +25,7 @@ P1_AUTH_OTP_ENCRYPTION_KEY = (
 )
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 P1_AUTH_EMAIL_REDIRECT_TO = "p1-auth-test@waterbridge.invalid"
+WATERBRIDGE_SUPERVISOR_USERNAME = "SYN-WATERBRIDGE-SUPERVISOR"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
