@@ -11,6 +11,9 @@ from django.utils import timezone
 from rest_framework.exceptions import NotFound, PermissionDenied
 
 from apps.audit.models import AIRun
+from apps.consultations.repositories.consultation_repository import (
+    ConsultationRepository,
+)
 from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.questionnaires.services.inquiry_link_service import (
@@ -273,6 +276,7 @@ class InquiryService:
                 "TERMINAL_STATE",
                 "UNLISTED_TRANSITION",
                 "VISIT_STATE_MISMATCH",
+                "VISIT_STATUS_NOT_ALLOWED",
             }:
                 cls._raise_state_conflict(inquiry, actor=actor)
             raise BusinessError(
@@ -331,6 +335,12 @@ class InquiryService:
                 data=data,
             )
 
+        ConsultationRepository.cancel_active(
+            inquiry=inquiry,
+            state_version=transition.state_version_after,
+            idempotency_key=idempotency_key,
+            correlation_id=correlation_id,
+        )
         InquiryRepository.mark_cancelled(
             inquiry,
             status_code=transition.inquiry_state_after,

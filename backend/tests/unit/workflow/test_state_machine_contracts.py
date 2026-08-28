@@ -295,7 +295,7 @@ def test_current_repository_contract_is_valid():
     assert collect_contract_errors(documents) == ()
     assert len(documents["states"]["states"]) == 13
     assert len(documents["events"]["events"]) == 33
-    assert len(documents["transitions"]["transitions"]) == 37
+    assert len(documents["transitions"]["transitions"]) == 39
     assert len(documents["guards"]["guards"]) == 43
     assert len(documents["allowed_actions"]["action_catalog"]) == 24
     assert len(documents["role_permissions"]["roles"]) == 5

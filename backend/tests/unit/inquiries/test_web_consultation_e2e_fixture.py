@@ -91,7 +91,7 @@ def test_command_creates_ready_consultation_boundary_through_runtime():
     result = create_fixture("playwright-20260819-001")
 
     assert result == {
-        "allowed_actions": ["START_CONSULTATION"],
+        "allowed_actions": ["START_CONSULTATION", "CANCEL_INQUIRY"],
         "assigned_consultant": "DEMO-CONSULTANT-001",
         "consultation_status": "ASSIGNED",
         "created": True,
@@ -277,7 +277,10 @@ def test_created_fixture_completes_real_web_runtime_and_requires_new_run_id():
     next_result = create_fixture("playwright-runtime-002")
     assert next_result["inquiry_id"] != result["inquiry_id"]
     assert next_result["status"] == "CONSULTATION_REQUIRED"
-    assert next_result["allowed_actions"] == ["START_CONSULTATION"]
+    assert next_result["allowed_actions"] == [
+        "START_CONSULTATION",
+        "CANCEL_INQUIRY",
+    ]
 
 
 def test_consumed_run_id_fails_closed_without_resetting_history():

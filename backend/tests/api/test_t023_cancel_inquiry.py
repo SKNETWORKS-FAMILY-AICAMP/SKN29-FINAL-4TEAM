@@ -5,15 +5,17 @@ from datetime import date
 from pathlib import Path
 from threading import Barrier, local
 from unittest.mock import patch
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 import yaml
 from django.contrib.auth.models import Permission
 from django.db import connection, connections
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import CustomerProfile, User
+from apps.consultations.models import Consultation
 from apps.inquiries.api.serializers import (
     CancelInquiryResponseSerializer,
     CancelInquirySerializer,
@@ -22,6 +24,7 @@ from apps.inquiries.models import Inquiry
 from apps.inquiries.repositories.inquiry_repository import InquiryRepository
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
+from apps.visits.models import Visit
 from apps.workflow.models import IdempotencyRecord, TransitionHistory
 from apps.workflow.repositories.workflow_repository import (
     WorkflowRepository,
@@ -120,6 +123,36 @@ def create_inquiry(
         public_id=response.json()["data"]["inquiry_id"]
     )
     return client, inquiry
+
+
+def create_active_consultation(
+    *,
+    inquiry: Inquiry,
+    consultant: User,
+    status: str,
+    state_version: int,
+    sequence: int,
+) -> Consultation:
+    """Create one valid active consultation for cancellation tests."""
+
+    created_at = timezone.now()
+    return Consultation.objects.create(
+        consultation_code=f"T023-CONS-{sequence:03d}",
+        inquiry=inquiry,
+        sequence=1,
+        consultant=consultant,
+        status=status,
+        outcome=Consultation.Outcome.PENDING,
+        state_version=state_version,
+        idempotency_key=f"t023-consultation-{sequence}",
+        correlation_id=uuid4(),
+        started_at=(
+            created_at
+            if status == Consultation.Status.IN_PROGRESS
+            else None
+        ),
+        created_at=created_at,
+    )
 
 
 def cancel_body(
@@ -428,6 +461,8 @@ def test_cancel_owner_scope_and_unsupported_role_are_enforced():
     [
         (Inquiry.Status.DRAFT, 1),
         (Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS, 2),
+        (Inquiry.Status.CONSULTATION_REQUIRED, 4),
+        (Inquiry.Status.CONSULTATION_IN_PROGRESS, 5),
     ],
 )
 @pytest.mark.parametrize("actor_kind", ["OWNER", "CONSULTANT", "OPERATOR"])
@@ -439,10 +474,10 @@ def test_cancel_supports_all_approved_roles_and_states(
     owner = create_user(90 + initial_version)
     _owner_client, inquiry = create_inquiry(owner, 90 + initial_version)
     actor = owner
+    assigned_consultant = None
     if actor_kind == "CONSULTANT":
         actor = create_user(100 + initial_version, role=User.Role.CONSULTANT)
-        inquiry.assigned_user = actor
-        inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
+        assigned_consultant = actor
     elif actor_kind == "OPERATOR":
         actor = create_user(110 + initial_version, role=User.Role.OPERATOR)
         actor.user_permissions.add(
@@ -451,6 +486,17 @@ def test_cancel_supports_all_approved_roles_and_states(
                 codename="cancel_inquiry",
             )
         )
+    if initial_state in {
+        Inquiry.Status.CONSULTATION_REQUIRED,
+        Inquiry.Status.CONSULTATION_IN_PROGRESS,
+    }:
+        assigned_consultant = assigned_consultant or create_user(
+            300 + initial_version,
+            role=User.Role.CONSULTANT,
+        )
+    if assigned_consultant is not None:
+        inquiry.assigned_user = assigned_consultant
+        inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
 
     inquiry.status_code = initial_state
     inquiry.state_version = initial_version
@@ -463,12 +509,30 @@ def test_cancel_supports_all_approved_roles_and_states(
             "updated_at",
         ]
     )
+    consultation = None
+    if initial_state in {
+        Inquiry.Status.CONSULTATION_REQUIRED,
+        Inquiry.Status.CONSULTATION_IN_PROGRESS,
+    }:
+        consultation = create_active_consultation(
+            inquiry=inquiry,
+            consultant=assigned_consultant,
+            status=(
+                Consultation.Status.IN_PROGRESS
+                if initial_state
+                == Inquiry.Status.CONSULTATION_IN_PROGRESS
+                else Consultation.Status.ASSIGNED
+            ),
+            state_version=initial_version,
+            sequence=400 + initial_version,
+        )
 
+    cancel_key = f"t023-approved-{actor_kind.lower()}-{initial_version}"
     response = post_cancel(
         authenticated_client(actor),
         inquiry,
         cancel_body(state_version=initial_version),
-        key=f"t023-approved-{actor_kind.lower()}-{initial_version}",
+        key=cancel_key,
     )
 
     assert response.status_code == 200, response.json()
@@ -482,6 +546,71 @@ def test_cancel_supports_all_approved_roles_and_states(
     assert cancel_history.from_state == initial_state
     assert cancel_history.to_state == Inquiry.Status.CANCELLED
     assert cancel_history.state_version == initial_version + 1
+    if consultation is not None:
+        consultation.refresh_from_db()
+        assert consultation.status == Consultation.Status.CANCELLED
+        assert consultation.outcome == Consultation.Outcome.PENDING
+        assert consultation.completed_at is None
+        assert consultation.state_version == initial_version + 1
+        assert consultation.idempotency_key == cancel_key
+        assert str(consultation.correlation_id) == response.json()["metadata"][
+            "correlation_id"
+        ]
+
+
+def test_cancel_consultation_state_is_blocked_when_a_visit_exists():
+    owner = create_user(141)
+    client, inquiry = create_inquiry(owner, 141)
+    consultant = create_user(142, role=User.Role.CONSULTANT)
+    inquiry.assigned_user = consultant
+    inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
+    inquiry.status_code = Inquiry.Status.CONSULTATION_REQUIRED
+    inquiry.state_version = 4
+    inquiry.save(
+        update_fields=[
+            "assigned_user",
+            "assigned_role_code",
+            "status_code",
+            "state_version",
+            "updated_at",
+        ]
+    )
+    consultation = create_active_consultation(
+        inquiry=inquiry,
+        consultant=consultant,
+        status=Consultation.Status.ASSIGNED,
+        state_version=4,
+        sequence=141,
+    )
+    Visit.objects.create(
+        visit_code="T023-VISIT-141",
+        inquiry=inquiry,
+        status=Visit.Status.ASSIGNING,
+        requested_at=timezone.now(),
+        state_version=4,
+        idempotency_key="t023-visit-141",
+        correlation_id=uuid4(),
+    )
+
+    response = post_cancel(
+        client,
+        inquiry,
+        cancel_body(state_version=4),
+        key="t023-visit-blocked",
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "STATE-CONFLICT-01"
+    inquiry.refresh_from_db()
+    consultation.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 4
+    assert consultation.status == Consultation.Status.ASSIGNED
+    assert not IdempotencyRecord.objects.filter(
+        actor=owner,
+        operation_id="cancelInquiry",
+        idempotency_key="t023-visit-blocked",
+    ).exists()
 
 
 def test_cancel_rejects_unassigned_consultant_and_unprivileged_operator():
@@ -599,6 +728,66 @@ def test_cancel_rolls_back_state_history_and_idempotency_on_late_failure(
         actor=owner,
         operation_id="cancelInquiry",
     ).count() == 0
+
+
+def test_cancel_rolls_back_active_consultation_on_late_failure(monkeypatch):
+    owner = create_user(143)
+    client, inquiry = create_inquiry(owner, 143)
+    consultant = create_user(144, role=User.Role.CONSULTANT)
+    inquiry.assigned_user = consultant
+    inquiry.assigned_role_code = Inquiry.AssignedRole.CONSULTANT
+    inquiry.status_code = Inquiry.Status.CONSULTATION_IN_PROGRESS
+    inquiry.state_version = 5
+    inquiry.save(
+        update_fields=[
+            "assigned_user",
+            "assigned_role_code",
+            "status_code",
+            "state_version",
+            "updated_at",
+        ]
+    )
+    consultation = create_active_consultation(
+        inquiry=inquiry,
+        consultant=consultant,
+        status=Consultation.Status.IN_PROGRESS,
+        state_version=5,
+        sequence=143,
+    )
+    original_correlation_id = consultation.correlation_id
+    original_idempotency_key = consultation.idempotency_key
+
+    def fail_completion(*args, **kwargs):
+        del args, kwargs
+        raise RuntimeError("private-database-error")
+
+    monkeypatch.setattr(
+        WorkflowRepository,
+        "complete_idempotency_record",
+        fail_completion,
+    )
+    response = post_cancel(
+        client,
+        inquiry,
+        cancel_body(state_version=5),
+        key="t023-consultation-rollback",
+    )
+
+    assert response.status_code == 500
+    inquiry.refresh_from_db()
+    consultation.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_IN_PROGRESS
+    assert inquiry.state_version == 5
+    assert inquiry.cancelled_at is None
+    assert consultation.status == Consultation.Status.IN_PROGRESS
+    assert consultation.state_version == 5
+    assert consultation.idempotency_key == original_idempotency_key
+    assert consultation.correlation_id == original_correlation_id
+    assert not IdempotencyRecord.objects.filter(
+        actor=owner,
+        operation_id="cancelInquiry",
+        idempotency_key="t023-consultation-rollback",
+    ).exists()
 
 
 def test_cancel_rolls_back_when_response_serialization_fails(monkeypatch):

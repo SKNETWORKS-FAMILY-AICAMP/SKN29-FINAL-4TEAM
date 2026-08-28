@@ -73,6 +73,7 @@ class AssignedConsultantActionService:
         domain_results_factory: DomainResultsFactory,
         mutation: Mutation,
         resource_builder: ResourceBuilder,
+        assignment_actor: Any | None = None,
     ) -> WorkflowActionOutcome:
         request_hash = IdempotencyService.canonical_request_hash(
             {
@@ -82,8 +83,9 @@ class AssignedConsultantActionService:
             }
         )
 
+        workflow_actor = assignment_actor or actor
         inquiry = cls._lock_assigned_inquiry(
-            actor=actor,
+            actor=workflow_actor,
             inquiry_public_id=inquiry_public_id,
         )
         if inquiry is None:
@@ -122,7 +124,7 @@ class AssignedConsultantActionService:
             }:
                 cls._raise_state_conflict(
                     inquiry,
-                    actor=actor,
+                    actor=workflow_actor,
                     action_context=context,
                 )
             raise BusinessError(
@@ -140,8 +142,8 @@ class AssignedConsultantActionService:
             transition=transition,
             snapshot=snapshot,
             context=GuardContext(
-                actor_role=actor.role_code,
-                is_authenticated=bool(actor.is_authenticated),
+                actor_role=workflow_actor.role_code,
+                is_authenticated=bool(workflow_actor.is_authenticated),
                 correlation_id=str(correlation_id),
                 idempotency_key=idempotency_key,
                 requested_state_version=validated_data["state_version"],
@@ -150,7 +152,7 @@ class AssignedConsultantActionService:
         )
         cls._raise_guard_failure(
             inquiry=inquiry,
-            actor=actor,
+            actor=workflow_actor,
             guard_result=guard_result,
             action_context=context,
         )
@@ -215,7 +217,7 @@ class AssignedConsultantActionService:
             "state_version": inquiry.state_version,
             "allowed_actions": cls._resolve_allowed_actions(
                 inquiry=inquiry,
-                actor=actor,
+                actor=workflow_actor,
                 action_context=context,
                 resource=resource,
             ),

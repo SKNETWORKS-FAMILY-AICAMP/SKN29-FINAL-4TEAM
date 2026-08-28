@@ -209,7 +209,8 @@ def test_register_creates_assigned_phone_inquiry_and_history_without_ai():
     assert history.actor == consultant
     assert history.correlation_id == correlation_id
     assert [item["code"] for item in data["allowed_actions"]] == [
-        "START_CONSULTATION"
+        "START_CONSULTATION",
+        "CANCEL_INQUIRY",
     ]
     assert AIRun.objects.filter(inquiry=inquiry).count() == 0
 

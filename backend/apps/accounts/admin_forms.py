@@ -8,6 +8,11 @@ from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 
 from apps.accounts.models import User
+from apps.accounts.credential_policy import (
+    SYNTHETIC_USERNAME_PREFIXES,
+    normalize_synthetic_username,
+    validate_consultant_password,
+)
 
 
 class AccountLifecycleActionForm(ActionForm):
@@ -20,7 +25,6 @@ class AccountLifecycleActionForm(ActionForm):
     )
 
 
-SYNTHETIC_USERNAME_PREFIXES = ("DEMO-", "SYN-")
 SYNTHETIC_NAME_MARKERS = ("SYNTHETIC", "DEMO", "합성")
 
 
@@ -88,12 +92,7 @@ class SyntheticUserAddForm(
         )
 
     def clean_username(self) -> str:
-        username = str(self.cleaned_data["username"]).strip().upper()
-        if not username.startswith(SYNTHETIC_USERNAME_PREFIXES):
-            raise ValidationError(
-                "Synthetic Admin usernames must start with DEMO- or SYN-."
-            )
-        return username
+        return normalize_synthetic_username(self.cleaned_data["username"])
 
     def clean(self):
         cleaned_data = super().clean()
@@ -111,6 +110,11 @@ class SyntheticUserAddForm(
                 self.add_error("password1", exc)
 
         role_code = cleaned_data.get("role_code")
+        if role_code == User.Role.CONSULTANT and password1:
+            try:
+                validate_consultant_password(password1)
+            except ValidationError as exc:
+                self.add_error("password1", exc)
         employee_no = cleaned_data.get("employee_no")
         if role_code == User.Role.CUSTOMER and employee_no:
             self.add_error(
@@ -159,7 +163,47 @@ class SyntheticUserChangeForm(
         max_length=500,
         required=True,
     )
+    new_password1 = forms.CharField(
+        label="새 비밀번호",
+        strip=False,
+        required=False,
+        widget=forms.PasswordInput,
+        help_text=(
+            "상담사만 변경할 수 있습니다. 12~64자 영문·숫자 조합이며 "
+            "기존 비밀번호는 표시되지 않습니다."
+        ),
+    )
+    new_password2 = forms.CharField(
+        label="새 비밀번호 확인",
+        strip=False,
+        required=False,
+        widget=forms.PasswordInput,
+    )
 
     class Meta:
         model = User
-        fields = ("full_name", "email", "phone")
+        fields = ("username", "full_name", "email", "phone")
+
+    def clean_username(self) -> str:
+        if self.instance.role_code != User.Role.CONSULTANT:
+            return self.instance.username
+        return normalize_synthetic_username(self.cleaned_data["username"])
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get("new_password1")
+        password2 = cleaned_data.get("new_password2")
+        if password1 or password2:
+            if self.instance.role_code != User.Role.CONSULTANT:
+                self.add_error(
+                    "new_password1",
+                    "상담사 계정의 비밀번호만 이 화면에서 초기화할 수 있습니다.",
+                )
+            if password1 != password2:
+                self.add_error("new_password2", "두 비밀번호가 일치하지 않습니다.")
+            if password1:
+                try:
+                    validate_consultant_password(password1)
+                except ValidationError as exc:
+                    self.add_error("new_password1", exc)
+        return cleaned_data

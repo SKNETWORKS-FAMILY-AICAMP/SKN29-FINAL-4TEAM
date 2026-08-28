@@ -792,6 +792,46 @@ transitions:
   - ASSIGN_CURRENT_CONSULTANT
   - ASSIGN_WAITING_CONSULTATION
   description: 미배정 상담 대기 문의를 현재 상담사에게 배정하되 상담 시작 상태 전이는 수행하지 않는다.
+- id: TR-INQ-038
+  event: CANCEL_INQUIRY
+  from_inquiry_state: CONSULTATION_REQUIRED
+  to_inquiry_state: CANCELLED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-CANCEL-ACTOR-AUTHORIZED
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-CANCELLATION-REASON
+  effects:
+  - CANCEL_ACTIVE_AI_PROCESS_IF_PRESENT
+  - CANCEL_ACTIVE_CONSULTATION_IF_PRESENT
+  - SET_CANCELLED_AT
+  description: 상담 대기 문의와 존재하는 활성 상담을 함께 취소하되 활성 방문이 있으면 차단한다.
+- id: TR-INQ-039
+  event: CANCEL_INQUIRY
+  from_inquiry_state: CONSULTATION_IN_PROGRESS
+  to_inquiry_state: CANCELLED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-CANCEL-ACTOR-AUTHORIZED
+  - G-STATE-VERSION
+  - G-IDEMPOTENCY-KEY
+  - G-CANCELLATION-REASON
+  effects:
+  - CANCEL_ACTIVE_AI_PROCESS_IF_PRESENT
+  - CANCEL_ACTIVE_CONSULTATION_IF_PRESENT
+  - SET_CANCELLED_AT
+  description: 진행 중 문의와 최신 활성 상담을 함께 취소하되 활성 방문이 있으면 차단한다.
 excluded_events:
 - event: START_CARE_PRECHECK
   reason: 'Inquiry가 없는 QuestionnaireSession의 상태는 별도 questionnaire 계약에서 관리한다.

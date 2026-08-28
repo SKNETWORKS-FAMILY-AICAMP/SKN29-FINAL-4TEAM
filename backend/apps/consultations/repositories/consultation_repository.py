@@ -262,6 +262,56 @@ class ConsultationRepository:
         return consultation
 
     @staticmethod
+    def cancel_active(
+        *,
+        inquiry: Inquiry,
+        state_version: int,
+        idempotency_key: str,
+        correlation_id,
+    ) -> Consultation | None:
+        """Cancel the single latest active consultation under the inquiry lock."""
+
+        active = list(
+            Consultation.objects.select_for_update()
+            .filter(
+                inquiry=inquiry,
+                status__in={
+                    Consultation.Status.WAITING,
+                    Consultation.Status.ASSIGNED,
+                    Consultation.Status.IN_PROGRESS,
+                },
+            )
+            .order_by("-sequence", "-id")[:2]
+        )
+        if len(active) > 1:
+            raise RuntimeError(
+                "Multiple active consultations exist for one inquiry."
+            )
+        if not active:
+            return None
+
+        consultation = active[0]
+        consultation.status = Consultation.Status.CANCELLED
+        consultation.outcome = Consultation.Outcome.PENDING
+        consultation.completed_at = None
+        consultation.state_version = state_version
+        consultation.idempotency_key = idempotency_key
+        consultation.correlation_id = correlation_id
+        consultation.full_clean()
+        consultation.save(
+            update_fields=[
+                "status",
+                "outcome",
+                "completed_at",
+                "state_version",
+                "idempotency_key",
+                "correlation_id",
+                "updated_at",
+            ]
+        )
+        return consultation
+
+    @staticmethod
     def record_visit_review(
         consultation: Consultation,
         *,

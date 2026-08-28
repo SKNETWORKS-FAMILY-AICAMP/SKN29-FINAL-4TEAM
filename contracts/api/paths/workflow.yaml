@@ -14,7 +14,9 @@
     summary: 문의 취소
     description: |
       본인 고객, 현재 담당 상담사, INQUIRY_CANCEL 권한 운영자가
-      DRAFT 또는 QUESTIONNAIRE_IN_PROGRESS 문의를 취소한다.
+      DRAFT, QUESTIONNAIRE_IN_PROGRESS, CONSULTATION_REQUIRED 또는
+      CONSULTATION_IN_PROGRESS 문의를 취소한다. 상담 단계에서는 최신 활성 상담도
+      같은 트랜잭션에서 취소하며 활성 Visit이 존재하면 요청을 차단한다.
       성공 시 state_version은 1 증가하고 동일 멱등 요청은 저장 결과를 재생한다.
     x-contract-status: CONFIRMED
     x-state-machine:
@@ -22,9 +24,13 @@
       transition_rules:
         - TR-INQ-004
         - TR-INQ-005
+        - TR-INQ-038
+        - TR-INQ-039
       from_states:
         - DRAFT
         - QUESTIONNAIRE_IN_PROGRESS
+        - CONSULTATION_REQUIRED
+        - CONSULTATION_IN_PROGRESS
       to_state: CANCELLED
       actor_roles:
         - CUSTOMER

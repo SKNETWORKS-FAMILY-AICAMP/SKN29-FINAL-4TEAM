@@ -116,7 +116,7 @@ def test_current_contract_and_runtime_files_are_present_but_owner_gates_remain()
     assert result["evidence"]["contract_counts"] == {
         "states": 13,
         "events": 33,
-        "transitions": 37,
+        "transitions": 39,
         "guards": 43,
         "allowed_actions": 24,
         "role_permissions": 5,

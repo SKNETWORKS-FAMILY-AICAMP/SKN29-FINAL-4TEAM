@@ -15,7 +15,7 @@ from apps.accounts.models import User
 pytestmark = pytest.mark.django_db
 
 USERNAME = "SYN-CONSULTANT-LOGIN-001"
-PASSWORD = "consultant-pass-2026"
+PASSWORD = "ConsultantPass2026"
 
 
 def _consultant() -> User:

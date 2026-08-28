@@ -722,7 +722,7 @@ def test_consultation_role_assignment_state_and_header_boundaries():
     assert stale.json()["error"]["details"] == {
         "current_status": "CONSULTATION_REQUIRED",
         "current_state_version": 2,
-        "allowed_actions": ["START_CONSULTATION"],
+        "allowed_actions": ["START_CONSULTATION", "CANCEL_INQUIRY"],
     }
     inquiry.refresh_from_db()
     assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
