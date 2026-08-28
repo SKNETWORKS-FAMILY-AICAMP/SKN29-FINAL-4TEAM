@@ -120,10 +120,7 @@ class CanaryEvidenceInput(_CanaryModel):
     summary: str = Field(min_length=1, max_length=2000)
     source_hash: str = Field(pattern=r"^[A-Fa-f0-9]{64}$")
     similarity_score: float = Field(ge=0.0, le=1.0)
-    verification_status: Literal[
-        "official_verified",
-        "team_verified",
-    ] = "official_verified"
+    verification_status: Literal["official_verified"] = "official_verified"
     allowed_use: Literal[True] = True
     runtime_eligible: Literal[True] = True
 

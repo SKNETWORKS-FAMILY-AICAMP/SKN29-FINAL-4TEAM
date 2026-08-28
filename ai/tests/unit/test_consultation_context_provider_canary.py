@@ -22,6 +22,7 @@ from ai.app.integrations.llm import (
     LLMProviderTimeoutError,
     LLMUsage,
 )
+from ai.app.orchestration.hitl import build_hitl_thread_id
 from ai.scripts.run_consultation_context_provider_canary import (
     ConsultationContextProviderCanaryInput,
     execute_canary,
@@ -29,7 +30,6 @@ from ai.scripts.run_consultation_context_provider_canary import (
     inspect_canary,
     main,
 )
-from ai.app.orchestration.hitl import build_hitl_thread_id
 
 
 INQUIRY_ID = UUID("018f2f9b-7c30-7981-b541-1a987c88b321")
@@ -186,6 +186,37 @@ def test_cli_inspect_writes_sanitized_report_outside_repository(tmp_path, capsys
     assert "TEST_ONLY_EVIDENCE_SUMMARY" not in report_text
     assert "TEST_ONLY_GUIDANCE" not in report_text
     assert "TEST_ONLY_EVIDENCE_CONTENT" not in capsys.readouterr().out
+
+
+def test_cli_inspect_rejects_team_verified_before_canary_execution(
+    tmp_path,
+    capsys,
+):
+    payload = canary_payload()
+    payload["evidence"][0]["verification_status"] = "team_verified"
+    input_path = tmp_path / "team-verified-input.json"
+    report_path = tmp_path / "team-verified-report.json"
+    input_path.write_text(
+        json.dumps(payload, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "--mode",
+            "inspect",
+            "--input",
+            str(input_path),
+            "--report",
+            str(report_path),
+        ]
+    )
+
+    assert exit_code == 1
+    assert report_path.exists() is False
+    failure = json.loads(capsys.readouterr().out)
+    assert failure["failure_stage"] == "INPUT"
+    assert failure["failure_code"] == "INPUT_VALIDATION_FAILED"
 
 
 def test_execute_calls_provider_once_only_after_reject_and_builds_v2_handoff():

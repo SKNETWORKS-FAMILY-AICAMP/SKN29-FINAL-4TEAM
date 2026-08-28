@@ -28,17 +28,19 @@ Backend 전송 전에 중단한다. 이번 시험의 목적이 결정론적 Fall
 
 ## 기준 코드와 파일
 
-- 작업 시작 기준 Branch: `dongyoon`
-- 작업 시작 기준 HEAD: `8fda18939a51cf208984c79be2f6119676a11ed2`
-- 확인 당시 `origin/main`: `5611f31337a76a089d43959c57994dc01de77a48`
+- Runner 도입 Commit:
+  `141829c438f5133a30538ef0ac91a1081b1cd2a2`
+- `official_verified` 보강 최신 main 동기화 기준:
+  `4f71692a754836757b7d6437916c7c0a33a09623`
 - Runner:
   `ai/scripts/run_consultation_context_provider_canary.py`
 - 단위 테스트:
   `ai/tests/unit/test_consultation_context_provider_canary.py`
-- 실제 실행 기준 Commit: **Runner 변경 커밋 후 40자리 SHA로 별도 회신 예정**
+- 실제 실행 기준 Commit: **보강본 main 병합 후 새 40자리 SHA로 별도 회신 예정**
 
 `execute` 모드는 전달받은 실행 기준 Commit과 현재 `HEAD`가 다르거나 작업 트리가
-Dirty이면 실패한다. 따라서 위 작업 시작 HEAD를 실제 실행 SHA로 사용하면 안 된다.
+Dirty이면 실패한다. 따라서 위 도입·보강 기준 Commit을 실제 실행 SHA로 사용하면
+안 된다.
 
 ## 최지용님이 제공할 식별자
 
@@ -65,8 +67,10 @@ Runner는 `inquiry_id + ai_request_id + state_version`으로 Checkpoint ID를 �
 - 신규 합성 문의만 사용하고 완료된 기존 문의는 재사용하지 않는다.
 - 입력은 `data_classification=synthetic`, 모델은 `WPUJAC104DWH`, 위험도는
   `caution`, 사용 안내는 `PARTIAL_STOP`으로 제한한다.
-- Evidence는 해당 모델과 정확히 일치하며 `official_verified` 또는
-  `team_verified`, `allowed_use=true`, `runtime_eligible=true`인 항목만 넣는다.
+- Evidence는 해당 모델과 정확히 일치하며 `official_verified`,
+  `allowed_use=true`, `runtime_eligible=true`인 항목만 넣는다.
+- `team_verified`를 포함한 다른 검증 상태는 입력 검증에서 거절하고 Provider와
+  Backend를 호출하지 않는다.
 - 실제 고객 원문, 전화번호, 이메일, 계정 정보, Secret은 넣지 않는다.
 - 입력 JSON과 실행 보고서는 저장소 밖 또는 Git에서 무시되는
   `.runtime/consultation-context-provider-canary/` 아래에만 둔다.
