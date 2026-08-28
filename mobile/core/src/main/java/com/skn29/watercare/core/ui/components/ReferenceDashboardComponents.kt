@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -178,30 +179,47 @@ bottomItems: List<ReferenceBottomItem> = emptyList(),
                 }
             },
         ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(
-                        start = 18.dp,
-                        end = 18.dp,
-                        top = 14.dp,
-                        bottom = 116.dp,
-                    ),
-                verticalArrangement = Arrangement.spacedBy(18.dp),
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                contentAlignment =
+                    Alignment.TopCenter,
             ) {
-                ReferenceDashboardHeader(
-                    roleLabel = roleLabel,
-                    palette = palette,
-                    title = title,
-                    brandLogoRes = brandLogoRes,
-                    onNotification = onNotification,
-                    onSupport = onSupport,
-                    notificationEnabled = notificationEnabled,
-                    supportEnabled = supportEnabled,
-                )
-                content()
+                Column(
+                    modifier =
+                        Modifier
+                            .widthIn(max = 960.dp)
+                            .fillMaxWidth()
+                            .verticalScroll(
+                                rememberScrollState()
+                            )
+                            .padding(
+                                start = 18.dp,
+                                end = 18.dp,
+                                top = 14.dp,
+                                bottom = 116.dp,
+                            ),
+                    verticalArrangement =
+                        Arrangement.spacedBy(18.dp),
+                ) {
+                    ReferenceDashboardHeader(
+                        roleLabel = roleLabel,
+                        palette = palette,
+                        title = title,
+                        brandLogoRes =
+                            brandLogoRes,
+                        onNotification =
+                            onNotification,
+                        onSupport = onSupport,
+                        notificationEnabled =
+                            notificationEnabled,
+                        supportEnabled =
+                            supportEnabled,
+                    )
+                    content()
+                }
             }
         }
     }

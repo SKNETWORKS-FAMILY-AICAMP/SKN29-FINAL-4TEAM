@@ -32,7 +32,6 @@ import com.skn29.watercare.core.model.InquiryLabels
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.customer.feature.shared.SectionCard
 
 @Composable
@@ -46,7 +45,7 @@ fun FollowUpQuestionsSection(
 ) {
     when (state) {
         FollowUpUiState.Disabled -> Unit
-        FollowUpUiState.Loading -> LoadingBlock("몇 가지만 더 확인할게요")
+        FollowUpUiState.Loading -> Unit
 
         is FollowUpUiState.Empty -> Unit
 
@@ -76,7 +75,7 @@ fun FollowUpQuestionsSection(
                 onSelectOption = onSelectOption,
                 onSubmit = onSubmit,
             )
-            LoadingBlock("추가 답변을 저장하는 중입니다")
+            // Visible loading UI intentionally hidden.
         }
 
         is FollowUpUiState.Success -> {

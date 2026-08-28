@@ -45,7 +45,6 @@ import com.skn29.watercare.core.model.SymptomTopic
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPanel
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.core.ui.theme.GlassBorder
 import com.skn29.watercare.core.ui.theme.GlassFill
 import com.skn29.watercare.core.ui.theme.GlassFillStrong
@@ -261,7 +260,7 @@ fun SymptomIntakeContent(
         }
 
         if (state.isSubmitting) {
-            LoadingBlock("내용을 보내고 있어요")
+            // Visible loading UI intentionally hidden.
         }
 
         LiquidGlassButton(

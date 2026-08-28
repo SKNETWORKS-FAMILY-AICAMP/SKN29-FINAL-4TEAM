@@ -81,8 +81,8 @@ class GuidanceViewModel(
 
             val remote = customerInquiryRepository
 
-            // Follow-up ????? loadFollowUp()? ?? Snapshot?
-            // ?? ????? ??? ?? Snapshot? ?? ???? ???.
+            // Follow-up path uses loadFollowUp() to manage its Snapshot.
+            // Avoid duplicate Snapshot reads on the follow-up path.
             if (remote == null || followUpEnabled) {
                 _state.value = loadGuidanceState()
                 return@launch
@@ -147,7 +147,7 @@ class GuidanceViewModel(
                 ) {
                     GuidanceUiState.Error(
                         message =
-                            "?? ?? ??? ?? ??? ???? ????.",
+                            "상담 처리 결과의 문의 정보가 일치하지 않습니다.",
                         retryable = true,
                     )
                 } else {
@@ -221,7 +221,7 @@ class GuidanceViewModel(
                         _authExpired.value = true
                         GuidanceUiState.Error(
                             message =
-                                "???? ???????. ?? ???? ???.",
+                                "로그인이 만료되었습니다. 다시 로그인해 주세요.",
                             retryable = false,
                         )
                     }
