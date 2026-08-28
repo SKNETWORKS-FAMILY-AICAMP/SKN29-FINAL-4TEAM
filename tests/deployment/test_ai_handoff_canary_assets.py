@@ -16,6 +16,9 @@ ENV_PREPARE = (
     ROOT
     / "scripts/deployment/production/prepare_ai_handoff_runtime_env.py"
 )
+NGINX_PREPARE = (
+    ROOT / "scripts/deployment/production/prepare_ai_handoff_nginx.py"
+)
 ROLLBACK = ROOT / "scripts/deployment/production/rollback-release.sh"
 RUNBOOK = ROOT / "docs/deployment/production-deployment-runbook.md"
 
@@ -88,6 +91,26 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
         self.assertIn("os.fsync", prepare)
         self.assertNotIn("print(secret_value", prepare)
         self.assertIn("secret_values_printed=false", prepare)
+
+    def test_release_prepares_exact_canary_nginx_server_scope(self) -> None:
+        trusted = TRUSTED.read_text(encoding="utf-8")
+        deploy = DEPLOY.read_text(encoding="utf-8")
+        prepare = NGINX_PREPARE.read_text(encoding="utf-8")
+
+        self.assertIn("prepare_ai_handoff_nginx.py", trusted)
+        self.assertIn("prepare_ai_handoff_nginx.py", deploy)
+        self.assertLess(
+            deploy.index("DEPLOYMENT_MUTATION_STARTED"),
+            deploy.index('python3 "$ai_handoff_nginx_prepare_script"'),
+        )
+        self.assertIn("expected exactly one Canary server block", prepare)
+        self.assertIn("/etc/nginx/waterbridge-server.d/*.conf", prepare)
+        self.assertIn('"127.0.0.1:18080"', prepare)
+        self.assertIn("resolve(strict=True)", prepare)
+        self.assertIn("os.replace", prepare)
+        self.assertIn("Nginx backup checksum collision", prepare)
+        self.assertIn('["nginx", "-t"]', prepare)
+        self.assertIn('["systemctl", "reload", "nginx"]', prepare)
 
     def test_script_has_exact_target_gate_and_denies_all_other_ai_entries(self) -> None:
         script = SCRIPT.read_text(encoding="utf-8")

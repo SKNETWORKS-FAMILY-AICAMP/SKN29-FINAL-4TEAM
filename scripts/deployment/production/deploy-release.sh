@@ -84,12 +84,14 @@ tar -xzf "$archive_path" -C "$payload_dir"
 }
 secret_sync_script="${payload_dir}/scripts/deployment/production/sync_backend_email_auth_secret.py"
 ai_handoff_env_prepare_script="${payload_dir}/scripts/deployment/production/prepare_ai_handoff_runtime_env.py"
+ai_handoff_nginx_prepare_script="${payload_dir}/scripts/deployment/production/prepare_ai_handoff_nginx.py"
 worker_preflight_script="${payload_dir}/scripts/deployment/production/validate_p1_auth_email_worker_runtime.py"
 worker_runner_source="${payload_dir}/scripts/deployment/production/run_p1_auth_email_worker.sh"
 worker_unit_source="${payload_dir}/infra/systemd/${worker_service}"
 for required_asset in \
   "$secret_sync_script" \
   "$ai_handoff_env_prepare_script" \
+  "$ai_handoff_nginx_prepare_script" \
   "$worker_preflight_script" \
   "$worker_runner_source" \
   "$worker_unit_source"; do
@@ -289,6 +291,9 @@ print('BACKEND_OWNER_GATE_PASS')"; then
 fi
 
 printf 'DEPLOYMENT_MUTATION_STARTED\n'
+python3 "$ai_handoff_nginx_prepare_script" \
+  --dropin-dir /etc/nginx/waterbridge-server.d \
+  --backup-dir "${base_dir}/shared/nginx-canary-bootstrap"
 python3 "$ai_handoff_env_prepare_script" \
   --ai-env-file "$ai_env_file"
 for key in \

@@ -136,17 +136,20 @@ release fails without changing the token when the pre-provisioned
 `AI_HANDOFF_INTERNAL_TOKEN` is missing, empty, duplicated, or exposed through
 unsafe file permissions. Do not append these keys manually on the host.
 
-Before the first Canary, the owner-approved `waterbridge.site` host Nginx server
-block must contain this include inside that server block:
+Before the first Canary, the official release prepares the one exact
+`waterbridge.site` host Nginx server block that proxies to
+`127.0.0.1:18080`. It backs up the source by SHA-256 and installs this include
+inside that server block:
 
 ```nginx
 include /etc/nginx/waterbridge-server.d/*.conf;
 ```
 
-Create the directory as root with mode `0755`, back up the exact site file, run
-`nginx -t`, and reload Nginx. If the include, public server name, or
-`127.0.0.1:18080` upstream is ambiguous, the Canary preflight returns
-`ENVIRONMENT_BLOCKED`; the automation does not guess or rewrite the site file.
+The release creates the directory as root with mode `0755`, runs `nginx -t`,
+and reloads Nginx. Any failure restores the byte-identical source before the
+release fails. If the public server name, source file, or upstream is ambiguous,
+the release does not guess or rewrite the site file and the later Canary
+preflight remains `ENVIRONMENT_BLOCKED`.
 
 Use one new Inquiry created through the public API from an existing approved
 synthetic customer and active subscription. Do not run Migration, Schema

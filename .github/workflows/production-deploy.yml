@@ -658,6 +658,7 @@ jobs:
           cp scripts/deployment/production/deploy-release.sh \
             scripts/deployment/production/rollback-release.sh \
             scripts/deployment/production/manage-ai-handoff-canary.sh \
+            scripts/deployment/production/prepare_ai_handoff_nginx.py \
             scripts/deployment/production/prepare_ai_handoff_runtime_env.py \
             scripts/deployment/production/run_p1_auth_email_worker.sh \
             scripts/deployment/production/sync_backend_email_auth_secret.py \
