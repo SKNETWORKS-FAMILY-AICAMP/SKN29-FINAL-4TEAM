@@ -1160,6 +1160,13 @@ html body
 html body
   #root
   .consultant-dashboard-app
+  .counselor-dashboard-org__department:hover::before {
+  transform: translateY(calc(-50% + 1px)) !important;
+}
+
+html body
+  #root
+  .consultant-dashboard-app
   .counselor-dashboard-org__department
   b {
   color: #111 !important;
@@ -2930,6 +2937,67 @@ html body
   :is(select, input:not([type="checkbox"]):not([type="radio"])) {
   min-height: 38px;
   padding: 0 10px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .v6-action-form-decisions {
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #d5dae2;
+  border-radius: 12px;
+  background: #f4f6f9;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .v6-action-form-decisions
+  select {
+  min-height: 46px !important;
+  padding: 0 42px 0 14px !important;
+  border: 1px solid #aeb7c5 !important;
+  border-radius: 10px !important;
+  appearance: none;
+  background-color: #fff !important;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--consultant-refresh-navy) 50%),
+    linear-gradient(135deg, var(--consultant-refresh-navy) 50%, transparent 50%) !important;
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50% !important;
+  background-repeat: no-repeat !important;
+  background-size: 6px 6px, 6px 6px !important;
+  color: #17243a !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer
+  .v6-action-form-decisions
+  select:hover {
+  border-color: var(--consultant-refresh-navy) !important;
+}
+
+html body #root :is(
+  .simple-consultant-app.consultant-queue-app,
+  .v6-workspace
+) select option:checked,
+html body #root :is(
+  .simple-consultant-app.consultant-queue-app,
+  .v6-workspace
+) select option:hover {
+  background: var(--consultant-refresh-navy) !important;
+  background-color: var(--consultant-refresh-navy) !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 100vmax var(--consultant-refresh-navy) inset !important;
+  -webkit-text-fill-color: #fff !important;
 }
 
 html body

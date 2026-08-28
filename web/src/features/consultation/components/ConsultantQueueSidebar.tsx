@@ -195,9 +195,7 @@ export default function ConsultantQueueSidebar({
           {isExpanded ? (
             <path d="m14.5 6-6 6 6 6" />
           ) : (
-            <>
-              <path d="M5 7h14M5 12h14M5 17h14" />
-            </>
+            <path d="m9.5 6 6 6-6 6" />
           )}
         </svg>
       </button>

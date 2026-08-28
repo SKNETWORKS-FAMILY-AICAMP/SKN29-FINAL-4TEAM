@@ -7,10 +7,19 @@ import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
+import type {
+  ConsultantInquiryListQuery,
+  ConsultantInquiryStatusDto,
+} from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
 import ConsultantHeaderBrand from "../../features/consultation/components/ConsultantHeaderBrand";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
+import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
 import type { CounselorWorkBucket } from "../../features/consultation/model/consultantWorkspaceTypes";
+import {
+  consultantWorkspaceDataRepository,
+  createMockConsultantInquiryListViewModel,
+} from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import {
   getConsultantNoticeDetail,
   getConsultantNoticePageData,
@@ -63,6 +72,35 @@ const NOTICE_CATEGORY_FILTERS: readonly {
   })),
 ];
 
+const NOTICE_SIDEBAR_BUCKET_STATUSES: Record<
+  CounselorWorkBucket,
+  readonly ConsultantInquiryStatusDto[]
+> = {
+  NEW: ["CONSULTATION_REQUIRED", "REOPENED"],
+  IN_PROGRESS: [
+    "DRAFT",
+    "QUESTIONNAIRE_IN_PROGRESS",
+    "AI_GUIDANCE",
+    "CONSULTATION_IN_PROGRESS",
+    "VISIT_REVIEW_PENDING",
+    "VISIT_SCHEDULING",
+    "VISIT_SCHEDULED",
+    "COMPLETION_PENDING",
+    "REVISIT_REQUIRED",
+  ],
+  COMPLETED: ["RESOLVED", "CANCELLED"],
+};
+
+const NOTICE_SIDEBAR_QUERY: ConsultantInquiryListQuery = {
+  status: [
+    ...NOTICE_SIDEBAR_BUCKET_STATUSES.NEW,
+    ...NOTICE_SIDEBAR_BUCKET_STATUSES.IN_PROGRESS,
+    ...NOTICE_SIDEBAR_BUCKET_STATUSES.COMPLETED,
+  ],
+  page: 1,
+  size: 100,
+};
+
 function formatNoticeDate(value: string) {
   return value.replaceAll("-", ".");
 }
@@ -86,6 +124,14 @@ function getNoticeFailureState(error: unknown): NoticeFailureState {
 export default function ConsultantNoticePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const sidebarQuery = useConsultantInquiryListQuery(NOTICE_SIDEBAR_QUERY);
+  const sidebarData = useMemo(
+    () =>
+      consultantWorkspaceDataRepository.dataSource === "MOCK"
+        ? createMockConsultantInquiryListViewModel(NOTICE_SIDEBAR_QUERY)
+        : sidebarQuery.data,
+    [sidebarQuery.data],
+  );
   const [data, setData] = useState<ConsultantNoticePageData | null>(null);
   const [pageLoadState, setPageLoadState] =
     useState<NoticePageLoadState>("loading");
@@ -211,14 +257,21 @@ export default function ConsultantNoticePage() {
     Readonly<Record<CounselorWorkBucket, number>> | undefined
   >(
     () =>
-      data
-        ? {
-            NEW: data.summary.new,
-            IN_PROGRESS: data.summary.inProgress,
-            COMPLETED: data.summary.completed,
-          }
+      sidebarData
+        ? (Object.fromEntries(
+            Object.entries(NOTICE_SIDEBAR_BUCKET_STATUSES).map(
+              ([bucket, statuses]) => [
+                bucket,
+                statuses.reduce(
+                  (total, status) =>
+                    total + (sidebarData.statusCounts[status] ?? 0),
+                  0,
+                ),
+              ],
+            ),
+          ) as Record<CounselorWorkBucket, number>)
         : undefined,
-    [data],
+    [sidebarData],
   );
 
   const returnToNoticeList = () => {
@@ -238,6 +291,7 @@ export default function ConsultantNoticePage() {
         <ConsultantQueueSidebar
           activeBucket={null}
           bucketCounts={bucketCounts}
+          totalCount={sidebarData?.pageInfo.total}
           noticeActive
         />
 
@@ -253,15 +307,11 @@ export default function ConsultantNoticePage() {
               <h1 id="consultant-notice-title">
                 {isDetailRequested ? "공지사항 상세" : "공지사항"}
               </h1>
-              <p>
-                {isDetailRequested
-                  ? "선택한 공지의 내용을 자세히 확인해 주세요."
-                  : "상담 업무에 필요한 안내와 일정을 확인해 주세요."}
-              </p>
+              {isDetailRequested && (
+                <p>선택한 공지의 내용을 자세히 확인해 주세요.</p>
+              )}
             </div>
-            <strong>
-              {isDetailRequested ? "상세" : `${data?.notices.length ?? 0}건`}
-            </strong>
+            {isDetailRequested && <strong>상세</strong>}
           </header>
 
           {!isDetailRequested && (

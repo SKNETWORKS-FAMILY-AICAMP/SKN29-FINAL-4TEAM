@@ -163,9 +163,12 @@ describe("ConsultantDashboardPage", () => {
     expect(recentItems).toHaveLength(2);
     expect(recentItems[0]).not.toHaveTextContent(newerInquiry.inquiryCode);
     expect(recentItems[0]).toHaveTextContent(newerInquiry.customerMessage);
-    expect(recentItems[0]).toHaveTextContent(
+    expect(recentItems[0]).not.toHaveTextContent(
       "WPU-JAC104D · 초소형 직수 냉온 정수기",
     );
+    expect(
+      within(recentItems[0]).getByText(/^(긴급|주의|일반)$/),
+    ).toBeVisible();
     expect(recentItems[1]).not.toHaveTextContent(olderInquiry.inquiryCode);
 
     const infoPanels = Array.from(

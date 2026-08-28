@@ -114,6 +114,10 @@ describe("ConsultantQueueSidebar", () => {
       name: "사이드바 펼치기",
     });
     expect(expandButton).toHaveAttribute("aria-expanded", "false");
+    expect(expandButton.querySelector("path")).toHaveAttribute(
+      "d",
+      "m9.5 6 6 6-6 6",
+    );
     await user.click(expandButton);
 
     const collapseButton = screen.getByRole("button", {
@@ -121,6 +125,10 @@ describe("ConsultantQueueSidebar", () => {
     });
     expect(sidebar).toHaveClass("is-user-expanded");
     expect(collapseButton).toHaveAttribute("aria-expanded", "true");
+    expect(collapseButton.querySelector("path")).toHaveAttribute(
+      "d",
+      "m14.5 6-6 6 6 6",
+    );
 
     await user.keyboard("{Escape}");
     expect(sidebar).not.toHaveClass("is-user-expanded");
