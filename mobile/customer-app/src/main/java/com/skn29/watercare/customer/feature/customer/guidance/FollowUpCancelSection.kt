@@ -19,7 +19,6 @@ import com.skn29.watercare.core.model.InquiryLabels
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.WorkflowActionButton
 
@@ -88,9 +87,7 @@ internal fun FollowUpCancelSection(
             Unit
 
         CancelInquiryUiState.Cancelling ->
-            LoadingBlock(
-                "문의를 취소하는 중입니다"
-            )
+            Unit
 
         is CancelInquiryUiState.Success ->
             SectionCard("문의 취소 완료") {

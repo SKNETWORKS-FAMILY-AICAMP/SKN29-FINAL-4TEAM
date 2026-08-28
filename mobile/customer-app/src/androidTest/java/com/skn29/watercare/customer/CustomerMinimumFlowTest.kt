@@ -35,6 +35,8 @@ import com.skn29.watercare.core.model.SymptomTopic
 import com.skn29.watercare.core.model.RiskLevel
 import com.skn29.watercare.core.model.UsageGuidanceStatus
 import com.skn29.watercare.core.ui.theme.WaterCareTheme
+import com.skn29.watercare.customer.feature.customer.guidance.CustomerResolutionSection
+import com.skn29.watercare.customer.feature.customer.guidance.CustomerResolutionUiState
 import com.skn29.watercare.customer.feature.customer.guidance.GuidanceContent
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeContent
@@ -665,6 +667,71 @@ class CustomerMinimumFlowTest {
             )
                 .assertDoesNotExistCompat()
         }
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun completionPending_resolutionActions_areVisibleAndClickable() =
+        runManualComposeUiTest {
+            var resolvedClicked = false
+            var unresolvedClicked = false
+
+            setContent {
+                WaterCareTheme {
+                    CustomerResolutionSection(
+                        statusCode =
+                            "COMPLETION_PENDING",
+                        stateVersion = 9,
+                        allowedActions =
+                            listOf(
+                                AllowedAction(
+                                    code =
+                                        InquiryActionLabels
+                                            .SUBMIT_RESOLUTION_FEEDBACK
+                                ),
+                                AllowedAction(
+                                    code =
+                                        InquiryActionLabels
+                                            .CUSTOMER_REPORTED_UNRESOLVED
+                                ),
+                            ),
+                        state =
+                            CustomerResolutionUiState.Idle,
+                        onResolved = {
+                            resolvedClicked = true
+                        },
+                        onUnresolved = {
+                            unresolvedClicked = true
+                        },
+                        onRetry = {},
+                        onDone = {},
+                    )
+                }
+            }
+
+            waitForIdle()
+
+            onNodeWithTag(
+                "submitResolutionFeedback"
+            )
+                .assertIsDisplayed()
+                .performClick()
+
+            assertTrue(
+                "resolved action must be clickable",
+                resolvedClicked,
+            )
+
+            onNodeWithTag(
+                "reportUnresolved"
+            )
+                .assertIsDisplayed()
+                .performClick()
+
+            assertTrue(
+                "unresolved action must be clickable",
+                unresolvedClicked,
+            )
+        }
+
     @Test
     @OptIn(ExperimentalTestApi::class)
     fun cancelInquiryAction_isVisibleAndClickable() =

@@ -34,7 +34,6 @@ import com.skn29.watercare.core.model.CareHistoryItemDto
 import com.skn29.watercare.core.model.CustomerSelfCareType
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
@@ -166,9 +165,7 @@ fun CareHistoryContent(
         onBack = onBack,
     ) {
         if (state.loadingSubscriptions) {
-            LoadingBlock(
-                "관리 가능한 정수기를 확인하고 있어요"
-            )
+            // Visible loading UI intentionally hidden.
         }
 
         state.errorMessage?.let { message ->
@@ -371,9 +368,7 @@ fun CareHistoryContent(
 
             SectionCard("완료된 케어 이력") {
                 if (state.loadingHistory) {
-                    LoadingBlock(
-                        "케어 이력을 불러오고 있어요"
-                    )
+                    // Visible loading UI intentionally hidden.
                 } else if (
                     state.items.isEmpty()
                 ) {

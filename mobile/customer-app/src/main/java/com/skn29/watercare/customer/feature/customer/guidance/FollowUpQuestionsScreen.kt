@@ -158,13 +158,7 @@ fun FollowUpQuestionsScreen(
                 ?.uppercase() ==
                 "QUESTIONNAIRE_IN_PROGRESS"
         ) {
-            com.skn29.watercare.core.ui.components.LoadingBlock(
-                if (processingRefreshCount < 15) {
-                    "답변을 분석하고 있어요"
-                } else {
-                    "분석이 평소보다 오래 걸리고 있어요. 잠시 후 다시 확인해주세요."
-                }
-            )
+            // Visible loading UI intentionally hidden.
         }
 
         if (!blockFollowUpInteraction) {

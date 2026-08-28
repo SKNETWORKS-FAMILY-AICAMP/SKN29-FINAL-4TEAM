@@ -124,7 +124,7 @@ class ConsultationResultViewModelTest {
                             code =
                                 "CONSULTATION_RESULT_NOT_READY",
                             message =
-                                "?? ?? ??? ?? ???? ?????.",
+                                "상담 처리 결과가 아직 준비되지 않았습니다.",
                             httpStatus = 409,
                             retryable = true,
                         ),
@@ -203,7 +203,7 @@ class ConsultationResultViewModelTest {
                         ApiResult.Success(
                             RequestConsultationResult(
                                 message =
-                                    "?? ??? ???????.",
+                                    "상담 요청이 접수되었습니다.",
                                 inquiryId =
                                     TEST_INQUIRY_ID,
                                 statusCode =
@@ -291,7 +291,7 @@ class ConsultationResultViewModelTest {
                             code =
                                 "STATE-CONFLICT-01",
                             message =
-                                "?? ??? ???????.",
+                                "문의 상태가 변경되었습니다.",
                             httpStatus = 409,
                             retryable = true,
                         ),
@@ -312,7 +312,7 @@ class ConsultationResultViewModelTest {
 
             assertTrue(
                 state.message.contains(
-                    "?? ??"
+                    "최신 상태"
                 )
             )
 
@@ -359,7 +359,7 @@ class ConsultationResultViewModelTest {
                             code =
                                 "VALIDATION_ERROR",
                             message =
-                                "resolved ??? ?????.",
+                                "resolved 필드가 필요합니다.",
                             httpStatus = 422,
                             retryable = false,
                         ),
@@ -380,7 +380,7 @@ class ConsultationResultViewModelTest {
 
             assertTrue(
                 state.message.contains(
-                    "????"
+                    "올바르지"
                 )
             )
             assertFalse(state.retryable)
@@ -561,13 +561,13 @@ class ConsultationResultViewModelTest {
                 resultCode =
                     "COMPLETED_NO_VISIT",
                 resultDisplayLabel =
-                    "?? ?? ??",
+                    "상담 처리 완료",
                 customerGuidance =
-                    "??? ?? ??? ? ???? ??? ???.",
+                    "필터를 다시 장착한 뒤 출수량을 확인해 주세요.",
                 usageGuidanceStatus =
                     "NORMAL",
                 usageGuidanceDisplayLabel =
-                    "?? ?? ??",
+                    "정상 사용 가능",
                 completedAt =
                     "2026-08-27T13:30:00+09:00",
                 allowedActions =
@@ -583,12 +583,12 @@ class ConsultationResultViewModelTest {
                     "AI_GUIDANCE",
                 stateVersion = 3,
                 symptomSummary =
-                    "??? ??",
+                    "테스트 증상",
                 riskLevel = "general",
                 usageGuidanceStatus =
                     "NORMAL",
                 usageGuidanceMessage =
-                    "??? ??",
+                    "테스트 안내",
                 safeActions =
                     emptyList(),
                 escalationConditions =
@@ -596,7 +596,7 @@ class ConsultationResultViewModelTest {
                 prohibitedActions =
                     emptyList(),
                 nextAction =
-                    "?? ??",
+                    "상담 요청",
                 requiresConsultation =
                     false,
                 evidence =

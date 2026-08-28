@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -120,6 +121,61 @@ class P1AuthViewModelTest {
 
             assertFalse(viewModel.state.value.authenticated)
             assertEquals(60, viewModel.state.value.retryAfterSeconds)
+        }
+
+    @Test
+    fun consumeError_clearsLoginDialogError_withoutDroppingRetryDelay() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val p1 =
+                FakeP1AuthRepository(
+                    loginResult =
+                        ApiResult.Failure(
+                            code = "RATE_LIMITED",
+                            message =
+                                "잠시 후 다시 시도해 주세요.",
+                            httpStatus = 429,
+                            retryable = true,
+                            retryAfterSeconds = 60,
+                        )
+                )
+
+            val viewModel =
+                AuthViewModel(
+                    authRepository =
+                        FakeAuthRepository(),
+                    backendStatusRepository =
+                        HealthyBackendStatusRepository,
+                    p1AuthRepository = p1,
+                )
+
+            advanceUntilIdle()
+
+            viewModel.login(
+                "water.user",
+                "Password1234",
+            )
+            advanceUntilIdle()
+
+            assertEquals(
+                "잠시 후 다시 시도해 주세요.",
+                viewModel.state.value.error,
+            )
+            assertEquals(
+                60,
+                viewModel.state.value
+                    .retryAfterSeconds,
+            )
+
+            viewModel.consumeError()
+
+            assertNull(
+                viewModel.state.value.error
+            )
+            assertEquals(
+                60,
+                viewModel.state.value
+                    .retryAfterSeconds,
+            )
         }
 
     @Test

@@ -54,7 +54,6 @@ import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPanel
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
-import com.skn29.watercare.core.ui.components.LoadingBlock
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.BulletList
@@ -285,7 +284,7 @@ fun GuidanceScreen(
             CancelInquiryUiState.Idle -> Unit
 
             CancelInquiryUiState.Cancelling ->
-                LoadingBlock("문의를 취소하고 있어요")
+                Unit
 
             is CancelInquiryUiState.Success ->
                 SectionCard("문의 취소 완료") {
@@ -359,10 +358,7 @@ fun GuidanceScreen(
 
         when (val current = state) {
             GuidanceUiState.Loading ->
-                GuidancePreparingContent(
-                    autoRetryCount = guidanceAutoRetryCount,
-                    onRetry = viewModel::load,
-                )
+                Unit
 
             is GuidanceUiState.Content ->
                 GuidanceResultReveal {
@@ -400,10 +396,13 @@ fun GuidanceScreen(
                 }
 
             is GuidanceUiState.NotReady ->
-                GuidancePreparingContent(
-                    autoRetryCount = guidanceAutoRetryCount,
-                    onRetry = viewModel::load,
-                )
+                if (guidanceAutoRetryCount >= 6) {
+                    TextButton(
+                        onClick = viewModel::load,
+                    ) {
+                        Text("다시 확인")
+                    }
+                }
 
             is GuidanceUiState.AiFailure ->
                 GuidanceFailureStateContent(
@@ -460,9 +459,7 @@ fun GuidanceScreen(
             ConsultationRequestUiState.Idle -> Unit
 
             ConsultationRequestUiState.Requesting ->
-                LoadingBlock(
-                    "상담을 연결하고 있어요"
-                )
+                Unit
 
             is ConsultationRequestUiState.Success ->
                 SectionCard("상담 요청 완료") {
@@ -1152,61 +1149,6 @@ private fun GuidanceActionSteps(
                     fontWeight = FontWeight.Medium,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun GuidancePreparingContent(
-    autoRetryCount: Int,
-    onRetry: () -> Unit,
-) {
-    LiquidGlassPanel(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("guidancePreparing"),
-        strong = true,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 104.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                LiquidGlassPill("안내 준비 중")
-
-                Text(
-                    text = "맞춤 해결 방법을 준비하고 있어요",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-
-                Text(
-                    text = "안내가 준비되는 동안 입력한 내용은 안전하게 보관되어 있어요.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color =
-                        MaterialTheme.colorScheme
-                            .onSurfaceVariant,
-                )
-            }
-
-            Image(
-                painter = painterResource(
-                    R.drawable.mascot_customer
-                ),
-                contentDescription = "맞춤 안내 준비 중",
-                modifier = Modifier.size(72.dp),
-                contentScale = ContentScale.Fit,
-            )
-        }
-
-        TextButton(onClick = onRetry) {
-            Text("다시 확인하기")
         }
     }
 }
