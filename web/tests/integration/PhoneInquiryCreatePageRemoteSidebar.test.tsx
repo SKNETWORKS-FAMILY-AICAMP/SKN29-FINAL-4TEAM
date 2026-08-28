@@ -79,7 +79,9 @@ describe("PhoneInquiryCreatePage Remote 사이드바", () => {
       expect(
         await screen.findByRole("tab", { name: "전체 문의0" }),
       ).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: "새 문의0" })).toBeInTheDocument();
+      expect(
+        screen.queryByRole("tab", { name: "새 문의0" }),
+      ).not.toBeInTheDocument();
       expect(
         screen.getByRole("tab", { name: "처리 중인 문의0" }),
       ).toBeInTheDocument();

@@ -73,7 +73,7 @@ describe("Remote 상담사 문의 상세", () => {
 
     expect(
       screen.getByRole("button", {
-        name: "상담 1단계: 고객·문의·제품 확인",
+        name: "상담 1단계: 고객 문의 · 제품 확인",
       }),
     ).toHaveAttribute("aria-current", "step");
     expect(
@@ -109,7 +109,7 @@ describe("Remote 상담사 문의 상세", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 
     const secondStep = screen.getByRole("button", {
-      name: "상담 2단계: 안전·상담 가이드 확인",
+      name: "상담 2단계: AI 상담 · 이전 상담 기록 확인",
     });
     await user.click(secondStep);
 
@@ -123,7 +123,7 @@ describe("Remote 상담사 문의 상세", () => {
     ).toHaveValue(2);
 
     const thirdStep = screen.getByRole("button", {
-      name: "상담 3단계: 상담 기록·최종 처리",
+      name: "상담 3단계: 상담 진행",
     });
     await user.click(thirdStep);
 
@@ -165,18 +165,18 @@ describe("Remote 상담사 문의 상세", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "상담 3단계: 상담 기록·최종 처리",
+        name: "상담 3단계: 상담 진행",
       }),
     );
     await user.type(screen.getByLabelText("상담 기록"), "필터 상태 확인");
     await user.click(
       screen.getByRole("button", {
-        name: "상담 1단계: 고객·문의·제품 확인",
+        name: "상담 1단계: 고객 문의 · 제품 확인",
       }),
     );
     await user.click(
       screen.getByRole("button", {
-        name: "상담 3단계: 상담 기록·최종 처리",
+        name: "상담 3단계: 상담 진행",
       }),
     );
     expect(screen.getByLabelText("상담 기록")).toHaveValue("필터 상태 확인");
@@ -190,7 +190,7 @@ describe("Remote 상담사 문의 상세", () => {
     );
     expect(
       screen.getByRole("button", {
-        name: "상담 1단계: 고객·문의·제품 확인",
+        name: "상담 1단계: 고객 문의 · 제품 확인",
       }),
     ).toHaveAttribute("aria-current", "step");
   });
@@ -367,7 +367,7 @@ describe("Remote 상담사 문의 상세", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "상담 2단계: 안전·상담 가이드 확인",
+        name: "상담 2단계: AI 상담 · 이전 상담 기록 확인",
       }),
     );
     await user.click(screen.getByRole("button", { name: "상세 보기" }));
@@ -439,7 +439,7 @@ describe("Remote 상담사 문의 상세", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "상담 3단계: 상담 기록·최종 처리",
+        name: "상담 3단계: 상담 진행",
       }),
     );
 
@@ -495,7 +495,7 @@ describe("Remote 상담사 문의 상세", () => {
     expect(screen.queryByLabelText("상담 처리 작업")).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", {
-        name: "상담 3단계: 상담 기록·최종 처리",
+        name: "상담 3단계: 상담 진행",
       }),
     );
     expect(

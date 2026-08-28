@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { ROUTE_PATHS } from "../../app/router/routePaths";
 import { ApiClientError } from "../../common/api/apiError";
+import Pagination from "../../common/components/data-display/Pagination";
 import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
@@ -100,6 +101,7 @@ const NOTICE_SIDEBAR_QUERY: ConsultantInquiryListQuery = {
   page: 1,
   size: 100,
 };
+const NOTICE_PAGE_SIZE = 5;
 
 function formatNoticeDate(value: string) {
   return value.replaceAll("-", ".");
@@ -139,6 +141,7 @@ export default function ConsultantNoticePage() {
   const [categoryFilter, setCategoryFilter] =
     useState<NoticeCategoryFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [noticePage, setNoticePage] = useState(1);
   const isDetailRequested = searchParams.has("noticeId");
   const requestedNoticeId = searchParams.get("noticeId") ?? "";
   const [detailRetryCount, setDetailRetryCount] = useState(0);
@@ -253,6 +256,15 @@ export default function ConsultantNoticePage() {
         ),
     [categoryFilter, data?.notices, normalizedQuery],
   );
+  const noticeTotalPages = Math.max(
+    1,
+    Math.ceil(visibleNotices.length / NOTICE_PAGE_SIZE),
+  );
+  const currentNoticePage = Math.min(noticePage, noticeTotalPages);
+  const pagedNotices = useMemo(() => {
+    const start = (currentNoticePage - 1) * NOTICE_PAGE_SIZE;
+    return visibleNotices.slice(start, start + NOTICE_PAGE_SIZE);
+  }, [currentNoticePage, visibleNotices]);
   const bucketCounts = useMemo<
     Readonly<Record<CounselorWorkBucket, number>> | undefined
   >(
@@ -277,6 +289,12 @@ export default function ConsultantNoticePage() {
   const returnToNoticeList = () => {
     const nextSearchParams = new URLSearchParams(searchParams);
     nextSearchParams.delete("noticeId");
+    setSearchParams(nextSearchParams);
+  };
+
+  const openNoticeDetail = (noticeId: string) => {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set("noticeId", noticeId);
     setSearchParams(nextSearchParams);
   };
 
@@ -307,9 +325,6 @@ export default function ConsultantNoticePage() {
               <h1 id="consultant-notice-title">
                 {isDetailRequested ? "공지사항 상세" : "공지사항"}
               </h1>
-              {isDetailRequested && (
-                <p>선택한 공지의 내용을 자세히 확인해 주세요.</p>
-              )}
             </div>
             {isDetailRequested && <strong>상세</strong>}
           </header>
@@ -328,7 +343,10 @@ export default function ConsultantNoticePage() {
                       categoryFilter === category.id ? "is-active" : ""
                     }
                     aria-pressed={categoryFilter === category.id}
-                    onClick={() => setCategoryFilter(category.id)}
+                    onClick={() => {
+                      setCategoryFilter(category.id);
+                      setNoticePage(1);
+                    }}
                   >
                     {category.label}
                   </button>
@@ -345,7 +363,10 @@ export default function ConsultantNoticePage() {
                   type="search"
                   value={searchQuery}
                   placeholder="제목, 내용, 부서 검색"
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    setNoticePage(1);
+                  }}
                 />
               </label>
             </div>
@@ -487,9 +508,13 @@ export default function ConsultantNoticePage() {
               />
             ) : (
               <ul className="consultant-notice-list">
-                {visibleNotices.map((notice) => (
+                {pagedNotices.map((notice) => (
                   <li key={notice.noticeId}>
-                    <article>
+                    <button
+                      type="button"
+                      className="consultant-notice-list__item"
+                      onClick={() => openNoticeDetail(notice.noticeId)}
+                    >
                       <div className="consultant-notice-list__main">
                         <em data-category={notice.category}>{notice.category}</em>
                         <div>
@@ -503,12 +528,22 @@ export default function ConsultantNoticePage() {
                           {formatNoticeDate(notice.publishedOn)}
                         </time>
                       </div>
-                    </article>
+                    </button>
                   </li>
                 ))}
               </ul>
             )}
           </div>
+
+          {!isDetailRequested && pageLoadState === "ready" && (
+            <Pagination
+              ariaLabel="공지사항 목록 페이지"
+              page={currentNoticePage}
+              totalItems={visibleNotices.length}
+              totalPages={noticeTotalPages}
+              onPageChange={setNoticePage}
+            />
+          )}
         </section>
       </main>
     </div>

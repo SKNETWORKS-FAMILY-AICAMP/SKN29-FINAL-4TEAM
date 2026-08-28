@@ -468,28 +468,27 @@ describe("미배정 상담 대기 목록", () => {
     },
   );
 
-  it("디자인 Mock에서는 실제 Claim API를 호출하지 않도록 버튼을 비활성화한다", async () => {
+  it("디자인 Mock에서는 API를 호출하지 않고 상담 화면 미리보기를 연다", async () => {
     const user = userEvent.setup();
     const claimConsultation = vi.fn(async () => successResponse());
+    const onClaimed = vi.fn();
 
     render(
       <UnassignedConsultationQueue
         dataRepository={createDataRepository(createQueue(), "MOCK")}
         writeRepository={createWriteRepository(claimConsultation)}
-        onClaimed={vi.fn()}
+        onClaimed={onClaimed}
       />,
     );
 
     const button = await screen.findByRole("button", {
-      name: /합성고객 01 정수기에서 물이 새요 상담 시작.*실제 API 연결 필요/,
+      name: "합성고객 01 정수기에서 물이 새요 상담 시작",
     });
-    expect(button).toBeDisabled();
-    expect(button).toHaveAttribute(
-      "title",
-      "디자인 Mock에서는 실제 배정 요청을 보내지 않습니다.",
-    );
+    expect(button).toBeEnabled();
     await user.click(button);
+
     expect(claimConsultation).not.toHaveBeenCalled();
+    expect(onClaimed).toHaveBeenCalledWith(INQUIRY_ID);
   });
 
   it("마지막 페이지의 마지막 문의가 사라지면 남은 마지막 페이지로 돌아간다", async () => {

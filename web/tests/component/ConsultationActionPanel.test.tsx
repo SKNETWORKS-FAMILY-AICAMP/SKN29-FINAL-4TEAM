@@ -23,8 +23,8 @@ describe("ConsultationActionPanel", () => {
     );
 
     const panel = screen.getByRole("complementary", { name: "상담 처리 작업" });
-    expect(within(panel).getByRole("button", { name: "상담 요약 수정" })).toBeInTheDocument();
-    expect(within(panel).getByRole("button", { name: "상담 요약 확정" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "상담 내용 수정" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "상담 내용 확정" })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: "방문 필요 여부 검토" })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: "상담 처리 완료" })).toBeInTheDocument();
     expect(within(panel).queryByRole("button", { name: "상담 시작" })).not.toBeInTheDocument();
@@ -62,7 +62,7 @@ describe("ConsultationActionPanel", () => {
       screen.getByRole("combobox", { name: /Mock 응답 테스트/ }),
       "CONFLICT",
     );
-    await user.click(screen.getByRole("button", { name: "상담 요약 수정" }));
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(
@@ -87,7 +87,7 @@ describe("ConsultationActionPanel", () => {
       screen.getByRole("combobox", { name: /Mock 응답 테스트/ }),
       "DUPLICATE_EVENT",
     );
-    await user.click(screen.getByRole("button", { name: "상담 요약 수정" }));
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("같은 Idempotency-Key에 다른 요청 내용이 사용되었습니다.");
@@ -127,7 +127,7 @@ describe("ConsultationActionPanel", () => {
       screen.getByRole("textbox", { name: /상담 기록/ }),
       "고객 상태 확인",
     );
-    await user.click(screen.getByRole("button", { name: "상담 요약 수정" }));
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
 
     expect(
       await screen.findByText("최신 상세 Snapshot 갱신 완료"),

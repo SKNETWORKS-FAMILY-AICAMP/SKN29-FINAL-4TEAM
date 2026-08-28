@@ -66,7 +66,6 @@ export default function ConsultationStepNavigator({
                   </span>
                   <span className="consultation-stepper__nav-copy">
                     <strong>{step.title}</strong>
-                    <small>{step.description}</small>
                   </span>
                 </button>
               </li>

@@ -122,6 +122,8 @@ export default function UnassignedConsultationQueue({
     null,
   );
   const [feedback, setFeedback] = useState<ClaimFeedback | null>(null);
+  const [previewInquiry, setPreviewInquiry] =
+    useState<UnassignedConsultationQueueItemViewModel | null>(null);
   const claimingInquiryIdRef = useRef<string | null>(null);
   const queryInput = useMemo(
     () => ({ page, size: PAGE_SIZE, sort: "WAITING_DESC" as const }),
@@ -133,7 +135,6 @@ export default function UnassignedConsultationQueue({
   );
   const total = queueQuery.data?.pageInfo.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const isClaimEnabled = dataRepository.dataSource === "REMOTE";
 
   const refreshQueueAfterClaim = (itemMayBeGone: boolean) => {
     if (
@@ -152,7 +153,6 @@ export default function UnassignedConsultationQueue({
   ) => {
     if (
       claimingInquiryIdRef.current !== null ||
-      !isClaimEnabled ||
       !canClaim(inquiry)
     ) {
       return;
@@ -163,6 +163,17 @@ export default function UnassignedConsultationQueue({
     setFeedback(null);
 
     try {
+      if (dataRepository.dataSource === "MOCK") {
+        setFeedback({
+          inquiryId: inquiry.inquiryId,
+          kind: "success",
+          message: "상담 시작 화면을 열었습니다.",
+        });
+        setPreviewInquiry(null);
+        onClaimed(inquiry.inquiryId);
+        return;
+      }
+
       const response = await writeRepository.claimConsultation(
         inquiry.inquiryId,
         { state_version: inquiry.stateVersion },
@@ -254,31 +265,29 @@ export default function UnassignedConsultationQueue({
                 key={inquiry.inquiryId}
                 data-testid={`unassigned-consultation-${inquiry.inquiryId}`}
               >
-                <div className="unassigned-consultation-card__body">
-                  <div className="unassigned-consultation-card__meta">
+                <button
+                  type="button"
+                  className="unassigned-consultation-card__body"
+                  aria-label={`${inquiry.symptomSummary} 문의 미리보기`}
+                  onClick={() => setPreviewInquiry(inquiry)}
+                >
+                  <span className="unassigned-consultation-card__meta">
                     <span>{RISK_LABELS[inquiry.riskLevel]}</span>
                     <span>{inquiry.priority}</span>
                     <span>{formatWaitingTime(inquiry.waitingSeconds)}</span>
-                  </div>
+                  </span>
                   <strong>{inquiry.symptomSummary}</strong>
-                  <p>
+                  <span className="unassigned-consultation-card__customer">
                     {inquiry.customerDisplayNameMasked} ·{" "}
                     {formatProductModelAndName(inquiry.productModel)}
-                  </p>
-                </div>
+                  </span>
+                </button>
                 {canClaim(inquiry) ? (
                   <button
                     className="unassigned-consultation-card__claim"
                     type="button"
-                    disabled={claimingInquiryId !== null || !isClaimEnabled}
-                    aria-label={`${inquiry.customerDisplayNameMasked} ${inquiry.symptomSummary} 상담 시작${
-                      isClaimEnabled ? "" : " (실제 API 연결 필요)"
-                    }`}
-                    title={
-                      isClaimEnabled
-                        ? undefined
-                        : "디자인 Mock에서는 실제 배정 요청을 보내지 않습니다."
-                    }
+                    disabled={claimingInquiryId !== null}
+                    aria-label={`${inquiry.customerDisplayNameMasked} ${inquiry.symptomSummary} 상담 시작`}
                     onClick={() => void handleClaim(inquiry)}
                   >
                     {isClaiming ? "시작하는 중" : "상담 시작"}
@@ -325,6 +334,73 @@ export default function UnassignedConsultationQueue({
             다음
           </button>
         </nav>
+      )}
+
+      {previewInquiry && (
+        <div className="unassigned-preview-layer">
+          <button
+            type="button"
+            className="unassigned-preview-layer__backdrop"
+            aria-label="미배정 문의 미리보기 닫기"
+            onClick={() => setPreviewInquiry(null)}
+          />
+          <section
+            className="unassigned-preview"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="unassigned-preview-title"
+          >
+            <header>
+              <div>
+                <small>미배정 상담 문의</small>
+                <h3 id="unassigned-preview-title">
+                  {previewInquiry.symptomSummary}
+                </h3>
+              </div>
+              <button
+                type="button"
+                aria-label="미배정 문의 미리보기 닫기"
+                onClick={() => setPreviewInquiry(null)}
+              >
+                ×
+              </button>
+            </header>
+            <dl>
+              <div>
+                <dt>긴급도</dt>
+                <dd>{RISK_LABELS[previewInquiry.riskLevel]}</dd>
+              </div>
+              <div>
+                <dt>우선순위</dt>
+                <dd>{previewInquiry.priority}</dd>
+              </div>
+              <div>
+                <dt>대기 시간</dt>
+                <dd>{formatWaitingTime(previewInquiry.waitingSeconds)}</dd>
+              </div>
+              <div>
+                <dt>고객</dt>
+                <dd>{previewInquiry.customerDisplayNameMasked}</dd>
+              </div>
+              <div>
+                <dt>제품</dt>
+                <dd>{formatProductModelAndName(previewInquiry.productModel)}</dd>
+              </div>
+            </dl>
+            {canClaim(previewInquiry) && (
+              <button
+                type="button"
+                className="unassigned-preview__claim"
+                disabled={claimingInquiryId !== null}
+                onClick={() => void handleClaim(previewInquiry)}
+              >
+                {claimingInquiryId === previewInquiry.inquiryId
+                  ? "시작하는 중"
+                  : "상담 시작"}
+              </button>
+            )}
+          </section>
+        </div>
       )}
     </section>
   );

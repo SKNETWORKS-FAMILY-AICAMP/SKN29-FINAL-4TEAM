@@ -21,7 +21,7 @@ const CONSULTANT_USER = {
 };
 
 const TAB_LABELS: Record<CounselorWorkBucket, RegExp> = {
-  NEW: /새 문의/,
+  NEW: /전체 문의/,
   IN_PROGRESS: /처리 중인 문의/,
   COMPLETED: /처리 완료된 문의/,
 };
@@ -47,7 +47,9 @@ async function openInquiry(
   inquiryCode: string,
   bucket: CounselorWorkBucket,
 ) {
-  await user.click(screen.getByRole("tab", { name: TAB_LABELS[bucket] }));
+  if (bucket !== "NEW") {
+    await user.click(screen.getByRole("tab", { name: TAB_LABELS[bucket] }));
+  }
   const inquiry = CONSULTANT_QUEUE_INQUIRIES.find(
     (item) => item.inquiryCode === inquiryCode,
   );
@@ -128,10 +130,7 @@ describe("ConsultantDashboardPage", () => {
       "aria-selected",
       "true",
     );
-    expect(screen.getByRole("tab", { name: /새 문의/ })).toHaveAttribute(
-      "aria-selected",
-      "false",
-    );
+    expect(screen.queryByRole("tab", { name: /새 문의/ })).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /전체 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: /처리 중인 문의/ })).toBeVisible();
     expect(screen.getByRole("tab", { name: /처리 완료된 문의/ })).toBeVisible();
@@ -283,7 +282,7 @@ describe("ConsultantDashboardPage", () => {
 
   it.each([
     [/전체 문의 수90/, /전체 문의/],
-    [/새 문의30/, /새 문의/],
+    [/새 문의30/, /전체 문의/],
     [/처리 중인 문의30/, /처리 중인 문의/],
     [/처리 완료된 문의30/, /처리 완료된 문의/],
   ])("업무 요약 카드 %s가 해당 문의 메뉴로 이동한다", async (card, menu) => {
@@ -327,10 +326,10 @@ describe("ConsultantDashboardPage", () => {
     }
   });
 
-  it("세 업무 탭의 건수는 상담사 문의 상태와 일치한다", () => {
+  it("전체·처리 중·처리 완료 탭의 건수는 상담사 문의 상태와 일치한다", () => {
     renderPage();
 
-    (["NEW", "IN_PROGRESS", "COMPLETED"] as const).forEach((bucket) => {
+    (["IN_PROGRESS", "COMPLETED"] as const).forEach((bucket) => {
       const count = CONSULTANT_QUEUE_INQUIRIES.filter(
         (inquiry) => getCounselorWorkBucket(inquiry.status) === bucket,
       ).length;
@@ -339,6 +338,8 @@ describe("ConsultantDashboardPage", () => {
         String(count),
       );
     });
+    expect(screen.getByRole("tab", { name: /전체 문의90/ })).toBeVisible();
+    expect(screen.queryByRole("tab", { name: /새 문의/ })).not.toBeInTheDocument();
   });
 
   it.skip("문의 목록을 눌러야 상세 상담 화면이 열리고 닫을 수 있다", async () => {

@@ -21,7 +21,7 @@ const CONSULTANT_USER = {
 };
 
 const TAB_LABELS: Record<CounselorWorkBucket, RegExp> = {
-  NEW: /새 문의/,
+  NEW: /전체 문의/,
   IN_PROGRESS: /처리 중인 문의/,
   COMPLETED: /처리 완료된 문의/,
 };
@@ -61,7 +61,7 @@ async function openInquiry(
   inquiryCode: string,
   bucket: CounselorWorkBucket,
 ) {
-  await user.click(screen.getByRole("tab", { name: TAB_LABELS[bucket] }));
+  await user.click(getSidebarTabs().getByRole("tab", { name: TAB_LABELS[bucket] }));
   const inquiry = CONSULTANT_QUEUE_INQUIRIES.find(
     (item) => item.inquiryCode === inquiryCode,
   );
@@ -73,6 +73,12 @@ async function openInquiry(
     UNKNOWN: /일반 문의/,
   }[inquiry.riskLevel];
   await user.click(screen.getByRole("tab", { name: riskTabName }));
+  if (bucket === "NEW") {
+    const search = screen.getByRole("searchbox", { name: "문의 검색" });
+    await user.clear(search);
+    await user.type(search, inquiryCode);
+    await user.click(screen.getByRole("button", { name: "검색" }));
+  }
   await user.click(
     screen.getByRole("button", {
       name: new RegExp(`${inquiryCode}.*상세 열기$`),
@@ -95,15 +101,16 @@ describe("ConsultantInquiryListPage", () => {
     });
     expect(brandLink).toHaveTextContent("WaterBridge");
     expect(brandLink.querySelector("img")).toBeNull();
-    expect(sidebarTabs.getByRole("tab", { name: /새 문의/ })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
+    expect(sidebarTabs.queryByRole("tab", { name: /새 문의/ })).not.toBeInTheDocument();
     expect(sidebarTabs.getByRole("tab", { name: /처리 중인 문의/ })).toBeVisible();
     expect(sidebarTabs.getByRole("tab", { name: /처리 완료된 문의/ })).toBeVisible();
     expect(sidebarTabs.getByRole("tab", { name: /전체 문의90/ })).toBeVisible();
     expect(sidebarTabs.getByRole("tab", { name: "전화 문의 등록" })).toBeVisible();
-    expect(riskTabs.getByRole("tab", { name: /전체 문의30/ })).toHaveClass(
+    expect(sidebarTabs.getByRole("tab", { name: /전체 문의90/ })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(riskTabs.getByRole("tab", { name: /전체 문의90/ })).toHaveClass(
       "consultant-risk-tab--all",
       "is-active",
     );
@@ -123,7 +130,7 @@ describe("ConsultantInquiryListPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    const assertRows = (unit: "분" | "시간" | "일") => {
+    const assertRows = (unit: "혼합" | "분" | "시간" | "일") => {
       const inquiryRows = screen.getAllByRole("button", { name: /상세 열기/ });
       expect(inquiryRows).toHaveLength(5);
 
@@ -139,13 +146,17 @@ describe("ConsultantInquiryListPage", () => {
         expect(receivedAt).toHaveClass("consultant-list-item__received-at");
         expect(receivedAt).toHaveAttribute("datetime");
         expect(receivedAt).toHaveAttribute("title");
-        expect(receivedAt).toHaveTextContent(new RegExp(`^\\d+${unit} 전$`));
+        expect(receivedAt).toHaveTextContent(
+          unit === "혼합"
+            ? /^\d+(분|시간|일) 전$/
+            : new RegExp(`^\\d+${unit} 전$`),
+        );
         expect(customer).toHaveClass("consultant-list-item__customer");
         expect(customer).not.toBeEmptyDOMElement();
       });
     };
 
-    assertRows("분");
+    assertRows("혼합");
     await user.click(getSidebarTabs().getByRole("tab", { name: /처리 중인 문의/ }));
     await waitFor(() => assertRows("시간"));
     await user.click(getSidebarTabs().getByRole("tab", { name: /처리 완료된 문의/ }));
@@ -159,8 +170,20 @@ describe("ConsultantInquiryListPage", () => {
     const search = screen.getByRole("searchbox", { name: "문의 검색" });
     const sort = screen.getByRole("combobox", { name: "문의 정렬" });
 
-    await user.type(search, "필터 교체");
-    expect(search).toHaveValue("필터 교체");
+    await user.type(search, "INQ-20260704-0013");
+    expect(search).toHaveValue("INQ-20260704-0013");
+    expect(
+      screen.queryByRole("button", {
+        name: /INQ-20260704-0013.*상세 열기/,
+      }),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "검색" }));
+    expect(
+      await screen.findByRole("button", {
+        name: /INQ-20260704-0013.*상세 열기/,
+      }),
+    ).toBeVisible();
 
     await user.selectOptions(sort, "UPDATED_ASC");
     expect(sort).toHaveValue("UPDATED_ASC");
@@ -203,16 +226,10 @@ describe("ConsultantInquiryListPage", () => {
     expect(screen.getByText(/총 90건/)).toBeVisible();
   });
 
-  it("미배정 상담 대기 목록은 전체 문의와 새 문의에서만 보여준다", async () => {
+  it("미배정 상담 대기 목록은 전체 문의에서만 보여준다", async () => {
     const user = userEvent.setup();
     renderPage();
 
-    expect(screen.getByLabelText("미배정 상담 대기 목록")).toBeVisible();
-    expect(document.getElementById("consultant-queue-panel")).toHaveClass(
-      "consultant-queue-panel--with-unassigned",
-    );
-
-    await user.click(getSidebarTabs().getByRole("tab", { name: /전체 문의90/ }));
     expect(screen.getByLabelText("미배정 상담 대기 목록")).toBeVisible();
     expect(document.getElementById("consultant-queue-panel")).toHaveClass(
       "consultant-queue-panel--with-unassigned",
@@ -235,10 +252,10 @@ describe("ConsultantInquiryListPage", () => {
     );
   });
 
-  it("세 업무 탭의 건수는 상담사 문의 상태와 일치한다", () => {
+  it("전체·처리 중·처리 완료 탭의 건수는 상담사 문의 상태와 일치한다", () => {
     renderPage();
 
-    (["NEW", "IN_PROGRESS", "COMPLETED"] as const).forEach((bucket) => {
+    (["IN_PROGRESS", "COMPLETED"] as const).forEach((bucket) => {
       const count = CONSULTANT_QUEUE_INQUIRIES.filter(
         (inquiry) => getCounselorWorkBucket(inquiry.status) === bucket,
       ).length;
@@ -247,6 +264,8 @@ describe("ConsultantInquiryListPage", () => {
         String(count),
       );
     });
+    expect(getSidebarTabs().getByRole("tab", { name: /전체 문의90/ })).toBeVisible();
+    expect(screen.queryByRole("tab", { name: /새 문의/ })).not.toBeInTheDocument();
   });
 
   it("문의 목록을 눌러야 상세 상담 화면이 열리고 닫을 수 있다", async () => {
@@ -392,16 +411,16 @@ describe("ConsultantInquiryListPage", () => {
     expect(dangerTab).toHaveClass("consultant-risk-tab--danger");
     expect(cautionTab).toHaveClass("consultant-risk-tab--caution");
     expect(generalTab).toHaveClass("consultant-risk-tab--general");
-    expect(within(allTab).getByText("30")).toHaveClass(
+    expect(within(allTab).getByText("90")).toHaveClass(
       "consultant-risk-tab__count",
     );
-    expect(within(dangerTab).getByText("10")).toHaveClass(
+    expect(within(dangerTab).getByText("30")).toHaveClass(
       "consultant-risk-tab__count",
     );
-    expect(within(cautionTab).getByText("10")).toHaveClass(
+    expect(within(cautionTab).getByText("30")).toHaveClass(
       "consultant-risk-tab__count",
     );
-    expect(within(generalTab).getByText("10")).toHaveClass(
+    expect(within(generalTab).getByText("30")).toHaveClass(
       "consultant-risk-tab__count",
     );
     expect(
@@ -414,9 +433,9 @@ describe("ConsultantInquiryListPage", () => {
       screen.queryByRole("button", { name: "긴급 문의 상태 필터" }),
     ).not.toBeInTheDocument();
     expect(
-      screen
-        .getByRole("tabpanel", { name: /전체 문의/ })
-        .querySelector(".consultant-risk-section__count"),
+      document
+        .getElementById("consultant-risk-panel-all")
+        ?.querySelector(".consultant-risk-section__count"),
     ).toBeNull();
 
     allTab.focus();

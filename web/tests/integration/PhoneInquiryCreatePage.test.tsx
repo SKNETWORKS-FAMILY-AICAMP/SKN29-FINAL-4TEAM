@@ -123,7 +123,9 @@ describe("PhoneInquiryCreatePage", () => {
     expect(
       await screen.findByRole("tab", { name: "전체 문의90" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "새 문의30" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("tab", { name: "새 문의30" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole("tab", { name: "처리 중인 문의30" }),
     ).toBeInTheDocument();

@@ -227,7 +227,7 @@ function renderPage(
 
   const path = page === "dashboard"
     ? "/consultant/dashboard"
-    : "/consultant/inquiries?bucket=NEW";
+    : "/consultant/inquiries?bucket=ALL";
   const Page = page === "dashboard"
     ? ConsultantDashboardPage
     : ConsultantInquiryListPage;
@@ -326,7 +326,9 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       screen.getByRole("button", { name: "처리 완료된 문의3" }),
     ).toBeEnabled();
     expect(screen.getByRole("tab", { name: "전체 문의11" })).toBeVisible();
-    expect(screen.getByRole("tab", { name: "새 문의3" })).toBeVisible();
+    expect(
+      screen.queryByRole("tab", { name: "새 문의3" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "처리 중인 문의5" })).toBeVisible();
     expect(
       screen.getByRole("tab", { name: "처리 완료된 문의3" }),
@@ -854,7 +856,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "상담 3단계: 상담 기록·최종 처리",
+        name: "상담 3단계: 상담 진행",
       }),
     );
     await user.click(
@@ -864,15 +866,15 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       await screen.findByLabelText("상담 기록"),
       "고객과 출수 상태를 확인하고 필터 상태 및 정상 사용 방법을 안내했습니다.",
     );
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
     await user.type(
-      screen.getByLabelText("상담 요약 수정본"),
+      screen.getByLabelText("상담 내용 수정본"),
       "출수량 저하 상담 요약",
     );
-    await user.click(screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }));
     await user.selectOptions(screen.getByLabelText("방문 필요 여부"), "NOT_REQUIRED");
 
-    await user.click(screen.getByRole("button", { name: "상담 내용 저장" }));
-    await user.click(await screen.findByRole("button", { name: "요약 확정" }));
+    await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
+    await user.click(await screen.findByRole("button", { name: "상담 내용 확정" }));
     await user.click(await screen.findByRole("button", { name: "상담 완료" }));
 
     await waitFor(() =>
@@ -884,8 +886,9 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       ),
     );
     expect(
-      screen.queryByTestId("consultation-current-status"),
-    ).not.toBeInTheDocument();
+      await screen.findByText("현재 진행할 상담 작업이 없습니다."),
+    ).toBeVisible();
+    expect(screen.getByText("최종 완료 대기")).toBeVisible();
 
     const expectedCalls = [
       ["claim-consultation", 3],
@@ -911,7 +914,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
 
   it.each([
     ["dashboard", "/consultant/dashboard"],
-    ["list", "/consultant/inquiries?bucket=NEW"],
+    ["list", "/consultant/inquiries?bucket=ALL"],
   ] as const)(
     "%s 문의 클릭은 현재 화면을 유지하고 Remote 첫 패널을 연다",
     async (page, expectedPath) => {
@@ -942,7 +945,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
 
       await user.click(
         screen.getByRole("button", {
-          name: "상담 2단계: 안전·상담 가이드 확인",
+          name: "상담 2단계: AI 상담 · 이전 상담 기록 확인",
         }),
       );
       expect(
@@ -951,7 +954,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
 
       await user.click(
         screen.getByRole("button", {
-          name: "상담 3단계: 상담 기록·최종 처리",
+          name: "상담 3단계: 상담 진행",
         }),
       );
       expect(screen.getByLabelText("상담 처리 작업")).toBeVisible();
@@ -975,7 +978,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
 
     expect(await screen.findByRole("dialog")).toBeVisible();
     expect(screen.getByLabelText("현재 경로")).toHaveTextContent(
-      "/consultant/inquiries?bucket=NEW",
+      "/consultant/inquiries?bucket=ALL",
     );
     expect(
       screen.queryByRole("button", { name: "전체 기록 보기" }),

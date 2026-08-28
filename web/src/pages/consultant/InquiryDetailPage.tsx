@@ -20,7 +20,10 @@ import ConsultantInquiryDetail, {
 import RemoteConsultantInquiryDetail from "../../features/consultation/components/RemoteConsultantInquiryDetail";
 import ConsultantWorkspaceLayout from "../../features/consultation/components/ConsultantWorkspaceLayout";
 import { useConsultantInquiryDetailQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
-import { getCounselorMetrics } from "../../features/consultation/model/consultantWorkspaceModel";
+import {
+  getCounselorMetrics,
+  getCounselorWorkBucket,
+} from "../../features/consultation/model/consultantWorkspaceModel";
 import {
   rememberRecentConsultantInquiryId,
 } from "../../features/consultation/model/recentConsultantInquiryIds";
@@ -250,6 +253,11 @@ export default function InquiryDetailPage() {
               inquiry={remoteDetail}
               onOpenVisit={handleOpenVisit}
               onRefresh={detailQuery.retry}
+              onStatusChange={(status) => {
+                if (getCounselorWorkBucket(status) === "COMPLETED") {
+                  navigate("/consultant/inquiries?bucket=COMPLETED");
+                }
+              }}
             />
           </section>
         </>

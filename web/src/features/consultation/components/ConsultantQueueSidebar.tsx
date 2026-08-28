@@ -14,7 +14,6 @@ export type ConsultantInquiryBucket = CounselorWorkBucket | "ALL";
 
 const WORK_BUCKETS: readonly ConsultantInquiryBucket[] = [
   "ALL",
-  "NEW",
   "IN_PROGRESS",
   "COMPLETED",
 ];
