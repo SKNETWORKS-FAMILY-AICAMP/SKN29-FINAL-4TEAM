@@ -74,6 +74,11 @@ export interface ConsultationWriteRepository {
     body: CompleteConsultationRequestDto,
     requestContext: RequestContext,
   ): Promise<ApiResponse<StateTransitionResultDto>>;
+  finalize(
+    inquiryId: string,
+    body: StateTransitionRequestDto,
+    requestContext: RequestContext,
+  ): Promise<ApiResponse<StateTransitionResultDto>>;
 }
 
 function createWriteRequest(
@@ -114,6 +119,11 @@ export function createRemoteConsultationWriteRepository(
     complete: (inquiryId, body, requestContext) =>
       requester<StateTransitionResultDto>(
         `${inquiryPath(inquiryId)}/complete-consultation`,
+        createWriteRequest("POST", body, requestContext),
+      ),
+    finalize: (inquiryId, body, requestContext) =>
+      requester<StateTransitionResultDto>(
+        `${inquiryPath(inquiryId)}/finalize`,
         createWriteRequest("POST", body, requestContext),
       ),
   };

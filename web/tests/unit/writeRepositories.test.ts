@@ -54,6 +54,11 @@ describe("상담 Write Repository 경계", () => {
       { state_version: 6 },
       context,
     );
+    await repository.finalize(
+      "inquiry/1",
+      { state_version: 7 },
+      context,
+    );
 
     expect(requester.mock.calls.map(([path, options]) => [path, options.method])).toEqual([
       ["/inquiries/inquiry%2F1/claim-consultation", "POST"],
@@ -61,6 +66,7 @@ describe("상담 Write Repository 경계", () => {
       ["/inquiries/inquiry%2F1/consultation-summary", "PATCH"],
       ["/inquiries/inquiry%2F1/consultation-summary/confirm", "POST"],
       ["/inquiries/inquiry%2F1/complete-consultation", "POST"],
+      ["/inquiries/inquiry%2F1/finalize", "POST"],
     ]);
     expect(requester.mock.calls[0][1]).toMatchObject({
       body: { state_version: 2 },

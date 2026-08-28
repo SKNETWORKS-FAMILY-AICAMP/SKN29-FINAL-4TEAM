@@ -185,6 +185,9 @@ export function useSaveConsultation(
           case "CONSULTATION_COMPLETED":
             response = await writeRepository.complete(inquiry.inquiryId, stateBody, context);
             break;
+          case "FINALIZE_INQUIRY":
+            response = await writeRepository.finalize(inquiry.inquiryId, stateBody, context);
+            break;
           default: {
             const blockedError: ConsultationActionErrorDetails = {
               kind: "RUNTIME_BLOCKED",
