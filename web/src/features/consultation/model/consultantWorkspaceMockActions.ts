@@ -15,7 +15,7 @@ export const ACTIONS = {
   },
   UPDATE_CONSULTATION_SUMMARY: {
     code: "UPDATE_CONSULTATION_SUMMARY",
-    label: "상담 요약 수정",
+    label: "상담 내용 수정",
     operationId: "updateConsultationSummary",
     style: "SECONDARY",
     requiresConfirmation: false,
@@ -23,11 +23,11 @@ export const ACTIONS = {
   },
   CONFIRM_CONSULTATION_SUMMARY: {
     code: "CONFIRM_CONSULTATION_SUMMARY",
-    label: "상담 요약 확정",
+    label: "상담 내용 확정",
     operationId: "confirmConsultationSummary",
     style: "PRIMARY",
     requiresConfirmation: true,
-    confirmationMessage: "수정한 상담 요약을 확정하시겠습니까?",
+    confirmationMessage: "상담을 확정하시겠습니까?",
   },
   CONSULTATION_COMPLETED: {
     code: "CONSULTATION_COMPLETED",

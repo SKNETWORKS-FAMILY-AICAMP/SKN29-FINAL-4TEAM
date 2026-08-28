@@ -4,6 +4,8 @@ import {
   CONSULTANT_QUEUE_INQUIRIES,
   COUNSELOR_INQUIRIES,
   REMOTE_PARITY_CONSULTANT_INQUIRIES,
+  REMOTE_PARITY_UNASSIGNED_CONSULTANT_INQUIRIES,
+  UNASSIGNED_CONSULTANT_INQUIRIES,
   getConsultantAllowedActions,
 } from "../model/consultantWorkspaceMock";
 import type {
@@ -52,13 +54,33 @@ export function createConsultantWorkspaceRepository(
     mockDataset === "DESIGN_SCENARIOS"
       ? CONSULTANT_QUEUE_INQUIRIES
       : REMOTE_PARITY_CONSULTANT_INQUIRIES;
+  const mockUnassignedQueue =
+    mockDataset === "DESIGN_SCENARIOS"
+      ? UNASSIGNED_CONSULTANT_INQUIRIES
+      : REMOTE_PARITY_UNASSIGNED_CONSULTANT_INQUIRIES;
 
   return {
     dataSource: "MOCK",
     integrationStatus: "MOCK_ONLY",
-    findInquiry: (inquiryId) =>
-      mockQueue.find((item) => item.inquiryId === inquiryId) ??
-      COUNSELOR_INQUIRIES.find((item) => item.inquiryId === inquiryId),
+    findInquiry: (inquiryId) => {
+      const assignedInquiry =
+        mockQueue.find((item) => item.inquiryId === inquiryId) ??
+        COUNSELOR_INQUIRIES.find((item) => item.inquiryId === inquiryId);
+      if (assignedInquiry) return assignedInquiry;
+
+      const unassignedInquiry = mockUnassignedQueue.find(
+        (item) => item.inquiryId === inquiryId,
+      );
+      return unassignedInquiry
+        ? {
+            ...unassignedInquiry,
+            status: "CONSULTATION_REQUIRED",
+            allowedActions: getConsultantAllowedActions(
+              "CONSULTATION_REQUIRED",
+            ),
+          }
+        : undefined;
+    },
     getAllowedActions: getConsultantAllowedActions,
     listAllInquiries: () => COUNSELOR_INQUIRIES,
     listConsultantQueue: () => mockQueue,

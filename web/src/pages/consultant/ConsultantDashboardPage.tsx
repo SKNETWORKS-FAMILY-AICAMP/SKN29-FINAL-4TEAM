@@ -753,7 +753,7 @@ export default function ConsultantDashboardPage() {
               type="button"
               className="counselor-home-metric counselor-home-metric--work"
               disabled={!overviewData}
-              onClick={() => openInquiryList("NEW")}
+              onClick={() => openInquiryList("ALL")}
             >
               <span>새 문의</span>
               <strong>{bucketCounts?.NEW ?? "—"}</strong>
@@ -1523,6 +1523,11 @@ export default function ConsultantDashboardPage() {
                 onRefreshWorkspace={() => {
                   listQuery.retry();
                   setDashboardRetryCount((current) => current + 1);
+                }}
+                onStatusChange={(status) => {
+                  if (getCounselorWorkBucket(status) === "COMPLETED") {
+                    navigate("/consultant/inquiries?bucket=COMPLETED");
+                  }
                 }}
               />
             ) : null}

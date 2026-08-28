@@ -101,7 +101,7 @@ function getInitialBucket(search: string): ConsultantInquiryBucket {
   const bucket = new URLSearchParams(search).get("bucket");
   return bucket === "ALL" || bucket === "IN_PROGRESS" || bucket === "COMPLETED"
     ? bucket
-    : "NEW";
+    : "ALL";
 }
 
 function getSelectedInquiryId(search: string): InquiryId | null {
@@ -150,6 +150,8 @@ export default function ConsultantInquiryListPage() {
   const location = useLocation();
   const { user } = useAuth();
   const { filters, setFilters } = useCounselorQueueFilters();
+  const [searchDraft, setSearchDraft] = useState<string | null>(null);
+  const searchValue = searchDraft ?? filters.query;
   const [activeBucket, setActiveBucket] =
     useState<ConsultantInquiryBucket>(() => getInitialBucket(location.search));
   const [activeRiskSection, setActiveRiskSection] =
@@ -284,16 +286,22 @@ export default function ConsultantInquiryListPage() {
             : "ready";
   const hasNetworkError =
     mockState === "error" || isNetworkError(listQuery.error);
-  const sourceInquiries = useMemo(
-    () =>
-      mockState === "empty"
-        ? []
-        : (queryData?.items ?? []).map((inquiry) => ({
-            ...inquiry,
-            ...inquiryStateUpdates[inquiry.inquiryId],
-          })),
-    [inquiryStateUpdates, mockState, queryData?.items],
-  );
+  const sourceInquiries = useMemo(() => {
+    if (mockState === "empty") return [];
+
+    const inquiries = (queryData?.items ?? []).map((inquiry) => ({
+      ...inquiry,
+      ...inquiryStateUpdates[inquiry.inquiryId],
+    }));
+
+    if (activeBucket !== "ALL") return inquiries;
+
+    return [...inquiries].sort((left, right) => {
+      const leftIsNew = getCounselorWorkBucket(left.status) === "NEW";
+      const rightIsNew = getCounselorWorkBucket(right.status) === "NEW";
+      return Number(rightIsNew) - Number(leftIsNew);
+    });
+  }, [activeBucket, inquiryStateUpdates, mockState, queryData?.items]);
 
   const closeSelectedInquiry = useCallback(() => {
     setSelectedInquiryId(null);
@@ -506,14 +514,14 @@ export default function ConsultantInquiryListPage() {
     const inquiryId = toInquiryId(rawInquiryId);
     if (!inquiryId) return;
 
-    setActiveBucket("NEW");
+    setActiveBucket("ALL");
     setActiveRiskSection("all");
     if (filters.page !== 1) {
       setFilters({ ...filters, page: 1 });
     }
 
     const params = new URLSearchParams(location.search);
-    params.set("bucket", "NEW");
+    params.set("bucket", "ALL");
     params.delete("page");
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
 
@@ -546,14 +554,14 @@ export default function ConsultantInquiryListPage() {
         <section
           id="consultant-queue-panel"
           className={`consultant-queue-panel${
-            activeBucket === "ALL" || activeBucket === "NEW"
+            activeBucket === "ALL"
               ? " consultant-queue-panel--with-unassigned"
               : ""
           }`}
           role="tabpanel"
           aria-label={getBucketLabel(activeBucket)}
         >
-          {(activeBucket === "ALL" || activeBucket === "NEW") && (
+          {activeBucket === "ALL" && (
             <UnassignedConsultationQueue
               dataRepository={
                 useDesignMockFallback
@@ -635,7 +643,18 @@ export default function ConsultantInquiryListPage() {
                   className="consultant-category-filters"
                   aria-label="문의 목록 필터와 정렬"
                 >
-                  <label className="consultant-category-filters__search">
+                  <form
+                    className="consultant-category-filters__search"
+                    role="search"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      setFilters({
+                        ...filters,
+                        query: searchValue.trim(),
+                      });
+                      setSearchDraft(null);
+                    }}
+                  >
                     <span>검색</span>
                     <div>
                       <svg
@@ -650,13 +669,12 @@ export default function ConsultantInquiryListPage() {
                         type="search"
                         aria-label="문의 검색"
                         placeholder="문의 제목, 고객명, 문의번호 검색"
-                        value={filters.query}
-                        onChange={(event) =>
-                          setFilters({ ...filters, query: event.target.value })
-                        }
+                        value={searchValue}
+                        onChange={(event) => setSearchDraft(event.target.value)}
                       />
+                      <button type="submit">검색</button>
                     </div>
-                  </label>
+                  </form>
 
                   <label className="consultant-category-filters__sort">
                     <span>정렬</span>
@@ -727,7 +745,15 @@ export default function ConsultantInquiryListPage() {
                             onClick={() => openInquiry(inquiry.inquiryId)}
                           >
                             <span className="consultant-list-item__subject">
-                              <strong>{inquiry.symptomSummary}</strong>
+                              <strong className="consultant-list-item__title">
+                                <span>{inquiry.symptomSummary}</span>
+                                {getCounselorWorkBucket(inquiry.status) ===
+                                  "NEW" && (
+                                  <em className="consultant-list-item__new-badge">
+                                    NEW
+                                  </em>
+                                )}
+                              </strong>
                               <small className="consultant-list-item__product">
                                 {formatProductModelAndName(inquiry.productModel)}
                               </small>
@@ -828,6 +854,11 @@ export default function ConsultantInquiryListPage() {
                 onRefreshWorkspace={() => {
                   listQuery.retry();
                   overviewQuery.retry();
+                }}
+                onStatusChange={(status) => {
+                  if (getCounselorWorkBucket(status) === "COMPLETED") {
+                    changeBucket("COMPLETED");
+                  }
                 }}
               />
             ) : null}
