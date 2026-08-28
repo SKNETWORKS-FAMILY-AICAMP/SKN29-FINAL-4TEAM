@@ -471,11 +471,12 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
 
     def test_ssm_polling_waits_for_terminal_deploy_and_rollback_results(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
-        self.assertEqual(workflow.count("aws ssm get-command-invocation"), 2)
+        self.assertEqual(workflow.count("aws ssm get-command-invocation"), 3)
         self.assertNotIn("aws ssm wait command-executed", workflow)
         self.assertIn("deadline=$((SECONDS + 1200))", workflow)
         self.assertIn("deadline=$((SECONDS + 600))", workflow)
-        self.assertEqual(workflow.count("Pending|InProgress|Delayed|Cancelling"), 2)
+        self.assertEqual(workflow.count("Pending|InProgress|Delayed|Cancelling"), 3)
+        self.assertIn("SSM_CANARY_POLL_TIMEOUT seconds=1200", workflow)
         self.assertIn("SSM_DEPLOY_POLL_TIMEOUT seconds=1200", workflow)
         self.assertIn("SSM_ROLLBACK_POLL_TIMEOUT seconds=600", workflow)
         self.assertIn('[[ "$status" == "Success" ]]', workflow)
@@ -537,14 +538,14 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
 
         self.assertEqual(
             combined.count("aws-actions/configure-aws-credentials@v6.2.3"),
-            4,
+            5,
         )
         self.assertNotIn("aws-actions/configure-aws-credentials@v5", combined)
         for text in (bootstrap, deploy, oidc):
             self.assertIn("AWS_ACCOUNT_ID", text)
             self.assertIn("allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}", text)
             self.assertIn("role-session-name:", text)
-        self.assertEqual(deploy.count("role-session-name:"), 2)
+        self.assertEqual(deploy.count("role-session-name:"), 3)
         self.assertIn("runs-on: ubuntu-24.04", oidc)
         self.assertNotIn("runs-on: ubuntu-latest", oidc)
         self.assertIn('expected_role_name="${AWS_ROLE_ARN##*/}"', oidc)

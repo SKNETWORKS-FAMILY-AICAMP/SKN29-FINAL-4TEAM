@@ -40,6 +40,11 @@ flock -n 9 || {
   exit 1
 }
 
+if [[ -f "${base_dir}/shared/ai-handoff-canary.state" ]]; then
+  echo "ROLLBACK_BLOCKED: active AI Handoff Canary window" >&2
+  exit 1
+fi
+
 if [[ ! -L "$previous_link" ]]; then
   [[ -L "$current_link" ]] || {
     echo "ROLLBACK_FAILED: neither previous nor current release is available" >&2
