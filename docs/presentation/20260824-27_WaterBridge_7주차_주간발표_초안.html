@@ -1,0 +1,2196 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>WaterBridge 7주차 주간 발표 | 2026.08.24–08.27</title>
+  <style>
+    :root {
+      --navy: #071a38;
+      --ink: #102746;
+      --muted: #5d708a;
+      --blue: #1459d9;
+      --blue-deep: #0b43b7;
+      --teal: #19c8c4;
+      --cyan: #61dce2;
+      --ice: #eaf8ff;
+      --mist: #f5f8fc;
+      --line: #d9e5f1;
+      --amber: #efa83b;
+      --red: #e85a67;
+      --green: #25a875;
+      --slide-w: 1600px;
+      --slide-h: 900px;
+      --slide-scale: 1;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--navy);
+      color: var(--ink);
+      font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button { font: inherit; }
+
+    #deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(25, 200, 196, 0.16), transparent 32%),
+        radial-gradient(circle at 88% 82%, rgba(20, 89, 217, 0.24), transparent 38%),
+        var(--navy);
+    }
+
+    .slide {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: var(--slide-w);
+      height: var(--slide-h);
+      display: none;
+      flex-direction: column;
+      padding: 72px 92px 62px;
+      overflow: hidden;
+      background: #fff;
+      transform: translate(-50%, -50%) scale(var(--slide-scale));
+      transform-origin: center;
+      isolation: isolate;
+    }
+
+    .slide.active { display: flex; }
+
+    .slide::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      right: -280px;
+      bottom: -390px;
+      width: 650px;
+      height: 650px;
+      border-radius: 50%;
+      border: 90px solid rgba(25, 200, 196, 0.07);
+    }
+
+    .slide-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 60px;
+      margin-bottom: 42px;
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--blue);
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .slide-title {
+      max-width: 1200px;
+      margin: 0;
+      color: var(--navy);
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.16;
+      letter-spacing: -0.045em;
+      word-break: keep-all;
+    }
+
+    .section-mark {
+      flex: 0 0 auto;
+      width: 68px;
+      padding-top: 8px;
+      border-top: 5px solid var(--teal);
+      color: var(--blue);
+      font-size: 20px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .lead {
+      max-width: 1220px;
+      margin: 0;
+      color: var(--ink);
+      font-size: 30px;
+      line-height: 1.48;
+      letter-spacing: -0.025em;
+      word-break: keep-all;
+    }
+
+    .muted { color: var(--muted); }
+
+    .accent { color: var(--blue); }
+
+    .teal { color: #0b9f9c; }
+
+    .mono {
+      font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.88em;
+      letter-spacing: -0.03em;
+    }
+
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: auto;
+      padding: 17px 22px;
+      border-left: 5px solid var(--blue);
+      background: var(--mist);
+      color: #314a69;
+      font-size: 21px;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+
+    .status-line.warn { border-left-color: var(--amber); }
+    .status-line.current { border-left-color: var(--teal); }
+
+    .slide-footer {
+      position: absolute;
+      right: 92px;
+      bottom: 28px;
+      left: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #8292a6;
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+    }
+
+    .slide-footer .brand {
+      color: var(--blue);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .notes { display: none; }
+
+    /* Cover */
+    .cover {
+      padding: 0;
+      background:
+        radial-gradient(circle at 78% 22%, rgba(97, 220, 226, 0.95), rgba(25, 200, 196, 0.08) 29%, transparent 50%),
+        radial-gradient(circle at 88% 86%, rgba(20, 89, 217, 0.9), rgba(20, 89, 217, 0.02) 36%, transparent 55%),
+        linear-gradient(135deg, #ffffff 0 58%, #edf9ff 58% 100%);
+    }
+
+    .cover::before {
+      content: "";
+      position: absolute;
+      right: -210px;
+      bottom: -300px;
+      width: 890px;
+      height: 890px;
+      border: 2px solid rgba(255, 255, 255, 0.72);
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 68px rgba(255, 255, 255, 0.16),
+        0 0 0 138px rgba(255, 255, 255, 0.1);
+    }
+
+    .cover::after {
+      right: auto;
+      bottom: -520px;
+      left: -420px;
+      width: 760px;
+      height: 760px;
+      border-width: 100px;
+      border-color: rgba(20, 89, 217, 0.055);
+    }
+
+    .cover-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+      padding: 86px 104px 72px;
+    }
+
+    .cover-logo {
+      width: 650px;
+      height: auto;
+      margin-bottom: 68px;
+    }
+
+    .cover-kicker {
+      margin: 0 0 16px;
+      color: var(--blue);
+      font-size: 21px;
+      font-weight: 850;
+      letter-spacing: 0.18em;
+    }
+
+    .cover-title {
+      width: 900px;
+      margin: 0;
+      color: var(--navy);
+      font-size: 82px;
+      font-weight: 850;
+      line-height: 1.08;
+      letter-spacing: -0.055em;
+      word-break: keep-all;
+    }
+
+    .cover-meta {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-top: 38px;
+      color: #47627f;
+      font-size: 25px;
+      font-weight: 650;
+    }
+
+    .cover-meta .rule {
+      width: 72px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+    }
+
+    /* Agenda */
+    .agenda-list {
+      width: 1200px;
+      margin: 10px 0 0 70px;
+    }
+
+    .agenda-row {
+      display: grid;
+      grid-template-columns: 82px 1fr 240px;
+      align-items: center;
+      min-height: 118px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .agenda-row:last-child { border-bottom: 0; }
+
+    .agenda-index {
+      color: var(--teal);
+      font-size: 25px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+    }
+
+    .agenda-name {
+      color: var(--navy);
+      font-size: 34px;
+      font-weight: 760;
+      letter-spacing: -0.035em;
+    }
+
+    .agenda-pages {
+      color: var(--muted);
+      font-size: 19px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin: 56px 14px 34px;
+      padding-top: 44px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 20px;
+      right: 8%;
+      left: 8%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+    }
+
+    .day {
+      position: relative;
+      min-height: 310px;
+      padding: 22px 34px 0;
+      border-right: 1px solid var(--line);
+    }
+
+    .day:last-child { border-right: 0; }
+
+    .day::before {
+      content: "";
+      position: absolute;
+      top: -35px;
+      left: 50%;
+      width: 22px;
+      height: 22px;
+      border: 6px solid #fff;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue);
+      transform: translateX(-50%);
+    }
+
+    .day:nth-child(3)::before,
+    .day:nth-child(4)::before {
+      background: var(--teal);
+      box-shadow: 0 0 0 3px var(--teal);
+    }
+
+    .day-date {
+      margin: 0 0 14px;
+      color: var(--blue);
+      font-size: 23px;
+      font-weight: 850;
+    }
+
+    .day h3 {
+      margin: 0 0 18px;
+      color: var(--navy);
+      font-size: 31px;
+      line-height: 1.28;
+      letter-spacing: -0.035em;
+      word-break: keep-all;
+    }
+
+    .day p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 21px;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+
+    /* Evidence */
+    .evidence-layout {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 74px;
+      align-items: center;
+      flex: 1;
+      padding: 4px 34px 48px;
+    }
+
+    .week-slide .slide-head { margin-bottom: 24px; }
+
+    .week-slide .evidence-layout { padding-bottom: 18px; }
+
+    .week-slide .status-line {
+      margin-top: 0;
+      margin-bottom: 18px;
+      padding: 12px 18px;
+      font-size: 19px;
+    }
+
+    .big-quote {
+      position: relative;
+      margin: 0;
+      color: var(--navy);
+      font-size: 48px;
+      font-weight: 790;
+      line-height: 1.35;
+      letter-spacing: -0.045em;
+      word-break: keep-all;
+    }
+
+    .big-quote::before {
+      content: "";
+      position: absolute;
+      top: -28px;
+      left: 0;
+      width: 94px;
+      height: 7px;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+    }
+
+    .change-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .change-list li {
+      display: grid;
+      grid-template-columns: 46px 1fr;
+      gap: 20px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+      color: #294360;
+      font-size: 25px;
+      line-height: 1.48;
+      word-break: keep-all;
+    }
+
+    .change-list li:last-child { border-bottom: 0; }
+
+    .change-list strong { color: var(--navy); }
+
+    .change-no {
+      color: var(--teal);
+      font-size: 21px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+    }
+
+    /* Flows */
+    .flow-track {
+      display: flex;
+      align-items: stretch;
+      gap: 18px;
+      margin: 58px 14px 34px;
+    }
+
+    .flow-step {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      padding: 30px 24px 28px;
+      border-top: 6px solid var(--blue);
+      background: var(--mist);
+    }
+
+    .flow-step:nth-of-type(3),
+    .flow-step:nth-of-type(4) { border-top-color: var(--teal); }
+
+    .flow-step h3 {
+      margin: 0 0 13px;
+      color: var(--navy);
+      font-size: 29px;
+      line-height: 1.25;
+      letter-spacing: -0.03em;
+      word-break: keep-all;
+    }
+
+    .flow-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1.48;
+      word-break: keep-all;
+    }
+
+    .flow-arrow {
+      align-self: center;
+      color: #86a0ba;
+      font-size: 36px;
+      font-weight: 700;
+    }
+
+    .after-note {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      gap: 28px;
+      align-items: center;
+      margin: 14px 14px 0;
+      padding: 22px 28px;
+      border-left: 5px solid var(--teal);
+      background: var(--ice);
+    }
+
+    .after-note strong {
+      color: var(--blue);
+      font-size: 22px;
+      letter-spacing: 0.02em;
+    }
+
+    .after-note span {
+      color: #2d4b68;
+      font-size: 23px;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+
+    /* Audience-first service overview */
+    .purpose-slide .slide-head { margin-bottom: 28px; }
+
+    .purpose-slide .lead {
+      max-width: 1320px;
+      font-size: 32px;
+    }
+
+    .purpose-slide .flow-track {
+      margin-top: 48px;
+      margin-bottom: 28px;
+    }
+
+    .purpose-slide .flow-step {
+      min-height: 205px;
+      padding-top: 34px;
+      background: linear-gradient(150deg, #f5f9fd, #eef7ff);
+    }
+
+    .purpose-slide .flow-step:last-of-type {
+      border-top-color: var(--teal);
+      background: linear-gradient(150deg, #effcfa, #e9f8ff);
+    }
+
+    /* Agent evolution */
+    .agent-slide .slide-head { margin-bottom: 22px; }
+
+    .agent-evolution {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+      flex: 1;
+      margin: 0 24px 36px;
+    }
+
+    .agent-chain-label {
+      margin: 0 0 11px;
+      color: var(--blue);
+      font-size: 19px;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+    }
+
+    .agent-chain {
+      display: grid;
+      grid-template-columns: 1fr 52px 1fr 52px 1fr;
+      align-items: stretch;
+    }
+
+    .agent-node {
+      min-height: 170px;
+      padding: 25px 27px 22px;
+      border-top: 7px solid var(--blue);
+      background: var(--mist);
+    }
+
+    .agent-node:nth-of-type(3) { border-top-color: var(--teal); }
+
+    .agent-node .agent-no {
+      margin: 0 0 10px;
+      color: var(--teal);
+      font-size: 18px;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+    }
+
+    .agent-node h3 {
+      margin: 0 0 9px;
+      color: var(--navy);
+      font-size: 29px;
+      line-height: 1.23;
+      letter-spacing: -0.03em;
+      word-break: keep-all;
+    }
+
+    .agent-node p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1.42;
+      word-break: keep-all;
+    }
+
+    .agent-arrow {
+      align-self: center;
+      color: #8ba4bd;
+      font-size: 34px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .agent-branches {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 40px;
+      align-items: stretch;
+    }
+
+    .agent-branch {
+      padding: 23px 28px;
+      border-left: 6px solid #9aabba;
+      background: #f8fafc;
+    }
+
+    .agent-branch.conditional {
+      border-left-color: var(--teal);
+      background: var(--ice);
+    }
+
+    .agent-branch .branch-label {
+      margin: 0 0 9px;
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 850;
+      letter-spacing: 0.09em;
+    }
+
+    .agent-branch.conditional .branch-label { color: #0c9a98; }
+
+    .agent-branch h3 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: 27px;
+      letter-spacing: -0.025em;
+      word-break: keep-all;
+    }
+
+    .agent-branch p {
+      margin: 0;
+      color: #405a75;
+      font-size: 19px;
+      line-height: 1.43;
+      word-break: keep-all;
+    }
+
+    /* Safety */
+    .routing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin: 26px 20px 32px;
+    }
+
+    .route {
+      position: relative;
+      min-height: 335px;
+      padding: 32px 28px 28px;
+      border-top: 8px solid var(--green);
+    }
+
+    .route.caution { border-top-color: var(--amber); }
+    .route.danger { border-top-color: var(--red); }
+
+    .route + .route::before {
+      content: "";
+      position: absolute;
+      top: 32px;
+      bottom: 22px;
+      left: -21px;
+      width: 1px;
+      background: var(--line);
+    }
+
+    .route-label {
+      margin: 0 0 19px;
+      color: var(--muted);
+      font-size: 19px;
+      font-weight: 850;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .route h3 {
+      margin: 0 0 17px;
+      color: var(--navy);
+      font-size: 34px;
+      line-height: 1.25;
+      letter-spacing: -0.035em;
+    }
+
+    .route .route-code {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: var(--blue-deep);
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 18px;
+      font-weight: 750;
+    }
+
+    .route p {
+      margin: 0;
+      color: #405873;
+      font-size: 22px;
+      line-height: 1.5;
+      word-break: keep-all;
+    }
+
+    /* Handoff */
+    .handoff-layout {
+      display: grid;
+      grid-template-columns: 0.67fr 1.33fr;
+      gap: 72px;
+      align-items: center;
+      flex: 1;
+      padding: 0 20px 52px;
+    }
+
+    .handoff-rule {
+      padding-left: 28px;
+      border-left: 7px solid var(--teal);
+    }
+
+    .handoff-rule .label {
+      margin: 0 0 14px;
+      color: var(--blue);
+      font-size: 20px;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+    }
+
+    .handoff-rule p {
+      margin: 0;
+      color: var(--navy);
+      font-size: 41px;
+      font-weight: 780;
+      line-height: 1.4;
+      letter-spacing: -0.04em;
+      word-break: keep-all;
+    }
+
+    .handoff-flow {
+      counter-reset: handoff;
+    }
+
+    .handoff-item {
+      counter-increment: handoff;
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 19px;
+      align-items: start;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .handoff-item:last-child { border-bottom: 0; }
+
+    .handoff-item::before {
+      content: counter(handoff, decimal-leading-zero);
+      color: var(--teal);
+      font-size: 20px;
+      font-weight: 850;
+      letter-spacing: 0.06em;
+    }
+
+    .handoff-item h3 {
+      margin: 0 0 7px;
+      color: var(--navy);
+      font-size: 28px;
+      letter-spacing: -0.025em;
+    }
+
+    .handoff-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1.45;
+      word-break: keep-all;
+    }
+
+    /* RAG */
+    .policy-map {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 64px;
+      align-items: stretch;
+      flex: 1;
+      margin: 0 18px 42px;
+    }
+
+    .policy-main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 22px 46px;
+      background: linear-gradient(145deg, #effaff, #f7fbff);
+    }
+
+    .policy-main .policy-kicker {
+      margin: 0 0 18px;
+      color: var(--blue);
+      font-size: 21px;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+    }
+
+    .policy-main h3 {
+      margin: 0 0 24px;
+      color: var(--navy);
+      font-size: 46px;
+      line-height: 1.3;
+      letter-spacing: -0.045em;
+      word-break: keep-all;
+    }
+
+    .policy-main p {
+      margin: 0;
+      color: #36516f;
+      font-size: 24px;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+
+    .policy-side {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .policy-side-item {
+      padding: 23px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .policy-side-item:last-child { border-bottom: 0; }
+
+    .policy-side-item h4 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: 27px;
+      letter-spacing: -0.025em;
+    }
+
+    .policy-side-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1.48;
+      word-break: keep-all;
+    }
+
+    .rag-slide .slide-head { margin-bottom: 22px; }
+
+    .rag-slide .policy-map {
+      min-height: 0;
+      margin-bottom: 18px;
+    }
+
+    .rag-slide .policy-main { padding: 16px 40px; }
+
+    .rag-slide .policy-main h3 {
+      margin-bottom: 18px;
+      font-size: 43px;
+    }
+
+    .rag-slide .policy-side-item { padding: 16px 0; }
+
+    .rag-slide .status-line {
+      margin-top: 0;
+      padding: 12px 18px;
+      font-size: 18px;
+    }
+
+    /* Web / Mobile */
+    .two-worlds {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      flex: 1;
+      margin: 4px 28px 42px;
+    }
+
+    .world {
+      position: relative;
+      padding: 26px 22px 12px;
+      border-top: 7px solid var(--blue);
+    }
+
+    .world.mobile { border-top-color: var(--teal); }
+
+    .world + .world::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: -36px;
+      width: 1px;
+      background: var(--line);
+    }
+
+    .world h3 {
+      margin: 0 0 28px;
+      color: var(--navy);
+      font-size: 39px;
+      letter-spacing: -0.035em;
+    }
+
+    .world ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .world li {
+      position: relative;
+      margin: 0 0 22px;
+      padding-left: 31px;
+      color: #334f6c;
+      font-size: 23px;
+      line-height: 1.5;
+      word-break: keep-all;
+    }
+
+    .world li::before {
+      content: "";
+      position: absolute;
+      top: 12px;
+      left: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .world.mobile li::before { background: var(--teal); }
+
+    .service-lanes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 42px;
+      flex: 1;
+      margin: 0 24px 42px;
+    }
+
+    .service-lane {
+      position: relative;
+      padding: 28px 24px 14px;
+      border-top: 7px solid var(--blue);
+    }
+
+    .service-lane:nth-child(2) { border-top-color: var(--teal); }
+    .service-lane:nth-child(3) { border-top-color: var(--amber); }
+
+    .service-lane + .service-lane::before {
+      content: "";
+      position: absolute;
+      top: 14px;
+      bottom: 8px;
+      left: -21px;
+      width: 1px;
+      background: var(--line);
+    }
+
+    .service-lane h3 {
+      margin: 0 0 22px;
+      color: var(--navy);
+      font-size: 34px;
+      line-height: 1.2;
+      letter-spacing: -0.035em;
+    }
+
+    .service-lane ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .service-lane li {
+      position: relative;
+      margin: 0 0 20px;
+      padding-left: 26px;
+      color: #38536f;
+      font-size: 21px;
+      line-height: 1.46;
+      word-break: keep-all;
+    }
+
+    .service-lane li::before {
+      content: "";
+      position: absolute;
+      top: 11px;
+      left: 0;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .service-lane:nth-child(2) li::before { background: var(--teal); }
+    .service-lane:nth-child(3) li::before { background: var(--amber); }
+
+    /* CI / Deploy */
+    .deploy-layout {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 70px;
+      flex: 1;
+      align-items: center;
+      margin: 0 24px 44px;
+    }
+
+    .deploy-rail {
+      position: relative;
+      padding-left: 46px;
+    }
+
+    .deploy-rail::before {
+      content: "";
+      position: absolute;
+      top: 11px;
+      bottom: 11px;
+      left: 13px;
+      width: 4px;
+      background: linear-gradient(var(--blue), var(--teal));
+    }
+
+    .deploy-item {
+      position: relative;
+      padding: 0 0 23px 24px;
+    }
+
+    .deploy-item:last-child { padding-bottom: 0; }
+
+    .deploy-item::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: -40px;
+      width: 18px;
+      height: 18px;
+      border: 5px solid #fff;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue);
+    }
+
+    .deploy-item:last-child::before {
+      background: var(--teal);
+      box-shadow: 0 0 0 3px var(--teal);
+    }
+
+    .deploy-item h3 {
+      margin: 0 0 7px;
+      color: var(--navy);
+      font-size: 27px;
+      letter-spacing: -0.025em;
+    }
+
+    .deploy-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1.42;
+      word-break: keep-all;
+    }
+
+    .infra-summary {
+      padding: 36px 42px;
+      border-left: 7px solid var(--teal);
+      background: var(--mist);
+    }
+
+    .infra-summary h3 {
+      margin: 0 0 24px;
+      color: var(--navy);
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .infra-summary p {
+      margin: 0 0 18px;
+      color: #3b5571;
+      font-size: 22px;
+      line-height: 1.48;
+      word-break: keep-all;
+    }
+
+    .infra-summary p:last-child { margin-bottom: 0; }
+
+    /* Placeholder */
+    .placeholder {
+      background:
+        linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.94)),
+        radial-gradient(circle at 78% 25%, rgba(25, 200, 196, 0.22), transparent 34%),
+        radial-gradient(circle at 19% 78%, rgba(20, 89, 217, 0.18), transparent 34%);
+    }
+
+    .placeholder::after {
+      right: -170px;
+      bottom: -320px;
+      border-color: rgba(20, 89, 217, 0.07);
+    }
+
+    .placeholder-body {
+      display: grid;
+      grid-template-columns: 0.7fr 1.3fr;
+      gap: 70px;
+      align-items: center;
+      flex: 1;
+      margin: 0 32px 52px;
+    }
+
+    .placeholder-title {
+      margin: 0;
+      color: var(--navy);
+      font-size: 58px;
+      font-weight: 820;
+      line-height: 1.25;
+      letter-spacing: -0.05em;
+      word-break: keep-all;
+    }
+
+    .placeholder-title span {
+      display: block;
+      margin-top: 18px;
+      color: var(--blue);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+    }
+
+    .placeholder-fields {
+      border-top: 6px solid var(--teal);
+    }
+
+    .placeholder-field {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      gap: 30px;
+      min-height: 112px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .placeholder-field strong {
+      color: var(--navy);
+      font-size: 24px;
+    }
+
+    .placeholder-field span {
+      color: #8b9aab;
+      font-size: 22px;
+      line-height: 1.4;
+      word-break: keep-all;
+    }
+
+    /* Experiment results */
+    .experiment-slide {
+      background:
+        linear-gradient(rgba(255,255,255,0.96), rgba(255,255,255,0.98)),
+        radial-gradient(circle at 82% 26%, rgba(25, 200, 196, 0.2), transparent 34%),
+        radial-gradient(circle at 18% 82%, rgba(20, 89, 217, 0.16), transparent 35%);
+    }
+
+    .experiment-slide::after {
+      right: -180px;
+      bottom: -340px;
+      border-color: rgba(20, 89, 217, 0.065);
+    }
+
+    .experiment-slide .slide-head { margin-bottom: 24px; }
+
+    .experiment-layout {
+      display: grid;
+      grid-template-columns: 0.72fr 1.28fr;
+      gap: 58px;
+      flex: 1;
+      min-height: 0;
+      margin: 0 28px 18px;
+    }
+
+    .experiment-verdict {
+      align-self: center;
+      padding: 14px 0 14px 28px;
+      border-left: 7px solid var(--teal);
+    }
+
+    .result-label {
+      margin: 0 0 14px;
+      color: var(--blue);
+      font-size: 18px;
+      font-weight: 850;
+      letter-spacing: 0.12em;
+    }
+
+    .result-name {
+      margin: 0 0 16px;
+      color: var(--navy);
+      font-size: 49px;
+      font-weight: 830;
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+      word-break: keep-all;
+    }
+
+    .result-explainer {
+      margin: 0;
+      color: #435d79;
+      font-size: 21px;
+      line-height: 1.48;
+      word-break: keep-all;
+    }
+
+    .result-deltas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .result-delta {
+      padding-top: 14px;
+      border-top: 3px solid var(--line);
+    }
+
+    .result-delta strong {
+      display: block;
+      color: var(--blue);
+      font-size: 36px;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+    }
+
+    .result-delta span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    .metric-panel {
+      align-self: center;
+      min-width: 0;
+    }
+
+    .metric-context {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      margin: 0 16px 14px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    .metric-context strong {
+      color: var(--navy);
+      font-size: 19px;
+    }
+
+    .metric-table { border-top: 5px solid var(--teal); }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(90px, 0.7fr));
+      align-items: center;
+      min-height: 58px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      color: #405a76;
+      font-size: 19px;
+    }
+
+    .metric-row.header {
+      min-height: 46px;
+      color: #7890aa;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .metric-row .model {
+      color: var(--navy);
+      font-weight: 760;
+    }
+
+    .metric-row span:not(:first-child) { text-align: right; }
+
+    .metric-row.winner {
+      border-left: 5px solid var(--teal);
+      background: #eafaf9;
+      color: var(--blue-deep);
+      font-weight: 820;
+    }
+
+    .metric-callout {
+      margin: 15px 0 0;
+      padding: 12px 16px;
+      background: var(--mist);
+      color: #3e5875;
+      font-size: 18px;
+      line-height: 1.4;
+      word-break: keep-all;
+    }
+
+    .metric-callout strong { color: var(--navy); }
+
+    .experiment-slide .status-line {
+      margin-top: 0;
+      margin-bottom: 18px;
+      padding: 12px 18px;
+      font-size: 18px;
+    }
+
+    /* Current */
+    .current-slide {
+      color: #fff;
+      background:
+        radial-gradient(circle at 88% 18%, rgba(25, 200, 196, 0.36), transparent 33%),
+        linear-gradient(145deg, #071a38 0%, #0a2f68 58%, #075f72 100%);
+    }
+
+    .current-slide::after {
+      border-color: rgba(255, 255, 255, 0.07);
+    }
+
+    .current-slide .eyebrow { color: var(--cyan); }
+    .current-slide .slide-title { color: #fff; }
+    .current-slide .section-mark { color: #fff; border-top-color: var(--teal); }
+
+    .current-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 70px;
+      flex: 1;
+      margin: 6px 26px 52px;
+    }
+
+    .current-item {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 20px;
+      align-items: start;
+      padding: 26px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .current-item:nth-last-child(-n+2) { border-bottom: 0; }
+
+    .current-item .num {
+      color: var(--cyan);
+      font-size: 21px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+    }
+
+    .current-item h3 {
+      margin: 0 0 9px;
+      color: #fff;
+      font-size: 29px;
+      line-height: 1.25;
+      letter-spacing: -0.03em;
+      word-break: keep-all;
+    }
+
+    .current-item p {
+      margin: 0;
+      color: rgba(234, 247, 255, 0.76);
+      font-size: 20px;
+      line-height: 1.46;
+      word-break: keep-all;
+    }
+
+    .current-close {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin: 0 26px 14px;
+      color: #fff;
+      font-size: 25px;
+      font-weight: 730;
+    }
+
+    .current-close::before {
+      content: "";
+      width: 78px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+    }
+
+    .current-slide .slide-footer { color: rgba(255,255,255,0.55); }
+    .current-slide .slide-footer .brand { color: var(--cyan); }
+
+    /* Screen controls */
+    .controls {
+      position: fixed;
+      z-index: 30;
+      right: 22px;
+      bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 15px;
+      background: rgba(4, 18, 40, 0.78);
+      box-shadow: 0 12px 34px rgba(0,0,0,0.22);
+      backdrop-filter: blur(14px);
+      opacity: 0.38;
+      transition: opacity 160ms ease;
+    }
+
+    .controls:hover,
+    .controls:focus-within { opacity: 1; }
+
+    .controls button {
+      min-width: 40px;
+      height: 38px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 10px;
+      color: #eaf7ff;
+      background: rgba(255,255,255,0.08);
+      cursor: pointer;
+    }
+
+    .controls button:hover { background: rgba(255,255,255,0.16); }
+
+    .counter {
+      min-width: 76px;
+      color: #d9eaff;
+      font-size: 14px;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .progress {
+      position: fixed;
+      z-index: 31;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .progress > span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+      transition: width 180ms ease;
+    }
+
+    .notes-panel {
+      position: fixed;
+      z-index: 40;
+      top: 18px;
+      right: 18px;
+      bottom: 74px;
+      width: min(520px, calc(100vw - 36px));
+      display: none;
+      padding: 30px 32px;
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 18px;
+      color: #dceaff;
+      background: rgba(4, 18, 40, 0.94);
+      box-shadow: 0 22px 60px rgba(0,0,0,0.36);
+      backdrop-filter: blur(18px);
+    }
+
+    .notes-panel.open { display: block; }
+
+    .notes-panel h3 {
+      margin: 0 0 9px;
+      color: var(--cyan);
+      font-size: 18px;
+    }
+
+    .notes-panel p,
+    .notes-panel li {
+      color: #c4d5e9;
+      font-size: 15px;
+      line-height: 1.62;
+    }
+
+    .notes-panel ul {
+      margin: 0 0 24px;
+      padding-left: 20px;
+    }
+
+    .notes-panel code {
+      color: #fff;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .help {
+      position: fixed;
+      z-index: 50;
+      inset: 0;
+      display: none;
+      place-items: center;
+      color: #fff;
+      background: rgba(4, 18, 40, 0.78);
+      backdrop-filter: blur(10px);
+    }
+
+    .help.open { display: grid; }
+
+    .help-box {
+      width: 520px;
+      padding: 34px 38px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 20px;
+      background: #0b2852;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.38);
+    }
+
+    .help-box h2 { margin: 0 0 18px; font-size: 28px; }
+    .help-box p { margin: 8px 0; color: #cfe1f5; font-size: 17px; }
+    .help-box kbd {
+      display: inline-block;
+      min-width: 34px;
+      margin-right: 8px;
+      padding: 3px 7px;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 6px;
+      color: #fff;
+      background: rgba(255,255,255,0.08);
+      text-align: center;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; transition: none !important; }
+    }
+
+    @media print {
+      @page { size: 13.333in 7.5in; margin: 0; }
+
+      html,
+      body {
+        width: auto;
+        height: auto;
+        overflow: visible;
+        background: #fff;
+      }
+
+      #deck {
+        width: auto;
+        height: auto;
+        background: #fff;
+      }
+
+      .slide,
+      .slide.active {
+        position: relative;
+        top: auto;
+        left: auto;
+        display: flex;
+        width: 13.333in;
+        height: 7.5in;
+        break-after: page;
+        page-break-after: always;
+        transform: none;
+      }
+
+      .controls,
+      .progress,
+      .notes-panel,
+      .help { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main id="deck" aria-live="polite">
+    <section class="slide cover active" data-title="표지" aria-label="1. WaterBridge 표지">
+      <div class="cover-inner">
+        <img class="cover-logo" src="../../web/src/assets/images/water-bridge-logo-transparent.png" alt="WaterBridge">
+        <p class="cover-kicker">WEEKLY UPDATE · WEEK 07</p>
+        <h1 class="cover-title">고객 문의를<br>안전한 안내와 상담으로 연결하다</h1>
+        <div class="cover-meta">
+          <span class="rule" aria-hidden="true"></span>
+          <span>2026.08.24 — 08.28</span>
+          <span>4TEAM</span>
+        </div>
+      </div>
+      <aside class="notes">
+        <h3>발표 메모</h3>
+        <p>WaterBridge가 고객 문의를 어떻게 분석하고, 언제 안내하며, 언제 상담사에게 넘기는지부터 설명합니다.</p>
+        <h3>근거</h3>
+        <ul>
+          <li><code>docs/daily-scrum/7주차_데일리스크럼.md</code></li>
+          <li>현재 <code>dongyoon</code> 브랜치의 2026-08-24~27 커밋 이력</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="slide" data-title="목차" aria-label="2. 목차">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">Agenda</p>
+          <h2 class="slide-title">이번 주 발표 순서</h2>
+        </div>
+        <div class="section-mark">02</div>
+      </header>
+      <div class="agenda-list">
+        <div class="agenda-row">
+          <span class="agenda-index">01</span>
+          <span class="agenda-name">WaterBridge가 해결하는 문제</span>
+          <span class="agenda-pages">03</span>
+        </div>
+        <div class="agenda-row">
+          <span class="agenda-index">02</span>
+          <span class="agenda-name">이번 주 핵심 변화</span>
+          <span class="agenda-pages">04</span>
+        </div>
+        <div class="agenda-row">
+          <span class="agenda-index">03</span>
+          <span class="agenda-name">3-Agent와 맥락정리 Agent 흐름</span>
+          <span class="agenda-pages">05—06</span>
+        </div>
+        <div class="agenda-row">
+          <span class="agenda-index">04</span>
+          <span class="agenda-name">검색·화면·운영 변화</span>
+          <span class="agenda-pages">07—08</span>
+        </div>
+        <div class="agenda-row">
+          <span class="agenda-index">05</span>
+          <span class="agenda-name">실험 업데이트와 현재 진행</span>
+          <span class="agenda-pages">09—11</span>
+        </div>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>발표 메모</h3>
+        <p>프로젝트 목적을 먼저 설명한 뒤, 이번 주에 3-Agent 분석과 상담 전달 흐름이 어떻게 바뀌었는지 보여줍니다.</p>
+      </aside>
+    </section>
+
+    <section class="slide purpose-slide" data-title="프로젝트 이해" aria-label="3. WaterBridge가 해결하는 문제">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">What WaterBridge Does</p>
+          <h2 class="slide-title">WaterBridge는 고객 문의를 안전한 안내 또는 상담으로 연결한다</h2>
+        </div>
+        <div class="section-mark">03</div>
+      </header>
+      <p class="lead">고객이 정수기 이상 증상을 입력하면 공식 문서에서 근거를 찾고, 안전하게 안내할 수 없는 경우에는 사람에게 넘긴다.</p>
+      <div class="flow-track" aria-label="WaterBridge 서비스 흐름">
+        <article class="flow-step">
+          <h3>1. 고객 증상 입력</h3>
+          <p>제품과 증상, 문진 답변을 한 번에 수집</p>
+        </article>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <article class="flow-step">
+          <h3>2. AI 역할별 분석</h3>
+          <p>증상 이해 → 공식 근거 검색 → 안내 판단</p>
+        </article>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <article class="flow-step">
+          <h3>3. 안전 경로 결정</h3>
+          <p>바로 안내·추가 질문·사람 검토·상담 연결로 분기</p>
+        </article>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+        <article class="flow-step">
+          <h3>4. 고객 또는 상담사 전달</h3>
+          <p>고객에게 안전한 안내를 주거나 상담사에게 맥락을 전달</p>
+        </article>
+      </div>
+      <div class="after-note">
+        <strong>핵심 원칙</strong>
+        <span>위험하거나 공식 근거가 부족하면 AI가 임의로 자가조치를 만들지 않는다.</span>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>발표 메모</h3>
+        <p>기술 용어보다 먼저 “고객 문의를 안전한 안내 또는 상담으로 연결하는 서비스”라고 설명합니다.</p>
+        <h3>근거</h3>
+        <ul>
+          <li>AGENTS.md 서비스 경계·Safety First 원칙</li>
+          <li>데일리 스크럼 65—78행의 문의 → AI 분석 → 상담사 응대 흐름</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="slide week-slide" data-title="이번 주 핵심 변화" aria-label="4. 이번 주 핵심 변화">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">Week 07 Highlights</p>
+          <h2 class="slide-title">이번 주에는 AI 답변이 실제 서비스로 이어지는 네 연결 고리를 보완했다</h2>
+        </div>
+        <div class="section-mark">04</div>
+      </header>
+      <div class="evidence-layout">
+        <blockquote class="big-quote">AI가 답변만 만드는 단계를 넘어<br><span class="accent">고객과 상담사에게 전달되는 흐름</span>을 연결했다.</blockquote>
+        <ol class="change-list">
+          <li><span class="change-no">01</span><span><strong>안전 분기</strong> — 바로 안내·사람 검토·상담 연결을 위험도별로 분리</span></li>
+          <li><span class="change-no">02</span><span><strong>상담 맥락</strong> — 고객 답변과 수행 행동을 상담사가 이해하기 쉽게 정리</span></li>
+          <li><span class="change-no">03</span><span><strong>사용자 접점</strong> — Mobile·Web을 실제 Backend 계약과 AWS 환경에 정합화</span></li>
+          <li><span class="change-no">04</span><span><strong>운영 안정성</strong> — 태그 배포·읽기 전용 데이터·검증 Gate를 보강</span></li>
+        </ol>
+      </div>
+      <div class="status-line warn">
+        <strong>이번 주 방향</strong>
+        <span>기능 수를 늘리기보다 “잘못 안내하지 않고, 필요하면 사람에게 정확히 넘기는가”에 집중했다.</span>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>대표 근거 커밋</h3>
+        <ul>
+          <li><code>4b27a9e</code>, <code>c1ae796</code> Safety Routing·HumanReview</li>
+          <li><code>8e6bcc9</code>, <code>f153c2d</code>, <code>35ba2ae</code> 맥락정리 Agent·Handoff v2 송수신</li>
+          <li><code>2531806</code>, <code>882987b</code> Web·Mobile 연결</li>
+          <li><code>d9d3af3</code>, <code>c5eb100</code> CI·배포 Gate</li>
+        </ul>
+        <h3>근거 스크럼</h3>
+        <p>8/24~27 진행 업무 요약과 담당자별 작업 내용을 압축했습니다.</p>
+      </aside>
+    </section>
+
+    <section class="slide agent-slide" data-title="Agent 구조 변화" aria-label="5. 기본 3-Agent와 맥락정리 Agent 도입 흐름">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">Multi-Agent Evolution</p>
+          <h2 class="slide-title">기존 3-Agent 분석 뒤에 상담용 맥락정리 Agent를 조건부로 추가했다</h2>
+        </div>
+        <div class="section-mark">05</div>
+      </header>
+      <div class="agent-evolution">
+        <div>
+          <p class="agent-chain-label">기본 분석 흐름 · 한 Process에서 순차 실행</p>
+          <div class="agent-chain" aria-label="기존 3-Agent 순차 분석">
+            <article class="agent-node">
+              <p class="agent-no">AGENT 01</p>
+              <h3>증상 이해</h3>
+              <p>고객 표현을 구조화하고 위험 신호·추가 질문을 찾는다.</p>
+            </article>
+            <span class="agent-arrow" aria-hidden="true">→</span>
+            <article class="agent-node">
+              <p class="agent-no">AGENT 02</p>
+              <h3>공식 근거 검색</h3>
+              <p>제품과 증상에 맞는 검증 문서를 검색하고 근거를 선별한다.</p>
+            </article>
+            <span class="agent-arrow" aria-hidden="true">→</span>
+            <article class="agent-node">
+              <p class="agent-no">AGENT 03</p>
+              <h3>안내 판단</h3>
+              <p>Safety와 근거를 바탕으로 안내·대기·상담 필요를 결정한다.</p>
+            </article>
+          </div>
+        </div>
+        <div class="agent-branches">
+          <article class="agent-branch">
+            <p class="branch-label">일반 안내·추가 질문·첫 사람 검토</p>
+            <h3>기존 3-Agent 결과를 그대로 사용</h3>
+            <p>맥락정리 Agent는 호출하지 않는다.</p>
+          </article>
+          <article class="agent-branch conditional">
+            <p class="branch-label">실제 상담 Handoff가 결정된 경우만</p>
+            <h3>맥락정리 Agent → 상담사</h3>
+            <p>문진 답변·고객 행동·승인 근거를 상담용 요약으로 정리해 Handoff v2에 담는다.</p>
+          </article>
+        </div>
+      </div>
+      <div class="status-line current">
+        <strong>핵심 변화</strong>
+        <span>상시 4-Agent가 아니라, 기존 3-Agent 분석에 “상담 전용 조건부 Agent”가 추가됐다.</span>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>근거</h3>
+        <ul>
+          <li><code>multi_agent_pipeline.py</code>: Symptom → Evidence → Care의 조건부 순차 호출</li>
+          <li><code>HarnessRunner._create_handoff()</code>: 실제 Handoff 생성 시 맥락 합성 호출</li>
+          <li><code>8e6bcc9</code> 맥락정리 Agent 뼈대, <code>f153c2d</code> Handoff v2 AI 전송</li>
+        </ul>
+        <h3>경계</h3>
+        <p>기본 Multi-Agent는 분산·병렬 시스템이 아니라 한 Python Process의 역할 분리형 순차 3-Agent입니다. 위험 입력은 Evidence Agent를 건너뛰고 Safety가 우선합니다.</p>
+      </aside>
+    </section>
+
+    <section class="slide" data-title="안전한 전달 경로" aria-label="6. 위험도에 따른 고객 안내와 상담 연결">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">Safety Routing</p>
+          <h2 class="slide-title">AI 답변은 위험도에 따라 바로 안내·사람 검토·상담 연결로 나뉜다</h2>
+        </div>
+        <div class="section-mark">06</div>
+      </header>
+      <div class="routing-grid">
+        <article class="route">
+          <p class="route-label">일반</p>
+          <h3>공식 근거로 바로 안내</h3>
+          <span class="route-code">고객에게 전달</span>
+          <p>제품과 증상에 맞는 근거가 있고 상담이 필요하지 않을 때만 자가 안내를 제공한다.</p>
+        </article>
+        <article class="route caution">
+          <p class="route-label">주의</p>
+          <h3>전송 전 사람이 검토</h3>
+          <span class="route-code">승인 · 수정 · 거절</span>
+          <p>AI 초안을 바로 보여주지 않고 담당자가 확인한 결과만 고객에게 전달한다.</p>
+        </article>
+        <article class="route danger">
+          <p class="route-label">위험 · 근거 부족</p>
+          <h3>상담사에게 연결</h3>
+          <span class="route-code">맥락정리 Agent 실행</span>
+          <p>위험 신호와 고객 답변·행동을 정리해 상담사가 바로 이어서 대응할 수 있게 한다.</p>
+        </article>
+      </div>
+      <div class="status-line current">
+        <strong>실패 처리</strong>
+        <span>맥락 요약이 실패해도 기존 상담 연결은 유지하며, 자동 안내로 되돌리지 않는다.</span>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>근거 커밋</h3>
+        <ul>
+          <li><code>4b27a9e</code> 위험도별 AI 응답 Routing</li>
+          <li><code>c127a32</code> Safety Rule 우선순위</li>
+          <li><code>9b3eb3a</code> Backend PRE_SEND, <code>c1ae796</code> HumanReview Runtime</li>
+          <li><code>35ba2ae</code> Handoff v2 Backend 수신·검증</li>
+        </ul>
+        <h3>현재 코드</h3>
+        <p><code>response_routing_policy.py</code>는 General/CAUTION/DANGER를 각각 AUTO, PRE_SEND, HANDOFF로 분리합니다. Fallback은 Fail-closed 상담 경로입니다.</p>
+        <h3>경계</h3>
+        <p>첫 PRE_SEND 검토는 HITL이며 Consultation Handoff가 아닙니다. 전체 HITL 소비 화면·독립 QA는 남아 있습니다.</p>
+      </aside>
+    </section>
+
+    <section class="slide rag-slide" data-title="믿을 수 있는 검색" aria-label="7. 믿을 수 있는 RAG 검색을 위한 변경">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">Reliable Retrieval</p>
+          <h2 class="slide-title">검색 결과를 믿을 수 있도록 답변 근거와 평가 기준을 좁혔다</h2>
+        </div>
+        <div class="section-mark">07</div>
+      </header>
+      <div class="policy-map">
+        <div class="policy-main">
+          <p class="policy-kicker">ANSWER EVIDENCE</p>
+          <h3>공식 문서의<br><span class="accent">검증된 작은 단위</span>만<br>답변 근거로 사용</h3>
+          <p>원문 페이지 전체를 그대로 답변에 쓰지 않고, 제품·증상과 직접 관련된 검증 문장만 선별한다.</p>
+        </div>
+        <div class="policy-side">
+          <div class="policy-side-item">
+            <h4>잘못된 범위 차단</h4>
+            <p>해당 제품 매뉴얼로 답할 수 없는 질문은 검색 전에 막는다.</p>
+          </div>
+          <div class="policy-side-item">
+            <h4>질문 표현 보완</h4>
+            <p>“물이 약하게 나와요”처럼 다양한 표현을 보완하되 공식 문서는 바꾸지 않는다.</p>
+          </div>
+          <div class="policy-side-item">
+            <h4>같은 정답지·채점 기준</h4>
+            <p>검색 실험과 개발 도구가 동일한 Evidence 기준으로 결과를 비교한다.</p>
+          </div>
+          <div class="policy-side-item">
+            <h4>검증 범위 구분</h4>
+            <p>Local 진단과 실제 pgvector·Provider·서비스 E2E 결과를 따로 보고한다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="status-line warn">
+        <strong>실험 결론</strong>
+        <span>전체 매뉴얼 자동 청킹은 Parent-Child-256, 임베딩은 GTE가 개발 단계 기준 우세했다. 상세 수치는 9·10페이지에서 비교한다.</span>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>근거 커밋</h3>
+        <ul>
+          <li><code>e07d6ef</code> Gold v2 / Full Corpus v3 검색 평가 자산</li>
+          <li><code>c25b0d8</code> Child 검색·범위 차단·LOW-FLOW 보정</li>
+          <li><code>56bcf9e</code> 공통 Evidence Scorer 연결</li>
+        </ul>
+        <h3>경계</h3>
+        <p>Local Dense 진단은 pgvector Query가 아니며, Parent/Child·Alias는 실험이지 Public Runtime 채택이 아닙니다. Alias는 청킹이 아니라 Query Expansion입니다.</p>
+        <h3>[Sources]</h3>
+        <p><code>C:\Users\Playdata\Downloads\AI실험보고서_v5.md</code> — E02 Full-Corpus Chunking, E03 Embedding 5종 GPU 비교.</p>
+      </aside>
+    </section>
+
+    <section class="slide" data-title="서비스·운영 연결" aria-label="8. 사용자 화면과 운영 절차 연결">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">Service Integration</p>
+          <h2 class="slide-title">고객·상담사 화면과 배포 절차를 하나의 서비스 흐름으로 맞췄다</h2>
+        </div>
+        <div class="section-mark">08</div>
+      </header>
+      <div class="service-lanes">
+        <article class="service-lane">
+          <h3>고객 Mobile</h3>
+          <ul>
+            <li>개발용과 AWS용 앱 설정을 분리하고 실제 Backend 연결</li>
+            <li>OTP·계정 찾기·중복 가입 안내 등 인증 UX 보완</li>
+            <li>상담 처리 결과와 후속 안내를 고객 화면에 연결</li>
+          </ul>
+        </article>
+        <article class="service-lane">
+          <h3>상담사 Web</h3>
+          <ul>
+            <li>문의 상세와 상담 처리를 한 화면에서 이어서 확인</li>
+            <li>실제 Backend·격리 DB 로그인과 고객 검색 경로 확인</li>
+            <li>공지·운영 대시보드 API를 최신 계약에 맞게 연결</li>
+          </ul>
+        </article>
+        <article class="service-lane">
+          <h3>배포·데이터</h3>
+          <ul>
+            <li>정식 Version Tag에서만 운영 배포하도록 Gate 변경</li>
+            <li>AI는 승인된 View만 읽고 원본 데이터 수정은 차단</li>
+            <li>Container에 AI 계약 자산이 포함되도록 패키징 보강</li>
+          </ul>
+        </article>
+      </div>
+      <div class="status-line warn">
+        <strong>검증 경계</strong>
+        <span>AWS 배포와 개별 화면 연결은 확인했지만, 고객→AI→상담사→고객 전체 시나리오 독립 QA는 진행 중이다.</span>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>근거 커밋</h3>
+        <ul>
+          <li>Web: <code>873cb775</code>, <code>2531806</code></li>
+          <li>Mobile: <code>a4b0baa</code>, <code>a0bd9b1</code>, <code>882987b</code></li>
+          <li>운영: <code>d9d3af3</code>, <code>c5eb100</code>, <code>9cdc081</code></li>
+        </ul>
+        <h3>근거 스크럼</h3>
+        <p>Web 29—39, 85—88, 194—197행 / Mobile 95—98, 205—212행 / 운영 101—111, 136—162행.</p>
+        <h3>경계</h3>
+        <p>앱 빌드·실기기 확인과 전체 고객→상담사→고객 E2E는 별도 범위입니다.</p>
+      </aside>
+    </section>
+
+    <section class="slide experiment-slide" data-title="청킹 실험" aria-label="9. 전체 매뉴얼 청킹 비교 실험 결과">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">Experiment A · E02-v2</p>
+          <h2 class="slide-title">전체 매뉴얼에서는 Parent-Child 방식이 정답 근거를 가장 잘 찾았다</h2>
+        </div>
+        <div class="section-mark">09</div>
+      </header>
+      <div class="experiment-layout">
+        <div class="experiment-verdict">
+          <p class="result-label">진단용 초안 · 우선 후보</p>
+          <h3 class="result-name">Parent–Child<br>256 token</h3>
+          <p class="result-explainer">Child는 256 token·Overlap 32로 잘게 검색하고, 긴 Parent는 답변을 만들 때 필요한 맥락으로만 유지했다.</p>
+          <div class="result-deltas">
+            <div class="result-delta"><strong>+16.3%p</strong><span>상위 5개 정답 포함률</span></div>
+            <div class="result-delta"><strong>0건</strong><span>다른 제품 근거 노출</span></div>
+          </div>
+        </div>
+        <div class="metric-panel">
+          <div class="metric-context"><strong>3개 매뉴얼 · 144페이지</strong><span>Positive 43 · Top-K 5 · BGE-M3 고정</span></div>
+          <div class="metric-table" role="table" aria-label="청킹 방식별 검색 성능">
+            <div class="metric-row header" role="row"><span>청킹 방식 · token/overlap</span><span>1위 정답</span><span>상위 5개</span><span>순위 점수</span></div>
+            <div class="metric-row" role="row"><span class="model">Fixed 512 / 64</span><span>14.0%</span><span>62.8%</span><span>0.340</span></div>
+            <div class="metric-row" role="row"><span class="model">Section-aware 512 / 64</span><span>9.3%</span><span>72.1%</span><span>0.331</span></div>
+            <div class="metric-row winner" role="row"><span class="model">Parent-Child 256 / 32</span><span>27.9%</span><span>79.1%</span><span>0.492</span></div>
+          </div>
+          <p class="metric-callout"><strong>의미:</strong> 자동 재청킹이 필요할 때의 우선 후보이며, 현재 운영 Curated Child 구조를 즉시 교체한다는 결론은 아니다.</p>
+        </div>
+      </div>
+      <div class="status-line warn">
+        <strong>남은 문제</strong>
+        <span>근거 없음 질문은 세 방식 모두 5/7을 구분했다. 공통 실패 2건은 청킹보다 점수 기준·질문 범위 검증이 필요하다.</span>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>발표 포인트</h3>
+        <p>초기 E02-v1은 후보가 너무 적어 Top-5가 포화됐습니다. 최종 판단은 전체 144 Page와 제품별 42~76개 후보로 난도를 정상화한 E02-v2만 사용합니다.</p>
+        <h3>해석 경계</h3>
+        <p>결과는 <code>DRAFT_DIAGNOSTIC</code>이며 독립 Blind Test가 아닙니다. Local NumPy Exact Cosine 결과이므로 pgvector 지연·운영 성능으로 확대하지 않습니다.</p>
+        <h3>[Sources]</h3>
+        <p><code>C:\Users\Playdata\Downloads\AI실험보고서_v5.md</code> — E02, 특히 공통 조건·Primary 결과·최종 판단·한계.</p>
+      </aside>
+    </section>
+
+    <section class="slide experiment-slide" data-title="임베딩 실험" aria-label="10. 임베딩 모델 5종 GPU 비교 결과">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">Experiment B · E03</p>
+          <h2 class="slide-title">청킹을 고정하자 GTE가 BGE보다 검색 실패를 절반 이하로 줄였다</h2>
+        </div>
+        <div class="section-mark">10</div>
+      </header>
+      <div class="experiment-layout">
+        <div class="experiment-verdict">
+          <p class="result-label">진단용 초안 · 개발 단계 1위</p>
+          <h3 class="result-name">GTE<br>multilingual base</h3>
+          <p class="result-explainer">Parent-Child-256과 동일한 43개 질의를 고정하고 모델만 바꿨을 때, 다섯 모델 중 모든 주요 순위 지표가 가장 높았다.</p>
+          <div class="result-deltas">
+            <div class="result-delta"><strong>90.7%</strong><span>상위 5개 정답 포함 · +11.6%p</span></div>
+            <div class="result-delta"><strong>9 → 4</strong><span>Top-5 실패 Case</span></div>
+          </div>
+        </div>
+        <div class="metric-panel">
+          <div class="metric-context"><strong>Embedding 5종 비교</strong><span>Positive 43 · Parent-Child-256 · RTX 3090</span></div>
+          <div class="metric-table" role="table" aria-label="임베딩 모델별 검색 성능">
+            <div class="metric-row header" role="row"><span>모델</span><span>1위 정답</span><span>상위 5개</span><span>순위 점수</span></div>
+            <div class="metric-row winner" role="row"><span class="model">GTE multilingual base</span><span>53.5%</span><span>90.7%</span><span>0.677</span></div>
+            <div class="metric-row" role="row"><span class="model">Jina embeddings v3</span><span>37.2%</span><span>79.1%</span><span>0.536</span></div>
+            <div class="metric-row" role="row"><span class="model">BGE-M3 · baseline</span><span>27.9%</span><span>79.1%</span><span>0.492</span></div>
+            <div class="metric-row" role="row"><span class="model">Qwen3 Embedding 0.6B</span><span>2.3%</span><span>79.1%</span><span>0.249</span></div>
+            <div class="metric-row" role="row"><span class="model">Multilingual E5-base</span><span>37.2%</span><span>55.8%</span><span>0.437</span></div>
+          </div>
+          <p class="metric-callout"><strong>추가 관찰:</strong> Qwen3는 상위 5개 포함률은 79.1%였지만 1위 정답률은 2.3%였다. 후보 회수와 최상위 순위화는 다른 문제였다.</p>
+        </div>
+      </div>
+      <div class="status-line current">
+        <strong>선정 수준</strong>
+        <span>GTE는 개발 단계 우선 후보이다. 점수 기준·근거 없음 질문·독립 검증 세트를 거쳐야 운영 채택을 결정할 수 있다.</span>
+      </div>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>발표 포인트</h3>
+        <p>E03의 BGE 결과가 E02-v2와 정확히 일치해 Corpus·Gold·Ranking Contract가 유지됐습니다. 따라서 주요 차이는 Embedding 모델 변경으로 해석할 수 있습니다.</p>
+        <h3>해석 경계</h3>
+        <p>Threshold와 No-Evidence는 모델 간 비교하지 않았습니다. GPU 처리량은 Batch Size가 달라 절대 속도 순위로 일반화하지 않습니다. 보고서가 가리키는 Raw Artifact는 현재 작업공간에서 확인되지 않았습니다.</p>
+        <h3>[Sources]</h3>
+        <p><code>C:\Users\Playdata\Downloads\AI실험보고서_v5.md</code> — E03, 특히 Primary 결과·Baseline 재현·GPU Runtime·최종 판단·한계.</p>
+      </aside>
+    </section>
+
+    <section class="slide current-slide" data-title="현재 진행 중" aria-label="11. 현재 진행 중인 작업">
+      <header class="slide-head">
+        <div>
+          <p class="eyebrow">In Progress</p>
+          <h2 class="slide-title">개발 단계 우선 조합은 정했고, 운영 확정 전 독립 검증을 남겨두었다</h2>
+        </div>
+        <div class="section-mark">11</div>
+      </header>
+      <div class="current-list">
+        <article class="current-item">
+          <span class="num">01</span>
+          <div><h3>Parent-Child + GTE 독립 검증</h3><p>초안 결과를 독립 검증 세트·점수 기준·근거 없음 질문과 원시 결과 파일로 재현해 운영 채택 여부를 결정한다.</p></div>
+        </article>
+        <article class="current-item">
+          <span class="num">02</span>
+          <div><h3>Handoff v2 동일 Inquiry E2E</h3><p>AI 전송부터 Backend 저장·Replay·상담사/고객 Projection까지 같은 Correlation으로 확인한다.</p></div>
+        </article>
+        <article class="current-item">
+          <span class="num">03</span>
+          <div><h3>HITL 재개·소비 화면 검증</h3><p>Checkpoint·재처리와 Web·Mobile 승인 결과 소비를 독립 QA로 재현한다.</p></div>
+        </article>
+        <article class="current-item">
+          <span class="num">04</span>
+          <div><h3>AWS 기능·안전·장애 QA</h3><p>권한·데이터 정합성, Safety 우선순위, Timeout·409·Replay와 성능을 함께 기록한다.</p></div>
+        </article>
+      </div>
+      <p class="current-close">다음 업데이트는 “개발 우선 조합의 독립 재현”과 “고객→AI→상담사→고객 전체 흐름 증거”로 닫는다.</p>
+      <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
+      <aside class="notes">
+        <h3>근거</h3>
+        <ul>
+          <li>데일리 스크럼 124, 141, 171—176, 184, 188—203, 214—219행</li>
+          <li>WBS 7주차 T-047~T-051의 잔여 검증 Gate</li>
+        </ul>
+        <h3>완료 판정</h3>
+        <p>코드·DB·배포·표적 테스트를 각각 기록하고, 실제 Provider/pgvector/Backend/Web/Mobile 전체 E2E와 섞지 않습니다.</p>
+        <h3>[Sources]</h3>
+        <p><code>C:\Users\Playdata\Downloads\AI실험보고서_v5.md</code> — E02·E03 결과와 한계.</p>
+      </aside>
+    </section>
+  </main>
+
+  <div class="controls" aria-label="발표 제어">
+    <button id="prev" type="button" aria-label="이전 슬라이드">←</button>
+    <span class="counter" id="counter">1 / 11</span>
+    <button id="next" type="button" aria-label="다음 슬라이드">→</button>
+    <button id="notesToggle" type="button" aria-label="발표자 메모 열기">N</button>
+    <button id="fullscreen" type="button" aria-label="전체 화면">F</button>
+    <button id="helpToggle" type="button" aria-label="단축키 도움말">?</button>
+  </div>
+  <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+  <aside class="notes-panel" id="notesPanel" aria-label="발표자 메모"></aside>
+  <div class="help" id="help" role="dialog" aria-modal="true" aria-label="단축키 도움말">
+    <div class="help-box">
+      <h2>발표 단축키</h2>
+      <p><kbd>←</kbd><kbd>→</kbd> 이전·다음 슬라이드</p>
+      <p><kbd>Space</kbd> 다음 슬라이드</p>
+      <p><kbd>Home</kbd><kbd>End</kbd> 처음·마지막</p>
+      <p><kbd>N</kbd> 발표자 메모</p>
+      <p><kbd>F</kbd> 전체 화면</p>
+      <p><kbd>?</kbd><kbd>Esc</kbd> 도움말 열기·닫기</p>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const counter = document.getElementById('counter');
+      const progressBar = document.getElementById('progressBar');
+      const notesPanel = document.getElementById('notesPanel');
+      const help = document.getElementById('help');
+      let index = 0;
+
+      function fitSlides() {
+        const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+        document.documentElement.style.setProperty('--slide-scale', String(scale));
+      }
+
+      function indexFromHash() {
+        const match = window.location.hash.match(/^#slide-(\d+)$/);
+        if (!match) return 0;
+        return Math.min(slides.length - 1, Math.max(0, Number(match[1]) - 1));
+      }
+
+      function render(nextIndex, updateHash = true) {
+        index = Math.min(slides.length - 1, Math.max(0, nextIndex));
+        slides.forEach((slide, slideIndex) => {
+          slide.classList.toggle('active', slideIndex === index);
+          slide.setAttribute('aria-hidden', slideIndex === index ? 'false' : 'true');
+        });
+        counter.textContent = `${index + 1} / ${slides.length}`;
+        progressBar.style.width = `${((index + 1) / slides.length) * 100}%`;
+        document.title = `${slides[index].dataset.title} | WaterBridge 7주차`;
+        document.querySelectorAll('.slide-no').forEach((el, i) => {
+          el.textContent = String(i + 1).padStart(2, '0');
+        });
+        if (notesPanel.classList.contains('open')) updateNotes();
+        if (updateHash) history.replaceState(null, '', `#slide-${index + 1}`);
+      }
+
+      function updateNotes() {
+        const source = slides[index].querySelector('.notes');
+        notesPanel.innerHTML = source ? source.innerHTML : '<p>이 슬라이드에는 메모가 없습니다.</p>';
+      }
+
+      function toggleNotes() {
+        const willOpen = !notesPanel.classList.contains('open');
+        notesPanel.classList.toggle('open', willOpen);
+        if (willOpen) updateNotes();
+      }
+
+      async function toggleFullscreen() {
+        try {
+          if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+          else await document.exitFullscreen();
+        } catch (_) {
+          /* Browser may block fullscreen when not initiated by a user gesture. */
+        }
+      }
+
+      document.getElementById('prev').addEventListener('click', () => render(index - 1));
+      document.getElementById('next').addEventListener('click', () => render(index + 1));
+      document.getElementById('notesToggle').addEventListener('click', toggleNotes);
+      document.getElementById('fullscreen').addEventListener('click', toggleFullscreen);
+      document.getElementById('helpToggle').addEventListener('click', () => help.classList.toggle('open'));
+      help.addEventListener('click', (event) => {
+        if (event.target === help) help.classList.remove('open');
+      });
+
+      window.addEventListener('resize', fitSlides);
+      window.addEventListener('hashchange', () => render(indexFromHash(), false));
+      window.addEventListener('keydown', (event) => {
+        const key = event.key;
+        if (key === 'ArrowRight' || key === 'PageDown' || key === ' ') {
+          event.preventDefault();
+          render(index + 1);
+        } else if (key === 'ArrowLeft' || key === 'PageUp') {
+          event.preventDefault();
+          render(index - 1);
+        } else if (key === 'Home') {
+          event.preventDefault();
+          render(0);
+        } else if (key === 'End') {
+          event.preventDefault();
+          render(slides.length - 1);
+        } else if (key.toLowerCase() === 'n') {
+          toggleNotes();
+        } else if (key.toLowerCase() === 'f') {
+          toggleFullscreen();
+        } else if (key === '?') {
+          help.classList.toggle('open');
+        } else if (key === 'Escape') {
+          help.classList.remove('open');
+          notesPanel.classList.remove('open');
+        }
+      });
+
+      fitSlides();
+      render(indexFromHash(), false);
+    })();
+  </script>
+</body>
+</html>
