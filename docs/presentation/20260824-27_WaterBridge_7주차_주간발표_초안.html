@@ -1503,6 +1503,23 @@
       font-size: 0.92em;
     }
 
+    .notes-panel .speaker-script {
+      margin: 0 0 24px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--teal);
+      border-radius: 0 10px 10px 0;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .notes-panel .speaker-script p {
+      margin: 0 0 10px;
+      color: #eef7ff;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .notes-panel .speaker-script p:last-child { margin-bottom: 0; }
+
     .help {
       position: fixed;
       z-index: 50;
@@ -1594,6 +1611,11 @@
         </div>
       </div>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 30초</h3>
+        <div class="speaker-script">
+          <p>안녕하세요. WaterBridge 7주차 주간 발표를 시작하겠습니다. WaterBridge는 고객 문의에 AI가 무조건 답하는 서비스가 아니라, 공식 근거가 충분하면 안전하게 안내하고 위험하거나 근거가 부족하면 상담사에게 연결하는 서비스입니다.</p>
+          <p>이번 주에는 AI가 판단한 결과가 고객과 상담사에게 실제로 전달되는 흐름을 중심으로 보완했습니다.</p>
+        </div>
         <h3>발표 메모</h3>
         <p>WaterBridge가 고객 문의를 어떻게 분석하고, 언제 안내하며, 언제 상담사에게 넘기는지부터 설명합니다.</p>
         <h3>근거</h3>
@@ -1641,6 +1663,11 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 25초</h3>
+        <div class="speaker-script">
+          <p>발표는 다섯 부분으로 진행하겠습니다. 먼저 WaterBridge가 해결하는 문제를 설명하고, 이번 주 핵심 변경점을 짚겠습니다.</p>
+          <p>이후 기존 3-Agent와 새 맥락정리 Agent의 관계, 검색과 서비스 연결, 마지막으로 청킹·임베딩 실험 결과와 남은 검증 순서까지 말씀드리겠습니다.</p>
+        </div>
         <h3>발표 메모</h3>
         <p>프로젝트 목적을 먼저 설명한 뒤, 이번 주에 3-Agent 분석과 상담 전달 흐름이 어떻게 바뀌었는지 보여줍니다.</p>
       </aside>
@@ -1682,6 +1709,11 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 45초</h3>
+        <div class="speaker-script">
+          <p>고객이 제품과 증상을 입력하면 AI는 먼저 증상을 이해하고, 해당 제품의 공식 문서에서 관련 근거를 찾습니다. 그다음 이 내용을 바로 안내해도 되는지, 추가 질문이 필요한지, 사람에게 넘겨야 하는지를 결정합니다.</p>
+          <p>가장 중요한 원칙은 근거가 부족하거나 위험 신호가 있을 때 AI가 임의의 자가조치를 만들지 않는 것입니다. 즉 WaterBridge의 핵심은 답변을 많이 만드는 것이 아니라, 안전한 안내와 상담을 올바르게 연결하는 데 있습니다.</p>
+        </div>
         <h3>발표 메모</h3>
         <p>기술 용어보다 먼저 “고객 문의를 안전한 안내 또는 상담으로 연결하는 서비스”라고 설명합니다.</p>
         <h3>근거</h3>
@@ -1715,6 +1747,11 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 45초</h3>
+        <div class="speaker-script">
+          <p>이번 주 변경은 네 가지 연결 고리로 정리할 수 있습니다. 첫째, 위험도에 따라 바로 안내·사람 검토·상담 연결을 분리했습니다. 둘째, 상담사가 앞선 고객 답변과 행동을 빠르게 이해할 수 있도록 상담 맥락을 정리했습니다.</p>
+          <p>셋째, 이 결과를 Mobile과 Web 화면에 맞췄고, 넷째, 배포와 읽기 전용 데이터 접근 같은 운영 Gate를 보강했습니다. 기능 개수보다 잘못 안내하지 않고 필요한 경우 정확히 사람에게 넘기는 흐름에 집중했습니다.</p>
+        </div>
         <h3>대표 근거 커밋</h3>
         <ul>
           <li><code>4b27a9e</code>, <code>c1ae796</code> Safety Routing·HumanReview</li>
@@ -1777,6 +1814,11 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 60초</h3>
+        <div class="speaker-script">
+          <p>기존 분석 흐름은 증상 이해, 공식 근거 검색, 안내 판단의 3-Agent 구조입니다. 이 세 Agent는 각각 따로 배포되어 병렬로 움직이는 것이 아니라, 한 Process 안에서 필요한 순서대로 실행됩니다.</p>
+          <p>이번에 추가한 맥락정리 Agent는 상시 실행되는 네 번째 Agent가 아닙니다. 일반 안내, 추가 질문, 첫 사람 검토 단계에서는 호출하지 않고, 실제 상담 이관이 결정된 경우에만 고객의 문진 답변·수행 행동·승인된 근거를 상담용 요약으로 정리합니다. 그래서 상담사는 전체 대화를 처음부터 다시 읽지 않고도 바로 이어서 대응할 수 있습니다.</p>
+        </div>
         <h3>근거</h3>
         <ul>
           <li><code>multi_agent_pipeline.py</code>: Symptom → Evidence → Care의 조건부 순차 호출</li>
@@ -1822,6 +1864,11 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 50초</h3>
+        <div class="speaker-script">
+          <p>AI 결과는 위험도에 따라 세 경로로 나뉩니다. 공식 근거가 충분한 일반 문의는 고객에게 바로 안내합니다. 주의가 필요한 답변은 고객에게 보내기 전에 담당자가 승인·수정·거절할 수 있도록 사람 검토를 거칩니다.</p>
+          <p>위험 신호가 있거나 근거가 부족하면 자동 안내를 만들지 않고 상담사에게 연결하며, 이때 맥락정리 Agent가 상담용 요약을 만듭니다. 요약 생성이 실패하더라도 기존 상담 연결은 그대로 유지하고 자동 안내로 되돌아가지 않습니다.</p>
+        </div>
         <h3>근거 커밋</h3>
         <ul>
           <li><code>4b27a9e</code> 위험도별 AI 응답 Routing</li>
@@ -1875,6 +1922,11 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 50초</h3>
+        <div class="speaker-script">
+          <p>안전한 분기만큼 중요한 것이 검색 근거의 품질입니다. 답변에는 매뉴얼 전체를 그대로 사용하지 않고, 해당 제품과 증상에 직접 관련된 검증 문장만 사용하도록 범위를 좁혔습니다.</p>
+          <p>제품 매뉴얼로 답할 수 없는 질문은 검색 전에 차단하고, 고객의 다양한 표현은 검색어만 보완하되 공식 문서 자체는 바꾸지 않습니다. 또한 같은 정답지와 채점 기준으로 실험을 비교하고, Local 진단과 실제 pgvector·서비스 E2E 결과는 분리해 보고합니다. 이 기준으로 수행한 실험 결과는 9페이지와 10페이지에서 보여드리겠습니다.</p>
+        </div>
         <h3>근거 커밋</h3>
         <ul>
           <li><code>e07d6ef</code> Gold v2 / Full Corpus v3 검색 평가 자산</li>
@@ -1928,6 +1980,11 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 45초</h3>
+        <div class="speaker-script">
+          <p>AI 내부 흐름만 바꾼 것이 아니라 사용자 접점과 운영 절차도 함께 맞췄습니다. Mobile에서는 개발용·AWS용 설정과 인증 UX를 정리하고 상담 결과를 고객 화면에 연결했습니다.</p>
+          <p>상담사 Web에서는 문의 확인과 상담 처리를 이어서 볼 수 있게 했고, 배포는 정식 Version Tag와 승인된 읽기 전용 데이터만 사용하도록 Gate를 보강했습니다. 다만 개별 연결 확인과 고객에서 상담사, 다시 고객으로 돌아오는 전체 E2E 검증은 구분해야 하며, 후자는 아직 진행 중입니다.</p>
+        </div>
         <h3>근거 커밋</h3>
         <ul>
           <li>Web: <code>873cb775</code>, <code>2531806</code></li>
@@ -1976,6 +2033,12 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 70초</h3>
+        <div class="speaker-script">
+          <p>청킹은 긴 매뉴얼을 검색 가능한 작은 단위로 나누는 방법입니다. 초기 실험은 검색 후보가 너무 적어 상위 5개만 봐도 대부분의 문서를 확인하는 문제가 있었습니다. 그래서 최종 실험은 세 제품의 전체 매뉴얼 144페이지로 다시 수행했습니다.</p>
+          <p>같은 BGE-M3와 같은 평가 질문을 고정한 결과, 256 token Child를 검색하고 Parent는 답변 맥락으로만 사용하는 방식이 가장 좋았습니다. 1위 정답률은 27.9%, 상위 5개 정답 포함률은 79.1%였고, Fixed512보다 16.3%p 높았습니다. 다른 제품 근거가 섞인 경우도 없었습니다.</p>
+          <p>다만 근거가 없어야 하는 질문은 세 방식 모두 7건 중 5건만 구분했습니다. 남은 두 건은 청킹보다 점수 기준과 질문 범위 문제로 보고 있으며, 이번 결과는 운영 교체 확정이 아니라 자동 재청킹이 필요할 때의 개발 우선 후보입니다.</p>
+        </div>
         <h3>발표 포인트</h3>
         <p>초기 E02-v1은 후보가 너무 적어 Top-5가 포화됐습니다. 최종 판단은 전체 144 Page와 제품별 42~76개 후보로 난도를 정상화한 E02-v2만 사용합니다.</p>
         <h3>해석 경계</h3>
@@ -2022,6 +2085,12 @@
       </div>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 70초</h3>
+        <div class="speaker-script">
+          <p>다음으로 청킹은 Parent-Child-256으로 고정하고 임베딩 모델만 다섯 종류로 바꿔 비교했습니다. 동일한 43개 Positive 질문에서 GTE multilingual base가 모든 주요 순위 지표에서 가장 높았습니다.</p>
+          <p>상위 5개 정답 포함률은 90.7%로 기존 BGE-M3보다 11.6%p 높았고, 상위 5개 안에서 정답을 찾지 못한 경우도 9건에서 4건으로 줄었습니다. 반면 Qwen3는 상위 5개 포함률은 79.1%였지만 1위 정답률이 2.3%였습니다. 관련 후보를 가져오는 능력과 올바른 근거를 가장 위에 놓는 능력이 다를 수 있다는 의미입니다.</p>
+          <p>따라서 현재 개발 단계 우선 후보는 GTE입니다. 다만 모델별 점수 기준과 근거 없음 질문, 독립 검증 세트가 아직 남아 있으므로 운영 최종 모델로 확정한 결과는 아닙니다.</p>
+        </div>
         <h3>발표 포인트</h3>
         <p>E03의 BGE 결과가 E02-v2와 정확히 일치해 Corpus·Gold·Ranking Contract가 유지됐습니다. 따라서 주요 차이는 Embedding 모델 변경으로 해석할 수 있습니다.</p>
         <h3>해석 경계</h3>
@@ -2060,6 +2129,11 @@
       <p class="current-close">다음 업데이트는 “개발 우선 조합의 독립 재현”과 “고객→AI→상담사→고객 전체 흐름 증거”로 닫는다.</p>
       <footer class="slide-footer"><span class="brand">WaterBridge</span><span class="slide-no"></span></footer>
       <aside class="notes">
+        <h3>예상 발표 스크립트 · 약 50초</h3>
+        <div class="speaker-script">
+          <p>정리하면 개발 단계에서는 Parent-Child-256과 GTE 조합을 우선 후보로 정했습니다. 이제 이 결과를 독립 검증 세트와 원시 결과 파일로 재현하고, 점수 기준과 근거 없음 질문까지 확인해야 운영 채택 여부를 결정할 수 있습니다.</p>
+          <p>동시에 Handoff v2를 같은 문의 기준으로 저장·Replay하고, HITL 결과가 Web과 Mobile에서 소비되는지 확인하겠습니다. 마지막으로 AWS 환경에서 권한·안전·Timeout·Replay까지 검증해 고객에서 AI, 상담사, 다시 고객으로 이어지는 전체 흐름을 증거로 닫겠습니다.</p>
+        </div>
         <h3>근거</h3>
         <ul>
           <li>데일리 스크럼 124, 141, 171—176, 184, 188—203, 214—219행</li>
