@@ -127,6 +127,9 @@ describe("Remote 상담 처리 Panel", () => {
     );
     await user.click(screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }));
 
+    expect(screen.queryByLabelText("고객 안내 내용")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("추가 확인사항")).not.toBeInTheDocument();
+    expect(screen.queryByText("추가 확인사항 입력")).not.toBeInTheDocument();
     expect(
       screen.getByTestId("consultation-field-consultationNote"),
     ).toHaveValue("고객 상태 확인");
@@ -154,6 +157,8 @@ describe("Remote 상담 처리 Panel", () => {
         action: expect.objectContaining({ code: "CONFIRM_CONSULTATION_SUMMARY" }),
         values: expect.objectContaining({
           consultationNote: "고객 상태 확인",
+          customerGuidance: "고객 상태 확인",
+          additionalCheck: "고객 상태 확인",
           summaryRevision: "필터 체결 안내 완료",
           summaryConfirmed: true,
         }),
@@ -221,7 +226,18 @@ describe("Remote 상담 처리 Panel", () => {
       />,
     );
 
-    expect(screen.getByLabelText("상담 기록")).toHaveValue("저장된 상담 기록");
+    expect(screen.getByLabelText("상담 기록")).toHaveValue(
+      [
+        "상담 기록",
+        "저장된 상담 기록",
+        "",
+        "고객 안내 내용",
+        "저장된 고객 안내",
+        "",
+        "추가 확인사항",
+        "저장된 추가 확인",
+      ].join("\n"),
+    );
     expect(screen.getByLabelText("상담 요약 수정본")).toHaveValue(
       "확정 상담 요약",
     );
@@ -231,6 +247,42 @@ describe("Remote 상담 처리 Panel", () => {
     expect(screen.getByLabelText("방문 필요 여부")).toHaveValue("NOT_REQUIRED");
     expect(screen.getByLabelText("제품 사용 상태")).toHaveValue("NORMAL");
     expect(screen.queryByLabelText("상담 결과")).not.toBeInTheDocument();
+  });
+
+  it("기존 세 필드의 서로 다른 내용만 단일 상담 기록에 중복 없이 합친다", () => {
+    const inquiry = createDetail(6);
+    inquiry.consultation = {
+      consultationId: "30000000-0000-4000-8000-000000000301",
+      resultCode: "PENDING",
+      summary: {
+        aiDraftSummary: null,
+        editedSummary: null,
+        confirmedSummary: null,
+        confirmedAt: null,
+      },
+      consultationNote: "필터 상태 확인",
+      customerGuidance: "필터 상태 확인",
+      additionalCheck: "급수 밸브 재확인",
+      usageGuidanceStatus: "PENDING_CONSULTATION",
+    };
+
+    render(
+      <RemoteConsultationActionPanel
+        inquiry={inquiry}
+        onOpenVisit={vi.fn()}
+        onRefresh={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("상담 기록")).toHaveValue(
+      [
+        "상담 기록",
+        "필터 상태 확인",
+        "",
+        "추가 확인사항",
+        "급수 밸브 재확인",
+      ].join("\n"),
+    );
   });
 
   it("저장되지 않는 상담 결과 텍스트 없이 result_code 선택으로 완료한다", async () => {
@@ -265,10 +317,6 @@ describe("Remote 상담 처리 Panel", () => {
 
     expect(screen.queryByLabelText("상담 결과")).not.toBeInTheDocument();
     await user.type(screen.getByLabelText("상담 기록"), "고객 상태 확인");
-    await user.type(
-      screen.getByLabelText("고객 안내 내용"),
-      "전체 사용 중지를 안내함",
-    );
     await user.selectOptions(screen.getByLabelText("방문 필요 여부"), "NOT_REQUIRED");
     await user.click(
       screen.getByRole("checkbox", { name: "상담 요약 검토·확정" }),
@@ -279,6 +327,9 @@ describe("Remote 상담 처리 Panel", () => {
       expect.objectContaining({
         action: expect.objectContaining({ code: "CONSULTATION_COMPLETED" }),
         values: expect.objectContaining({
+          consultationNote: "고객 상태 확인",
+          customerGuidance: "고객 상태 확인",
+          additionalCheck: "고객 상태 확인",
           consultationResult: "",
           visitRequired: "NOT_REQUIRED",
         }),
@@ -328,6 +379,36 @@ describe("Remote 상담 처리 Panel", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(
       "확인 번호: corr-action-conflict",
     );
+  });
+
+  it("확인 팝업 처리를 저장 Hook에 위임해 Component에서 중복 실행하지 않는다", async () => {
+    const user = userEvent.setup();
+    const inquiry = createDetail();
+    inquiry.workflow.allowedActions = [
+      {
+        code: "UPDATE_CONSULTATION_SUMMARY",
+        label: "상담 요약 수정",
+        operationId: "updateConsultationSummary",
+        style: "PRIMARY",
+        requiresConfirmation: true,
+        confirmationMessage: "상담 내용을 저장하시겠습니까?",
+      },
+    ];
+    const confirmPrompt = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    render(
+      <RemoteConsultationActionPanel
+        inquiry={inquiry}
+        onOpenVisit={vi.fn()}
+        onRefresh={vi.fn()}
+      />,
+    );
+
+    await user.type(screen.getByLabelText("상담 기록"), "필터 상태 확인");
+    await user.click(screen.getByRole("button", { name: "상담 요약 수정" }));
+
+    expect(confirmPrompt).not.toHaveBeenCalled();
+    expect(hookMocks.execute).toHaveBeenCalledTimes(1);
   });
 
   it("상담 처리용 내부 상태와 버전은 화면 문구로 노출하지 않는다", () => {

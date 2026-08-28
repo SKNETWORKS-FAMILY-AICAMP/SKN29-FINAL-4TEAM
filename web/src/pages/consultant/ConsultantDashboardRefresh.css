@@ -3888,7 +3888,7 @@ html body
     #root
     .simple-consultant-app.consultant-queue-app
     .consultant-queue-main:has(
-      > #consultant-queue-sidebar:is(:hover, :focus-within)
+      > #consultant-queue-sidebar.is-user-expanded
     ) {
     grid-template-columns:
       var(--consultant-refresh-sidebar-expanded)
@@ -3962,7 +3962,7 @@ html body
   html body
     #root
     .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar:is(:hover, :focus-within)
+    #consultant-queue-sidebar.is-user-expanded
     .consultant-sidebar-brand {
     opacity: 1;
     pointer-events: auto;
@@ -4083,7 +4083,7 @@ html body
   html body
     #root
     .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar:is(:hover, :focus-within)
+    #consultant-queue-sidebar.is-user-expanded
     .consultant-work-tab
     strong {
     max-width: 144px;
@@ -4109,7 +4109,7 @@ html body
   html body
     #root
     .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar:is(:hover, :focus-within)
+    #consultant-queue-sidebar.is-user-expanded
     .consultant-work-tab
     > b {
     border: 0 !important;
@@ -4182,7 +4182,7 @@ html body
   html body
     #root
     .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar:is(:hover, :focus-within)
+    #consultant-queue-sidebar.is-user-expanded
     .consultant-work-tab:is(.is-active, [aria-selected="true"])::before {
     width: calc(var(--consultant-refresh-sidebar-expanded) - 24px);
   }
@@ -5001,7 +5001,7 @@ html body
 html body
   #root
   .simple-consultant-app.consultant-queue-app
-  #consultant-queue-sidebar:is(:hover, :focus-within)
+  #consultant-queue-sidebar.is-user-expanded
   .consultant-work-tab
   strong {
   font-size: 17px !important;
@@ -5011,7 +5011,7 @@ html body
   html body
     #root
     .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar:is(:hover, :focus-within)
+    #consultant-queue-sidebar.is-user-expanded
     .consultant-work-tab
     strong {
     font-size: 16px !important;
@@ -5216,14 +5216,14 @@ html body
   }
 }
 
-/* Keep hover expansion stable while navigating between consultant pages. */
+/* Keep user-controlled expansion stable while navigating between consultant pages. */
 
 @media (min-width: 901px) {
   html body
     #root
     .simple-consultant-app.consultant-queue-app
     .consultant-queue-main:has(
-      > #consultant-queue-sidebar.is-pointer-expanded
+      > #consultant-queue-sidebar.is-user-expanded
     ) {
     grid-template-columns:
       var(--consultant-refresh-sidebar-expanded)
@@ -5255,7 +5255,7 @@ html body
     #consultant-queue-sidebar:is(
       :hover,
       :focus-within,
-      .is-pointer-expanded
+      .is-user-expanded
     ) {
     box-shadow: 8px 0 22px rgb(0 0 0 / 10%) !important;
   }
@@ -5271,7 +5271,7 @@ html body
   html body
     #root
     .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar.is-pointer-expanded
+    #consultant-queue-sidebar.is-user-expanded
     .consultant-work-tab
     strong {
     max-width: 144px;
@@ -5282,7 +5282,7 @@ html body
   html body
     #root
     .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar.is-pointer-expanded
+    #consultant-queue-sidebar.is-user-expanded
     .consultant-work-tab
     > b {
     opacity: 1;
@@ -5291,9 +5291,75 @@ html body
   html body
     #root
     .simple-consultant-app.consultant-queue-app
-    #consultant-queue-sidebar.is-pointer-expanded
+    #consultant-queue-sidebar.is-user-expanded
     .consultant-work-tab:is(.is-active, [aria-selected="true"])::before {
     width: calc(var(--consultant-refresh-sidebar-expanded) - 24px);
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-sidebar-toggle {
+    position: absolute !important;
+    z-index: 3;
+    top: 16px;
+    right: 12px;
+    display: grid !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    padding: 0 !important;
+    place-items: center;
+    border: 0 !important;
+    border-radius: 12px !important;
+    outline: 0;
+    background: rgb(255 255 255 / 8%) !important;
+    color: #fff !important;
+    cursor: pointer;
+    box-shadow: none !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-sidebar-toggle:hover {
+    background: rgb(255 255 255 / 15%) !important;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-sidebar-toggle:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 88%) !important;
+    outline-offset: -4px;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-sidebar-toggle
+    svg {
+    width: 23px;
+    height: 23px;
+    fill: none;
+    stroke: currentcolor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+}
+
+@media (max-width: 900px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar
+    .consultant-sidebar-toggle {
+    display: none !important;
   }
 }
 

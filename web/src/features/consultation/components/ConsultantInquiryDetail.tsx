@@ -10,6 +10,7 @@ import {
   PRIORITY_LABELS,
   STATUS_LABELS,
 } from "../model/consultantWorkspaceModel";
+import { formatProductModelAndName } from "../model/productDisplayName";
 import type {
   CounselorInquiry,
   DetailTab,
@@ -423,7 +424,7 @@ function InquiryDashboardSection({
             </div>
             <div>
               <dt>제품</dt>
-              <dd>{inquiry.productCode} · {inquiry.manualModel}</dd>
+              <dd>{formatProductModelAndName(inquiry.manualModel)}</dd>
             </div>
             <div>
               <dt>관리 유형</dt>
@@ -524,7 +525,7 @@ export default function ConsultantInquiryDetail({
             <div>
               <strong>{inquiry.customerName}</strong>
               <small>
-                {inquiry.customerId} · {inquiry.productCode}
+                {inquiry.customerId} · {formatProductModelAndName(inquiry.manualModel)}
               </small>
             </div>
           </div>

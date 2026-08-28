@@ -115,8 +115,9 @@ export function useSaveConsultation(
     }
     if (
       action.requiresConfirmation &&
-      action.confirmationMessage &&
-      !window.confirm(action.confirmationMessage)
+      !window.confirm(
+        action.confirmationMessage ?? `${action.label} 작업을 진행하시겠습니까?`,
+      )
     ) {
       return { ok: false as const, cancelled: true as const };
     }

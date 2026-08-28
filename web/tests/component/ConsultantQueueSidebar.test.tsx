@@ -36,7 +36,7 @@ describe("ConsultantQueueSidebar", () => {
       "전화 문의 등록",
       "공지사항",
     ]);
-    expect(container.querySelectorAll("svg")).toHaveLength(7);
+    expect(menu.querySelectorAll("svg")).toHaveLength(7);
     expect(container.querySelectorAll(".consultant-work-tab__icon")).toHaveLength(
       7,
     );
@@ -75,5 +75,38 @@ describe("ConsultantQueueSidebar", () => {
       "href",
       ROUTE_PATHS.consultantNotices,
     );
+  });
+
+  it("hover가 아닌 명시적 버튼으로 사이드바를 열고 닫는다", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <ConsultantQueueSidebar
+          activeBucket="ALL"
+          bucketCounts={BUCKET_COUNTS}
+        />
+      </MemoryRouter>,
+    );
+
+    const sidebar = screen.getByLabelText("상담사 사이드바");
+    await user.hover(sidebar);
+    expect(sidebar).not.toHaveClass("is-user-expanded");
+
+    const expandButton = screen.getByRole("button", {
+      name: "사이드바 펼치기",
+    });
+    expect(expandButton).toHaveAttribute("aria-expanded", "false");
+    await user.click(expandButton);
+
+    const collapseButton = screen.getByRole("button", {
+      name: "사이드바 축소",
+    });
+    expect(sidebar).toHaveClass("is-user-expanded");
+    expect(collapseButton).toHaveAttribute("aria-expanded", "true");
+
+    await user.keyboard("{Escape}");
+    expect(sidebar).not.toHaveClass("is-user-expanded");
+    expect(screen.getByRole("button", { name: "사이드바 펼치기" })).toHaveFocus();
   });
 });

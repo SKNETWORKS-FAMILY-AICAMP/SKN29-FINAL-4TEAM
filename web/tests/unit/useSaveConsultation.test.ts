@@ -237,7 +237,7 @@ describe("useSaveConsultation", () => {
       visitRequired: "NOT_REQUIRED",
       usageStatus: "NORMAL",
     };
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirmPrompt = vi.spyOn(window, "confirm").mockReturnValue(true);
     const { result } = renderHook(() =>
       useSaveConsultation(inquiry, {
         dataSource: "REMOTE",
@@ -262,6 +262,7 @@ describe("useSaveConsultation", () => {
     await act(async () => {
       await result.current.execute({ action: confirmAction, values, scenario: "SUCCESS" });
     });
+    expect(confirmPrompt).toHaveBeenCalledTimes(1);
     const completeAction = result.current.allowedActions.find(
       (action) => action.code === "CONSULTATION_COMPLETED",
     );
@@ -269,6 +270,7 @@ describe("useSaveConsultation", () => {
     await act(async () => {
       await result.current.execute({ action: completeAction, values, scenario: "SUCCESS" });
     });
+    expect(confirmPrompt).toHaveBeenCalledTimes(2);
 
     expect(start).toHaveBeenCalledWith(
       inquiry.inquiryId,

@@ -1,0 +1,219 @@
+.remote-inquiry-detail__history-launcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px;
+  border: 1px solid #d2d8e2;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.remote-inquiry-detail__history-launcher h2,
+.remote-inquiry-detail__history-launcher p {
+  margin: 0;
+}
+
+.remote-inquiry-detail__history-launcher h2 {
+  color: #202a3a;
+  font-size: 15px;
+}
+
+.remote-inquiry-detail__history-launcher p {
+  margin-top: 5px;
+  color: #657084;
+  font-size: 12px;
+}
+
+.remote-inquiry-detail__history-launcher button {
+  flex: 0 0 auto;
+}
+
+.consultation-history-modal {
+  position: fixed;
+  z-index: 1600;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.consultation-history-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: rgb(20 30 45 / 56%);
+  cursor: default;
+}
+
+.consultation-history-modal__dialog {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(760px, 100%);
+  max-height: min(780px, calc(100dvh - 48px));
+  overflow: hidden;
+  border: 1px solid #cbd3df;
+  border-radius: 14px;
+  background: #f7f9fc;
+  box-shadow: 0 24px 70px rgb(20 30 45 / 28%);
+}
+
+.consultation-history-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #d6dce5;
+  background: #fff;
+}
+
+.consultation-history-modal__head small {
+  color: #667085;
+  font-size: 11px;
+}
+
+.consultation-history-modal__head h2 {
+  margin: 3px 0 0;
+  color: #1f2937;
+  font-size: 20px;
+}
+
+.consultation-history-modal__close {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #cbd3df;
+  border-radius: 8px;
+  background: #fff;
+  color: #27364c;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.consultation-history-modal__body {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px 22px;
+  overflow-y: auto;
+}
+
+.consultation-history-modal__section {
+  padding: 16px;
+  border: 1px solid #d7dde7;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.consultation-history-modal__section h3 {
+  margin: 0 0 12px;
+  color: #25334a;
+  font-size: 14px;
+}
+
+.consultation-history-modal__content-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.consultation-history-modal__content-list > div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.3fr) minmax(0, 1fr);
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e6eaf0;
+}
+
+.consultation-history-modal__content-list > div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.consultation-history-modal__content-list dt {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.consultation-history-modal__content-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #202938;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.consultation-history-modal__empty {
+  margin: 0;
+  color: #697386;
+  font-size: 13px;
+}
+
+.consultation-history-modal .remote-inquiry-detail__history-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consultation-history-modal .remote-inquiry-detail__history-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 12px;
+  border: 1px solid #e0e5ec;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #2b3545;
+  font-size: 12px;
+}
+
+.consultation-history-modal .remote-inquiry-detail__history-list small {
+  flex: 0 0 auto;
+  color: #697386;
+  font-size: 11px;
+}
+
+.v6-form-field__hint {
+  color: #687386;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .remote-inquiry-detail__history-launcher {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .consultation-history-modal {
+    padding: 12px;
+  }
+
+  .consultation-history-modal__dialog {
+    max-height: calc(100dvh - 24px);
+  }
+
+  .consultation-history-modal__content-list > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .consultation-history-modal .remote-inquiry-detail__history-list li {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}

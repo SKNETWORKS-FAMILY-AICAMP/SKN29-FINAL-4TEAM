@@ -1,8 +1,8 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
-  type PointerEvent as ReactPointerEvent,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -19,7 +19,7 @@ const WORK_BUCKETS: readonly ConsultantInquiryBucket[] = [
   "COMPLETED",
 ];
 
-let isSidebarPointerExpanded = false;
+let isSidebarExpanded = false;
 
 function WorkBucketIcon({ bucket }: { bucket: ConsultantInquiryBucket }) {
   if (bucket === "ALL") {
@@ -139,71 +139,30 @@ export default function ConsultantQueueSidebar({
 }: ConsultantQueueSidebarProps) {
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLElement>(null);
-  const [isPointerExpanded, setIsPointerExpanded] = useState(
-    () => isSidebarPointerExpanded,
-  );
+  const [isExpanded, setIsExpanded] = useState(() => isSidebarExpanded);
 
-  const expandForPointer = () => {
-    isSidebarPointerExpanded = true;
-    setIsPointerExpanded(true);
-  };
-
-  const collapseForPointer = (event: ReactPointerEvent<HTMLElement>) => {
-    isSidebarPointerExpanded = false;
-    setIsPointerExpanded(false);
-
-    const focusedElement = document.activeElement;
-    if (
-      focusedElement instanceof HTMLElement &&
-      event.currentTarget.contains(focusedElement) &&
-      !focusedElement.matches(":focus-visible")
-    ) {
-      focusedElement.blur();
-    }
-  };
+  const updateExpandedState = useCallback((expanded: boolean) => {
+    isSidebarExpanded = expanded;
+    setIsExpanded(expanded);
+  }, []);
 
   useEffect(() => {
-    if (!isPointerExpanded) {
-      return;
-    }
+    if (!isExpanded) return;
 
-    const collapseWhenPointerMovesOutside = (event: PointerEvent) => {
-      const sidebar = sidebarRef.current;
-
-      if (
-        !sidebar ||
-        (event.target instanceof Node && sidebar.contains(event.target))
-      ) {
-        return;
-      }
-
-      isSidebarPointerExpanded = false;
-      setIsPointerExpanded(false);
-
-      const focusedElement = document.activeElement;
-      if (
-        focusedElement instanceof HTMLElement &&
-        sidebar.contains(focusedElement) &&
-        !focusedElement.matches(":focus-visible")
-      ) {
-        focusedElement.blur();
-      }
+    const collapseWithEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      updateExpandedState(false);
+      sidebarRef.current
+        ?.querySelector<HTMLButtonElement>(".consultant-sidebar-toggle")
+        ?.focus();
     };
 
-    document.addEventListener(
-      "pointermove",
-      collapseWhenPointerMovesOutside,
-      true,
-    );
+    document.addEventListener("keydown", collapseWithEscape);
 
     return () => {
-      document.removeEventListener(
-        "pointermove",
-        collapseWhenPointerMovesOutside,
-        true,
-      );
+      document.removeEventListener("keydown", collapseWithEscape);
     };
-  }, [isPointerExpanded]);
+  }, [isExpanded, updateExpandedState]);
 
   const openBucket = (bucket: ConsultantInquiryBucket) => {
     if (onBucketChange) {
@@ -218,12 +177,30 @@ export default function ConsultantQueueSidebar({
       ref={sidebarRef}
       id="consultant-queue-sidebar"
       className={`consultant-sidebar${
-        isPointerExpanded ? " is-pointer-expanded" : ""
+        isExpanded ? " is-user-expanded" : ""
       }`}
-      onPointerEnter={expandForPointer}
-      onPointerLeave={collapseForPointer}
+      aria-label="상담사 사이드바"
     >
+      <button
+        type="button"
+        className="consultant-sidebar-toggle"
+        aria-controls="consultant-sidebar-navigation"
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? "사이드바 축소" : "사이드바 펼치기"}
+        onClick={() => updateExpandedState(!isExpanded)}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          {isExpanded ? (
+            <path d="m14.5 6-6 6 6 6" />
+          ) : (
+            <>
+              <path d="M5 7h14M5 12h14M5 17h14" />
+            </>
+          )}
+        </svg>
+      </button>
       <nav
+        id="consultant-sidebar-navigation"
         className="consultant-work-tabs"
         aria-label="상담사 메뉴"
         role="tablist"

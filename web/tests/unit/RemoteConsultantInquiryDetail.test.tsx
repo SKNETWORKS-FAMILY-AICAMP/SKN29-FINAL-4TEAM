@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import RemoteConsultantInquiryDetail from "../../src/features/consultation/components/RemoteConsultantInquiryDetail";
@@ -67,22 +68,127 @@ function createDetail(
 }
 
 describe("Remote 상담사 문의 상세", () => {
-  it("한 화면에서 상담에 필요한 상세 영역을 순서대로 보여준다", () => {
+  it("첫 진입에서 고객·문의·제품 확인 단계를 보여준다", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 
+    expect(
+      screen.getByRole("button", {
+        name: "상담 1단계: 고객·문의·제품 확인",
+      }),
+    ).toHaveAttribute("aria-current", "step");
+    expect(
+      screen.getByRole("progressbar", { name: "상담 처리 진행률" }),
+    ).toHaveValue(1);
     expect(
       screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
     ).toEqual([
       "합성고객 01",
       "고객 증상과 답변",
-      "고객에게 안내할 내용",
       "제품·관리 정보",
     ]);
+    expect(
+      screen.queryByRole("heading", { name: "고객에게 안내할 내용" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("상담 대기")).toBeInTheDocument();
     expect(screen.getByText("주의 문의")).toHaveClass("is-risk-caution");
     expect(screen.queryByText(/처리 우선순위/)).not.toBeInTheDocument();
     expect(screen.queryByText("합성 테스트")).not.toBeInTheDocument();
     expect(screen.queryByText("CONSULTATION_REQUIRED")).not.toBeInTheDocument();
+  });
+
+  it("세 단계를 자유롭게 이동하고 단계 제목으로 초점을 옮긴다", async () => {
+    const user = userEvent.setup();
+    render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 2단계: 안전·상담 가이드 확인",
+      }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "안전·상담 가이드 확인" }),
+    ).toHaveFocus();
+    expect(
+      screen.getByRole("heading", { name: "고객에게 안내할 내용" }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("progressbar", { name: "상담 처리 진행률" }),
+    ).toHaveValue(2);
+
+    await user.click(
+      screen.getByRole("button", { name: "다음: 상담 기록·최종 처리" }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "상담 기록·최종 처리" }),
+    ).toHaveFocus();
+    expect(
+      screen.getByText("현재 진행할 상담 작업이 없습니다."),
+    ).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "이전 단계" }));
+    expect(
+      screen.getByRole("heading", { name: "안전·상담 가이드 확인" }),
+    ).toHaveFocus();
+  });
+
+  it("단계를 오가도 상담 입력을 유지하고 다른 문의에서는 첫 단계로 초기화한다", async () => {
+    const user = userEvent.setup();
+    const action = {
+      code: "UPDATE_CONSULTATION_SUMMARY",
+      label: "상담 내용 저장",
+      operationId: "updateConsultationSummary",
+      style: "PRIMARY" as const,
+      requiresConfirmation: false,
+      confirmationMessage: null,
+    };
+    const detail = createDetail({
+      status: "CONSULTATION_IN_PROGRESS",
+      workflow: {
+        status: "CONSULTATION_IN_PROGRESS",
+        stateVersion: 5,
+        allowedActions: [action],
+      },
+    });
+    const { rerender } = render(
+      <RemoteConsultantInquiryDetail
+        inquiry={detail}
+        onOpenVisit={() => undefined}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 3단계: 상담 기록·최종 처리",
+      }),
+    );
+    await user.type(screen.getByLabelText("상담 기록"), "필터 상태 확인");
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 1단계: 고객·문의·제품 확인",
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 3단계: 상담 기록·최종 처리",
+      }),
+    );
+    expect(screen.getByLabelText("상담 기록")).toHaveValue("필터 상태 확인");
+
+    rerender(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({ inquiryId: "new-inquiry-id" })}
+        onOpenVisit={() => undefined}
+        onRefresh={() => undefined}
+      />,
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "상담 1단계: 고객·문의·제품 확인",
+      }),
+    ).toHaveAttribute("aria-current", "step");
   });
 
   it("최근 관리일 null은 관리 이력 없음으로 표시하고 날짜 요소를 만들지 않는다", () => {
@@ -178,7 +284,9 @@ describe("Remote 상담사 문의 상세", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("냉수 출수")).toBeInTheDocument();
     expect(screen.getByText("010-****-0101")).toBeInTheDocument();
-    expect(screen.getByText("합성 시연용 정수기")).toBeInTheDocument();
+    expect(
+      screen.getAllByText("SYN-WP-01 · 합성 시연용 정수기"),
+    ).toHaveLength(2);
     expect(
       screen.getByText("필터 교체 후에도 출수량이 줄었나요?"),
     ).toBeInTheDocument();
@@ -216,13 +324,17 @@ describe("Remote 상담사 문의 상세", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 
     expect(screen.queryByText("상담 시작")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "상담 시작" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText("상담 단계 선택")).toBeInTheDocument();
     expect(
       screen.queryByText(/allowed_actions/),
     ).not.toBeInTheDocument();
   });
 
-  it("재조회된 상담 기록과 확정 요약을 표시한다", () => {
+  it("이전 상담 기록 팝업에서 요약과 실제 상담 내용을 함께 표시한다", async () => {
+    const user = userEvent.setup();
     render(
       <RemoteConsultantInquiryDetail
         inquiry={createDetail({
@@ -236,7 +348,7 @@ describe("Remote 상담사 문의 상세", () => {
               confirmedAt: "2026-08-13T10:30:00+09:00",
             },
             consultationNote: "고객과 필터 상태를 확인함",
-            additionalCheck: null,
+            additionalCheck: "필터 체결 상태 재확인",
             customerGuidance: "정상 사용 가능 안내",
             usageGuidanceStatus: "NORMAL",
           },
@@ -244,6 +356,21 @@ describe("Remote 상담사 문의 상세", () => {
       />,
     );
 
+    expect(
+      screen.queryByRole("dialog", { name: "이전 상담 기록·처리 이력" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("확정된 상담 요약")).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 2단계: 안전·상담 가이드 확인",
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "상세 보기" }));
+
+    expect(
+      screen.getByRole("dialog", { name: "이전 상담 기록·처리 이력" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("방문 없이 상담 완료")).toBeInTheDocument();
     expect(screen.queryByText("COMPLETED_NO_VISIT")).not.toBeInTheDocument();
     expect(screen.getByTestId("consultation-detail-confirmed-summary")).toHaveTextContent(
@@ -255,9 +382,19 @@ describe("Remote 상담사 문의 상세", () => {
     expect(
       screen.getByTestId("consultation-detail-customer-guidance"),
     ).toHaveTextContent("정상 사용 가능 안내");
+    expect(
+      screen.getByTestId("consultation-detail-additional-check"),
+    ).toHaveTextContent("필터 체결 상태 재확인");
+
+    await user.keyboard("{Escape}");
+    expect(
+      screen.queryByRole("dialog", { name: "이전 상담 기록·처리 이력" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "상세 보기" })).toHaveFocus();
   });
 
-  it("방문 필요 결과와 최신 방문 일정·기사 정보를 함께 표시한다", () => {
+  it("방문 필요 결과와 최신 방문 일정·기사 정보를 함께 표시한다", async () => {
+    const user = userEvent.setup();
     render(
       <RemoteConsultantInquiryDetail
         inquiry={createDetail({
@@ -296,6 +433,12 @@ describe("Remote 상담사 문의 상세", () => {
       />,
     );
 
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 3단계: 상담 기록·최종 처리",
+      }),
+    );
+
     expect(screen.getByText("방문 필요")).toBeInTheDocument();
     expect(screen.getByText("방문 정보 등록됨")).toBeInTheDocument();
     expect(screen.getByText("방문 일정 확정")).toBeInTheDocument();
@@ -328,7 +471,8 @@ describe("Remote 상담사 문의 상세", () => {
     expect(screen.getByText("합성고객 01")).toBeInTheDocument();
   });
 
-  it("처리 완료되어 가능한 작업이 없으면 빈 상담 처리 카드를 표시하지 않는다", () => {
+  it("처리 완료되어 가능한 작업이 없으면 실행 버튼 대신 완료 안내를 표시한다", async () => {
+    const user = userEvent.setup();
     const { container } = render(
       <RemoteConsultantInquiryDetail
         inquiry={createDetail({
@@ -345,8 +489,14 @@ describe("Remote 상담사 문의 상세", () => {
     );
 
     expect(screen.queryByLabelText("상담 처리 작업")).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 3단계: 상담 기록·최종 처리",
+      }),
+    );
     expect(
-      container.querySelector(".remote-inquiry-detail__workspace"),
-    ).toHaveClass("is-single-column");
+      screen.getByText("현재 진행할 상담 작업이 없습니다."),
+    ).toBeVisible();
+    expect(container.querySelector(".remote-inquiry-detail__workspace")).toBeNull();
   });
 });

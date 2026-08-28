@@ -10,8 +10,7 @@ html body .phone-inquiry-entry-app .phone-inquiry-main-header {
 }
 
 .phone-inquiry-main-header__copy small,
-.phone-inquiry-card-head span,
-.phone-inquiry-guide-card header span {
+.phone-inquiry-card-head span {
   color: #728096;
   font-size: 10px;
   font-weight: 700;
@@ -45,14 +44,12 @@ html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
 .phone-inquiry-entry-layout {
   display: grid;
   min-height: 100%;
-  grid-template-columns: minmax(0, 1.7fr) minmax(270px, 0.72fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  gap: 18px;
   padding: 20px;
 }
 
-.phone-inquiry-form-card,
-.phone-inquiry-guide-card {
+.phone-inquiry-form-card {
   border: 1px solid #e0e5ec;
   border-radius: 14px !important;
   background: #fff;
@@ -70,8 +67,7 @@ html body .phone-inquiry-entry-app .phone-inquiry-entry-panel {
   border-bottom: 1px solid #edf0f4;
 }
 
-.phone-inquiry-card-head h2,
-.phone-inquiry-guide-card h2 {
+.phone-inquiry-card-head h2 {
   margin: 0;
   color: #263142;
   font-size: 17px;
@@ -278,10 +274,7 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
 
 .phone-inquiry-selected-card dl {
   display: grid;
-  grid-template-columns:
-    max-content
-    minmax(105px, 1fr)
-    minmax(72px, auto);
+  grid-template-columns: minmax(220px, 2fr) minmax(100px, 1fr);
   gap: 8px;
   margin: 0;
 }
@@ -302,7 +295,7 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
 .phone-inquiry-selected-card dl > div:first-child dd {
   overflow: visible;
   text-overflow: clip;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .phone-inquiry-selected-card > button {
@@ -496,38 +489,6 @@ html body .phone-inquiry-entry-app .phone-inquiry-select-control select {
   box-shadow: none !important;
 }
 
-.phone-inquiry-guide-card {
-  position: sticky;
-  top: 0;
-  overflow: hidden;
-  padding: 18px;
-}
-
-.phone-inquiry-guide-card header {
-  padding-bottom: 14px;
-  border-bottom: 1px solid #edf0f4;
-}
-
-.phone-inquiry-guide-card ol {
-  display: grid;
-  gap: 12px;
-  margin: 18px 0;
-  padding-left: 20px;
-  color: #596577;
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.phone-inquiry-guide-card p {
-  margin: 0;
-  padding: 12px;
-  border-radius: 8px !important;
-  background: #f5f7fa;
-  color: #6e7a8c;
-  font-size: 10px;
-  line-height: 1.55;
-}
-
 @media (min-width: 901px) {
   html body
     .simple-consultant-app.simple-consultant-app.simple-consultant-app.consultant-queue-app.phone-inquiry-entry-app
@@ -580,12 +541,11 @@ html body .phone-inquiry-entry-app .phone-inquiry-select-control select {
   html body
     .simple-consultant-app.consultant-queue-app.phone-inquiry-entry-app
     .phone-inquiry-entry-layout {
-    width: min(1180px, 100%);
+    width: min(1320px, 100%);
     min-height: 100%;
     margin: 0 auto;
-    grid-template-columns: minmax(0, 780px) minmax(280px, 340px);
+    grid-template-columns: minmax(0, 1fr);
     justify-content: center;
-    gap: 24px;
     padding: 26px 30px 40px;
   }
 }
@@ -593,10 +553,6 @@ html body .phone-inquiry-entry-app .phone-inquiry-select-control select {
 @media (max-width: 1050px) {
   .phone-inquiry-entry-layout {
     grid-template-columns: 1fr;
-  }
-
-  .phone-inquiry-guide-card {
-    position: static;
   }
 }
 

@@ -28,6 +28,7 @@ import {
   createMockConsultantInquiryListViewModel,
 } from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
 import { getManagementTypeLabel } from "../../features/consultation/model/consultantWorkspaceRemoteMapper";
+import { formatProductModelAndName } from "../../features/consultation/model/productDisplayName";
 import {
   phoneInquiryRemoteRepository,
   type CustomerSubscriptionCandidateDto,
@@ -441,10 +442,13 @@ export default function PhoneInquiryCreatePage() {
                               <small>{candidate.phone_masked}</small>
                             </span>
                             <span>
-                              <b>{candidate.product_name}</b>
-                              <small>
-                                제품 모델 {candidate.product_model_code} · 이용 중
-                              </small>
+                              <b>
+                                {formatProductModelAndName(
+                                  candidate.product_model_code,
+                                  candidate.product_name,
+                                )}
+                              </b>
+                              <small>이용 중</small>
                             </span>
                           </button>
                         ))}
@@ -467,12 +471,13 @@ export default function PhoneInquiryCreatePage() {
                   </div>
                   <dl>
                     <div>
-                      <dt>제품명</dt>
-                      <dd>{selectedCandidate.product_name}</dd>
-                    </div>
-                    <div>
-                      <dt>제품 모델</dt>
-                      <dd>{selectedCandidate.product_model_code}</dd>
+                      <dt>제품</dt>
+                      <dd>
+                        {formatProductModelAndName(
+                          selectedCandidate.product_model_code,
+                          selectedCandidate.product_name,
+                        )}
+                      </dd>
                     </div>
                     <div>
                       <dt>관리 유형</dt>
@@ -595,19 +600,6 @@ export default function PhoneInquiryCreatePage() {
                 </footer>
               )}
             </form>
-
-            <aside className="phone-inquiry-guide-card" aria-label="전화 문의 등록 안내">
-              <header>
-                <span>REMOTE API</span>
-                <h2>등록 전 확인</h2>
-              </header>
-              <ol>
-                <li>검색 결과에서 문의 대상 고객과 제품을 선택합니다.</li>
-                <li>연락처는 서버가 제공한 마스킹 값만 확인합니다.</li>
-                <li>등록 후 생성된 새 문의의 상세 화면에서 처리를 이어갑니다.</li>
-              </ol>
-              <p>전화번호 원문과 문의 내용은 브라우저 LocalStorage에 저장하지 않습니다.</p>
-            </aside>
           </div>
         </section>
       </main>
