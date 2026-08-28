@@ -96,6 +96,16 @@ const BUCKET_STATUSES: Record<
   COMPLETED: ["RESOLVED", "CANCELLED"],
 };
 
+const DASHBOARD_OVERVIEW_QUERY: ConsultantInquiryListQuery = {
+  status: [
+    ...BUCKET_STATUSES.NEW,
+    ...BUCKET_STATUSES.IN_PROGRESS,
+    ...BUCKET_STATUSES.COMPLETED,
+  ],
+  page: 1,
+  size: 100,
+};
+
 const RISK_SECTIONS: readonly {
   id: ConsultantRiskLevelDto;
   label: string;
@@ -402,6 +412,9 @@ export default function ConsultantDashboardPage() {
     ],
   );
   const listQuery = useConsultantInquiryListQuery(repositoryQuery);
+  const overviewQuery = useConsultantInquiryListQuery(
+    DASHBOARD_OVERVIEW_QUERY,
+  );
   const useDesignMockFallback =
     appEnv.enableDesignMockFallback &&
     import.meta.env.DEV &&
@@ -409,6 +422,13 @@ export default function ConsultantDashboardPage() {
     (listQuery.status === "error" ||
       (listQuery.status === "success" &&
         (listQuery.data?.pageInfo.total ?? 0) === 0));
+  const useOverviewDesignMockFallback =
+    appEnv.enableDesignMockFallback &&
+    import.meta.env.DEV &&
+    consultantWorkspaceDataRepository.dataSource === "REMOTE" &&
+    (overviewQuery.status === "error" ||
+      (overviewQuery.status === "success" &&
+        (overviewQuery.data?.pageInfo.total ?? 0) === 0));
   const useDashboardMockData =
     consultantWorkspaceDataRepository.dataSource === "MOCK" ||
     useDesignMockFallback;
@@ -432,6 +452,18 @@ export default function ConsultantDashboardPage() {
         : listQuery.data;
     },
     [listQuery.data, repositoryQuery, useDesignMockFallback],
+  );
+  const overviewData = useMemo(
+    () =>
+      useOverviewDesignMockFallback
+        ? createMockConsultantInquiryListViewModel(
+            DASHBOARD_OVERVIEW_QUERY,
+            "DESIGN_SCENARIOS",
+          )
+        : consultantWorkspaceDataRepository.dataSource === "MOCK"
+          ? createMockConsultantInquiryListViewModel(DASHBOARD_OVERVIEW_QUERY)
+          : overviewQuery.data,
+    [overviewQuery.data, useOverviewDesignMockFallback],
   );
   const loadState = ["loading", "error", "forbidden"].includes(
     mockState ?? "",
@@ -509,29 +541,21 @@ export default function ConsultantDashboardPage() {
     };
   }, [selectedInquiryId]);
 
-  const bucketCounts = useMemo(
-    () => ({
-      NEW:
-        dashboardData?.summary.new ??
-        BUCKET_STATUSES.NEW.reduce(
-          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
+  const bucketCounts = useMemo(() => {
+    if (!overviewData) return undefined;
+
+    return Object.fromEntries(
+      Object.entries(BUCKET_STATUSES).map(([bucket, statuses]) => [
+        bucket,
+        statuses.reduce(
+          (total, status) =>
+            total + (overviewData.statusCounts[status] ?? 0),
           0,
         ),
-      IN_PROGRESS:
-        dashboardData?.summary.inProgress ??
-        BUCKET_STATUSES.IN_PROGRESS.reduce(
-          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
-          0,
-        ),
-      COMPLETED:
-        dashboardData?.summary.completed ??
-        BUCKET_STATUSES.COMPLETED.reduce(
-          (total, status) => total + (queryData?.statusCounts[status] ?? 0),
-          0,
-        ),
-    }),
-    [dashboardData?.summary, queryData?.statusCounts],
-  );
+      ]),
+    ) as Record<CounselorWorkBucket, number>;
+  }, [overviewData]);
+  const totalInquiryCount = overviewData?.pageInfo.total;
   const queuePage = {
     currentPage: queryData?.pageInfo.page ?? filters.page,
     items: sourceInquiries,
@@ -698,6 +722,7 @@ export default function ConsultantDashboardPage() {
         <ConsultantQueueSidebar
           activeBucket={null}
           bucketCounts={bucketCounts}
+          totalCount={totalInquiryCount}
           dashboardActive
         />
 
@@ -725,38 +750,38 @@ export default function ConsultantDashboardPage() {
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--total"
-              disabled={dashboardLoadState !== "ready"}
+              disabled={!overviewData}
               onClick={() => openInquiryList("ALL")}
             >
               <span>전체 문의 수</span>
-              <strong>{dashboardData?.summary.total ?? "—"}</strong>
+              <strong>{totalInquiryCount ?? "—"}</strong>
             </button>
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--work"
-              disabled={dashboardLoadState !== "ready"}
+              disabled={!overviewData}
               onClick={() => openInquiryList("NEW")}
             >
               <span>새 문의</span>
-              <strong>{dashboardData?.summary.new ?? "—"}</strong>
+              <strong>{bucketCounts?.NEW ?? "—"}</strong>
             </button>
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--waiting"
-              disabled={dashboardLoadState !== "ready"}
+              disabled={!overviewData}
               onClick={() => openInquiryList("IN_PROGRESS")}
             >
               <span>처리 중인 문의</span>
-              <strong>{dashboardData?.summary.inProgress ?? "—"}</strong>
+              <strong>{bucketCounts?.IN_PROGRESS ?? "—"}</strong>
             </button>
             <button
               type="button"
               className="counselor-home-metric counselor-home-metric--completed"
-              disabled={dashboardLoadState !== "ready"}
+              disabled={!overviewData}
               onClick={() => openInquiryList("COMPLETED")}
             >
               <span>처리 완료된 문의</span>
-              <strong>{dashboardData?.summary.completed ?? "—"}</strong>
+              <strong>{bucketCounts?.COMPLETED ?? "—"}</strong>
             </button>
           </div>
         </section>

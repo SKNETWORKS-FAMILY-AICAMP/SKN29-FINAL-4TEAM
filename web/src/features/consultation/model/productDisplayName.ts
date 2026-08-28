@@ -8,6 +8,29 @@ function normalizeModelCode(modelCode: string): string {
   return modelCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
+function isModelCodeAlias(modelCode: string, providedName: string): boolean {
+  const normalizedModelCode = normalizeModelCode(modelCode);
+  const normalizedProvidedName = normalizeModelCode(providedName);
+  if (!normalizedProvidedName) return false;
+
+  const knownModelPrefix = Object.keys(PRODUCT_NAMES_BY_MODEL_PREFIX).find(
+    (modelPrefix) => normalizedModelCode.startsWith(modelPrefix),
+  );
+
+  if (
+    knownModelPrefix &&
+    normalizedProvidedName.startsWith(knownModelPrefix)
+  ) {
+    return true;
+  }
+
+  return (
+    normalizedProvidedName.length >= 6 &&
+    (normalizedModelCode.startsWith(normalizedProvidedName) ||
+      normalizedProvidedName.startsWith(normalizedModelCode))
+  );
+}
+
 export function getProductDisplayName(
   modelCode: string,
   providedName?: string | null,
@@ -15,7 +38,7 @@ export function getProductDisplayName(
   const normalizedProvidedName = providedName?.trim();
   if (
     normalizedProvidedName &&
-    normalizeModelCode(normalizedProvidedName) !== normalizeModelCode(modelCode)
+    !isModelCodeAlias(modelCode, normalizedProvidedName)
   ) {
     return normalizedProvidedName;
   }
