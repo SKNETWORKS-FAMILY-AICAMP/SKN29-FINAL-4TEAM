@@ -49,6 +49,16 @@ def test_request_consultation_is_available_in_all_confirmed_states():
     assert "REQUEST_CONSULTATION" in completion_pending
 
 
+def test_resolved_feedback_hides_repeat_and_reconsult_but_keeps_unresolved():
+    _actions, codes = resolve_codes(
+        inquiry_state="COMPLETION_PENDING",
+        state_version=8,
+        fresh_resolved_feedback_exists=True,
+    )
+
+    assert codes == ["CUSTOMER_REPORTED_UNRESOLVED"]
+
+
 def test_consultant_claim_requires_both_unassigned_waiting_rows():
     base = {
         "inquiry_state": "CONSULTATION_REQUIRED",

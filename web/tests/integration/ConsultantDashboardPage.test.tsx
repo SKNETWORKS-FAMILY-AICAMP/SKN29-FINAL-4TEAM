@@ -161,9 +161,12 @@ describe("ConsultantDashboardPage", () => {
     });
     const recentItems = within(recentList).getAllByRole("button");
     expect(recentItems).toHaveLength(2);
-    expect(recentItems[0]).toHaveTextContent(newerInquiry.inquiryCode);
+    expect(recentItems[0]).not.toHaveTextContent(newerInquiry.inquiryCode);
     expect(recentItems[0]).toHaveTextContent(newerInquiry.customerMessage);
-    expect(recentItems[1]).toHaveTextContent(olderInquiry.inquiryCode);
+    expect(recentItems[0]).toHaveTextContent(
+      "WPU-JAC104D · 초소형 직수 냉온 정수기",
+    );
+    expect(recentItems[1]).not.toHaveTextContent(olderInquiry.inquiryCode);
 
     const infoPanels = Array.from(
       screen.getByLabelText("사내 업무 정보").querySelectorAll(":scope > article"),
@@ -222,7 +225,9 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByRole("cell", { name: "한예나" })).toBeVisible();
     expect(screen.getByRole("cell", { name: "02-3274-9502" })).toBeVisible();
 
-    await user.click(screen.getByRole("button", { name: "조직도" }));
+    const backButton = screen.getByRole("button", { name: "뒤로가기" });
+    expect(backButton).toBeVisible();
+    await user.click(backButton);
     expect(screen.getByLabelText("조직도")).toBeVisible();
   });
 

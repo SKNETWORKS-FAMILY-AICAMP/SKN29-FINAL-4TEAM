@@ -315,8 +315,15 @@ class ResolutionService:
         handling: CompletedHandling | None,
     ) -> dict[str, bool]:
         if action == "feedback":
+            assert handling is not None
             return {
                 "G-INQUIRY-OWNER": True,
+                "G-NO-FRESH-RESOLVED-CUSTOMER-FEEDBACK": (
+                    not ResolutionRepository.fresh_resolved_feedback_exists(
+                        inquiry=inquiry,
+                        handling=handling,
+                    )
+                ),
                 "G-RESOLUTION-FEEDBACK-RESOLVED": True,
             }
         if action == "unresolved":
@@ -444,7 +451,10 @@ class ResolutionService:
                 details={},
                 status_code=500,
             )
-        if failure.guard_id == "G-STATE-VERSION":
+        if failure.guard_id in {
+            "G-STATE-VERSION",
+            "G-NO-FRESH-RESOLVED-CUSTOMER-FEEDBACK",
+        }:
             cls._raise_state_conflict(inquiry, actor=actor)
         if failure.http_status == 404:
             raise NotFound()

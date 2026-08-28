@@ -115,8 +115,9 @@ export function useSaveConsultation(
     }
     if (
       action.requiresConfirmation &&
-      action.confirmationMessage &&
-      !window.confirm(action.confirmationMessage)
+      !window.confirm(
+        action.confirmationMessage ?? `${action.label} 작업을 진행하시겠습니까?`,
+      )
     ) {
       return { ok: false as const, cancelled: true as const };
     }
@@ -183,6 +184,9 @@ export function useSaveConsultation(
             break;
           case "CONSULTATION_COMPLETED":
             response = await writeRepository.complete(inquiry.inquiryId, stateBody, context);
+            break;
+          case "FINALIZE_INQUIRY":
+            response = await writeRepository.finalize(inquiry.inquiryId, stateBody, context);
             break;
           default: {
             const blockedError: ConsultationActionErrorDetails = {

@@ -44,6 +44,7 @@ import {
 } from "../../features/consultation/model/consultantWorkspaceModel";
 import { getConsultantDashboardDate } from "../../features/consultation/model/consultantDashboardDate";
 import { getConsultantDisplayName } from "../../features/consultation/model/consultantDisplayName";
+import { formatProductModelAndName } from "../../features/consultation/model/productDisplayName";
 import {
   readRecentConsultantInquiryIds,
   rememberRecentConsultantInquiryId,
@@ -130,8 +131,8 @@ const RISK_LABELS: Record<ConsultantRiskLevelDto, string> = {
 
 interface RecentInquiryPreview {
   inquiryId: InquiryId;
-  inquiryCode: string;
   title: string;
+  productLabel: string | null;
   status: ConsultantInquiryStatusDto;
   riskLevel: ConsultantRiskLevelDto;
 }
@@ -325,8 +326,13 @@ export default function ConsultantDashboardPage() {
 
           return {
             inquiryId,
-            inquiryCode: result.data.inquiryCode,
             title: result.data.symptomAndQuestionnaire.symptomSummary,
+            productLabel: result.data.productAndCare
+              ? formatProductModelAndName(
+                  result.data.productAndCare.productModel,
+                  result.data.productAndCare.productModelName,
+                )
+              : null,
             status: result.data.status,
             riskLevel: result.data.riskLevel,
           } satisfies RecentInquiryPreview;
@@ -787,7 +793,7 @@ export default function ConsultantDashboardPage() {
                       data-testid={`consultant-recent-inquiry-${inquiry.inquiryId}`}
                       data-e2e-sensitive="true"
                       onClick={() => openInquiry(inquiry.inquiryId)}
-                      aria-label={`${inquiry.inquiryCode} ${inquiry.title} 다시 열기`}
+                      aria-label={`${inquiry.title} 다시 열기`}
                     >
                       <span
                         className="counselor-dashboard-recent__rail"
@@ -799,7 +805,10 @@ export default function ConsultantDashboardPage() {
                           {inquiry.title}
                         </strong>
                         <small className="counselor-dashboard-recent__meta">
-                          {inquiry.inquiryCode} · {RISK_LABELS[inquiry.riskLevel]}
+                          {inquiry.productLabel
+                            ? `${inquiry.productLabel} · `
+                            : ""}
+                          {RISK_LABELS[inquiry.riskLevel]}
                         </small>
                       </span>
                       <span
@@ -976,6 +985,19 @@ export default function ConsultantDashboardPage() {
               />
             ) : showContactTable ? (
               <div className="counselor-dashboard-contact-table-wrap">
+                <button
+                  type="button"
+                  className="counselor-dashboard-contact-table__back"
+                  onClick={() => {
+                    setSelectedContactDepartment(null);
+                    setContactQuery("");
+                  }}
+                >
+                  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                    <path d="m14.5 6-6 6 6 6" />
+                  </svg>
+                  <span>뒤로가기</span>
+                </button>
                 <strong className="counselor-dashboard-contact-table__title">
                   {selectedContactDepartment ?? "검색 결과"}
                 </strong>
@@ -1358,7 +1380,9 @@ export default function ConsultantDashboardPage() {
 
                             <span className="consultant-list-item__customer">
                               <strong>{inquiry.customerDisplayNameMasked}</strong>
-                              <small>{inquiry.productModel}</small>
+                              <small>
+                                {formatProductModelAndName(inquiry.productModel)}
+                              </small>
                             </span>
 
                             <span className="consultant-list-item__progress">

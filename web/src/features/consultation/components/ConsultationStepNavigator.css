@@ -1,0 +1,352 @@
+.consultation-stepper {
+  display: grid;
+  gap: 16px;
+}
+
+.consultation-stepper__progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 2px;
+}
+
+.consultation-stepper__progress > div {
+  display: grid;
+  gap: 3px;
+}
+
+.consultation-stepper__progress small {
+  color: #667085;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.consultation-stepper__progress strong {
+  color: #202a3a;
+  font-size: 14px;
+}
+
+.consultation-stepper__progress progress {
+  width: min(320px, 42%);
+  height: 8px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: #e6eaf0;
+}
+
+.consultation-stepper__progress progress::-webkit-progress-bar {
+  border-radius: 999px;
+  background: #e6eaf0;
+}
+
+.consultation-stepper__progress progress::-webkit-progress-value {
+  border-radius: 999px;
+  background: #3f4a5d;
+}
+
+.consultation-stepper__progress progress::-moz-progress-bar {
+  border-radius: 999px;
+  background: #3f4a5d;
+}
+
+.consultation-stepper__nav ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consultation-stepper__nav button {
+  display: grid;
+  width: 100%;
+  min-height: 76px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  border: 1px solid #d2d8e2;
+  border-radius: 11px;
+  background: #fff;
+  color: #505b6d;
+  cursor: pointer;
+  text-align: left;
+}
+
+.consultation-stepper__nav button:hover {
+  border-color: #aeb7c6;
+  background: #f8fafc;
+}
+
+.consultation-stepper__nav button:focus-visible {
+  outline: 3px solid rgb(63 74 93 / 22%);
+  outline-offset: 2px;
+}
+
+.consultation-stepper__nav button.is-active {
+  border-color: #3f4a5d;
+  background: #3f4a5d;
+  color: #fff;
+}
+
+html body #root .consultation-stepper__nav button.is-active :is(
+  .consultation-stepper__number,
+  .consultation-stepper__nav-copy strong,
+  .consultation-stepper__nav-copy small
+) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+.consultation-stepper__number {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.consultation-stepper__nav-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.consultation-stepper__nav-copy strong {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.consultation-stepper__nav-copy small {
+  overflow: hidden;
+  color: inherit;
+  font-size: 10px;
+  line-height: 1.35;
+  opacity: 0.78;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consultation-stepper__panel {
+  padding: 20px;
+  border: 1px solid #d2d8e2;
+  border-radius: 14px;
+  background: #f6f8fb;
+}
+
+.consultation-stepper__panel[hidden] {
+  display: none;
+}
+
+.consultation-stepper__panel-head {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #d6dce5;
+}
+
+.consultation-stepper__panel-head small {
+  color: #667085;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.consultation-stepper__panel-head h3 {
+  margin: 4px 0 5px;
+  color: #1f2937;
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.consultation-stepper__panel-head h3:focus {
+  outline: none;
+}
+
+.consultation-stepper__panel-head p {
+  margin: 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.consultation-stepper__panel-body,
+.consultation-stepper__step-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.consultation-stepper__step-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.consultation-stepper__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #d6dce5;
+}
+
+.consultation-stepper__footer .v6-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.consultation-stepper__empty-action {
+  padding: 24px;
+  border: 1px dashed #c9d0db;
+  border-radius: 10px;
+  background: #fff;
+  color: #586477;
+  text-align: center;
+}
+
+.consultation-stepper__empty-action strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #263246;
+  font-size: 14px;
+}
+
+.consultation-stepper__empty-action p {
+  margin: 0;
+  font-size: 12px;
+}
+
+html body #root .consultation-stepper .v6-action-panel {
+  position: static !important;
+  width: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+html body #root .consultation-stepper .v6-action-panel:not(.is-start-only) form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 18px;
+}
+
+html body #root .consultation-stepper .v6-action-form-decisions,
+html body #root .consultation-stepper .v6-action-buttons,
+html body #root .consultation-stepper .v6-action-message,
+html body #root .consultation-stepper .v6-action-conflict-note {
+  grid-column: 1 / -1;
+}
+
+html body #root .consultation-stepper .v6-action-buttons {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+@media (max-width: 820px) {
+  .consultation-stepper__nav ol,
+  .consultation-stepper__step-grid,
+  html body #root .consultation-stepper .v6-action-panel:not(.is-start-only) form {
+    grid-template-columns: 1fr;
+  }
+
+  .consultation-stepper__nav button {
+    min-height: 60px;
+  }
+
+  .consultation-stepper__nav-copy small {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 560px) {
+  .consultation-stepper__progress {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .consultation-stepper__progress progress {
+    width: 100%;
+  }
+
+  .consultation-stepper__panel {
+    padding: 15px;
+  }
+
+  .consultation-stepper__footer {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .consultation-stepper__footer .v6-button {
+    width: 100%;
+  }
+}
+
+/* 상담 상세는 우측 드로어가 아니라 화면 중앙의 작업 다이얼로그로 연다. */
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-layer {
+  align-items: center;
+  justify-content: center !important;
+  box-sizing: border-box;
+  padding: 24px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer {
+  width: min(1180px, calc(100vw - 48px)) !important;
+  height: min(900px, calc(100dvh - 48px)) !important;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 88%) !important;
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgb(20 30 45 / 28%) !important;
+  animation: consultation-dialog-in 180ms ease-out;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__head {
+  min-height: 72px;
+}
+
+@keyframes consultation-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 760px) {
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .consultant-detail-layer {
+    padding: 0;
+  }
+
+  html body
+    #root
+    .simple-consultant-app.consultant-queue-app
+    .consultant-detail-drawer {
+    width: 100vw !important;
+    height: 100dvh !important;
+    border: 0 !important;
+    border-radius: 0;
+  }
+}
