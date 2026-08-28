@@ -123,6 +123,7 @@ function NoticeIcon() {
 interface ConsultantQueueSidebarProps {
   activeBucket: ConsultantInquiryBucket | null;
   bucketCounts?: Readonly<Record<CounselorWorkBucket, number>>;
+  totalCount?: number;
   dashboardActive?: boolean;
   noticeActive?: boolean;
   phoneEntryActive?: boolean;
@@ -132,6 +133,7 @@ interface ConsultantQueueSidebarProps {
 export default function ConsultantQueueSidebar({
   activeBucket,
   bucketCounts,
+  totalCount,
   dashboardActive = false,
   noticeActive = false,
   phoneEntryActive = false,
@@ -249,9 +251,10 @@ export default function ConsultantQueueSidebar({
             {bucketCounts && (
               <b>
                 {bucket === "ALL"
-                  ? bucketCounts.NEW +
-                    bucketCounts.IN_PROGRESS +
-                    bucketCounts.COMPLETED
+                  ? totalCount ??
+                    (bucketCounts.NEW +
+                      bucketCounts.IN_PROGRESS +
+                      bucketCounts.COMPLETED)
                   : bucketCounts[bucket]}
               </b>
             )}

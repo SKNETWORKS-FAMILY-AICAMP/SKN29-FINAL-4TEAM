@@ -33,6 +33,12 @@ describe("productDisplayName", () => {
     ).toBe("WPU-JAC104D · 초소형 직수 냉온 정수기");
   });
 
+  it("API 이름이 괄호가 포함된 축약 모델 코드면 실제 제품명으로 보완한다", () => {
+    expect(
+      formatProductModelAndName("WPUJAC104DWH", "WPU-JAC104 (D)"),
+    ).toBe("WPUJAC104DWH · 초소형 직수 냉온 정수기");
+  });
+
   it("알 수 없는 모델은 모델 코드만 안전하게 표시한다", () => {
     expect(getProductDisplayName("UNKNOWN-100")).toBeNull();
     expect(formatProductModelAndName("UNKNOWN-100")).toBe("UNKNOWN-100");

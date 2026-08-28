@@ -77,6 +77,23 @@ describe("ConsultantQueueSidebar", () => {
     );
   });
 
+  it("전체 문의는 Bucket 합계 대신 전달받은 문의 목록 total을 표시한다", () => {
+    render(
+      <MemoryRouter>
+        <ConsultantQueueSidebar
+          activeBucket="ALL"
+          bucketCounts={BUCKET_COUNTS}
+          totalCount={21}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("tab", { name: "전체 문의21" })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "새 문의3" })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "처리 중인 문의5" })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "처리 완료된 문의8" })).toBeVisible();
+  });
+
   it("hover가 아닌 명시적 버튼으로 사이드바를 열고 닫는다", async () => {
     const user = userEvent.setup();
 
