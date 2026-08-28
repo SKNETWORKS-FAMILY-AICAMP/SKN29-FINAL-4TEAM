@@ -1,2 +1,8 @@
 category: evidence
-errors: []
+errors:
+  - code: AI_HANDOFF_EVIDENCE_REJECTED
+    category: evidence
+    http_status: 422
+    retryable: false
+    user_message: AI 상담 인계 근거를 확인할 수 없습니다.
+    recommended_action: REVIEW_EVIDENCE_BINDING

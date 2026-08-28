@@ -11,7 +11,7 @@ from .handoff_input import HandoffEvidence, HandoffQuestionnaireAnswer
 
 
 class HandoffContextSynthesis(BaseModel):
-    """Internal counselor brief attachment; not part of the Backend contract yet."""
+    """Internal brief attachment mapped through the strict external v2 DTO."""
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
@@ -56,6 +56,8 @@ class ConsultationHandoffResult(BaseModel):
     inquiry_id: UUID
     correlation_id: UUID
     ai_request_id: str = Field(..., min_length=1, max_length=100)
+    state_version: int | None = Field(default=None, ge=1)
+    routing_reason: str | None = Field(default=None, min_length=1, max_length=100)
     model_code: str = Field(..., min_length=1, max_length=100)
     product_family: str = Field(..., min_length=1, max_length=100)
     customer_symptom_summary: str = Field(..., min_length=1, max_length=2000)

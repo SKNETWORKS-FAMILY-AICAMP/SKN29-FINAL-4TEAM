@@ -22,7 +22,10 @@ from urllib.parse import urlsplit
 import httpx
 from opentelemetry import trace
 
-from ...orchestration.handoff import ConsultationHandoffResult
+from ...orchestration.handoff import (
+    ConsultationHandoffResult,
+    ConsultationHandoffV2Request,
+)
 
 
 HANDOFF_ENABLED_ENV = "AI_HANDOFF_BACKEND_ENABLED"
@@ -35,24 +38,8 @@ INITIAL_DELAY_SECONDS = 0.20
 RETRY_DELAY_SECONDS = 0.75
 
 _TRUE_VALUES = frozenset({"1", "true", "yes", "on"})
-_RETRYABLE_STATUS_CODES = frozenset({409, 429, 500, 502, 503, 504})
-_BACKEND_HANDOFF_FIELDS = {
-    "inquiry_id",
-    "correlation_id",
-    "ai_request_id",
-    "model_code",
-    "product_family",
-    "customer_symptom_summary",
-    "questionnaire_answers",
-    "self_help_actions",
-    "evidence",
-    "safety_level",
-    "safety_requires_consultation",
-    "safety_notes",
-    "escalation_reason",
-    "consultant_priority_checks",
-    "source_chunk_ids",
-}
+_RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
+_RETRYABLE_CONFLICT_ERROR_CODE = "AI_HANDOFF_NOT_READY"
 _PHONE = re.compile(
     r"(?<!\d)(?:01[016789])[- ]?\d{3,4}[- ]?\d{4}(?!\d)"
 )
@@ -71,6 +58,7 @@ class HandoffPublishStatus(str, Enum):
 
 class HandoffPublishFailureKind(str, Enum):
     CONFIGURATION = "CONFIGURATION"
+    PAYLOAD_INVALID = "PAYLOAD_INVALID"
     PII_DETECTED = "PII_DETECTED"
     TIMEOUT = "TIMEOUT"
     NETWORK = "NETWORK"
@@ -151,6 +139,31 @@ def _contains_direct_contact_pii(payload: dict) -> bool:
         _PHONE.search(value) is not None
         or _EMAIL.search(value) is not None
         for value in _iter_string_values(payload)
+    )
+
+
+def _backend_error_code(response: httpx.Response) -> str | None:
+    try:
+        payload = response.json()
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(payload, Mapping):
+        return None
+    error = payload.get("error")
+    if not isinstance(error, Mapping):
+        return None
+    code = error.get("code")
+    if not isinstance(code, str) or not code.strip():
+        return None
+    return code.strip()
+
+
+def _response_is_retryable(response: httpx.Response) -> bool:
+    if response.status_code in _RETRYABLE_STATUS_CODES:
+        return True
+    return (
+        response.status_code == 409
+        and _backend_error_code(response) == _RETRYABLE_CONFLICT_ERROR_CODE
     )
 
 
@@ -244,10 +257,15 @@ def _publish_untraced(
             failure_kind=HandoffPublishFailureKind.CONFIGURATION,
         )
 
-    payload = handoff.model_dump(
-        mode="json",
-        include=_BACKEND_HANDOFF_FIELDS,
-    )
+    try:
+        outbound = ConsultationHandoffV2Request.from_internal(handoff)
+    except (TypeError, ValueError):
+        return HandoffPublishResult(
+            status=HandoffPublishStatus.FAILED,
+            attempts=0,
+            failure_kind=HandoffPublishFailureKind.PAYLOAD_INVALID,
+        )
+    payload = outbound.model_dump(mode="json")
     if _contains_direct_contact_pii(payload):
         return HandoffPublishResult(
             status=HandoffPublishStatus.FAILED,
@@ -320,10 +338,7 @@ def _publish_untraced(
                     attempts=attempts,
                 )
 
-            if (
-                response.status_code in _RETRYABLE_STATUS_CODES
-                and attempt < MAX_ATTEMPTS
-            ):
+            if _response_is_retryable(response) and attempt < MAX_ATTEMPTS:
                 sleep_fn(RETRY_DELAY_SECONDS)
                 continue
 

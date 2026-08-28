@@ -191,3 +191,116 @@ PostgreSQL 검증은 합성 전용 계정과 볼륨 없는 일회성 컨테이�
 컨테이너와 Test DB를 제거했다. Backend 저장 후보는 준비됐지만 AI Runtime이 이 내부
 Endpoint를 실제 호출하는 코드는 AI 담당 범위이므로 실제 FastAPI→Django Socket
 공동 E2E는 아직 `HOLD`다.
+
+## 13. 2026-08-27 Handoff 2.0 Backend 수신·검증
+
+### 13.1 판단과 적용 범위
+
+- 구현 시점의 `origin/main`과 `origin/jiyong`은 모두 `8a25bb8825a1b5c76e316883af2036e8044485c3`였다.
+- 요청서 기준 Commit 이후 Main 변경분은 배포 관련으로, Handoff 구현과 충돌하지 않음을 확인했다.
+- 기존 Handoff 원장과 상담 요약 칸을 그대로 사용했으며 신규 테이블·Column·Migration은 만들지 않았다.
+- AI 계약 파일과 `ai/**`는 수정하지 않고 Backend 수신·검증·오류 계약·테스트만 변경했다.
+- 운영 활성화 값은 `false`로 유지한다. 이 단계는 연결 준비이지 운영 활성화가 아니다.
+
+### 13.2 적용한 처리 흐름
+
+```text
+AI Handoff 수신
+→ 버전별 계약 검증
+→ 원래 문의·AI 실행·상태 버전 대조
+→ 분기 권위와 공식 근거 대조
+→ 변경 불가능한 Handoff 원장 저장
+→ 연결 가능한 경우에만 상담사 요약 반영
+```
+
+| 분기 | Backend 승인 근거 | 저장·공개 결과 |
+| --- | --- | --- |
+| 위험 인계 | 같은 AI 실행의 위험 판정과 Backend 위험 이력 | 원장 저장, 기존 상담이 있으면 요약 연결 |
+| 안전 종료 상담 | 근거 없음·제품 미승인·시간 초과 이력 또는 검토 거절 기록 | 원장 저장, 연결 가능한 기존 상담에만 요약 연결 |
+| 검증 도구 에스컬레이션 | 승인된 실패 사유와 검증 단계의 정확한 조합 | 원장만 저장, 상담 요약에는 연결하지 않음 |
+
+- 버전이 없거나 `1.0.0`이면 기존 허용 범위를 유지하고, `2.0.0`만 강화 계약으로 처리한다.
+- 버전이 없는 요청에 새 필드가 섞여도 새 버전으로 추정하지 않고 거절한다.
+- 새 버전의 상태 번호는 현재 문의 값이 아니라 원래 AI 분석 입력에 기록된 값과 대조한다.
+- 근거 ID·순서·동일 실행 승인 기록·활성 검증 Crosswalk·제품·문서·페이지가 모두 맞아야 저장한다.
+- 같은 요청과 같은 내용의 재전송은 기존 결과를 반환하고, 내용 또는 버전을 바꾼 재사용은 거절한다.
+- 늦게 도착한 과거 결과가 더 최신 상담 요약을 덮어쓰지 못하도록 비강등 조건을 적용했다.
+- 상담사 요약은 쉬운 일반 문장과 허용 정보만 사용하며 4,000자를 넘지 않는다.
+
+### 13.3 추가한 공개 오류
+
+| 오류 | 의미 | 재시도 기준 |
+| --- | --- | --- |
+| `AI_HANDOFF_NOT_READY` | 원래 AI 실행 결과가 아직 확정되지 않음 | 최대 1회 |
+| `AI_HANDOFF_STALE` | 원래 실행·상태·분기 권위와 불일치 | 재시도 금지 |
+| `AI_HANDOFF_EVIDENCE_REJECTED` | 공식 근거 또는 동일 실행 결속 실패 | 재시도 금지 |
+
+### 13.4 변경 위치
+
+- `backend/apps/consultations/api/handoff_serializers.py`: 버전 분리와 입력·개인정보 검증
+- `backend/apps/consultations/services/consultation_handoff_service.py`: 실행·분기·검토·근거 권위 검증
+- `backend/apps/consultations/repositories/consultation_handoff_repository.py`: 원장 연결과 요약 비강등 처리
+- `backend/common/exceptions/error_codes.py`, `contracts/error-codes/**`: 공개 오류와 분류별 계약
+- `backend/tests/api/test_*handoff*`, 오류·충돌 계약 테스트: 필수 성공·거절·Replay 회귀 고정
+
+### 13.5 작성자 검증
+
+| 검증 | 결과 |
+| --- | --- |
+| SQLite Handoff Runtime | 16 passed, PostgreSQL 전용 2 skipped |
+| 실제 PostgreSQL 16/pgvector Handoff·동시 Replay | 18 passed, 0 failed |
+| 공통 오류 Registry | 8 passed |
+| 인접 상담·문의·Web Bridge·Lock 회귀 | 72 passed |
+| AI Handoff 2.0 계약 | 40 passed |
+| Backend 전체 회귀 | 1,630 passed, 환경별 Gate 44 skipped, 0 failed |
+| Django Check·Compile·`git diff --check` | PASS |
+
+PostgreSQL 검증은 합성 데이터와 볼륨 없는 일회성 컨테이너로 수행했고, 실행 후 컨테이너와
+Test DB를 제거했다. SQLite 결과와 PostgreSQL 동시성 검증 결과를 서로 대체하지 않았다.
+
+### 13.6 현재 상태와 다음 Gate
+
+```text
+contract_version=2.0.0
+v1_regression=PASS
+v2_serializer=PASS
+airun_state_binding=PASS
+harness_crosswalk=PASS
+human_review_binding=PASS
+evidence_binding=PASS
+error_registry=PASS
+replay_and_projection=PASS
+postgresql_integration=PASS
+protected_ai_backend_e2e=PASS
+provider_canary=NOT_RUN
+web_ui_status=NOT_RUN
+aws_status=NOT_RUN
+independent_qa=PENDING
+pm_approval=PENDING
+AI_HANDOFF_BACKEND_ENABLED=false
+operation_activation=HOLD
+overall_service_e2e=PARTIAL
+status=PROTECTED_HTTP_HANDOFF_PASS_SERVICE_PARTIAL
+```
+
+2026-08-28 기준 실제 AI 시험 Process와 로컬 Backend·PostgreSQL을 사용한 보호형
+HTTP Handoff v2 검증을 완료했다.
+
+보호형 Handoff Gate는 통과했지만 실제 Provider, Web UI, AWS, 독립 QA와 PM 승인은
+별도 Gate다. 시험 Process 종료 후 기능 기본값은 다시 비활성 상태로 유지하며 전체
+서비스 또는 운영 완료로 표현하지 않는다.
+
+## 14. 2026-08-28 보호형 HTTP Handoff v2 실행 결과
+
+- 기준 Commit: `95f90f843124373fc97c6cd9e258b1427e0cbde8`
+- 신규 합성 Inquiry 1건으로 Backend→실제 AI→Backend 동일 문의 흐름을 실행했다.
+- AI Run은 `NO_EVIDENCE`, 문의는 `CONSULTATION_REQUIRED`로 전환됐다.
+- Handoff v2는 `FAIL_CLOSED_CONSULTATION`·`NO_EVIDENCE`로 정확히 1건 저장됐다.
+- 고객 상담 요청 후 Handoff와 Consultation이 연결됐다.
+- 상담사 Claim과 상세 API에서 동일 AI 초안 요약을 확인했다.
+- 동일 Payload Replay는 HTTP 200, 동일 Handoff, 행 1건 유지로 통과했다.
+- AI 회귀는 20 passed, Backend 회귀는 19 passed·PostgreSQL 전용 2 skipped다.
+- 외부 Provider Key는 시험 Process에서 제거했고 Web UI·AWS는 실행하지 않았다.
+
+세부 식별자, 저장 결과, 공개 경계와 남은 Gate는
+`20260828_상담_Handoff_v2_로컬_보호_HTTP_E2E_결과보고서.md`를 따른다.

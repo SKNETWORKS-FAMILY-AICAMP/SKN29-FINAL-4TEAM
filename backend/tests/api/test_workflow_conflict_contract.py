@@ -62,6 +62,7 @@ def test_workflow_409_registry_and_runtime_mapping_are_aligned():
         "STATE-CONFLICT-01",
         "DUPLICATE-EVENT-01",
         "CONSULTATION_RESULT_NOT_READY",
+        "AI_HANDOFF_STALE",
     }
     assert {
         item["http_status"] for item in registry_errors.values()

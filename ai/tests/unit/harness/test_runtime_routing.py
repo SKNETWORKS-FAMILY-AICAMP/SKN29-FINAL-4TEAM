@@ -1,14 +1,20 @@
 from types import SimpleNamespace
 from uuid import UUID
 
+from pydantic import BaseModel
+
+from ai.app.common.timeout import CancellationToken
 from ai.app.orchestration.agents import ConsultationContextSynthesisAgent
 from ai.app.orchestration.harness import (
     HarnessDecision,
+    HarnessErrorCode,
     HarnessRunner,
     ProductContext,
     ProductFamily,
 )
+from ai.app.orchestration.harness.runtime import ReliabilityRuntime
 from ai.app.orchestration.hitl import HumanReviewDecision, HumanReviewResume, HumanReviewStatus
+from ai.app.retrieval import RetrievalOutcome
 from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
 from ai.app.schemas import (
     RiskLevel,
@@ -123,7 +129,86 @@ def test_timeout_escalate_creates_consultation_handoff():
     assert result.harness.decision == HarnessDecision.ESCALATE
     assert result.handoff.model_code == "WPU-JAC104"
     assert result.handoff.escalation_reason == "AI_PROCESSING_TIMEOUT"
+    assert result.handoff.state_version == 4
+    assert result.handoff.routing_reason == "FAIL_CLOSED_CONSULTATION"
     assert result.human_review is None
+
+
+def test_no_evidence_handoff_uses_fail_closed_route_and_exact_reason():
+    result = HarnessRunner().run_runtime(
+        ctx=_ctx(),
+        product=_product(),
+        evidence_chunks=[],
+        safety_assessment=None,
+        guidance=_guidance(),
+    )
+
+    assert result.harness.decision == HarnessDecision.ESCALATE
+    assert result.handoff is not None
+    assert result.handoff.escalation_reason == "NO_EVIDENCE"
+    assert result.handoff.routing_reason == "FAIL_CLOSED_CONSULTATION"
+
+
+def test_exhausted_output_schema_failure_uses_harness_contract_reason():
+    class RequiredOutput(BaseModel):
+        answer: str
+
+    runner = HarnessRunner()
+    first = runner.run(
+        product=_product(),
+        evidence_chunks=[_chunk()],
+        safety_assessment=None,
+        guidance=_guidance(),
+        output_payload={},
+        output_schema=RequiredOutput,
+    )
+    second = runner.run(
+        product=_product(),
+        evidence_chunks=[_chunk()],
+        safety_assessment=None,
+        guidance=_guidance(),
+        retry_state=first.retry_state,
+        output_payload={},
+        output_schema=RequiredOutput,
+    )
+    routed = runner.route_runtime(
+        ctx=_ctx(),
+        product=_product(),
+        harness=second,
+        guidance=_guidance(),
+    )
+
+    assert second.decision == HarnessDecision.ESCALATE
+    assert second.error_code == HarnessErrorCode.OUTPUT_SCHEMA_INVALID
+    assert routed.handoff is not None
+    assert routed.handoff.escalation_reason == "OUTPUT_SCHEMA_INVALID"
+    assert routed.handoff.routing_reason == "HARNESS_ESCALATE"
+
+
+def test_mixed_retrieving_fallback_uses_fail_closed_backend_authority():
+    ctx = _ctx()
+    ctx.retrieval_outcome = RetrievalOutcome.NO_MATCH
+    ctx.awaiting_customer_input = False
+    ctx.usage_guidance = None
+
+    result = ReliabilityRuntime().run(
+        ctx=ctx,
+        product=_product(),
+        evidence_capture=None,
+        search_service=None,
+        llm_client=None,
+        cancellation_token=CancellationToken(),
+        required_functions={"ice"},
+    )
+
+    assert result.harness_runtime.harness.decision == HarnessDecision.HUMAN_REVIEW
+    assert ctx.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
+    assert result.harness_runtime.handoff is not None
+    assert result.harness_runtime.handoff.escalation_reason == "OUTPUT_SCHEMA_INVALID"
+    assert (
+        result.harness_runtime.handoff.routing_reason
+        == "FAIL_CLOSED_CONSULTATION"
+    )
 
 
 def test_approved_review_returns_guidance_without_handoff():
@@ -176,6 +261,8 @@ def test_rejected_review_routes_to_consultation_handoff():
     assert resolved.guidance is None
     assert resolved.handoff.escalation_reason == "HUMAN_REVIEW_REJECTED"
     assert resolved.handoff.model_code == "WPU-JAC104"
+    assert resolved.handoff.state_version == 4
+    assert resolved.handoff.routing_reason == "FAIL_CLOSED_CONSULTATION"
 
 
 def test_mcp_context_tool_failure_creates_sanitized_consultation_handoff():
@@ -198,6 +285,7 @@ def test_mcp_context_tool_failure_creates_sanitized_consultation_handoff():
     assert result.handoff is not None
     assert result.handoff.escalation_reason == "MCP_TOOL_FAILURE"
     assert result.handoff.model_code == "WPU-JAC104"
+    assert result.handoff.routing_reason == "HARNESS_ESCALATE"
 
 
 def test_context_synthesis_runs_only_after_actual_handoff():
@@ -280,6 +368,8 @@ def test_context_synthesis_failure_does_not_block_existing_handoff():
     assert result.handoff is not None
     assert result.handoff.escalation_reason == "AI_PROCESSING_TIMEOUT"
     assert result.handoff.context_synthesis is None
+    assert result.handoff.state_version == 4
+    assert result.handoff.routing_reason == "FAIL_CLOSED_CONSULTATION"
 
 
 def test_danger_handoff_calls_context_synthesis_after_handoff_is_forced():
@@ -326,6 +416,8 @@ def test_danger_handoff_calls_context_synthesis_after_handoff_is_forced():
     assert context_agent.calls[0].routing_reason.value == "DANGER_HANDOFF"
     assert routed.handoff is not None
     assert routed.handoff.context_synthesis is not None
+    assert routed.handoff.state_version == 4
+    assert routed.handoff.routing_reason == "DANGER_HANDOFF"
 
 
 def test_timeout_handoff_preserves_unknown_safety_without_forcing_consultation():
@@ -344,7 +436,7 @@ def test_timeout_handoff_preserves_unknown_safety_without_forcing_consultation()
     assert result.harness.decision == HarnessDecision.ESCALATE
     assert len(context_agent.calls) == 1
     synthesis_input = context_agent.calls[0]
-    assert synthesis_input.routing_reason.value == "HARNESS_ESCALATE"
+    assert synthesis_input.routing_reason.value == "FAIL_CLOSED_CONSULTATION"
     assert synthesis_input.safety_level == "unknown"
     assert synthesis_input.safety_requires_consultation is False
     assert synthesis_input.matched_safety_rule_ids == []

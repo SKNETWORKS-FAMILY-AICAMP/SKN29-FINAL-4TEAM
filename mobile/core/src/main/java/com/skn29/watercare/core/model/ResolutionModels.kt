@@ -8,7 +8,7 @@ import kotlinx.serialization.json.JsonElement
 data class ResolutionFeedbackRequestDto(
     @SerialName("state_version")
     val stateVersion: Int,
-    val resolved: Boolean = true,
+    val resolved: Boolean,
     val comment: String? = null,
 )
 
@@ -16,7 +16,7 @@ data class ResolutionFeedbackRequestDto(
 data class ReportUnresolvedRequestDto(
     @SerialName("state_version")
     val stateVersion: Int,
-    val resolved: Boolean = false,
+    val resolved: Boolean,
     @SerialName("reason_code")
     val reasonCode: String? = null,
     val comment: String? = null,
