@@ -254,10 +254,46 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertNotIn("COPY --chown=waterbridge:waterbridge . /workspace/", text)
         self.assertIn("ARG RELEASE_SHA", text)
         self.assertIn("qa-git-metadata.sh", text)
+        self.assertIn("apt-get install --yes --no-install-recommends git", text)
+        self.assertIn("/usr/bin/git init --quiet /workspace", text)
+        self.assertIn("COPY --chown=waterbridge:waterbridge .gitignore", text)
+        self.assertLess(
+            text.index("FROM dependencies AS qa"),
+            text.index("apt-get install --yes --no-install-recommends git"),
+        )
+        self.assertLess(
+            text.index("apt-get install --yes --no-install-recommends git"),
+            text.index("FROM dependencies AS runtime"),
+        )
+        runtime = text.split("FROM dependencies AS runtime", maxsplit=1)[1]
+        self.assertNotIn("apt-get install --yes --no-install-recommends git", runtime)
         self.assertIn("RUN python -m pytest ai/tests/unit", text)
         self.assertIn("FROM dependencies AS runtime", text)
         self.assertIn("USER waterbridge", text)
         self.assertIn("ai.app.main:app", text)
+
+    def test_ai_qa_git_adapter_uses_real_ignore_rules_without_path_allowlist(
+        self,
+    ) -> None:
+        qa_git = (
+            ROOT / "scripts/deployment/production/qa-git-metadata.sh"
+        ).read_text(encoding="utf-8")
+
+        for command in ("rev-parse)", "branch)", "status)", "check-ignore)"):
+            self.assertIn(command, qa_git)
+        self.assertIn("origin/main)", qa_git)
+        self.assertIn('validate_relative_path "$path"', qa_git)
+        self.assertIn('""|/*|..|../*|*/..|*/../*', qa_git)
+        self.assertIn(
+            'exec "$system_git" -C "$repository_root" check-ignore --quiet -- "$@"',
+            qa_git,
+        )
+        self.assertIn(
+            'exec "$system_git" -C "$repository_root" check-ignore -- "$@"',
+            qa_git,
+        )
+        self.assertNotIn('exec "$system_git" "$@"', qa_git)
+        self.assertNotIn(".pytest-tmp", qa_git)
 
     def test_backend_and_ai_use_separate_protected_env_files(self) -> None:
         text = COMPOSE.read_text(encoding="utf-8")
