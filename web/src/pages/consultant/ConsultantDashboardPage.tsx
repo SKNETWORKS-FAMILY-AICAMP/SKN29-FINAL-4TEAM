@@ -142,7 +142,6 @@ const RISK_LABELS: Record<ConsultantRiskLevelDto, string> = {
 interface RecentInquiryPreview {
   inquiryId: InquiryId;
   title: string;
-  productLabel: string | null;
   status: ConsultantInquiryStatusDto;
   riskLevel: ConsultantRiskLevelDto;
 }
@@ -337,12 +336,6 @@ export default function ConsultantDashboardPage() {
           return {
             inquiryId,
             title: result.data.symptomAndQuestionnaire.symptomSummary,
-            productLabel: result.data.productAndCare
-              ? formatProductModelAndName(
-                  result.data.productAndCare.productModel,
-                  result.data.productAndCare.productModelName,
-                )
-              : null,
             status: result.data.status,
             riskLevel: result.data.riskLevel,
           } satisfies RecentInquiryPreview;
@@ -830,9 +823,6 @@ export default function ConsultantDashboardPage() {
                           {inquiry.title}
                         </strong>
                         <small className="counselor-dashboard-recent__meta">
-                          {inquiry.productLabel
-                            ? `${inquiry.productLabel} · `
-                            : ""}
                           {RISK_LABELS[inquiry.riskLevel]}
                         </small>
                       </span>

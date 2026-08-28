@@ -530,23 +530,6 @@ export default function PhoneInquiryCreatePage() {
                   <small>{form.rawText.length.toLocaleString()} / 5,000</small>
                 </label>
 
-                <label className="phone-inquiry-field--wide">
-                  <span>상담 내용</span>
-                  <textarea
-                    aria-label="상담 내용"
-                    aria-describedby="phone-consultation-note-help"
-                    disabled
-                    rows={5}
-                    placeholder="상담 기록 저장 기능 연결 후 입력할 수 있습니다."
-                  />
-                  <small
-                    id="phone-consultation-note-help"
-                    className="phone-inquiry-field-note"
-                  >
-                    현재 Backend 등록 API에는 상담 내용을 별도로 저장하는 항목이
-                    없어 비활성화되어 있습니다.
-                  </small>
-                </label>
               </fieldset>
 
               {submitError && <div className="phone-inquiry-submit-error" role="alert">{submitError}</div>}
