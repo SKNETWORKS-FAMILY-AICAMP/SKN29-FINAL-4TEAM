@@ -271,10 +271,36 @@ evidence_binding=PASS
 error_registry=PASS
 replay_and_projection=PASS
 postgresql_integration=PASS
-protected_ai_backend_e2e=NOT_RUN
+protected_ai_backend_e2e=PASS
+provider_canary=NOT_RUN
+web_ui_status=NOT_RUN
+aws_status=NOT_RUN
+independent_qa=PENDING
+pm_approval=PENDING
 AI_HANDOFF_BACKEND_ENABLED=false
-status=READY_FOR_AI_V2_INTEGRATION
+operation_activation=HOLD
+overall_service_e2e=PARTIAL
+status=PROTECTED_HTTP_HANDOFF_PASS_SERVICE_PARTIAL
 ```
 
-남은 작업은 AI 측의 새 버전 전송 구현과 동일 문의를 사용한 보호 환경 공동 HTTP 검증이다.
-두 구현이 연결되고 공동 검증 증거가 확보되기 전에는 운영 활성화와 전체 완료로 판정하지 않는다.
+2026-08-28 기준 실제 AI 시험 Process와 로컬 Backend·PostgreSQL을 사용한 보호형
+HTTP Handoff v2 검증을 완료했다.
+
+보호형 Handoff Gate는 통과했지만 실제 Provider, Web UI, AWS, 독립 QA와 PM 승인은
+별도 Gate다. 시험 Process 종료 후 기능 기본값은 다시 비활성 상태로 유지하며 전체
+서비스 또는 운영 완료로 표현하지 않는다.
+
+## 14. 2026-08-28 보호형 HTTP Handoff v2 실행 결과
+
+- 기준 Commit: `95f90f843124373fc97c6cd9e258b1427e0cbde8`
+- 신규 합성 Inquiry 1건으로 Backend→실제 AI→Backend 동일 문의 흐름을 실행했다.
+- AI Run은 `NO_EVIDENCE`, 문의는 `CONSULTATION_REQUIRED`로 전환됐다.
+- Handoff v2는 `FAIL_CLOSED_CONSULTATION`·`NO_EVIDENCE`로 정확히 1건 저장됐다.
+- 고객 상담 요청 후 Handoff와 Consultation이 연결됐다.
+- 상담사 Claim과 상세 API에서 동일 AI 초안 요약을 확인했다.
+- 동일 Payload Replay는 HTTP 200, 동일 Handoff, 행 1건 유지로 통과했다.
+- AI 회귀는 20 passed, Backend 회귀는 19 passed·PostgreSQL 전용 2 skipped다.
+- 외부 Provider Key는 시험 Process에서 제거했고 Web UI·AWS는 실행하지 않았다.
+
+세부 식별자, 저장 결과, 공개 경계와 남은 Gate는
+`20260828_상담_Handoff_v2_로컬_보호_HTTP_E2E_결과보고서.md`를 따른다.
