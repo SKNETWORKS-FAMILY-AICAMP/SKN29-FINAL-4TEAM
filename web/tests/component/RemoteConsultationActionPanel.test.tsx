@@ -467,4 +467,42 @@ describe("Remote 상담 처리 Panel", () => {
       }),
     );
   });
+
+  it("Backend가 허용한 재개 문의를 상담 대기열 복귀 Action으로 실행한다", async () => {
+    const user = userEvent.setup();
+    const inquiry = createDetail(13);
+    inquiry.status = "REOPENED";
+    inquiry.workflow = {
+      status: "REOPENED",
+      stateVersion: 13,
+      allowedActions: [
+        {
+          code: "RESUME_CONSULTATION",
+          label: "상담 대기열로 복귀",
+          operationId: "resumeConsultation",
+          style: "PRIMARY",
+          requiresConfirmation: false,
+          confirmationMessage: null,
+        },
+      ],
+    };
+
+    render(
+      <RemoteConsultationActionPanel
+        inquiry={inquiry}
+        onOpenVisit={vi.fn()}
+        onRefresh={vi.fn()}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "상담 대기열로 복귀" }),
+    );
+
+    expect(hookMocks.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: expect.objectContaining({ code: "RESUME_CONSULTATION" }),
+      }),
+    );
+  });
 });

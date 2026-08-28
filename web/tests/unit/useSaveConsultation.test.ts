@@ -372,6 +372,80 @@ describe("useSaveConsultation", () => {
     expect(finalizeConfirm).toHaveBeenCalledTimes(1);
   });
 
+  it("Remote 재개 문의는 현재 버전으로 Backend 상담 재개 API를 호출한다", async () => {
+    const baseInquiry = COUNSELOR_INQUIRIES[0];
+    if (!baseInquiry) throw new Error("상담 문의 fixture가 없습니다.");
+    const resumeAction = {
+      code: "RESUME_CONSULTATION" as const,
+      label: "상담 대기열로 복귀",
+      operationId: "resumeConsultation",
+      style: "PRIMARY" as const,
+      requiresConfirmation: false,
+      confirmationMessage: null,
+    };
+    const inquiry = {
+      ...baseInquiry,
+      status: "REOPENED" as const,
+      stateVersion: 13,
+      allowedActions: [resumeAction],
+    };
+    const resume = vi.fn().mockResolvedValue({
+      success: true,
+      data: {
+        message: "재개 문의가 상담 대기열로 복귀했습니다.",
+        inquiry_id: inquiry.inquiryId,
+        status: "CONSULTATION_REQUIRED",
+        state_version: 14,
+        allowed_actions: [],
+        idempotent_replay: false,
+        resource: null,
+      },
+      error: null,
+      metadata: { correlation_id: "corr-resume" },
+    });
+    const repository = {
+      start: vi.fn(),
+      saveSummary: vi.fn(),
+      confirmSummary: vi.fn(),
+      complete: vi.fn(),
+      resume,
+      finalize: vi.fn(),
+    } as ConsultationWriteRepository;
+    const values: ConsultationFormValues = {
+      consultationNote: "",
+      additionalCheck: "",
+      customerGuidance: "",
+      consultationResult: "",
+      summaryRevision: "",
+      summaryConfirmed: false,
+      visitRequired: "UNDECIDED",
+      usageStatus: "NORMAL",
+    };
+    const { result } = renderHook(() =>
+      useSaveConsultation(inquiry, {
+        dataSource: "REMOTE",
+        remoteRepository: repository,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.execute({
+        action: resumeAction,
+        values,
+        scenario: "SUCCESS",
+      });
+    });
+
+    expect(resume).toHaveBeenCalledWith(
+      inquiry.inquiryId,
+      { state_version: 13 },
+      expect.any(Object),
+    );
+    expect(result.current.currentStatus).toBe("CONSULTATION_REQUIRED");
+    expect(result.current.stateVersion).toBe(14);
+    expect(result.current.allowedActions).toEqual([]);
+  });
+
   it("재조회한 동일 문의의 workflow snapshot으로 로컬 상태를 동기화한다", async () => {
     const inquiry = COUNSELOR_INQUIRIES.find((item) =>
       item.allowedActions.some((action) => action.code === "START_CONSULTATION"),

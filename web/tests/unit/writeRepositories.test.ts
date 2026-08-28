@@ -54,9 +54,14 @@ describe("상담 Write Repository 경계", () => {
       { state_version: 6 },
       context,
     );
-    await repository.finalize(
+    await repository.resume(
       "inquiry/1",
       { state_version: 7 },
+      context,
+    );
+    await repository.finalize(
+      "inquiry/1",
+      { state_version: 8 },
       context,
     );
 
@@ -66,6 +71,7 @@ describe("상담 Write Repository 경계", () => {
       ["/inquiries/inquiry%2F1/consultation-summary", "PATCH"],
       ["/inquiries/inquiry%2F1/consultation-summary/confirm", "POST"],
       ["/inquiries/inquiry%2F1/complete-consultation", "POST"],
+      ["/inquiries/inquiry%2F1/resume-consultation", "POST"],
       ["/inquiries/inquiry%2F1/finalize", "POST"],
     ]);
     expect(requester.mock.calls[0][1]).toMatchObject({

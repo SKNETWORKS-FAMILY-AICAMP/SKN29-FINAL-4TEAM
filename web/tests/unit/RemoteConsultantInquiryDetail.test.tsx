@@ -133,6 +133,49 @@ describe("Remote 상담사 문의 상세", () => {
     ).toHaveFocus();
   });
 
+  it("재개 문의는 3단계에서 Backend가 허용한 상담 대기열 복귀 작업을 표시한다", async () => {
+    const user = userEvent.setup();
+    const detail = createDetail({
+      status: "REOPENED",
+      stateVersion: 13,
+      workflow: {
+        status: "REOPENED",
+        stateVersion: 13,
+        allowedActions: [
+          {
+            code: "RESUME_CONSULTATION",
+            label: "상담 대기열로 복귀",
+            operationId: "resumeConsultation",
+            style: "PRIMARY",
+            requiresConfirmation: false,
+            confirmationMessage: null,
+          },
+        ],
+      },
+    });
+
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={detail}
+        onOpenVisit={() => undefined}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "상담 3단계: 상담 기록·최종 처리",
+      }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: "상담 대기열로 복귀" }),
+    ).toBeVisible();
+    expect(
+      screen.queryByText("현재 진행할 상담 작업이 없습니다."),
+    ).not.toBeInTheDocument();
+  });
+
   it("단계를 오가도 상담 입력을 유지하고 다른 문의에서는 첫 단계로 초기화한다", async () => {
     const user = userEvent.setup();
     const action = {
