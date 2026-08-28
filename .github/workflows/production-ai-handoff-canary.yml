@@ -1,0 +1,42 @@
+name: Production AI Handoff Canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Protected Canary operation to run.
+        required: true
+        type: choice
+        options:
+          - preflight
+          - open
+          - status
+          - close
+      expected_release_sha:
+        description: Exact 40-character SHA currently deployed on EC2.
+        required: true
+        type: string
+      inquiry_id:
+        description: Existing new synthetic Inquiry UUID with zero AI/Handoff rows.
+        required: true
+        type: string
+      operator_ip:
+        description: One fixed public IPv4 address, without a CIDR suffix.
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
+jobs:
+  run-trusted-canary-operation:
+    name: Run trusted production Canary operation
+    uses: SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/.github/workflows/production-deploy.yml@main
+    with:
+      operation: ai_handoff_canary
+      release_sha: ${{ inputs.expected_release_sha }}
+      canary_action: ${{ inputs.action }}
+      canary_inquiry_id: ${{ inputs.inquiry_id }}
+      canary_operator_ip: ${{ inputs.operator_ip }}

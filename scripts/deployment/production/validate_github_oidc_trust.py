@@ -7,11 +7,12 @@ The deployment role accepts two GitHub identities only:
   reusable workflow on main.
 
 The tag-triggered workflow only forwards the immutable release identity.  The
-trusted reusable workflow on main independently enforces the push/tag context,
-strict numeric SemVer, input identity, and main ancestry before an
-Environment-scoped job can request AWS credentials.  IAM pins that reusable
-workflow, repository identity, production Environment, and audience without
-hard-coding one release tag.
+manual AI Handoff Canary dispatcher forwards a fixed runtime SHA, action,
+synthetic Inquiry UUID, and operator address.  The trusted reusable workflow on
+main independently enforces either the push/tag SemVer boundary or the exact
+main-branch Canary boundary before an Environment-scoped job can request AWS
+credentials.  IAM pins that reusable workflow, repository identity, production
+Environment, and audience without hard-coding one release tag.
 """
 
 from __future__ import annotations

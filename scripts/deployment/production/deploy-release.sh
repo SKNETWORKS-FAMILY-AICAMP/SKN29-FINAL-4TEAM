@@ -38,6 +38,11 @@ flock -n 9 || {
   exit 1
 }
 
+if [[ -f "${base_dir}/shared/ai-handoff-canary.state" ]]; then
+  echo "DEPLOYMENT_BLOCKED: active AI Handoff Canary window" >&2
+  exit 1
+fi
+
 aws s3 cp \
   "s3://${storage_bucket}/releases/${release_sha}/release.tar.gz" \
   "$archive_path" \
@@ -281,6 +286,7 @@ print('BACKEND_OWNER_GATE_PASS')"; then
   false
 fi
 
+printf 'DEPLOYMENT_MUTATION_STARTED\n'
 python3 "$secret_sync_script" \
   --secret-id "$backend_email_auth_secret_id" \
   --region "$aws_region" \

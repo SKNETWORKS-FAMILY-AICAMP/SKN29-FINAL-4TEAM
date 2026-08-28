@@ -3,13 +3,34 @@ name: Production Deploy Trusted Implementation
 on:
   workflow_call:
     inputs:
+      operation:
+        description: Trusted operation selected by an approved caller.
+        required: false
+        default: release
+        type: string
       release_sha:
-        description: Commit SHA selected by the release tag event.
+        description: Immutable release SHA selected by the caller.
         required: true
         type: string
       release_tag:
         description: Stable SemVer release tag selected by the tag event.
-        required: true
+        required: false
+        default: ""
+        type: string
+      canary_action:
+        description: AI Handoff Canary action.
+        required: false
+        default: ""
+        type: string
+      canary_inquiry_id:
+        description: Existing synthetic Inquiry UUID for the Canary.
+        required: false
+        default: ""
+        type: string
+      canary_operator_ip:
+        description: One fixed public IPv4 address allowed during the window.
+        required: false
+        default: ""
         type: string
 
 permissions:
@@ -33,8 +54,143 @@ env:
   BACKEND_EMAIL_AUTH_SECRET_ID: ${{ vars.BACKEND_EMAIL_AUTH_SECRET_ID }}
 
 jobs:
+  ai-handoff-canary:
+    name: Control the protected AI Handoff Canary window
+    if: ${{ inputs.operation == 'ai_handoff_canary' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - name: Validate Canary caller and inputs
+        shell: bash
+        env:
+          CANARY_ACTION: ${{ inputs.canary_action }}
+          CANARY_INQUIRY_ID: ${{ inputs.canary_inquiry_id }}
+          CANARY_OPERATOR_IP: ${{ inputs.canary_operator_ip }}
+          CALLER_REPOSITORY: ${{ github.repository }}
+          CALLER_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          [[ "$CALLER_REPOSITORY" == "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM" ]]
+          [[ "$CALLER_REF" == "refs/heads/main" ]]
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CANARY_ACTION" =~ ^(preflight|open|close|status)$ ]]
+          [[ "$CANARY_INQUIRY_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
+          python3 - "$CANARY_OPERATOR_IP" <<'PY'
+          import ipaddress
+          import sys
+
+          address = ipaddress.ip_address(sys.argv[1])
+          if address.version != 4 or not address.is_global:
+              raise SystemExit("Canary operator address must be one public IPv4 address")
+          PY
+          for key in AWS_REGION AWS_ROLE_ARN AWS_ACCOUNT_ID EC2_INSTANCE_ID; do
+            [[ -n "${!key:-}" ]] || {
+              echo "Required repository variable is missing: ${key}" >&2
+              exit 1
+            }
+          done
+          [[ "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ ]]
+          [[ "$AWS_REGION" =~ ^[a-z]{2}-[a-z]+-[0-9]+$ ]]
+          [[ "$EC2_INSTANCE_ID" =~ ^i-[0-9a-f]{8,17}$ ]]
+          [[ "$AWS_ROLE_ARN" =~ ^arn:aws:iam::${AWS_ACCOUNT_ID}:role/[A-Za-z0-9+=,.@_/-]+$ ]]
+
+      - uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: waterbridge-handoff-canary-${{ github.run_id }}
+
+      - name: Run protected Canary action through SSM
+        id: canary
+        shell: bash
+        env:
+          CANARY_ACTION: ${{ inputs.canary_action }}
+          CANARY_INQUIRY_ID: ${{ inputs.canary_inquiry_id }}
+          CANARY_OPERATOR_IP: ${{ inputs.canary_operator_ip }}
+        run: |
+          set -euo pipefail
+          script_path="/opt/waterbridge/current/scripts/deployment/production/manage-ai-handoff-canary.sh"
+          printf -v canary_command '%q %q %q %q %q' \
+            "$script_path" "$CANARY_ACTION" "$RELEASE_SHA" \
+            "$CANARY_INQUIRY_ID" "$CANARY_OPERATOR_IP"
+          commands_json="$(jq -cn \
+            --arg canary_command "$canary_command" \
+            '{commands:["set -euo pipefail",$canary_command]}')"
+          command_id="$(aws ssm send-command \
+            --region "$AWS_REGION" \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "WaterBridge AI Handoff Canary ${CANARY_ACTION}" \
+            --parameters "$commands_json" \
+            --query 'Command.CommandId' \
+            --output text)"
+          echo "command_id=${command_id}" >> "$GITHUB_OUTPUT"
+
+          poll_ssm_canary() {
+            local deadline invocation poll_status
+            deadline=$((SECONDS + 1200))
+            while (( SECONDS < deadline )); do
+              if invocation="$(aws ssm get-command-invocation \
+                --region "$AWS_REGION" \
+                --command-id "$command_id" \
+                --instance-id "$EC2_INSTANCE_ID" \
+                --output json 2>/dev/null)"; then
+                poll_status="$(jq -r '.Status' <<<"$invocation")"
+                case "$poll_status" in
+                  Success|Failed|Cancelled|TimedOut)
+                    printf '%s' "$invocation"
+                    return 0
+                    ;;
+                  Pending|InProgress|Delayed|Cancelling)
+                    ;;
+                  *)
+                    printf 'SSM_CANARY_UNKNOWN_STATUS status=%s\n' "$poll_status" >&2
+                    return 1
+                    ;;
+                esac
+              fi
+              sleep 5
+            done
+            printf 'SSM_CANARY_POLL_TIMEOUT seconds=1200\n' >&2
+            return 1
+          }
+
+          invocation="$(poll_ssm_canary)"
+          status="$(jq -r '.Status' <<<"$invocation")"
+          stdout="$(jq -r '.StandardOutputContent // ""' <<<"$invocation")"
+          stderr="$(jq -r '.StandardErrorContent // ""' <<<"$invocation")"
+          printf '%s\n' "$stdout"
+          [[ -z "$stderr" ]] || printf '%s\n' "$stderr" >&2
+          [[ "$status" == "Success" ]]
+          case "$CANARY_ACTION" in
+            preflight) marker=CANARY_PREFLIGHT_PASS ;;
+            open) marker=CANARY_OPEN_PASS ;;
+            close) marker=CANARY_CLOSE_PASS ;;
+            status) marker=CANARY_STATUS_PASS ;;
+          esac
+          grep -q "^${marker}$" <<<"$stdout"
+
+      - name: Record non-sensitive Canary action evidence
+        shell: bash
+        env:
+          CANARY_ACTION: ${{ inputs.canary_action }}
+          CANARY_INQUIRY_ID: ${{ inputs.canary_inquiry_id }}
+        run: |
+          {
+            echo "### AI Handoff Canary operation"
+            echo
+            echo "- Action: \`${CANARY_ACTION}\`"
+            echo "- Release SHA: \`${RELEASE_SHA}\`"
+            echo "- Inquiry ID: \`${CANARY_INQUIRY_ID}\`"
+            echo "- SSM command ID: \`${{ steps.canary.outputs.command_id }}\`"
+            echo "- Always-on activation: \`HOLD\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   source-guard:
     name: Verify release source and container boundaries
+    if: ${{ inputs.operation == 'release' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -501,6 +657,7 @@ jobs:
             "$release_root/infra/systemd/"
           cp scripts/deployment/production/deploy-release.sh \
             scripts/deployment/production/rollback-release.sh \
+            scripts/deployment/production/manage-ai-handoff-canary.sh \
             scripts/deployment/production/run_p1_auth_email_worker.sh \
             scripts/deployment/production/sync_backend_email_auth_secret.py \
             scripts/deployment/production/validate_backend_runtime.py \
@@ -508,6 +665,8 @@ jobs:
             scripts/deployment/production/validate_p1_auth_email_worker_runtime.py \
             scripts/deployment/production/trace_canary.py \
             "$release_root/scripts/deployment/production/"
+          chmod 0750 \
+            "$release_root/scripts/deployment/production/manage-ai-handoff-canary.sh"
           {
             echo "WEB_IMAGE=${REGISTRY}/${ECR_WEB_REPOSITORY}"
             echo "WEB_IMAGE_DIGEST=${WEB_DIGEST}"
@@ -565,12 +724,14 @@ jobs:
             "/etc/waterbridge/backend.env" "/etc/waterbridge/ai.env" \
             "/etc/waterbridge/certs/rds-ca.pem" "$BACKEND_EMAIL_AUTH_SECRET_ID"
           commands_json="$(jq -cn \
+            --arg canary_guard "if [[ -f /opt/waterbridge/shared/ai-handoff-canary.state ]]; then echo 'DEPLOYMENT_BLOCKED: active AI Handoff Canary window' >&2; exit 1; fi" \
             --arg copy_command "$copy_command" \
             --arg chmod_command "$chmod_command" \
             --arg deploy_command "$deploy_command" \
             '{commands:[
               "set -euo pipefail",
               "install -d -m 0750 /opt/waterbridge/shared",
+              $canary_guard,
               $copy_command,
               $chmod_command,
               $deploy_command
@@ -614,6 +775,11 @@ jobs:
           status="$(jq -r '.Status' <<<"$invocation")"
           stdout="$(jq -r '.StandardOutputContent' <<<"$invocation")"
           stderr="$(jq -r '.StandardErrorContent' <<<"$invocation")"
+          if grep -q '^DEPLOYMENT_MUTATION_STARTED$' <<<"$stdout"; then
+            echo "mutation_started=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "mutation_started=false" >> "$GITHUB_OUTPUT"
+          fi
           printf '%s\n' "$stdout"
           [[ -z "$stderr" ]] || printf '%s\n' "$stderr" >&2
           [[ "$status" == "Success" ]]
@@ -623,7 +789,7 @@ jobs:
         run: python scripts/smoke/check_production_deployment.py --base-url https://waterbridge.site
 
       - name: Roll back after a post-deployment failure
-        if: ${{ failure() && steps.deploy.outputs.command_id != '' }}
+        if: ${{ failure() && steps.deploy.outputs.command_id != '' && steps.deploy.outputs.mutation_started == 'true' }}
         shell: bash
         env:
           STORAGE_BUCKET: ${{ needs.build-and-publish.outputs.storage_bucket }}
