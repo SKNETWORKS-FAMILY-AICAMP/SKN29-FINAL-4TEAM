@@ -1,9 +1,9 @@
 title: ConsultantCustomerProjection
 type: object
-description: 담당 상담사에게만 제공하는 합성 고객 최소 정보이며 주소와 원문 연락처는 제공하지 않는다.
+description: 담당 상담사에게만 제공하는 합성 고객 최소 정보. 원문 연락처는 P1 예약 계약의 정확한 1:1 상담사 매칭에서만 제공한다.
 x-contract-status: CONFIRMED
 additionalProperties: false
-required: [is_synthetic, display_name, phone, phone_masked]
+required: [is_synthetic, display_name, phone, phone_masked, contact_phone]
 properties:
   is_synthetic:
     type: boolean
@@ -21,3 +21,7 @@ properties:
     type: string
     maxLength: 32
     description: Backend에서 마스킹한 상담사 화면용 연락처
+  contact_phone:
+    type: [string, "null"]
+    maxLength: 32
+    description: P1 예약 계약과 로그인 상담사가 정확히 1:1로 일치하고 해당 문의에 배정된 경우에만 반환하는 합성 고객 원문 연락처. 그 외에는 null이다.

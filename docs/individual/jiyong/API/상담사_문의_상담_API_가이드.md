@@ -35,7 +35,8 @@
 - 별도 미배정 대기열은 Claim에 필요한 합성 문의의 최소 정보만 반환한다.
 - 대기열 응답에는 고객 이름·전화번호·주소·계약번호·내부 AI Trace를 넣지 않는다.
 - 목록·상세에 `allowed_actions`와 최신 `state_version`을 제공한다.
-- 내부 사용자 ID·전체 연락처·주소·AI 내부 Trace를 노출하지 않는다.
+- 내부 사용자 ID·주소·AI 내부 Trace를 노출하지 않는다. 전체 연락처는 아래
+  11절의 P1 정확한 1:1 매칭 상세 조회 예외 외에는 노출하지 않는다.
 - `select_related`·`prefetch_related`로 Query 수 상한을 검증한다.
 
 ## 4. 전화 문의 등록
@@ -198,3 +199,41 @@ DEC-008 공개 Evidence는 아직 이 상세 계약에서 제외된다. Backend 
 Web·AI 소스를 변경하지 않으며 원문 고객 연락처도 응답하지 않는다. 상세·계약·
 OpenAPI·Demo Seed는 `42 passed`, 인접 회귀는 `18 passed / 1 PostgreSQL-only skipped`,
 전체 Backend 회귀는 `1459 passed / 40 external·PostgreSQL-only skipped`다.
+
+## 11. 2026-08-29 P1 정확한 1:1 매칭 연락처 조건부 공개
+
+2026-08-24 상세 Projection의 기본 마스킹 정책은 유지한다. 다만 P1 팀 합성 고객
+6명과 상담사 6명의 사전 확정된 정확한 1:1 조합에 한해, 배정된 문의 상세에서만
+원문 연락처를 추가 필드로 제공한다.
+
+```text
+GET /api/v1/inquiries/{inquiry_id}
+
+customer.phone          = 항상 마스킹
+customer.phone_masked   = 항상 마스킹
+customer.contact_phone  = 정확한 P1 1:1 매칭이면 원문, 그 외 null
+```
+
+`contact_phone` 공개 조건은 모두 만족해야 한다.
+
+1. 로그인 사용자가 활성 `CONSULTANT` 역할이다.
+2. 해당 Inquiry의 `assigned_user_id`가 로그인 상담사 ID와 같다.
+3. `assigned_role_code=CONSULTANT`다.
+4. 문의 구독의 계약번호가 P1 예약 계약 6건 중 하나다.
+5. 로그인 상담사의 고정 P1 계약번호와 문의 계약번호가 정확히 같다.
+
+일반 계약에 열려 있는 기존 Claim 판정만으로는 원문 연락처를 공개하지 않는다.
+다른 상담사의 고객, 잘못 교차 배정된 P1 고객, 비예약 계약, Demo·Web Fixture는
+`contact_phone=null`이다. 목록·검색·Dashboard·미배정 대기열에는 이 필드를
+추가하지 않았고 기존 마스킹 값만 유지한다.
+
+이번 변경은 조회 Projection의 Additive 변경이다. 고객 전화번호 저장 방식,
+DB Schema, Migration, Seed, 상태 전이, Web·Mobile·AI 소스는 변경하지 않는다.
+Web은 Backend 반영 후 상세 응답의 `contact_phone`이 있으면 우선 표시하고,
+`null`이면 기존 `phone_masked`를 표시해야 한다. 원문 번호를 로그·Trace·화면
+캡처·목록 캐시에 저장해서는 안 된다.
+
+검증 기준은 정확한 6쌍 공개, 교차 조합 비공개, 비예약 계약 비공개, 목록 원문
+비노출, OpenAPI·예제 정합성, Backend 전체 회귀다. 상세 구현 결과와 실제 검증값은
+`docs/individual/jiyong/20260829/20260829_P1_1대1매칭_상담사_고객연락처_조건부공개_구현검증.md`
+에서 관리한다.

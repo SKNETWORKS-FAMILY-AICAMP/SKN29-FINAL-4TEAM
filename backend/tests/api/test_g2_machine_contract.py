@@ -635,7 +635,12 @@ def test_dec007_uses_closed_synthetic_projections_and_excludes_evidence():
         "display_name",
         "phone",
         "phone_masked",
+        "contact_phone",
     }
+    assert customer["properties"]["contact_phone"]["type"] == [
+        "string",
+        "null",
+    ]
     assert "customer_display_name_masked" in list_item["properties"]
     assert "phone" not in list_item["properties"]
     assert "address" not in list_item["properties"]
@@ -821,6 +826,7 @@ def test_g2_examples_are_synthetic_parseable_and_evidence_free():
     assert "합성" in customer["display_name"]
     assert customer["phone"].startswith("010-****-")
     assert customer["phone_masked"] == customer["phone"]
+    assert customer["contact_phone"] == "010-0000-0101"
     assert examples["inquiry_list"]["data"]["items"][0][
         "customer_display_name_masked"
     ].endswith("*")

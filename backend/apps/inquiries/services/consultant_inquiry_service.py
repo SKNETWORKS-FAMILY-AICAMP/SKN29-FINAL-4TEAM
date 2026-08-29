@@ -16,6 +16,7 @@ from apps.consultations.services.consultation_service import (
     ConsultationService,
 )
 from apps.inquiries.models import Inquiry
+from apps.inquiries.p1_team_routing import P1TeamConsultantRouting
 from apps.inquiries.repositories.consultant_inquiry_repository import (
     ConsultantInquiryRepository,
 )
@@ -170,10 +171,15 @@ class ConsultantInquiryService:
                 "is_synthetic": True,
                 "display_name": cls._display_name(customer.customer_name),
                 # Keep the legacy key masked while Web migrates to the
-                # explicit phone_masked field. Raw phone data never leaves
-                # this consultant projection.
+                # explicit phone_masked field. The raw contact is additive
+                # and limited to the exact reserved consultant-contract pair.
                 "phone": cls._mask_phone(customer.phone),
                 "phone_masked": cls._mask_phone(customer.phone),
+                "contact_phone": cls._matched_contact_phone(
+                    actor=actor,
+                    inquiry=inquiry,
+                    phone=customer.phone,
+                ),
             },
             "product_and_care": {
                 "product_model": product.model_code,
@@ -312,6 +318,29 @@ class ConsultantInquiryService:
     @staticmethod
     def _mask_phone(value: str) -> str:
         return mask_phone(value)
+
+    @staticmethod
+    def _matched_contact_phone(
+        *,
+        actor: Any,
+        inquiry: Inquiry,
+        phone: str,
+    ) -> str | None:
+        """Expose one synthetic contact only to its exact assigned consultant."""
+
+        if (
+            getattr(actor, "role_code", None) != "CONSULTANT"
+            or inquiry.assigned_user_id != getattr(actor, "pk", None)
+            or inquiry.assigned_role_code
+            != Inquiry.AssignedRole.CONSULTANT
+            or not P1TeamConsultantRouting.is_exact_reserved_pair(
+                actor=actor,
+                contract_no=inquiry.subscription.contract_no,
+            )
+        ):
+            return None
+        normalized_phone = str(phone or "").strip()
+        return normalized_phone[:32] or None
 
     @staticmethod
     def _usage_guidance_display_label(status: str | None) -> str | None:

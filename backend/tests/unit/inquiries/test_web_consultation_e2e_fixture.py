@@ -144,6 +144,7 @@ def test_command_creates_ready_consultation_boundary_through_runtime():
         "display_name": "제갈지용",
         "phone": "010-****-5678",
         "phone_masked": "010-****-5678",
+        "contact_phone": None,
     }
     assert payload["symptom_and_questionnaire"]["answers"] == [
         {

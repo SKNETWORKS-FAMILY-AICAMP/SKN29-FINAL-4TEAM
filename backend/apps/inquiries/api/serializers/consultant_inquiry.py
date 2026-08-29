@@ -120,6 +120,7 @@ class ConsultantCustomerSerializer(serializers.Serializer):
     display_name = serializers.CharField(max_length=80)
     phone = serializers.CharField(max_length=32)
     phone_masked = serializers.CharField(max_length=32)
+    contact_phone = serializers.CharField(max_length=32, allow_null=True)
 
 
 class ConsultantProductAndCareSerializer(serializers.Serializer):
