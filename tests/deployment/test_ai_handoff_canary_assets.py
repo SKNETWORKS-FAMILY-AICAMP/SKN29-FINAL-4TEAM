@@ -121,7 +121,7 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
         )
         self.assertRegex(
             script,
-            r"location ~ \^/api/v1/inquiries/\[0-9a-fA-F\]",
+            r'location ~ "\^/api/v1/inquiries/\[0-9a-fA-F\]',
         )
         self.assertGreaterEqual(script.count("deny all;"), 2)
         self.assertIn("allow ${operator_ip};", script)

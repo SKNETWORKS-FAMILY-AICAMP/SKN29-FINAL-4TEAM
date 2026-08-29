@@ -307,7 +307,7 @@ location ~ ^/api/v1/inquiries/${inquiry_id}/(submit|answers)/?$ {
     proxy_read_timeout 65s;
 }
 
-location ~ ^/api/v1/inquiries/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/(submit|answers)/?$ {
+location ~ "^/api/v1/inquiries/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/(submit|answers)/?$" {
     deny all;
 }
 EOF
