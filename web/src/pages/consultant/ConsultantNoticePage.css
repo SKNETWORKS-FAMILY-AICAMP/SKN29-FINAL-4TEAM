@@ -21,7 +21,7 @@
   min-height: 0;
   grid-column: 2;
   grid-row: 2;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   overflow: hidden;
   border: 1px solid #cde3ef;
   border-radius: 18px;
@@ -166,8 +166,9 @@
   list-style: none;
 }
 
-.consultant-notice-list article {
+.consultant-notice-list__item {
   display: grid;
+  width: 100%;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 24px;
@@ -175,12 +176,25 @@
   border: 1px solid #d7e7ef;
   border-radius: 14px;
   background: #fff;
+  color: inherit;
+  cursor: pointer;
   box-shadow: 0 7px 20px rgb(33 95 126 / 6%);
+  text-align: left;
 }
 
-.consultant-notice-list article:hover {
+.consultant-notice-list__item:hover {
   border-color: #a8d3e4;
   box-shadow: 0 10px 25px rgb(33 95 126 / 10%);
+}
+
+.consultant-notice-list__item:focus-visible {
+  outline: 3px solid rgb(43 157 202 / 24%);
+  outline-offset: 2px;
+}
+
+.consultant-notice-panel > .common-pagination {
+  border-top: 1px solid #e1edf3;
+  background: #f9fcfe;
 }
 
 .consultant-notice-list__main {

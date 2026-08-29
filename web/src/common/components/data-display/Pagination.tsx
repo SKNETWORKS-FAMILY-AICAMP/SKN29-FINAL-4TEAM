@@ -1,6 +1,7 @@
 import "./Pagination.css";
 
 interface PaginationProps {
+  ariaLabel?: string;
   page: number;
   totalItems: number;
   totalPages: number;
@@ -8,6 +9,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({
+  ariaLabel = "문의 목록 페이지",
   page,
   totalItems,
   totalPages,
@@ -17,7 +19,7 @@ export default function Pagination({
   const canGoNext = page < totalPages;
 
   return (
-    <nav className="common-pagination" aria-label="문의 목록 페이지">
+    <nav className="common-pagination" aria-label={ariaLabel}>
       <p className="common-pagination__summary" aria-live="polite">
         총 {totalItems}건 · {page}/{totalPages}페이지
       </p>

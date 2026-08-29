@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CONSULTANT_QUEUE_INQUIRIES,
   COUNSELOR_INQUIRIES,
+  UNASSIGNED_CONSULTANT_INQUIRIES,
 } from "../fixtures/consultantWorkspaceMock";
 import { createConsultantWorkspaceRepository } from "../../src/features/consultation/repositories/consultantWorkspaceRepository";
 
@@ -38,5 +39,18 @@ describe("상담 업무 Repository 경계", () => {
         expect.objectContaining({ code: "CONFIRM_VISIT" }),
       ]),
     );
+  });
+
+  it("Mock 미배정 문의도 상담 시작 후 상세에서 이어서 찾는다", () => {
+    const repository = createConsultantWorkspaceRepository(true);
+    const inquiry = UNASSIGNED_CONSULTANT_INQUIRIES[0];
+
+    expect(repository.findInquiry(inquiry.inquiryId)).toMatchObject({
+      inquiryId: inquiry.inquiryId,
+      status: "CONSULTATION_REQUIRED",
+      allowedActions: [
+        expect.objectContaining({ code: "START_CONSULTATION" }),
+      ],
+    });
   });
 });

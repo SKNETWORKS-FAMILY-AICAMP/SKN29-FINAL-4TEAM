@@ -3,16 +3,36 @@ import { useMemo, useState } from "react";
 import { useConsultationForm } from "../hooks/useConsultationForm";
 import { useSaveConsultation } from "../hooks/useSaveConsultation";
 import { isRemoteConsultationActionCode } from "../model/remoteConsultationActions";
-import type { CounselorAllowedAction } from "../model/consultantWorkspaceTypes";
+import type {
+  CounselorAllowedAction,
+  CounselorStatus,
+} from "../model/consultantWorkspaceTypes";
 import type { ConsultantInquiryDetailViewModel } from "../model/consultantWorkspaceRemoteMapper";
 
 interface Props {
   inquiry: ConsultantInquiryDetailViewModel;
   onOpenVisit: (entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED") => void;
   onRefresh: () => void;
+  onStatusChange?: (status: CounselorStatus) => void;
 }
 
 const UNIFIED_CONSULTATION_RECORD_MAX_LENGTH = 2000;
+
+function presentConsultationAction(
+  action: CounselorAllowedAction,
+): CounselorAllowedAction {
+  if (action.code === "UPDATE_CONSULTATION_SUMMARY") {
+    return { ...action, label: "상담 내용 수정" };
+  }
+  if (action.code === "CONFIRM_CONSULTATION_SUMMARY") {
+    return {
+      ...action,
+      label: "상담 내용 확정",
+      confirmationMessage: "상담을 확정하시겠습니까?",
+    };
+  }
+  return action;
+}
 
 function buildUnifiedConsultationRecord(
   consultation: ConsultantInquiryDetailViewModel["consultation"],
@@ -37,7 +57,7 @@ function buildUnifiedConsultationRecord(
     .join("\n\n");
 }
 
-export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, onRefresh }: Props) {
+export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, onRefresh, onStatusChange }: Props) {
   const actions = useMemo<CounselorAllowedAction[]>(
     () => inquiry.workflow.allowedActions.flatMap((action) =>
       isRemoteConsultationActionCode(action.code)
@@ -63,6 +83,7 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   );
   const [isConsultationRecordEdited, setIsConsultationRecordEdited] =
     useState(false);
+  const [isSummaryEditing, setIsSummaryEditing] = useState(false);
   const form = useConsultationForm(
     {
       consultationNote: consultation?.consultationNote ?? "",
@@ -108,6 +129,14 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   };
 
   const handleAction = async (action: CounselorAllowedAction) => {
+    const presentedAction = presentConsultationAction(action);
+    if (
+      action.code === "UPDATE_CONSULTATION_SUMMARY" &&
+      !isSummaryEditing
+    ) {
+      setIsSummaryEditing(true);
+      return;
+    }
     if (action.code === "VISIT_REVIEW_REQUIRED" || action.code === "VISIT_NEEDED") {
       onOpenVisit(action.code);
       return;
@@ -118,7 +147,7 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
     }
     // 확인 다이얼로그는 useSaveConsultation에서 한 번만 처리한다. 여기에서도
     // 확인하면 requires_confirmation 작업이 이중 팝업으로 실행된다.
-    const valuesForValidation = isConsultationRecordEdited
+    let valuesForAction = isConsultationRecordEdited
       ? form.values
       : {
           ...form.values,
@@ -126,9 +155,25 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
           customerGuidance: consultationRecord,
           additionalCheck: consultationRecord,
         };
-    if (!form.validate(action.code, valuesForValidation)) return;
-    const outcome = await save.execute({ action, values: form.values, scenario: "SUCCESS" });
-    if (outcome.ok) onRefresh();
+    if (action.code === "CONFIRM_CONSULTATION_SUMMARY") {
+      valuesForAction = { ...valuesForAction, summaryConfirmed: true };
+      form.updateField("summaryConfirmed", true);
+    }
+    if (!form.validate(action.code, valuesForAction)) return;
+    const outcome = await save.execute({
+      action: presentedAction,
+      values: valuesForAction,
+      scenario: "SUCCESS",
+    });
+    if (outcome.ok) {
+      if (action.code === "UPDATE_CONSULTATION_SUMMARY") {
+        setIsSummaryEditing(false);
+      }
+      if ("result" in outcome) {
+        onStatusChange?.(outcome.result.status);
+      }
+      onRefresh();
+    }
     if (
       !outcome.ok &&
       "error" in outcome &&
@@ -182,17 +227,14 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
                   </span>
                 )}
             </label>
-            <small className="v6-form-field__hint">
-              고객 안내와 추가 확인 내용을 이곳에 함께 기록해 주세요.
-            </small>
           </section>
-          <section className="v6-action-form-section">
-            <h4>상담 요약 확인</h4>
+          <section className="v6-action-form-section v6-action-form-section--summary">
             <label className="v6-form-field">
-              상담 요약 수정본
+              상담 내용 수정본
               <textarea
                 data-testid="consultation-field-summaryRevision"
                 name="summaryRevision"
+                disabled={!isSummaryEditing}
                 value={form.values.summaryRevision}
                 onChange={(event) =>
                   form.updateField("summaryRevision", event.target.value)
@@ -201,25 +243,6 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
               {form.fieldErrors.summaryRevision && (
                 <span className="v6-field-error">
                   {form.fieldErrors.summaryRevision}
-                </span>
-              )}
-            </label>
-            <label className="v6-summary-confirmation">
-              <input
-                type="checkbox"
-                aria-label="상담 요약 검토·확정"
-                checked={form.values.summaryConfirmed}
-                onChange={(event) =>
-                  form.updateField("summaryConfirmed", event.target.checked)
-                }
-              />
-              <span>
-                <strong>상담 요약 확인 완료</strong>
-                <small>위 상담 요약을 검토했다면 체크해 주세요.</small>
-              </span>
-              {form.fieldErrors.summaryConfirmed && (
-                <span className="v6-field-error">
-                  {form.fieldErrors.summaryConfirmed}
                 </span>
               )}
             </label>
@@ -246,11 +269,19 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
         </form>
       )}
       <div className="v6-action-buttons">
-        {save.allowedActions.map((action) => (
-          <button key={action.code} className={`v6-button v6-button--${action.style === "PRIMARY" ? "primary" : "secondary"} v6-button--full`} type="button" data-action-code={action.code} disabled={save.isSaving} onClick={() => handleAction(action)}>
-            {save.isSaving ? "처리 중" : action.label}
-          </button>
-        ))}
+        {save.allowedActions.map((action) => {
+          const presentedAction = presentConsultationAction(action);
+          const label =
+            action.code === "UPDATE_CONSULTATION_SUMMARY" && isSummaryEditing
+              ? "수정 내용 저장"
+              : presentedAction.label;
+
+          return (
+            <button key={action.code} className={`v6-button v6-button--${action.style === "PRIMARY" ? "primary" : "secondary"} v6-button--full`} type="button" data-action-code={action.code} disabled={save.isSaving} onClick={() => handleAction(action)}>
+              {save.isSaving ? "처리 중" : label}
+            </button>
+          );
+        })}
       </div>
       {save.success && (
         <p className="v6-action-message is-success" role="status">

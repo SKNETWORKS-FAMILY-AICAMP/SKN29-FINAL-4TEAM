@@ -147,7 +147,7 @@ describe("Remote 첫 문의 상세 패널", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "상담 2단계: 안전·상담 가이드 확인",
+        name: "상담 2단계: AI 상담 · 이전 상담 기록 확인",
       }),
     );
     expect(
@@ -156,7 +156,7 @@ describe("Remote 첫 문의 상세 패널", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "상담 3단계: 상담 기록·최종 처리",
+        name: "상담 3단계: 상담 진행",
       }),
     );
     expect(screen.getByLabelText("상담 처리 작업")).toBeVisible();

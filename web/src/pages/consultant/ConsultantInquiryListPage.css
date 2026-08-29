@@ -256,10 +256,62 @@
   background: #fff;
 }
 
-.consultant-inquiry-list-app .consultant-category-filters > label {
+.consultant-inquiry-list-app .consultant-category-filters > label,
+.consultant-inquiry-list-app .consultant-category-filters > form {
   display: grid;
   gap: 6px;
   min-width: 0;
+  margin: 0;
+}
+
+/* Search is applied only when the counselor submits the form. */
+.consultant-inquiry-list-app
+  .consultant-category-filters__search
+  button[type="submit"] {
+  min-width: 58px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 7px;
+  background: #3f4a5d;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.consultant-inquiry-list-app
+  .consultant-category-filters__search
+  button[type="submit"]:hover {
+  background: #2f394a;
+}
+
+.consultant-inquiry-list-app .consultant-list-item__title {
+  display: flex !important;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.consultant-inquiry-list-app .consultant-list-item__title > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consultant-inquiry-list-app .consultant-list-item__new-badge {
+  display: inline-flex;
+  min-height: 22px;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  box-shadow: 0 3px 9px rgb(229 72 77 / 20%);
 }
 
 .consultant-inquiry-list-app .consultant-category-filters__search,
@@ -271,7 +323,8 @@
   justify-self: end;
 }
 
-.consultant-inquiry-list-app .consultant-category-filters > label > span {
+.consultant-inquiry-list-app .consultant-category-filters > label > span,
+.consultant-inquiry-list-app .consultant-category-filters > form > span {
   color: #587186;
   font-size: 12px;
   font-weight: 800;

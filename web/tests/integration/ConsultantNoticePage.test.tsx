@@ -41,7 +41,12 @@ describe("ConsultantNoticePage", () => {
       within(panel).queryByText("상담 업무에 필요한 안내와 일정을 확인해 주세요."),
     ).not.toBeInTheDocument();
     expect(within(panel).queryByText("6건")).not.toBeInTheDocument();
-    expect(within(panel).getAllByRole("listitem")).toHaveLength(6);
+    expect(within(panel).getAllByRole("listitem")).toHaveLength(5);
+    expect(
+      within(panel).getByRole("navigation", {
+        name: "공지사항 목록 페이지",
+      }),
+    ).toHaveTextContent("총 6건 · 1/2페이지");
     expect(screen.getByRole("tab", { name: "공지사항" })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -75,7 +80,7 @@ describe("ConsultantNoticePage", () => {
     expect(
       await screen.findByRole("tab", { name: "전체 문의90" }),
     ).toBeVisible();
-    expect(screen.getByRole("tab", { name: "새 문의30" })).toBeVisible();
+    expect(screen.queryByRole("tab", { name: "새 문의30" })).not.toBeInTheDocument();
     expect(
       screen.getByRole("tab", { name: "처리 중인 문의30" }),
     ).toBeVisible();
@@ -89,6 +94,9 @@ describe("ConsultantNoticePage", () => {
     renderPage("/consultant/notices?noticeId=notice-emergency-001");
 
     const panel = await screen.findByRole("tabpanel", { name: "공지사항 상세" });
+    expect(
+      within(panel).queryByText("선택한 공지의 내용을 자세히 확인해 주세요."),
+    ).not.toBeInTheDocument();
     expect(
       within(panel).getByRole("heading", {
         level: 2,
@@ -105,7 +113,25 @@ describe("ConsultantNoticePage", () => {
     );
 
     const listPanel = await screen.findByRole("tabpanel", { name: "공지사항" });
-    expect(within(listPanel).getAllByRole("listitem")).toHaveLength(6);
+    expect(within(listPanel).getAllByRole("listitem")).toHaveLength(5);
+  });
+
+  it("공지 목록을 누르면 상세 화면으로 이동하고 페이지를 전환한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const panel = await screen.findByRole("tabpanel", { name: "공지사항" });
+    await user.click(
+      within(panel).getByRole("button", { name: /긴급 문의 응대 절차 안내/ }),
+    );
+    expect(
+      await screen.findByRole("tabpanel", { name: "공지사항 상세" }),
+    ).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: /공지사항 목록으로/ }));
+    const listPanel = await screen.findByRole("tabpanel", { name: "공지사항" });
+    await user.click(within(listPanel).getByRole("button", { name: "다음" }));
+    expect(within(listPanel).getAllByRole("listitem")).toHaveLength(1);
   });
 
   it("게시되지 않았거나 존재하지 않는 공지는 빈 상태로 안내한다", async () => {

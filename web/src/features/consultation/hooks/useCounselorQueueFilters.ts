@@ -95,7 +95,7 @@ export default function useCounselorQueueFilters() {
   const setFilters = (next: CounselorFilters) => {
     const params = new URLSearchParams();
     const bucket = searchParams.get("bucket");
-    if (["ALL", "NEW", "IN_PROGRESS", "COMPLETED"].includes(bucket ?? "")) {
+    if (["ALL", "IN_PROGRESS", "COMPLETED"].includes(bucket ?? "")) {
       params.set("bucket", bucket!);
     }
     const entries: readonly [string, string, string][] = [
@@ -139,7 +139,7 @@ export default function useCounselorQueueFilters() {
     resetFilters: () => {
       const params = new URLSearchParams();
       const bucket = searchParams.get("bucket");
-      if (["ALL", "NEW", "IN_PROGRESS", "COMPLETED"].includes(bucket ?? "")) {
+      if (["ALL", "IN_PROGRESS", "COMPLETED"].includes(bucket ?? "")) {
         params.set("bucket", bucket!);
       }
       setSearchParams(params, { replace: true });

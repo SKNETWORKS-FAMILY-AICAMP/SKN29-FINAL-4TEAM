@@ -26,19 +26,18 @@ describe("ConsultantQueueSidebar", () => {
     const menu = screen.getByRole("tablist", { name: "상담사 메뉴" });
     const tabs = within(menu).getAllByRole("tab");
 
-    expect(tabs).toHaveLength(7);
+    expect(tabs).toHaveLength(6);
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       "업무 대시보드",
       "전체 문의16",
-      "새 문의3",
       "처리 중인 문의5",
       "처리 완료된 문의8",
       "전화 문의 등록",
       "공지사항",
     ]);
-    expect(menu.querySelectorAll("svg")).toHaveLength(7);
+    expect(menu.querySelectorAll("svg")).toHaveLength(6);
     expect(container.querySelectorAll(".consultant-work-tab__icon")).toHaveLength(
-      7,
+      6,
     );
     expect(
       tabs.filter((tab) => tab.getAttribute("aria-selected") === "true"),
@@ -62,9 +61,9 @@ describe("ConsultantQueueSidebar", () => {
       </MemoryRouter>,
     );
 
-    await user.click(screen.getByRole("tab", { name: "새 문의3" }));
+    await user.click(screen.getByRole("tab", { name: "처리 중인 문의5" }));
 
-    expect(onBucketChange).toHaveBeenCalledWith("NEW");
+    expect(onBucketChange).toHaveBeenCalledWith("IN_PROGRESS");
     expect(
       screen.getByRole("tab", { name: "업무 대시보드" }),
     ).toHaveAttribute("href", ROUTE_PATHS.consultantDashboard);
@@ -89,7 +88,7 @@ describe("ConsultantQueueSidebar", () => {
     );
 
     expect(screen.getByRole("tab", { name: "전체 문의21" })).toBeVisible();
-    expect(screen.getByRole("tab", { name: "새 문의3" })).toBeVisible();
+    expect(screen.queryByRole("tab", { name: "새 문의3" })).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "처리 중인 문의5" })).toBeVisible();
     expect(screen.getByRole("tab", { name: "처리 완료된 문의8" })).toBeVisible();
   });

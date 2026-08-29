@@ -6,6 +6,7 @@ import ForbiddenState from "../../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../../common/components/feedback/LoadingState";
 import type { InquiryId } from "../../../entities/inquiry/inquiryIdentifiers";
 import { useConsultantInquiryDetailQuery } from "../hooks/useConsultantWorkspaceQueries";
+import type { CounselorStatus } from "../model/consultantWorkspaceTypes";
 import type { ConsultantWorkspaceDataRepository } from "../repositories/consultantWorkspaceDataRepository";
 import RemoteConsultantInquiryDetail from "./RemoteConsultantInquiryDetail";
 
@@ -13,6 +14,7 @@ interface RemoteConsultantFirstDetailPanelProps {
   inquiryId: InquiryId;
   onClose: () => void;
   onRefreshWorkspace: () => void;
+  onStatusChange?: (status: CounselorStatus) => void;
   repository?: ConsultantWorkspaceDataRepository;
   returnTo: string;
 }
@@ -30,6 +32,7 @@ export default function RemoteConsultantFirstDetailPanel({
   inquiryId,
   onClose,
   onRefreshWorkspace,
+  onStatusChange,
   repository,
   returnTo,
 }: RemoteConsultantFirstDetailPanelProps) {
@@ -129,6 +132,7 @@ export default function RemoteConsultantFirstDetailPanel({
         inquiry={inquiry}
         onOpenVisit={openVisit}
         onRefresh={refreshDetailAndWorkspace}
+        onStatusChange={onStatusChange}
       />
     );
   };

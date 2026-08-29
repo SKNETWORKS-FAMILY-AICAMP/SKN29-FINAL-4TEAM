@@ -15,6 +15,7 @@ import {
 } from "../model/consultantWorkspaceModel";
 import { formatProductModelAndName } from "../model/productDisplayName";
 import { hasRemoteConsultationAction } from "../model/remoteConsultationActions";
+import type { CounselorStatus } from "../model/consultantWorkspaceTypes";
 import ConsultationStepNavigator from "./ConsultationStepNavigator";
 import RemoteConsultationActionPanel from "./RemoteConsultationActionPanel";
 import "./RemoteConsultantInquiryDetail.css";
@@ -23,6 +24,7 @@ interface RemoteConsultantInquiryDetailProps {
   inquiry: ConsultantInquiryDetailViewModel;
   onOpenVisit?: (entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED") => void;
   onRefresh?: () => void;
+  onStatusChange?: (status: CounselorStatus) => void;
 }
 
 const CONTRACT_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -298,6 +300,7 @@ export default function RemoteConsultantInquiryDetail({
   inquiry,
   onOpenVisit,
   onRefresh,
+  onStatusChange,
 }: RemoteConsultantInquiryDetailProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const historyTriggerRef = useRef<HTMLButtonElement>(null);
@@ -366,31 +369,36 @@ export default function RemoteConsultantInquiryDetail({
         aria-labelledby="remote-inquiry-customer-title"
         data-e2e-sensitive="true"
       >
-        <div className="remote-inquiry-detail__badges" aria-label="문의 상태 요약">
-          <span className={`remote-inquiry-detail__badge is-risk-${normalizedRisk.toLowerCase()}`}>
-            {riskLabel} 문의
-          </span>
-          <span className="remote-inquiry-detail__badge is-status">
-            {statusLabel}
-          </span>
+        <div className="remote-inquiry-detail__heading">
+          <h2 id="remote-inquiry-customer-title">
+            {inquiry.customer.displayName}
+          </h2>
+          <div className="remote-inquiry-detail__badges" aria-label="문의 상태 요약">
+            <span className={`remote-inquiry-detail__badge is-risk-${normalizedRisk.toLowerCase()}`}>
+              {riskLabel} 문의
+            </span>
+            <span className="remote-inquiry-detail__badge-separator" aria-hidden="true">
+              |
+            </span>
+            <span className="remote-inquiry-detail__badge is-status">
+              {statusLabel}
+            </span>
+          </div>
         </div>
-        <h2 id="remote-inquiry-customer-title">
-          {inquiry.customer.displayName}
-        </h2>
         <p className="remote-inquiry-detail__symptom-summary">
           {inquiry.symptomAndQuestionnaire.symptomSummary}
         </p>
         <dl className="remote-inquiry-detail__overview-meta">
           <div>
-            <dt>연락처</dt>
+            <dt className="consultant-visually-hidden">연락처</dt>
             <dd>{inquiry.customer.phoneMasked}</dd>
           </div>
           <div>
-            <dt>제품</dt>
+            <dt className="consultant-visually-hidden">제품</dt>
             <dd>{productName}</dd>
           </div>
           <div>
-            <dt>접수 정보</dt>
+            <dt className="consultant-visually-hidden">접수 정보</dt>
             <dd>
               <time
                 dateTime={inquiry.receivedAt}
@@ -408,8 +416,8 @@ export default function RemoteConsultantInquiryDetail({
         steps={[
           {
             id: "inquiry",
-            title: "고객·문의·제품 확인",
-            description: "고객 증상과 제품 관리 정보를 먼저 확인합니다.",
+            title: "고객 문의 · 제품 확인",
+            description: "",
             content: (
               <div className="consultation-stepper__step-grid">
                 <section
@@ -495,8 +503,8 @@ export default function RemoteConsultantInquiryDetail({
           },
           {
             id: "guidance",
-            title: "안전·상담 가이드 확인",
-            description: "사용 제한과 고객 안내 내용을 확인한 뒤 상담을 진행합니다.",
+            title: "AI 상담 · 이전 상담 기록 확인",
+            description: "",
             content: (
               <div className="consultation-stepper__step-stack">
                 <section
@@ -554,8 +562,8 @@ export default function RemoteConsultantInquiryDetail({
           },
           {
             id: "action",
-            title: "상담 기록·최종 처리",
-            description: "상담 내용을 기록하고 현재 상태에서 가능한 처리를 진행합니다.",
+            title: "상담 진행",
+            description: "",
             content: (
               <div className="consultation-stepper__step-stack">
                 {(isVisitRequired || inquiry.visit) && (
@@ -631,6 +639,7 @@ export default function RemoteConsultantInquiryDetail({
                     inquiry={inquiry}
                     onOpenVisit={onOpenVisit}
                     onRefresh={onRefresh}
+                    onStatusChange={onStatusChange}
                   />
                 ) : (
                   <div className="consultation-stepper__empty-action">
