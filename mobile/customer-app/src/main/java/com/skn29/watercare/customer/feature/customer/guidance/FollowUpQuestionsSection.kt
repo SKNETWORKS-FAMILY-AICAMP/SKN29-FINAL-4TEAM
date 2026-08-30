@@ -41,7 +41,22 @@ fun FollowUpQuestionsSection(
         FollowUpUiState.Disabled -> Unit
         FollowUpUiState.Loading -> Unit
 
-        is FollowUpUiState.Empty -> Unit
+        is FollowUpUiState.Empty -> {
+            if (
+                state.snapshot.statusCode
+                    .trim()
+                    .uppercase() ==
+                "QUESTIONNAIRE_IN_PROGRESS"
+            ) {
+                SectionCard("답변을 분석하고 있어요") {
+                    LiquidGlassPill("AI 분석 중")
+                    Text(
+                        "추가 답변을 반영해 맞춤 해결 안내를 준비하고 있습니다. 잠시만 기다려 주세요.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        }
 
         is FollowUpUiState.Form -> FollowUpForm(
             state.snapshot.statusCode,

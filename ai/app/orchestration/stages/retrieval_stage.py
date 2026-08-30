@@ -62,6 +62,11 @@ def execute_retrieval_stage(
                     if ctx.structured_symptom is not None
                     else None
                 ),
+                target_water_type=(
+                    ctx.structured_symptom.target_water_type
+                    if ctx.structured_symptom is not None
+                    else None
+                ),
             )
             applicability_gate = EvidenceApplicabilityGate()
             symptom_type = (

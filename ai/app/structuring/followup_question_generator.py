@@ -22,6 +22,25 @@ _PRIVATE_QUESTION_PATTERNS = (
     re.compile(r"https?://\S+", flags=re.IGNORECASE),
 )
 
+_QUESTION_SEMANTIC_RULES = {
+    "occurrence_time": {
+        "required_any": ("언제", "시작", "부터"),
+        "forbidden": ("조건", "항상", "간헐", "버튼", "사용 중", "이유", "원인"),
+    },
+    "target_water_type": {
+        "required_any": ("출수", "냉수", "온수", "정수", "물"),
+        "forbidden": ("이유", "원인", "언제부터"),
+    },
+    "occurrence_condition": {
+        "required_any": ("조건", "항상", "간헐", "경우", "때", "중"),
+        "forbidden": ("부터", "시작", "이유", "원인"),
+    },
+    "actions_taken": {
+        "required_any": ("조치", "확인", "해보", "해 보", "시도", "취하"),
+        "forbidden": ("이유", "원인", "언제부터"),
+    },
+}
+
 
 class FollowUpQuestionGenerator:
     """질문 대상은 결정적으로 유지하고 표현만 LLM 후보를 허용한다."""
@@ -193,12 +212,29 @@ class FollowUpQuestionGenerator:
                 or "\n" in question_text
                 or not question_text.endswith(("?", "？"))
                 or any(pattern.search(question_text) for pattern in _PRIVATE_QUESTION_PATTERNS)
+                or not FollowUpQuestionGenerator._question_matches_target_field(
+                    fixed.target_field,
+                    question_text,
+                )
             ):
-                raise ValueError("Follow-up 질문 문구 형식이 올바르지 않습니다.")
+                raise ValueError("Follow-up 질문 문구 형식 또는 의미가 target_field와 일치하지 않습니다.")
             result.append(
                 fixed.model_copy(update={"question_text": question_text})
             )
         return result
+
+    @staticmethod
+    def _question_matches_target_field(
+        target_field: str,
+        question_text: str,
+    ) -> bool:
+        rule = _QUESTION_SEMANTIC_RULES.get(target_field)
+        if rule is None:
+            return False
+        compact = " ".join(question_text.split())
+        if any(token in compact for token in rule["forbidden"]):
+            return False
+        return any(token in compact for token in rule["required_any"])
 
     @staticmethod
     def _fallback_reason(exc: Exception) -> str:

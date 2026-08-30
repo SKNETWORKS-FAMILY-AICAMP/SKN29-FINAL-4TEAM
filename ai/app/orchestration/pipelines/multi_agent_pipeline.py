@@ -73,6 +73,13 @@ class MultiAgentPipeline:
         if symptom_output.safety_assessment.risk_level == RiskLevel.DANGER:
             shared.handoff(AgentRole.CARE_DECISION, HandoffReason.DANGER_PRIORITY)
             care_agent.run(ctx)
+        elif symptom_output.clarification_needed:
+            shared.awaiting_customer_input = True
+            shared.handoff(
+                AgentRole.CARE_DECISION,
+                HandoffReason.CUSTOMER_INPUT_PENDING,
+            )
+            care_agent.run(ctx, awaiting_customer_input=True)
         elif EvidenceApplicabilityGate().requires_more_information(
             symptom_type=symptom_output.structured_symptom.symptom_type,
             missing_field_names=(

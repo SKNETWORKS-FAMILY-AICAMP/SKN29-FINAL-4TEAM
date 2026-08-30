@@ -24,7 +24,14 @@ class EvidenceTopicFilter:
     """지원이 확정된 증상은 같은 주제의 공식 근거만 생성 경계로 보낸다."""
 
     _TOPIC_BY_SYMPTOM_TYPE = {
+        "제품 누수": "symptom_leak",
+        "출수량 저하": "symptom_low_flow",
         "물맛/냄새 이상": "symptom_taste_odor",
+        "소음 이상": "symptom_noise",
+    }
+    _TEMPERATURE_TOPIC_BY_WATER_TYPE = {
+        "냉수": "symptom_cold_temperature",
+        "온수": "symptom_hot_water_safety",
     }
 
     def filter_chunks(
@@ -32,9 +39,13 @@ class EvidenceTopicFilter:
         chunks: Iterable[RetrievedChunk],
         *,
         symptom_type: str | None,
+        target_water_type: str | None = None,
     ) -> list[RetrievedChunk]:
         candidates = list(chunks)
-        expected_topic = self._TOPIC_BY_SYMPTOM_TYPE.get(symptom_type or "")
+        expected_topic = self._expected_topic(
+            symptom_type=symptom_type,
+            target_water_type=target_water_type,
+        )
         if expected_topic is None:
             return candidates
 
@@ -45,3 +56,16 @@ class EvidenceTopicFilter:
             if (chunk.topic_code or canonical_topics.get(chunk.chunk_id))
             == expected_topic
         ]
+
+    @classmethod
+    def _expected_topic(
+        cls,
+        *,
+        symptom_type: str | None,
+        target_water_type: str | None,
+    ) -> str | None:
+        if symptom_type == "온도 이상":
+            return cls._TEMPERATURE_TOPIC_BY_WATER_TYPE.get(
+                target_water_type or ""
+            )
+        return cls._TOPIC_BY_SYMPTOM_TYPE.get(symptom_type or "")
