@@ -1,0 +1,76 @@
+{
+  "status": "E02_V2_VARIANTS_READY",
+  "mapping": {
+    "fixed512": {
+      "assignment_count": 53,
+      "minimum_best_overlap_ratio": 0.781457,
+      "mean_best_overlap_ratio": 0.981273,
+      "full_coverage_assignment_count": 46,
+      "partial_assignment_count": 7,
+      "below_minimum_count": 0,
+      "below_minimum": []
+    },
+    "section_aware_512": {
+      "assignment_count": 53,
+      "minimum_best_overlap_ratio": 0.702778,
+      "mean_best_overlap_ratio": 0.985638,
+      "full_coverage_assignment_count": 48,
+      "partial_assignment_count": 5,
+      "below_minimum_count": 0,
+      "below_minimum": []
+    },
+    "parent_child_256": {
+      "assignment_count": 53,
+      "minimum_best_overlap_ratio": 0.702778,
+      "mean_best_overlap_ratio": 0.970792,
+      "full_coverage_assignment_count": 41,
+      "partial_assignment_count": 12,
+      "below_minimum_count": 0,
+      "below_minimum": []
+    }
+  },
+  "qa": [
+    {
+      "variant": "fixed512",
+      "status": "PASS",
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "minimum_best_overlap_ratio": 0.781457,
+      "partial_assignment_count": 7,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 62,
+        "WPUIAC606SNW": 59,
+        "WPUJAC104DWH": 49
+      },
+      "errors": []
+    },
+    {
+      "variant": "section_aware_512",
+      "status": "PASS",
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "minimum_best_overlap_ratio": 0.702778,
+      "partial_assignment_count": 5,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 43,
+        "WPUIAC606SNW": 42,
+        "WPUJAC104DWH": 49
+      },
+      "errors": []
+    },
+    {
+      "variant": "parent_child_256",
+      "status": "PASS",
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "minimum_best_overlap_ratio": 0.702778,
+      "partial_assignment_count": 12,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 76,
+        "WPUIAC606SNW": 74,
+        "WPUJAC104DWH": 66
+      },
+      "errors": []
+    }
+  ]
+}

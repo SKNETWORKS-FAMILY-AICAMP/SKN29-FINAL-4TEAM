@@ -1,0 +1,49 @@
+{
+  "experiment_id": "E01",
+  "generated_at_utc": "2026-08-27T08:28:13.200592+00:00",
+  "source": {
+    "branch": "main",
+    "head_sha": "cd8875d4f55fb2d0099e0de00b24f56c07762f72",
+    "origin_main_sha": "cd8875d4f55fb2d0099e0de00b24f56c07762f72",
+    "head_matches_origin_main": true,
+    "worktree_clean": true
+  },
+  "runtime": {
+    "profile": "three_model_integration",
+    "activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+    "public_runtime_activation": "HOLD",
+    "database": "waterbridge_team_integration",
+    "vector_view": "backend_ai_rag_chunks_v1"
+  },
+  "retrieval_contract": {
+    "top_k": 5,
+    "pre_score_filter": "exact_sales_code",
+    "cross_model_fallback": false,
+    "search_record_type": "CHILD",
+    "retrieval_role": "SEARCH_CANDIDATE",
+    "parent_usage": "CONTEXT_ONLY",
+    "official_verified_only": true
+  },
+  "embedding": {
+    "model": "BAAI/bge-m3",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024
+  },
+  "index": {
+    "type": "exact_search",
+    "version": "2.0.0",
+    "chunk_count": 53,
+    "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+    "indexed_at": "2026-08-20T11:54:21.186995+00:00"
+  },
+  "dataset": {
+    "case_count": 50,
+    "evidence_group_count": 43,
+    "child_count": 53,
+    "evaluation_contract_sha256": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1",
+    "evidence_groups_sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D",
+    "canonical_identity_sha256": "AB98AA6CFE839366CB13ECC3839D72EE0AE99419AF85F702F0C2F1D05BDCA169",
+    "index_manifest_sha256": "3FA0F26C0C2C2628F9D4410C061FF17DD8D6CE9C6E0B76358CBB0BB0A9C28A1E",
+    "runtime_child_identity_sha256": "C2419ED19F58C565AF3048E9FD9E38243454360990EF83DD0ECFE73562C63BE1"
+  }
+}

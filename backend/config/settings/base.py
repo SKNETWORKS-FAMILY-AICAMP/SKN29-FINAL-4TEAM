@@ -133,7 +133,8 @@ TEMPLATES = [
     }
 ]
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 POSTGRES_OPTIONS: dict[str, str | int] = {}
 if os.getenv("DJANGO_SETTINGS_MODULE") != "config.settings.test":

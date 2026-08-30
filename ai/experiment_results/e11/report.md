@@ -141,7 +141,7 @@ Playwright Chromium에서 Mock API/Auth를 사용하지 않고 실제 로컬 Web
 ```text
 ai/scripts/experiments/e11_playwright_user_e2e.py
 
-ai/experiment_results/e11_playwright_user_e2e/
+ai/experiment_results/e11/
 ├─ summary.json
 ├─ report.md
 ├─ playwright.log

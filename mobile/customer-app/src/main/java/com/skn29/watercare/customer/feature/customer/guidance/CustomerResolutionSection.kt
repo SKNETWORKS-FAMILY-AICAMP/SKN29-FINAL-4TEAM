@@ -2,8 +2,13 @@ package com.skn29.watercare.customer.feature.customer.guidance
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -25,10 +30,20 @@ fun CustomerResolutionSection(
         CustomerInquiryConsultationResult? = null,
     state: CustomerResolutionUiState,
     onResolved: () -> Unit,
-    onUnresolved: () -> Unit,
+    onUnresolved: (String) -> Unit,
     onRetry: () -> Unit,
     onDone: () -> Unit,
 ) {
+    var showUnresolvedForm by
+        rememberSaveable {
+            mutableStateOf(false)
+        }
+
+    var unresolvedComment by
+        rememberSaveable {
+            mutableStateOf("")
+        }
+
     val normalized =
         statusCode?.trim()?.uppercase().orEmpty()
 
@@ -117,16 +132,42 @@ fun CustomerResolutionSection(
                     unresolvedAction != null &&
                     stateVersion != null
                 ) {
-                    LiquidGlassButton(
-                        text = "아직 해결되지 않았어요",
-                        onClick = onUnresolved,
-                        accent = false,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag(
-                                "reportUnresolved"
-                            ),
-                    )
+                    if (!showUnresolvedForm) {
+                        LiquidGlassButton(
+                            text =
+                                "아직 해결되지 " +
+                                    "않았어요",
+                            onClick = {
+                                showUnresolvedForm =
+                                    true
+                            },
+                            accent = false,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(
+                                    "reportUnresolved"
+                                ),
+                        )
+                    } else {
+                        UnresolvedCommentForm(
+                            comment =
+                                unresolvedComment,
+                            onCommentChange = {
+                                unresolvedComment = it
+                            },
+                            onSubmit = {
+                                onUnresolved(
+                                    unresolvedComment
+                                )
+                            },
+                            onCancel = {
+                                unresolvedComment = ""
+                                showUnresolvedForm =
+                                    false
+                            },
+                            enabled = true,
+                        )
+                    }
                 }
             }
 
@@ -173,15 +214,137 @@ fun CustomerResolutionSection(
                 )
             }
 
-            is CustomerResolutionUiState.Error ->
+            is CustomerResolutionUiState.Error -> {
+                val unresolvedFailure =
+                    state.actionCode ==
+                        InquiryActionLabels
+                            .CUSTOMER_REPORTED_UNRESOLVED
+
                 ErrorCard(
                     state.message,
-                    if (state.retryable) {
+                    if (
+                        state.retryable &&
+                        !unresolvedFailure
+                    ) {
                         onRetry
                     } else {
                         null
                     },
                 )
+
+                if (
+                    unresolvedFailure &&
+                    unresolvedAction != null &&
+                    stateVersion != null
+                ) {
+                    UnresolvedCommentForm(
+                        comment =
+                            unresolvedComment,
+                        onCommentChange = {
+                            unresolvedComment = it
+                        },
+                        onSubmit = {
+                            onUnresolved(
+                                unresolvedComment
+                            )
+                        },
+                        onCancel = {
+                            unresolvedComment = ""
+                            showUnresolvedForm =
+                                false
+                        },
+                        enabled = true,
+                    )
+                }
+            }
         }
     }
+}
+
+@Composable
+private fun UnresolvedCommentForm(
+    comment: String,
+    onCommentChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+    onCancel: () -> Unit,
+    enabled: Boolean,
+) {
+    Text(
+        text =
+            "\uC5B4\uB5A4 \uBB38\uC81C\uAC00 \uC544\uC9C1 " +
+                "\uB0A8\uC544 \uC788\uB098\uC694?",
+        style =
+            MaterialTheme.typography
+                .titleSmall,
+        fontWeight = FontWeight.Bold,
+    )
+
+    Text(
+        text =
+            "\uC0C1\uB2F4\uC0AC\uAC00 \uC774\uC804 \uC0C1\uB2F4 " +
+                "\uB0B4\uC6A9\uACFC \uD568\uAED8 \uD655\uC778\uD560 " +
+                "\uC218 \uC788\uB3C4\uB85D \uD604\uC7AC \uB0A8\uC544 " +
+                "\uC788\uB294 \uC99D\uC0C1\uC744 \uC801\uC5B4\uC8FC\uC138\uC694.",
+        style =
+            MaterialTheme.typography
+                .bodySmall,
+    )
+
+    OutlinedTextField(
+        value = comment,
+        onValueChange = { value ->
+            onCommentChange(
+                value.take(1000)
+            )
+        },
+        enabled = enabled,
+        label = {
+            Text(
+                "\uB0A8\uC544 \uC788\uB294 \uBB38\uC81C\uB97C " +
+                    "\uC801\uC5B4\uC8FC\uC138\uC694"
+            )
+        },
+        minLines = 3,
+        maxLines = 6,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(
+                "unresolvedComment"
+            ),
+    )
+
+    Text(
+        text =
+            "${comment.length}/1000",
+        style =
+            MaterialTheme.typography
+                .bodySmall,
+    )
+
+    LiquidGlassButton(
+        text =
+            "\uD6C4\uC18D \uC0C1\uB2F4 \uC694\uCCAD\uD558\uAE30",
+        onClick = onSubmit,
+        enabled =
+            enabled &&
+                comment.trim().isNotEmpty(),
+        accent = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(
+                "submitUnresolvedComment"
+            ),
+    )
+
+    LiquidGlassButton(
+        text = "\uCDE8\uC18C",
+        onClick = onCancel,
+        enabled = enabled,
+        accent = false,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(
+                "cancelUnresolvedComment"
+            ),
+    )
 }

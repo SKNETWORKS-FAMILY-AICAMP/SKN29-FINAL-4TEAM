@@ -29,7 +29,7 @@ from ai.app.schemas import (
     UsageGuidanceStatus,
 )
 
-OUT = ROOT / "ai/experiment_results/e07_hitl_durable"
+OUT = ROOT / "ai/experiment_results/e07/durable"
 MODEL = "WPUJAC104DWH"
 STATE_VERSION = 7
 CHUNK_ID = "E07-JAC104-EVIDENCE-001"
@@ -558,7 +558,7 @@ def main():
         "checkpointer_type": checkpointer_type,
         "scope": summary["scope"],
         "cases_passed": f"{passed}/{len(cases)}",
-        "output_dir": "ai/experiment_results/e07_hitl_durable",
+        "output_dir": "ai/experiment_results/e07/durable",
         "experiment_total_seconds": summary["experiment_total_seconds"],
     }, ensure_ascii=False, indent=2))
 

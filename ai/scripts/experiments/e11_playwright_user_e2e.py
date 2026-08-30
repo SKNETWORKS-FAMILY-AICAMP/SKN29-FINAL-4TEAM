@@ -41,7 +41,7 @@ HTTP login, and never prints or persists the password.
 
 Artifacts:
 
-    ai/experiment_results/e11_playwright_user_e2e/
+    ai/experiment_results/e11/
     ├─ summary.json
     ├─ report.md
     ├─ playwright.log
@@ -78,7 +78,7 @@ OUTPUT_DIR = (
     REPO_ROOT
     / "ai"
     / "experiment_results"
-    / "e11_playwright_user_e2e"
+    / "e11"
 )
 
 PLAYWRIGHT_LOG = OUTPUT_DIR / "playwright.log"
@@ -1491,7 +1491,7 @@ def write_artifacts(
         "```text",
         "ai/scripts/experiments/e11_playwright_user_e2e.py",
         "",
-        "ai/experiment_results/e11_playwright_user_e2e/",
+        "ai/experiment_results/e11/",
         "├─ summary.json",
         "├─ report.md",
         "├─ playwright.log",
@@ -1743,7 +1743,7 @@ def main() -> int:
                     ),
                     "output_dir": (
                         "ai/experiment_results/"
-                        "e11_playwright_user_e2e"
+                        "e11"
                     ),
                 },
                 ensure_ascii=False,

@@ -1,0 +1,185 @@
+{
+  "status": "E06_PREFLIGHT_READY",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "git_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f",
+  "scope": "HARNESS_BOUNDARY_FAULT_INJECTION_ABLATION",
+  "harness_off_definition": "Dedicated final Harness verification/routing layer bypassed. This does NOT disable upstream pipeline validators.",
+  "scenario_count": 12,
+  "scenarios": [
+    {
+      "scenario_id": "VALID_CONTROL",
+      "defect": false,
+      "expected_first": "PASS",
+      "expected_final": "PASS",
+      "first_decision": "PASS",
+      "final_decision": "PASS",
+      "issue_codes": [],
+      "side_effect": "NONE"
+    },
+    {
+      "scenario_id": "CROSS_PRODUCT_EVIDENCE_RECOVERY",
+      "defect": true,
+      "expected_first": "RETRY_RETRIEVAL",
+      "expected_final": "PASS",
+      "first_decision": "RETRY_RETRIEVAL",
+      "final_decision": "PASS",
+      "first_forwarded_count": 0,
+      "second_forwarded_count": 1,
+      "blocked_chunk_ids": [
+        "E06-WRONG-001"
+      ],
+      "issue_codes": [
+        "WRONG_MODEL_EVIDENCE",
+        "NO_EVIDENCE"
+      ],
+      "retry_count": 1,
+      "side_effect": "PREGEN_BLOCK + RETRY_RETRIEVAL"
+    },
+    {
+      "scenario_id": "UNVERIFIED_EVIDENCE_RECOVERY",
+      "defect": true,
+      "expected_first": "RETRY_RETRIEVAL",
+      "expected_final": "PASS",
+      "first_decision": "RETRY_RETRIEVAL",
+      "final_decision": "PASS",
+      "issue_codes": [
+        "UNVERIFIED_EVIDENCE",
+        "NO_EVIDENCE"
+      ],
+      "retry_count": 1,
+      "side_effect": "RETRY_RETRIEVAL"
+    },
+    {
+      "scenario_id": "OUTPUT_SCHEMA_REGENERATION",
+      "defect": true,
+      "expected_first": "RETRY_GENERATION",
+      "expected_final": "PASS",
+      "first_decision": "RETRY_GENERATION",
+      "final_decision": "PASS",
+      "issue_codes": [
+        "OUTPUT_SCHEMA_INVALID"
+      ],
+      "retry_count": 1,
+      "side_effect": "RETRY_GENERATION"
+    },
+    {
+      "scenario_id": "MCP_SEARCH_TIMEOUT_RECOVERY",
+      "defect": true,
+      "expected_first": "RETRY_RETRIEVAL",
+      "expected_final": "PASS",
+      "first_decision": "RETRY_RETRIEVAL",
+      "final_decision": "PASS",
+      "issue_codes": [
+        "MCP_TOOL_FAILURE"
+      ],
+      "retry_count": 1,
+      "side_effect": "RETRY_RETRIEVAL"
+    },
+    {
+      "scenario_id": "RETRY_BUDGET_EXHAUSTION",
+      "defect": true,
+      "expected_first": "RETRY_RETRIEVAL",
+      "expected_final": "ESCALATE",
+      "first_decision": "RETRY_RETRIEVAL",
+      "final_decision": "ESCALATE",
+      "issue_codes": [
+        "WRONG_MODEL_EVIDENCE",
+        "NO_EVIDENCE"
+      ],
+      "retry_count": 1,
+      "error_code": "NO_EVIDENCE",
+      "side_effect": "BOUNDED_RETRY_EXHAUSTED"
+    },
+    {
+      "scenario_id": "NO_EVIDENCE_FAIL_CLOSED",
+      "defect": true,
+      "expected_first": "ESCALATE",
+      "expected_final": "ESCALATE",
+      "first_decision": "ESCALATE",
+      "final_decision": "ESCALATE",
+      "issue_codes": [
+        "NO_EVIDENCE"
+      ],
+      "handoff_present": true,
+      "human_review_present": false,
+      "handoff_reason": "HARNESS_ESCALATE:NO_EVIDENCE",
+      "side_effect": "HANDOFF"
+    },
+    {
+      "scenario_id": "SAFETY_CONFLICT_FAIL_CLOSED",
+      "defect": true,
+      "expected_first": "ESCALATE",
+      "expected_final": "ESCALATE",
+      "first_decision": "ESCALATE",
+      "final_decision": "ESCALATE",
+      "issue_codes": [
+        "SAFETY_CONFLICT"
+      ],
+      "handoff_present": true,
+      "human_review_present": false,
+      "handoff_reason": "HARNESS_ESCALATE:SAFETY_CONFLICT",
+      "side_effect": "HANDOFF"
+    },
+    {
+      "scenario_id": "UNSUPPORTED_FUNCTION_HITL",
+      "defect": true,
+      "expected_first": "HUMAN_REVIEW",
+      "expected_final": "HUMAN_REVIEW",
+      "first_decision": "HUMAN_REVIEW",
+      "final_decision": "HUMAN_REVIEW",
+      "issue_codes": [
+        "UNSUPPORTED_FUNCTION"
+      ],
+      "handoff_present": false,
+      "human_review_present": true,
+      "handoff_reason": null,
+      "side_effect": "HITL"
+    },
+    {
+      "scenario_id": "PROCESSING_TIMEOUT_HANDOFF",
+      "defect": true,
+      "expected_first": "ESCALATE",
+      "expected_final": "ESCALATE",
+      "first_decision": "ESCALATE",
+      "final_decision": "ESCALATE",
+      "issue_codes": [
+        "AI_PROCESSING_TIMEOUT"
+      ],
+      "handoff_present": true,
+      "human_review_present": false,
+      "handoff_reason": "AI_PROCESSING_TIMEOUT",
+      "side_effect": "HANDOFF"
+    },
+    {
+      "scenario_id": "MCP_NONRETRYABLE_HANDOFF",
+      "defect": true,
+      "expected_first": "ESCALATE",
+      "expected_final": "ESCALATE",
+      "first_decision": "ESCALATE",
+      "final_decision": "ESCALATE",
+      "issue_codes": [
+        "MCP_TOOL_FAILURE"
+      ],
+      "handoff_present": true,
+      "human_review_present": false,
+      "handoff_reason": "MCP_TOOL_FAILURE",
+      "side_effect": "HANDOFF"
+    },
+    {
+      "scenario_id": "RUNTIME_PRODUCT_NOT_APPROVED",
+      "defect": true,
+      "expected_first": "ESCALATE",
+      "expected_final": "ESCALATE",
+      "first_decision": "ESCALATE",
+      "final_decision": "ESCALATE",
+      "issue_codes": [
+        "RUNTIME_PRODUCT_NOT_APPROVED"
+      ],
+      "handoff_present": true,
+      "human_review_present": false,
+      "handoff_reason": "HARNESS_ESCALATE:RUNTIME_PRODUCT_NOT_APPROVED",
+      "side_effect": "HANDOFF"
+    }
+  ],
+  "errors": []
+}

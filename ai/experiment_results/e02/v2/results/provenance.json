@@ -1,0 +1,54 @@
+{
+  "experiment_id": "E02-v2",
+  "script_version": "2.0",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "branch": "main",
+  "git_sha": "35ba2ae013c6294a0c1523f838665bc44e1ca593",
+  "preflight_git_sha": "35ba2ae013c6294a0c1523f838665bc44e1ca593",
+  "build_git_sha": "35ba2ae013c6294a0c1523f838665bc44e1ca593",
+  "embedding_model": "BAAI/bge-m3",
+  "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+  "embedding_dimension": 1024,
+  "embedding_normalized": true,
+  "search_engine": "LOCAL_NUMPY_COSINE_EXACT",
+  "ranking_postprocess": "NONE",
+  "top_k": 5,
+  "score_threshold": 0.4,
+  "product_filter": "EXACT_SALES_CODE_PRE_FILTER",
+  "cross_model_fallback": false,
+  "runtime_policy_profile": "three_model_integration",
+  "runtime_activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+  "query_expansion_policy": "RUNTIME_QUERY_EXPANSION_V1",
+  "answerability_policy": "ANSWERABILITY_CAPABILITY_GATE_V1",
+  "manual_corpus_pages": 144,
+  "primary_case_count": 50,
+  "supplemental_faq_case_count": 5,
+  "supplemental_publication_status": "UNREVIEWED_DRAFT_DIAGNOSTIC_ONLY",
+  "shared_query_embedding_seconds": 20.648886,
+  "document_embedding_seconds": {
+    "fixed512": 376.372385,
+    "section_aware_512": 294.307734,
+    "parent_child_256": 372.316353
+  },
+  "input_hashes": {
+    "data/config/rag/three_model_evaluation_cases.json": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1",
+    ".runtime/e02_v2/preflight.json": "6ABC0FE5BB308604C60C59FEDDC09804F7F62F86E4E6C4EC1440B1E732638CAF",
+    ".runtime/e02_v2/manifest.json": "5D571256F3DCEAB25FBF5C43F6F8FA9E5B2F216E87C568911E21413DFE2F90D6",
+    ".runtime/e02_v2/variants/fixed512.jsonl": "18D3FFD46D954DBE35B5D08C0DB6E5A076EB91284E927207ED88EB533D6FAE71",
+    ".runtime/e02_v2/variants/section_aware_512.jsonl": "CC166EC0A1A2F53803EE629A0044ADB4AF6332E9BB4C6AB8802F08E2F7325AAC",
+    ".runtime/e02_v2/variants/parent_child_256.jsonl": "68186B514CBDE269EE886E6D758C01AFE18B8A66CA95ABCA2E74477AD3F161D9"
+  },
+  "build_mapping_policy": {
+    "policy": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+    "minimum_best_overlap_ratio": 0.5,
+    "reason": "window 경계에서 Gold span이 분리되어도 정답 Label을 여러 Chunk에 중복 부여하지 않고 가장 많이 겹치는 한 Chunk에만 매핑"
+  },
+  "notes": [
+    "E02-v1 15-page experiment는 SUPERSEDED로 취급한다.",
+    "E02-v2는 3개 매뉴얼 전체 144 page에서 자동 생성한 세 Chunking 전략을 비교한다.",
+    "Primary Metric은 E01 50 Case로 계산한다.",
+    "FAQ-origin 5 Case는 UNREVIEWED_DRAFT이므로 supplemental diagnostic로만 분리한다.",
+    "Local ranking latency는 E01 pgvector Runtime latency와 직접 비교하지 않는다.",
+    "Public runtime activation은 변경하지 않는다."
+  ]
+}

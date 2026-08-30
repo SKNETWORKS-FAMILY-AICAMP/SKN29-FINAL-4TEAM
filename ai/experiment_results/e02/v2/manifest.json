@@ -1,0 +1,133 @@
+{
+  "status": "E02_V2_VARIANTS_READY",
+  "experiment_id": "E02-v2",
+  "build_script_version": "1.0",
+  "source": {
+    "preflight_git_sha": "35ba2ae013c6294a0c1523f838665bc44e1ca593",
+    "build_git_sha": "35ba2ae013c6294a0c1523f838665bc44e1ca593",
+    "branch": "main",
+    "manual_page_count": 144,
+    "e01_child_count": 53,
+    "evidence_group_count": 43
+  },
+  "chunking_contract": {
+    "fixed512": {
+      "window_tokens": 512,
+      "overlap_tokens": 64,
+      "source_boundary": "PAGE"
+    },
+    "section_aware_512": {
+      "window_tokens": 512,
+      "overlap_tokens": 64,
+      "source_boundary": "CONSECUTIVE_SECTION"
+    },
+    "parent_child_256": {
+      "child_window_tokens": 256,
+      "child_overlap_tokens": 32,
+      "retrieval_text": "CHILD_ONLY",
+      "context_text": "FULL_SECTION_PARENT"
+    }
+  },
+  "mapping_policy": {
+    "policy": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+    "minimum_best_overlap_ratio": 0.5,
+    "reason": "window 경계에서 Gold span이 분리되어도 정답 Label을 여러 Chunk에 중복 부여하지 않고 가장 많이 겹치는 한 Chunk에만 매핑"
+  },
+  "difficulty_gate": {
+    "top_k": 5,
+    "minimum_candidates_per_model": 20
+  },
+  "variant_statistics": {
+    "fixed512": {
+      "chunk_count": 170,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 62,
+        "WPUIAC606SNW": 59,
+        "WPUJAC104DWH": 49
+      },
+      "average_chunk_tokens": 252.147,
+      "max_chunk_tokens": 512,
+      "chunks_with_gold": 20,
+      "mean_gold_groups_per_chunk": 0.288235,
+      "max_gold_groups_per_chunk": 5
+    },
+    "section_aware_512": {
+      "chunk_count": 134,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 43,
+        "WPUIAC606SNW": 42,
+        "WPUJAC104DWH": 49
+      },
+      "average_chunk_tokens": 333.739,
+      "max_chunk_tokens": 512,
+      "chunks_with_gold": 18,
+      "mean_gold_groups_per_chunk": 0.365672,
+      "max_gold_groups_per_chunk": 5
+    },
+    "parent_child_256": {
+      "chunk_count": 216,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 76,
+        "WPUIAC606SNW": 74,
+        "WPUJAC104DWH": 66
+      },
+      "average_chunk_tokens": 211.042,
+      "max_chunk_tokens": 256,
+      "chunks_with_gold": 31,
+      "mean_gold_groups_per_chunk": 0.231481,
+      "max_gold_groups_per_chunk": 3
+    }
+  },
+  "mapping_qa": [
+    {
+      "variant": "fixed512",
+      "status": "PASS",
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "minimum_best_overlap_ratio": 0.781457,
+      "partial_assignment_count": 7,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 62,
+        "WPUIAC606SNW": 59,
+        "WPUJAC104DWH": 49
+      },
+      "errors": []
+    },
+    {
+      "variant": "section_aware_512",
+      "status": "PASS",
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "minimum_best_overlap_ratio": 0.702778,
+      "partial_assignment_count": 5,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 43,
+        "WPUIAC606SNW": 42,
+        "WPUJAC104DWH": 49
+      },
+      "errors": []
+    },
+    {
+      "variant": "parent_child_256",
+      "status": "PASS",
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "minimum_best_overlap_ratio": 0.702778,
+      "partial_assignment_count": 12,
+      "candidate_counts_by_model": {
+        "WPUIAC425SNW": 76,
+        "WPUIAC606SNW": 74,
+        "WPUJAC104DWH": 66
+      },
+      "errors": []
+    }
+  ],
+  "input_hashes": {
+    "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",
+    "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl": "97DE9C6AB06DB5C9C1AC90F2C4B3773A9971AC410093B1FB8B62BABD49F87BE2",
+    "data/processed/documents/manuals/expansion/manual_pages_iac606.jsonl": "78A051945945D54CCFCC05D4F26AA998510861EB205776723B65E9C72E62BCAC",
+    "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78",
+    "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D"
+  },
+  "errors": []
+}

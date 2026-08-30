@@ -172,35 +172,63 @@ class SymptomIntakeViewModelTest {
     }
 
     @Test
-    fun successfulSubmission_clearsPersistedDraft() =
+    fun successfulSubmission_preservesPersistedDraftForBackNavigation() =
         runTest(mainDispatcherRule.dispatcher) {
             val handle = SavedStateHandle()
             val success = IntakeSubmission(
                 inquiryId = "inquiry",
                 inquiryCode = "INQ-001",
-                guidanceScenario = MockScenario.BACKEND_PROCESSING.name,
-                statusCode = "QUESTIONNAIRE_IN_PROGRESS",
+                guidanceScenario =
+                    MockScenario.BACKEND_PROCESSING.name,
+                statusCode =
+                    "QUESTIONNAIRE_IN_PROGRESS",
                 stateVersion = 2,
             )
-            val viewModel = SymptomIntakeViewModel(
-                subscriptionId = "subscription",
-                repository = successRepository(success),
-                savedStateHandle = handle,
+
+            val viewModel =
+                SymptomIntakeViewModel(
+                    subscriptionId =
+                        "subscription",
+                    repository =
+                        successRepository(success),
+                    savedStateHandle =
+                        handle,
+                )
+
+            viewModel.toggleSymptom(
+                SymptomTopic.LOW_FLOW
+            )
+            viewModel.updateRawText(
+                "preserved after submit"
             )
 
-            viewModel.updateRawText("제출 성공 후 제거")
             viewModel.submit()
             advanceUntilIdle()
 
-            assertEquals(success, viewModel.state.value.completed)
-
-            val recreated = SymptomIntakeViewModel(
-                subscriptionId = "subscription",
-                repository = unusedRepository(),
-                savedStateHandle = handle,
+            assertEquals(
+                success,
+                viewModel.state.value.completed,
             )
-            assertEquals("", recreated.state.value.rawText)
-            assertTrue(recreated.state.value.selectedSymptoms.isEmpty())
+
+            val recreated =
+                SymptomIntakeViewModel(
+                    subscriptionId =
+                        "subscription",
+                    repository =
+                        unusedRepository(),
+                    savedStateHandle =
+                        handle,
+                )
+
+            assertEquals(
+                "preserved after submit",
+                recreated.state.value.rawText,
+            )
+            assertEquals(
+                setOf(SymptomTopic.LOW_FLOW),
+                recreated.state.value
+                    .selectedSymptoms,
+            )
         }
 
     @Test

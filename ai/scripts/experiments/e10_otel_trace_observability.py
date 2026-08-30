@@ -20,7 +20,7 @@ Run from repository root:
 
 Artifacts:
 
-    ai/experiment_results/e10_otel_trace_observability/
+    ai/experiment_results/e10/
     ├─ summary.json
     ├─ report.md
     └─ captured_spans.json
@@ -53,7 +53,7 @@ OUTPUT_DIR = (
     REPO_ROOT
     / "ai"
     / "experiment_results"
-    / "e10_otel_trace_observability"
+    / "e10"
 )
 
 EXPERIMENT_ID = "E10"
@@ -1445,7 +1445,7 @@ def main() -> int:
                     ],
                     "output_dir": (
                         "ai/experiment_results/"
-                        "e10_otel_trace_observability"
+                        "e10"
                     ),
                 },
                 ensure_ascii=False,

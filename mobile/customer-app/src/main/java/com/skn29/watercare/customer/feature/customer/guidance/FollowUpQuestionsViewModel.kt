@@ -76,14 +76,19 @@ class FollowUpQuestionsViewModel(
     val navigationEvents =
         navigationChannel.receiveAsFlow()
 
+    private var silentRefreshInProgress =
+        false
+
     init {
         load()
     }
 
     fun load() {
-        val drafts =
+        val previous =
             contextOrNull(_state.value)
-                ?.drafts
+
+        val drafts =
+            previous?.drafts
                 ?: restoreDrafts()
 
         viewModelScope.launch {
@@ -105,8 +110,53 @@ class FollowUpQuestionsViewModel(
                     _state.value =
                         failureState(
                             failure = result,
-                            previous = null,
+                            previous = previous,
                         )
+            }
+        }
+    }
+
+    fun refreshSilently() {
+        if (silentRefreshInProgress) {
+            return
+        }
+
+        val previous =
+            contextOrNull(_state.value)
+
+        val drafts =
+            previous?.drafts
+                ?: restoreDrafts()
+
+        silentRefreshInProgress = true
+
+        viewModelScope.launch {
+            try {
+                when (
+                    val result =
+                        fetchContext(
+                            preservedDrafts =
+                                drafts,
+                        )
+                ) {
+                    is ApiResult.Success ->
+                        applyLoadedContext(
+                            context =
+                                result.value,
+                        )
+
+                    is ApiResult.Failure -> {
+                        if (
+                            result.httpStatus ==
+                            401
+                        ) {
+                            _authExpired.value = true
+                        }
+                    }
+                }
+            } finally {
+                silentRefreshInProgress =
+                    false
             }
         }
     }

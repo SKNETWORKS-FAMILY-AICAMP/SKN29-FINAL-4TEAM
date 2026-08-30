@@ -38,7 +38,7 @@ from ai.app.schemas import (
     UsageGuidanceStatus,
 )
 
-OUT = ROOT / "ai/experiment_results/e06_qualitative"
+OUT = ROOT / "ai/experiment_results/e06/qualitative"
 EXPECTED_SHA = "68666b88fcf33273906710f23a8d17f7f1faa07f"
 
 MODEL = "WPUJAC104DWH"

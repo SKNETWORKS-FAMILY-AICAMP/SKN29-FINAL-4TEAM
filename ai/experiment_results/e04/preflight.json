@@ -1,0 +1,467 @@
+{
+  "status": "E04_V2_10MODEL_PREFLIGHT_READY",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "git_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f",
+  "prompt_version": "customer_guidance/v3",
+  "runtime_baseline": {
+    "provider": "openai",
+    "model_name": "gpt-4.1-mini",
+    "temperature": 0.0,
+    "max_tokens": 500
+  },
+  "fixed_retrieval": {
+    "experiment": "E03",
+    "embedding_model": "gte_multilingual_base",
+    "chunking": "parent_child_256",
+    "top_k": 5,
+    "source_case_count": 43,
+    "included_answerable_case_count": 39,
+    "excluded_retrieval_failure_count": 4,
+    "excluded_source_case_ids": [
+      "RAG3-POS-009",
+      "RAG3-POS-039",
+      "RAG3-POS-041",
+      "RAG3-POS-042"
+    ]
+  },
+  "matrix": {
+    "mini_generation": [
+      "gpt_4o_mini",
+      "gpt_4_1_mini",
+      "gpt_5_mini",
+      "gpt_5_4_mini"
+    ],
+    "size_by_family": {
+      "4.1": [
+        "gpt_4_1_nano",
+        "gpt_4_1_mini",
+        "gpt_4_1_full"
+      ],
+      "5": [
+        "gpt_5_nano",
+        "gpt_5_mini",
+        "gpt_5_full"
+      ],
+      "5.4": [
+        "gpt_5_4_nano",
+        "gpt_5_4_mini",
+        "gpt_5_4_full"
+      ]
+    }
+  },
+  "models": [
+    {
+      "key": "gpt_4o_mini",
+      "family": "4o",
+      "size": "mini",
+      "generation_axis": "mini_history",
+      "requested_model_id": "gpt-4o-mini-2024-07-18",
+      "fallback_alias": "gpt-4o-mini",
+      "role": "HISTORICAL_MINI_REFERENCE",
+      "input_usd_per_1m": 0.15,
+      "cached_input_usd_per_1m": 0.075,
+      "output_usd_per_1m": 0.6,
+      "inference_profile": {
+        "reasoning_effort": null,
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-4o-mini-2024-07-18",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_4_1_nano",
+      "family": "4.1",
+      "size": "nano",
+      "generation_axis": "size_matrix",
+      "requested_model_id": "gpt-4.1-nano-2025-04-14",
+      "fallback_alias": "gpt-4.1-nano",
+      "role": "GENERATION_4_1_NANO",
+      "input_usd_per_1m": 0.1,
+      "cached_input_usd_per_1m": 0.025,
+      "output_usd_per_1m": 0.4,
+      "inference_profile": {
+        "reasoning_effort": null,
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-4.1-nano-2025-04-14",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_4_1_mini",
+      "family": "4.1",
+      "size": "mini",
+      "generation_axis": "mini_history+size_matrix",
+      "requested_model_id": "gpt-4.1-mini-2025-04-14",
+      "fallback_alias": "gpt-4.1-mini",
+      "role": "CURRENT_PROJECT_BASELINE",
+      "input_usd_per_1m": 0.4,
+      "cached_input_usd_per_1m": 0.1,
+      "output_usd_per_1m": 1.6,
+      "inference_profile": {
+        "reasoning_effort": null,
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-4.1-mini-2025-04-14",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_4_1_full",
+      "family": "4.1",
+      "size": "full",
+      "generation_axis": "size_matrix",
+      "requested_model_id": "gpt-4.1-2025-04-14",
+      "fallback_alias": "gpt-4.1",
+      "role": "GENERATION_4_1_FULL",
+      "input_usd_per_1m": 2.0,
+      "cached_input_usd_per_1m": 0.5,
+      "output_usd_per_1m": 8.0,
+      "inference_profile": {
+        "reasoning_effort": null,
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-4.1-2025-04-14",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_nano",
+      "family": "5",
+      "size": "nano",
+      "generation_axis": "size_matrix",
+      "requested_model_id": "gpt-5-nano-2025-08-07",
+      "fallback_alias": "gpt-5-nano",
+      "role": "GENERATION_5_NANO",
+      "input_usd_per_1m": 0.05,
+      "cached_input_usd_per_1m": 0.005,
+      "output_usd_per_1m": 0.4,
+      "inference_profile": {
+        "reasoning_effort": "minimal",
+        "temperature": null
+      },
+      "effective_model_id": "gpt-5-nano-2025-08-07",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_mini",
+      "family": "5",
+      "size": "mini",
+      "generation_axis": "mini_history+size_matrix",
+      "requested_model_id": "gpt-5-mini-2025-08-07",
+      "fallback_alias": "gpt-5-mini",
+      "role": "GENERATION_5_MINI",
+      "input_usd_per_1m": 0.25,
+      "cached_input_usd_per_1m": 0.025,
+      "output_usd_per_1m": 2.0,
+      "inference_profile": {
+        "reasoning_effort": "minimal",
+        "temperature": null
+      },
+      "effective_model_id": "gpt-5-mini-2025-08-07",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_full",
+      "family": "5",
+      "size": "full",
+      "generation_axis": "size_matrix",
+      "requested_model_id": "gpt-5-2025-08-07",
+      "fallback_alias": "gpt-5",
+      "role": "GENERATION_5_FULL",
+      "input_usd_per_1m": 1.25,
+      "cached_input_usd_per_1m": 0.125,
+      "output_usd_per_1m": 10.0,
+      "inference_profile": {
+        "reasoning_effort": "minimal",
+        "temperature": null
+      },
+      "effective_model_id": "gpt-5-2025-08-07",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_4_nano",
+      "family": "5.4",
+      "size": "nano",
+      "generation_axis": "size_matrix",
+      "requested_model_id": "gpt-5.4-nano-2026-03-17",
+      "fallback_alias": "gpt-5.4-nano",
+      "role": "GENERATION_5_4_NANO",
+      "input_usd_per_1m": 0.2,
+      "cached_input_usd_per_1m": 0.02,
+      "output_usd_per_1m": 1.25,
+      "inference_profile": {
+        "reasoning_effort": "none",
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-5.4-nano-2026-03-17",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_4_mini",
+      "family": "5.4",
+      "size": "mini",
+      "generation_axis": "mini_history+size_matrix",
+      "requested_model_id": "gpt-5.4-mini-2026-03-17",
+      "fallback_alias": "gpt-5.4-mini",
+      "role": "GENERATION_5_4_MINI",
+      "input_usd_per_1m": 0.75,
+      "cached_input_usd_per_1m": 0.075,
+      "output_usd_per_1m": 4.5,
+      "inference_profile": {
+        "reasoning_effort": "none",
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-5.4-mini-2026-03-17",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_4_full",
+      "family": "5.4",
+      "size": "full",
+      "generation_axis": "size_matrix",
+      "requested_model_id": "gpt-5.4-2026-03-05",
+      "fallback_alias": "gpt-5.4",
+      "role": "GENERATION_5_4_FULL",
+      "input_usd_per_1m": 2.5,
+      "cached_input_usd_per_1m": 0.25,
+      "output_usd_per_1m": 15.0,
+      "inference_profile": {
+        "reasoning_effort": "none",
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-5.4-2026-03-05",
+      "snapshot_fallback_used": false
+    }
+  ],
+  "pricing_verified_date": "2026-08-27",
+  "pricing_basis": "OpenAI published standard text-token prices. Runner separately accounts for cached input tokens when usage exposes them.",
+  "dataset_path": ".runtime/e04_generation_v2/dataset.json",
+  "live_smoke": {
+    "gpt_4o_mini": {
+      "status": "PASS",
+      "requested_model": "gpt-4o-mini-2024-07-18",
+      "returned_model": "gpt-4o-mini-2024-07-18",
+      "latency_ms": 5334.08,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6344,
+        "cached_input_tokens": 0,
+        "output_tokens": 297,
+        "reasoning_tokens": 0,
+        "total_tokens": 6641
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-4o-mini-2024-07-18",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-4o-mini-2024-07-18"
+    },
+    "gpt_4_1_nano": {
+      "status": "PASS",
+      "requested_model": "gpt-4.1-nano-2025-04-14",
+      "returned_model": "gpt-4.1-nano-2025-04-14",
+      "latency_ms": 16199.59,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6344,
+        "cached_input_tokens": 0,
+        "output_tokens": 302,
+        "reasoning_tokens": 0,
+        "total_tokens": 6646
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-4.1-nano-2025-04-14",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-4.1-nano-2025-04-14"
+    },
+    "gpt_4_1_mini": {
+      "status": "PASS",
+      "requested_model": "gpt-4.1-mini-2025-04-14",
+      "returned_model": "gpt-4.1-mini-2025-04-14",
+      "latency_ms": 10059.09,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6344,
+        "cached_input_tokens": 0,
+        "output_tokens": 297,
+        "reasoning_tokens": 0,
+        "total_tokens": 6641
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-4.1-mini-2025-04-14",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-4.1-mini-2025-04-14"
+    },
+    "gpt_4_1_full": {
+      "status": "PASS",
+      "requested_model": "gpt-4.1-2025-04-14",
+      "returned_model": "gpt-4.1-2025-04-14",
+      "latency_ms": 4274.58,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6344,
+        "cached_input_tokens": 0,
+        "output_tokens": 297,
+        "reasoning_tokens": 0,
+        "total_tokens": 6641
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-4.1-2025-04-14",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-4.1-2025-04-14"
+    },
+    "gpt_5_nano": {
+      "status": "PASS",
+      "requested_model": "gpt-5-nano-2025-08-07",
+      "returned_model": "gpt-5-nano-2025-08-07",
+      "latency_ms": 3535.65,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "output_tokens": 321,
+        "reasoning_tokens": 0,
+        "total_tokens": 6663
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5-nano-2025-08-07",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5-nano-2025-08-07"
+    },
+    "gpt_5_mini": {
+      "status": "PASS",
+      "requested_model": "gpt-5-mini-2025-08-07",
+      "returned_model": "gpt-5-mini-2025-08-07",
+      "latency_ms": 4240.19,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "output_tokens": 319,
+        "reasoning_tokens": 0,
+        "total_tokens": 6661
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5-mini-2025-08-07",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5-mini-2025-08-07"
+    },
+    "gpt_5_full": {
+      "status": "PASS",
+      "requested_model": "gpt-5-2025-08-07",
+      "returned_model": "gpt-5-2025-08-07",
+      "latency_ms": 6260.61,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "output_tokens": 319,
+        "reasoning_tokens": 0,
+        "total_tokens": 6661
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5-2025-08-07",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5-2025-08-07"
+    },
+    "gpt_5_4_nano": {
+      "status": "PASS",
+      "requested_model": "gpt-5.4-nano-2026-03-17",
+      "returned_model": "gpt-5.4-nano-2026-03-17",
+      "latency_ms": 2705.42,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "output_tokens": 305,
+        "reasoning_tokens": 0,
+        "total_tokens": 6647
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5.4-nano-2026-03-17",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5.4-nano-2026-03-17"
+    },
+    "gpt_5_4_mini": {
+      "status": "PASS",
+      "requested_model": "gpt-5.4-mini-2026-03-17",
+      "returned_model": "gpt-5.4-mini-2026-03-17",
+      "latency_ms": 2740.39,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "output_tokens": 305,
+        "reasoning_tokens": 0,
+        "total_tokens": 6647
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5.4-mini-2026-03-17",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5.4-mini-2026-03-17"
+    },
+    "gpt_5_4_full": {
+      "status": "PASS",
+      "requested_model": "gpt-5.4-2026-03-05",
+      "returned_model": "gpt-5.4-2026-03-05",
+      "latency_ms": 2698.31,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "output_tokens": 305,
+        "reasoning_tokens": 0,
+        "total_tokens": 6647
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5.4-2026-03-05",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5.4-2026-03-05"
+    }
+  },
+  "input_hashes": {
+    ".runtime/e03_embedding/results/summary.json": "6D0BB0973D9AD1ACF7C55EC555083BE5DCE36531581FB99D5970F8DFDF41C8AD",
+    ".runtime/e03_embedding/results/case_results.jsonl": "9881A54D8C6789A194B7B276D7D790B3551618068EE7B501E30A156C8374BC8B",
+    ".runtime/e02_v2/variants/parent_child_256.jsonl": "68186B514CBDE269EE886E6D758C01AFE18B8A66CA95ABCA2E74477AD3F161D9",
+    "ai/configs/model_profiles.yaml": "43AF8B0319AB7FEAD37F8EB68D3D3CB77D8D1B98B6EFD7064FCCFE945D1F4BDD"
+  },
+  "warnings": [],
+  "errors": []
+}

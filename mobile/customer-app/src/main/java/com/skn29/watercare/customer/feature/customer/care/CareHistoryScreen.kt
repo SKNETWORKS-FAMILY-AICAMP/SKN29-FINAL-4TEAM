@@ -1,9 +1,12 @@
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class
+)
+
 package com.skn29.watercare.customer.feature.customer.care
 
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.slideInVertically
@@ -19,14 +22,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
@@ -35,6 +42,8 @@ import com.skn29.watercare.core.model.CustomerSelfCareType
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.customer.common.VmFactory
+import com.skn29.watercare.customer.feature.customer.home.CustomerBottomTab
+import com.skn29.watercare.customer.feature.customer.home.CustomerCleanBottomBar
 import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 
@@ -62,6 +71,12 @@ fun CareHistoryScreen(
         viewModel.state
             .collectAsStateWithLifecycle()
 
+    LifecycleEventEffect(
+        Lifecycle.Event.ON_RESUME
+    ) {
+        viewModel.load()
+    }
+
     LaunchedEffect(state.authExpired) {
         if (state.authExpired) {
             viewModel.consumeAuthExpired()
@@ -69,22 +84,30 @@ fun CareHistoryScreen(
         }
     }
 
-    CareHistoryContent(
-        state = state,
-        onBack = onBack,
-        onRetry = viewModel::load,
-        onSelectSubscription =
-            viewModel::selectSubscription,
-        onSelectCareType =
-            viewModel::selectCareType,
-        onPerformedOnChange =
-            viewModel::updatePerformedOn,
-        onCreate = viewModel::createCareRecord,
-        onOpenDetail =
-            viewModel::openDetail,
-        onStartPrecheck =
-            onStartPrecheck,
-    )
+    PullToRefreshBox(
+        isRefreshing =
+            state.loadingSubscriptions ||
+                state.loadingHistory,
+        onRefresh = viewModel::load,
+    ) {
+        CareHistoryContent(
+            state = state,
+            onBack = onBack,
+            onRetry = viewModel::load,
+            onSelectSubscription =
+                viewModel::selectSubscription,
+            onSelectCareType =
+                viewModel::selectCareType,
+            onPerformedOnChange =
+                viewModel::updatePerformedOn,
+            onCreate =
+                viewModel::createCareRecord,
+            onOpenDetail =
+                viewModel::openDetail,
+            onStartPrecheck =
+                onStartPrecheck,
+        )
+    }
 }
 
 @Composable
@@ -163,7 +186,16 @@ fun CareHistoryContent(
     WaterCareScreen(
         title = "케어 이력",
         onBack = onBack,
-    ) {
+            bottomBar = {
+            CustomerCleanBottomBar(
+                selectedTab =
+                    CustomerBottomTab.CARE,
+                careEnabled = true,
+                onOpenHome = onBack,
+                onOpenCare = onRetry,
+            )
+        },
+) {
         if (state.loadingSubscriptions) {
             // Visible loading UI intentionally hidden.
         }

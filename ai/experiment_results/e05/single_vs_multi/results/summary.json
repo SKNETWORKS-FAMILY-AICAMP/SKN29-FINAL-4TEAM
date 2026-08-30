@@ -1,0 +1,39 @@
+{
+  "status": "E05_SINGLE_VS_MULTI_COMPLETE",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "git_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f",
+  "experiment_scope": "DIRECT_PIPELINE_ORCHESTRATION_ABLATION_WITH_DETERMINISTIC_RETRIEVAL_AND_LLM_BOUNDARIES",
+  "scenario_count": 12,
+  "repeats": 10,
+  "paired_run_count": 120,
+  "runtime_execution_count": 240,
+  "primary_metrics": {
+    "parity_non_regression_rate": 1.0,
+    "feedback_recovery_rate_single_rag": 0.0,
+    "feedback_recovery_rate_multi_agent": 1.0,
+    "danger_provider_avoidance_single_rag": 1.0,
+    "danger_provider_avoidance_multi_agent": 1.0,
+    "multi_handoff_trace_presence_rate": 1.0,
+    "multi_raw_symptom_metadata_leak_rate": 0.0,
+    "trace_context_preservation_single_rag": 1.0,
+    "trace_context_preservation_multi_agent": 1.0
+  },
+  "scenario_balanced_task_success": {
+    "single_rag": 0.75,
+    "multi_agent": 1.0,
+    "warning": "Scenario-balanced diagnostic set; not prevalence-weighted production accuracy."
+  },
+  "overhead": {
+    "latency_delta_multi_minus_single_p50_ms_all": -2.825,
+    "latency_delta_multi_minus_single_p95_ms_all": -2.063,
+    "latency_delta_multi_minus_single_p50_ms_parity": -2.808,
+    "token_delta_mean_parity": 0.0,
+    "multi_hop_count_mean": 3.917
+  },
+  "feedback_case_ids": [
+    "FEEDBACK_GAP_WPUIAC425SNW",
+    "FEEDBACK_GAP_WPUIAC606SNW",
+    "FEEDBACK_GAP_WPUJAC104DWH"
+  ],
+  "experiment_total_seconds": 1.581
+}

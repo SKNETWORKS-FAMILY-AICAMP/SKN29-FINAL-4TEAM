@@ -264,7 +264,7 @@ class CustomerHomeViewModel(
             backendAvailable =
                 when {
                     runtimeConfig.mode ==
-                        CustomerCareMode.FAKE -> true
+                        CustomerCareMode.FAKE -> false
 
                     _state.value.offlinePreview -> false
 

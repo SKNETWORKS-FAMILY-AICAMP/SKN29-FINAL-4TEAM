@@ -29,7 +29,7 @@ from ai.app.integrations.a2a.safety_adapter import (
 )
 from ai.app.safety.risk_classifier import RiskClassifier
 
-OUT = ROOT / "ai/experiment_results/e08_a2a_failure_isolation"
+OUT = ROOT / "ai/experiment_results/e08"
 SERVER_LOG = OUT / "a2a_server.log"
 
 INQUIRY_ID = UUID("11111111-1111-4111-8111-111111111111")
@@ -754,11 +754,11 @@ def main() -> None:
             ],
             "output_dir": (
                 "ai/experiment_results/"
-                "e08_a2a_failure_isolation"
+                "e08"
             ),
             "server_log": (
                 "ai/experiment_results/"
-                "e08_a2a_failure_isolation/"
+                "e08/"
                 "a2a_server.log"
             ),
             "experiment_total_seconds": summary[

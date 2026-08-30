@@ -70,6 +70,9 @@ class GuidanceViewModel(
         StateFlow<ConsultationRequestUiState> =
         _consultationState.asStateFlow()
 
+    private var silentRefreshInProgress =
+        false
+
     init {
         load()
         if (followUpEnabled) loadFollowUp()
@@ -117,22 +120,91 @@ class GuidanceViewModel(
                     replaceWorkflowSnapshot(latest)
 
                     _state.value =
-                        if (
-                            latest.statusCode
-                                .trim()
-                                .uppercase() ==
-                            "COMPLETION_PENDING"
-                        ) {
-                            loadConsultationResultState(
-                                remote
-                            )
-                        } else {
-                            loadGuidanceState()
-                        }
+                        loadStateForSnapshot(
+                            remote = remote,
+                            snapshot = latest,
+                        )
                 }
             }
         }
     }
+
+    fun refreshSilently() {
+        if (silentRefreshInProgress) {
+            return
+        }
+
+        val remote =
+            customerInquiryRepository
+                ?: return
+
+        if (followUpEnabled) {
+            return
+        }
+
+        silentRefreshInProgress = true
+
+        viewModelScope.launch {
+            try {
+                when (
+                    val snapshotResult =
+                        remote.snapshot(
+                            inquiryId
+                        )
+                ) {
+                    is ApiResult.Failure -> {
+                        registerAuthExpiry(
+                            snapshotResult
+                        )
+                    }
+
+                    is ApiResult.Success -> {
+                        val latest =
+                            snapshotResult.value
+
+                        replaceWorkflowSnapshot(
+                            latest
+                        )
+
+                        _state.value =
+                            loadStateForSnapshot(
+                                remote = remote,
+                                snapshot = latest,
+                            )
+                    }
+                }
+            } finally {
+                silentRefreshInProgress =
+                    false
+            }
+        }
+    }
+
+    private suspend fun loadStateForSnapshot(
+        remote: CustomerInquiryRepository,
+        snapshot: CustomerInquirySnapshot,
+    ): GuidanceUiState =
+        when (
+            snapshot.statusCode
+                .trim()
+                .uppercase()
+        ) {
+            "COMPLETION_PENDING" ->
+                loadConsultationResultState(
+                    remote
+                )
+
+            "CONSULTATION_REQUIRED",
+            "CONSULTATION_IN_PROGRESS" ->
+                GuidanceUiState.NotReady(
+                    message =
+                        "\uC0C1\uB2F4 \uC9C4\uD589 \uC0C1\uD0DC\uB97C " +
+                            "\uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694.",
+                )
+
+            else ->
+                loadGuidanceState()
+        }
 
     private suspend fun loadConsultationResultState(
         remote: CustomerInquiryRepository,

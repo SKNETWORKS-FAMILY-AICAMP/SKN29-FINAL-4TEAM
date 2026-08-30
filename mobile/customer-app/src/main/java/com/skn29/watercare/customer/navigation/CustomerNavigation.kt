@@ -315,22 +315,20 @@ fun CustomerNavigation() {
                                     entry.destination.id,
                             )
                     } else {
-                        navController
-                            .navigateReplacingCurrentCustomerStep(
-                                route =
-                                    CustomerRoute.followUp(
-                                        inquiryId =
-                                            submission.inquiryId,
-                                        scenario =
-                                            submission.guidanceScenario,
-                                        inquiryCode =
-                                            submission.inquiryCode,
-                                        idempotentReplay =
-                                            submission.idempotentReplay,
-                                    ),
-                                currentDestinationId =
-                                    entry.destination.id,
+                        navController.navigate(
+                            CustomerRoute.followUp(
+                                inquiryId =
+                                    submission.inquiryId,
+                                scenario =
+                                    submission.guidanceScenario,
+                                inquiryCode =
+                                    submission.inquiryCode,
+                                idempotentReplay =
+                                    submission.idempotentReplay,
                             )
+                        ) {
+                            launchSingleTop = true
+                        }
                     }
                 },
                 onAuthExpired = {
@@ -399,6 +397,21 @@ fun CustomerNavigation() {
                 inquiryId = inquiryId,
                 onBack = {
                     navController.popBackStack()
+                },
+                onCancelledStartOver = {
+                    subscriptionId ->
+                    navController
+                        .navigateReplacingCurrentCustomerStep(
+                            route =
+                                CustomerRoute.intake(
+                                    subscriptionId =
+                                        subscriptionId,
+                                    fixturePreview =
+                                        false,
+                                ),
+                            currentDestinationId =
+                                entry.destination.id,
+                        )
                 },
                 onAuthExpired = {
                     navController.navigate(

@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.skn29.watercare.customer.feature.customer.home
 
 import kotlinx.coroutines.launch
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
@@ -92,6 +97,26 @@ fun CustomerHomeScreen(
     )
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    var hasResumedOnce by
+        rememberSaveable {
+            mutableStateOf(false)
+        }
+
+    LifecycleEventEffect(
+        Lifecycle.Event.ON_RESUME
+    ) {
+        if (hasResumedOnce) {
+            if (
+                !state.loading &&
+                !state.loggingOut
+            ) {
+                viewModel.load()
+            }
+        } else {
+            hasResumedOnce = true
+        }
+    }
 
 
     LaunchedEffect(
@@ -190,74 +215,88 @@ fun CustomerHomeScreen(
         return
     }
 
-    CustomerHomeContent(
-        state = state,
-        displayModelCode = displayModelCode,
-        onStartIntake = onStartIntake,
-        onStartIntakePreset =
-            onStartIntakePreset,
-        onOpenGuidance = { inquiryId, scenario ->
-            val useRemoteFollowUpResolver =
-                !offlinePreview &&
-                    WaterCareCore.customerCareRuntimeConfig.mode ==
-                        CustomerCareMode.REMOTE
-
-            val activeSnapshot =
-                state.activeInquiry
-                    ?.takeIf {
-                        it.inquiryId == inquiryId
-                    }
-
-            val activeStatus =
-                activeSnapshot
-                    ?.statusCode
-                    ?.trim()
-                    ?.uppercase()
-                    .orEmpty()
-
-            val requiresQuestionnaire =
-                activeStatus.isBlank() ||
-                    activeStatus == "DRAFT" ||
-                    activeStatus ==
-                        "QUESTIONNAIRE_IN_PROGRESS"
-
+    PullToRefreshBox(
+        isRefreshing =
+            state.loading &&
+                state.home != null,
+        onRefresh = {
             if (
-                useRemoteFollowUpResolver &&
-                requiresQuestionnaire
+                !state.loading &&
+                !state.loggingOut
             ) {
-                onOpenFollowUp(
-                    inquiryId,
-                    scenario,
-                )
-            } else {
-                onOpenGuidance(
-                    inquiryId,
-                    scenario,
-                    activeSnapshot?.statusCode,
-                    activeSnapshot?.stateVersion,
-                    activeSnapshot
-                        ?.allowedActions
-                        .orEmpty(),
-                )
+                viewModel.load()
             }
         },
-        onContinueQuestionnaire = { inquiryId ->
-            onOpenFollowUp(
-                inquiryId,
-                MockScenario.NORMAL,
-            )
-        },
-        onRetry = viewModel::load,
-        onOpenCare = onOpenCare,
-        onChangeProduct = {
-            selectionConfirmed = false
-        },
-        onSelectSubscription = viewModel::selectSubscription,
-        onLogout = {
-            viewModel.logout(onLogout)
-        },
-        showDeveloperTools = false,
-    )
+    ) {
+        CustomerHomeContent(
+            state = state,
+            displayModelCode = displayModelCode,
+            onStartIntake = onStartIntake,
+            onStartIntakePreset =
+                onStartIntakePreset,
+            onOpenGuidance = { inquiryId, scenario ->
+                val useRemoteFollowUpResolver =
+                    !offlinePreview &&
+                        WaterCareCore.customerCareRuntimeConfig.mode ==
+                            CustomerCareMode.REMOTE
+
+                val activeSnapshot =
+                    state.activeInquiry
+                        ?.takeIf {
+                            it.inquiryId == inquiryId
+                        }
+
+                val activeStatus =
+                    activeSnapshot
+                        ?.statusCode
+                        ?.trim()
+                        ?.uppercase()
+                        .orEmpty()
+
+                val requiresQuestionnaire =
+                    activeStatus.isBlank() ||
+                        activeStatus == "DRAFT" ||
+                        activeStatus ==
+                            "QUESTIONNAIRE_IN_PROGRESS"
+
+                if (
+                    useRemoteFollowUpResolver &&
+                    requiresQuestionnaire
+                ) {
+                    onOpenFollowUp(
+                        inquiryId,
+                        scenario,
+                    )
+                } else {
+                    onOpenGuidance(
+                        inquiryId,
+                        scenario,
+                        activeSnapshot?.statusCode,
+                        activeSnapshot?.stateVersion,
+                        activeSnapshot
+                            ?.allowedActions
+                            .orEmpty(),
+                    )
+                }
+            },
+            onContinueQuestionnaire = { inquiryId ->
+                onOpenFollowUp(
+                    inquiryId,
+                    MockScenario.NORMAL,
+                )
+            },
+            onRetry = viewModel::load,
+            onOpenCare = onOpenCare,
+            onChangeProduct = {
+                selectionConfirmed = false
+            },
+            onSelectSubscription = viewModel::selectSubscription,
+            onLogout = {
+                viewModel.logout(onLogout)
+            },
+            showDeveloperTools = false,
+        )
+    }
 }
 
 @Composable

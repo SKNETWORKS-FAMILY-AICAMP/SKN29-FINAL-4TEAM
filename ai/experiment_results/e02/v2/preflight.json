@@ -1,0 +1,260 @@
+{
+  "status": "E02_V2_PREFLIGHT_READY",
+  "experiment_id": "E02-v2",
+  "git": {
+    "branch": "main",
+    "head_sha": "35ba2ae013c6294a0c1523f838665bc44e1ca593"
+  },
+  "manual_corpus": {
+    "total_pages": 144,
+    "pages_by_model": {
+      "WPUJAC104DWH": 44,
+      "WPUIAC425SNW": 52,
+      "WPUIAC606SNW": 48
+    },
+    "structural_statistics": {
+      "WPUJAC104DWH": {
+        "page_count": 44,
+        "section_count": 44,
+        "page_tokens": {
+          "min": 48,
+          "max": 1210,
+          "mean": 245.341
+        },
+        "section_tokens": {
+          "min": 48,
+          "max": 1210,
+          "mean": 245.341
+        }
+      },
+      "WPUIAC425SNW": {
+        "page_count": 52,
+        "section_count": 18,
+        "page_tokens": {
+          "min": 2,
+          "max": 1105,
+          "mean": 295.096
+        },
+        "section_tokens": {
+          "min": 2,
+          "max": 2492,
+          "mean": 852.5
+        }
+      },
+      "WPUIAC606SNW": {
+        "page_count": 48,
+        "section_count": 17,
+        "page_tokens": {
+          "min": 64,
+          "max": 1105,
+          "mean": 313.771
+        },
+        "section_tokens": {
+          "min": 114,
+          "max": 2643,
+          "mean": 885.941
+        }
+      }
+    }
+  },
+  "e01_gold_lineage": {
+    "child_count": 53,
+    "evidence_group_count": 43,
+    "case_count": 50,
+    "child_source_span_restored_on_full_corpus": "53/53",
+    "failures": []
+  },
+  "retrieval_difficulty_gate": {
+    "top_k": 5,
+    "minimum_candidates_per_model": 20,
+    "strategies": {
+      "fixed512": {
+        "status": "PASS",
+        "candidate_counts_by_model": {
+          "WPUJAC104DWH": 49,
+          "WPUIAC425SNW": 62,
+          "WPUIAC606SNW": 59
+        },
+        "top5_candidate_fraction_by_model": {
+          "WPUJAC104DWH": 0.102,
+          "WPUIAC425SNW": 0.0806,
+          "WPUIAC606SNW": 0.0847
+        },
+        "minimum_candidates_after_product_filter": 49,
+        "required_minimum": 20
+      },
+      "section_aware_512": {
+        "status": "PASS",
+        "candidate_counts_by_model": {
+          "WPUJAC104DWH": 49,
+          "WPUIAC425SNW": 43,
+          "WPUIAC606SNW": 42
+        },
+        "top5_candidate_fraction_by_model": {
+          "WPUJAC104DWH": 0.102,
+          "WPUIAC425SNW": 0.1163,
+          "WPUIAC606SNW": 0.119
+        },
+        "minimum_candidates_after_product_filter": 42,
+        "required_minimum": 20
+      },
+      "parent_child_256": {
+        "status": "PASS",
+        "candidate_counts_by_model": {
+          "WPUJAC104DWH": 66,
+          "WPUIAC425SNW": 76,
+          "WPUIAC606SNW": 74
+        },
+        "top5_candidate_fraction_by_model": {
+          "WPUJAC104DWH": 0.0758,
+          "WPUIAC425SNW": 0.0658,
+          "WPUIAC606SNW": 0.0676
+        },
+        "minimum_candidates_after_product_filter": 66,
+        "required_minimum": 20
+      }
+    }
+  },
+  "faq": {
+    "raw_faq_count": 119,
+    "usage": "QUERY_SOURCE_ONLY_NOT_RETRIEVAL_CORPUS",
+    "gold_v2_total_cases": 60,
+    "gold_v2_active_cases": 55,
+    "faq_origin_active_cases": 7,
+    "faq_origin_e01_compatible_cases": 5,
+    "faq_origin_incompatible_cases": 2,
+    "compatible_review_status_counts": {
+      "UNREVIEWED_DRAFT": 5
+    },
+    "compatible_cases": [
+      {
+        "case_id": "RAGV2-GOLD-0008",
+        "faq_ids": [
+          "FAQ-SKMAGIC-0105"
+        ],
+        "model": "WPUJAC104DWH",
+        "query": "정수기에서 물이 안 나와요. 어떻게 해야 하나요?",
+        "group_ids": [
+          "EVD-WPUJAC104DWH-NO-WATER-001"
+        ],
+        "review_status": "UNREVIEWED_DRAFT",
+        "label_generation": "ASSISTED_DRAFT_NOT_APPROVED"
+      },
+      {
+        "case_id": "RAGV2-GOLD-0010",
+        "faq_ids": [
+          "FAQ-SKMAGIC-0005"
+        ],
+        "model": "WPUJAC104DWH",
+        "query": "정수기에서 소리가 나는데 정상인가요?",
+        "group_ids": [
+          "EVD-WPUJAC104DWH-NOISE-001"
+        ],
+        "review_status": "UNREVIEWED_DRAFT",
+        "label_generation": "ASSISTED_DRAFT_NOT_APPROVED"
+      },
+      {
+        "case_id": "RAGV2-GOLD-0011",
+        "faq_ids": [
+          "FAQ-SKMAGIC-0103"
+        ],
+        "model": "WPUJAC104DWH",
+        "query": "정수기 밑에 물이 흥건해요. 누수가 의심됩니다.",
+        "group_ids": [
+          "EVD-WPUJAC104DWH-LEAK-001"
+        ],
+        "review_status": "UNREVIEWED_DRAFT",
+        "label_generation": "ASSISTED_DRAFT_NOT_APPROVED"
+      },
+      {
+        "case_id": "RAGV2-GOLD-0012",
+        "faq_ids": [
+          "FAQ-SKMAGIC-0115"
+        ],
+        "model": "WPUJAC104DWH",
+        "query": "물맛이나 냄새가 이상한데 무엇부터 확인하면 될까요?",
+        "group_ids": [
+          "EVD-WPUJAC104DWH-TASTE-ODOR-001"
+        ],
+        "review_status": "UNREVIEWED_DRAFT",
+        "label_generation": "ASSISTED_DRAFT_NOT_APPROVED"
+      },
+      {
+        "case_id": "RAGV2-GOLD-0013",
+        "faq_ids": [
+          "FAQ-SKMAGIC-0096"
+        ],
+        "model": "WPUJAC104DWH",
+        "query": "차가운 물이 너무 쫄쫄 나와요. 제품에 문제있는거 아닌가요?",
+        "group_ids": [
+          "EVD-WPUJAC104DWH-LOW-FLOW-001"
+        ],
+        "review_status": "UNREVIEWED_DRAFT",
+        "label_generation": "ASSISTED_DRAFT_NOT_APPROVED"
+      }
+    ],
+    "incompatible_cases": [
+      {
+        "case_id": "RAGV2-GOLD-0009",
+        "faq_ids": [
+          "FAQ-SKMAGIC-0107"
+        ],
+        "model": "WPUJAC104DWH",
+        "query": "냉수가 시원하지 않고 미지근해요. 어디를 확인해야 하나요?",
+        "group_ids": [
+          "EVD-WPUJAC104DWH-COLD-TEMPERATURE-FAULT-001",
+          "EVD-WPUJAC104DWH-COLD-TEMPERATURE-NORMAL-001"
+        ],
+        "review_status": "UNREVIEWED_DRAFT",
+        "label_generation": "ASSISTED_DRAFT_NOT_APPROVED",
+        "reasons": [
+          "OUTSIDE_E01_GROUP_UNIVERSE:EVD-WPUJAC104DWH-COLD-TEMPERATURE-FAULT-001,EVD-WPUJAC104DWH-COLD-TEMPERATURE-NORMAL-001"
+        ]
+      },
+      {
+        "case_id": "RAGV2-GOLD-0014",
+        "faq_ids": [
+          "FAQ-SKMAGIC-0077"
+        ],
+        "model": "WPUJAC104DWH",
+        "query": "온수를 받을 때 뜨거운 물이나 김이 튀는데 계속 사용해도 괜찮을까요?",
+        "group_ids": [
+          "EVD-WPUJAC104DWH-HOT-STEAM-001"
+        ],
+        "review_status": "UNREVIEWED_DRAFT",
+        "label_generation": "ASSISTED_DRAFT_NOT_APPROVED",
+        "reasons": [
+          "OUTSIDE_E01_GROUP_UNIVERSE:EVD-WPUJAC104DWH-HOT-STEAM-001"
+        ]
+      }
+    ],
+    "publication_guardrail": "Gold v2 FAQ-origin Case는 UNREVIEWED_DRAFT이면 공식 TEST 지표가 아니라 supplemental DRAFT_DIAGNOSTIC로만 사용"
+  },
+  "planned_v2_comparison": {
+    "primary_query_set": "E01 50 cases",
+    "supplemental_query_set": "Gold v2 ACTIVE + EXISTING_FAQ + E01 group-compatible cases",
+    "retrieval_corpus": "3 official manuals, 144 processed pages only",
+    "strategies": [
+      "fixed512",
+      "section_aware_512",
+      "parent_child_256"
+    ],
+    "embedding_model": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "top_k": 5,
+    "exact_sales_code_pre_filter": true,
+    "cross_model_fallback": false
+  },
+  "input_hashes": {
+    "data\\processed\\documents\\manuals\\mvp\\manual_pages_jac104d.jsonl": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",
+    "data\\processed\\documents\\manuals\\expansion\\manual_pages_iac425.jsonl": "97DE9C6AB06DB5C9C1AC90F2C4B3773A9971AC410093B1FB8B62BABD49F87BE2",
+    "data\\processed\\documents\\manuals\\expansion\\manual_pages_iac606.jsonl": "78A051945945D54CCFCC05D4F26AA998510861EB205776723B65E9C72E62BCAC",
+    "data\\processed\\documents\\faq\\faq_snapshot_normalized.jsonl": "E2040220C22F26042F1662029FA45776A7261336956DF6D8C7102485A27F41F4",
+    "data\\processed\\structured\\rag\\expansion\\rag_child_chunks_3model_v1.jsonl": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78",
+    "data\\processed\\structured\\evidence\\rag_evidence_groups_3model_v1.jsonl": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D",
+    "data\\config\\rag\\three_model_evaluation_cases.json": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1",
+    "ai\\evaluation\\datasets\\gold\\rag_gold_v2.jsonl": "E8D005132440AB0C1F3388BBBE425080F7212AB60C1CC12E436AFA0F5D6F9382"
+  },
+  "warnings": [],
+  "errors": []
+}
