@@ -59,6 +59,8 @@ import com.skn29.watercare.core.ui.theme.Water700
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.SectionCard
+import com.skn29.watercare.customer.feature.shared.CustomerErrorState
+import com.skn29.watercare.customer.feature.shared.CustomerSubmittingState
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 
 @Composable
@@ -268,14 +270,36 @@ fun SymptomIntakeContent(
         )
 
         state.globalError
-            ?.takeIf { state.errorKind != IntakeErrorKind.AUTH_EXPIRED }
+            ?.takeIf {
+                state.errorKind !=
+                    IntakeErrorKind.AUTH_EXPIRED
+            }
             ?.let { message ->
-                ErrorCard(
-                    message = customerIntakeErrorMessage(
-                        kind = state.errorKind,
-                        originalMessage = message,
-                    ),
-                    onRetry = if (state.retryable) onRetry else null,
+                val isOffline =
+                    state.errorKind ==
+                        IntakeErrorKind.NETWORK
+
+                // Network error는 서버 오류와 다르다.
+                // 사용자가 스스로 복구할 수 있는 문제이므로
+                // "인터넷 연결 확인" 행동을 명확하게 안내한다.
+                CustomerErrorState(
+                    title =
+                        if (isOffline) {
+                            "인터넷 연결을 확인해주세요"
+                        } else {
+                            "접수를 완료하지 못했어요"
+                        },
+                    message =
+                        customerIntakeErrorMessage(
+                            kind = state.errorKind,
+                            originalMessage = message,
+                        ),
+                    onRetry =
+                        if (state.retryable) {
+                            onRetry
+                        } else {
+                            null
+                        },
                 )
             }
 
@@ -300,7 +324,14 @@ fun SymptomIntakeContent(
         }
 
         if (state.isSubmitting) {
-            // Visible loading UI intentionally hidden.
+            // Submit 후 API 응답이 올 때까지
+            // "보내는 중"임을 사용자에게 명시적으로 알린다.
+            // 아래 버튼은 기존처럼 disabled되므로
+            // 여러 번 눌러 중복 접수하는 문제도 막을 수 있다.
+            CustomerSubmittingState(
+                message =
+                    "작성한 내용을 안전하게 접수하고 있어요.",
+            )
         }
 
         LiquidGlassButton(
