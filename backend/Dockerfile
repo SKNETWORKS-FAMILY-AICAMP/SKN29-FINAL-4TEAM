@@ -31,9 +31,10 @@ COPY manage.py ./manage.py
 COPY --from=state_machine_contracts . /workspace/contracts/state-machine/
 COPY --from=api_contracts action-operation-crosswalk.yaml /workspace/contracts/api/action-operation-crosswalk.yaml
 COPY --from=ai_contracts . /workspace/contracts/ai/
+COPY --from=code_contracts safety-rule-ids.yaml /workspace/contracts/codes/safety-rule-ids.yaml
 
 RUN python -c \
-    "from pathlib import Path; from apps.workflow.contracts import load_state_machine_contract; from apps.workflow.contracts.state_machine_loader import load_yaml_mapping; from integrations.ai.schema_validator import AIContractValidator; load_state_machine_contract(); load_yaml_mapping(Path('/workspace/contracts/api/action-operation-crosswalk.yaml')); AIContractValidator(); print('BACKEND_RUNTIME_CONTRACTS_PASS'); print('BACKEND_AI_CONTRACTS_PASS')" \
+    "from pathlib import Path; from apps.inquiries.services.safety_rule_registry import load_safety_rule_registry; from apps.workflow.contracts import load_state_machine_contract; from apps.workflow.contracts.state_machine_loader import load_yaml_mapping; from integrations.ai.schema_validator import AIContractValidator; load_state_machine_contract(); load_yaml_mapping(Path('/workspace/contracts/api/action-operation-crosswalk.yaml')); AIContractValidator(); assert load_safety_rule_registry(); print('BACKEND_RUNTIME_CONTRACTS_PASS'); print('BACKEND_AI_CONTRACTS_PASS'); print('BACKEND_SAFETY_RULE_REGISTRY_PASS')" \
     && DJANGO_SETTINGS_MODULE=config.settings.test python -c \
     "import django; django.setup(); from django.conf import settings; settings.STATIC_ROOT='/workspace/backend/staticfiles'; from django.core.management import call_command; call_command('collectstatic', interactive=False, verbosity=0)" \
     && chown -R waterbridge:waterbridge /workspace/backend/staticfiles

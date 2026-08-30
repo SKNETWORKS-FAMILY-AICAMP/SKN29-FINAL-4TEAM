@@ -369,6 +369,11 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             "COPY --from=ai_contracts . /workspace/contracts/ai/",
             dockerfile,
         )
+        self.assertIn(
+            "COPY --from=code_contracts safety-rule-ids.yaml "
+            "/workspace/contracts/codes/safety-rule-ids.yaml",
+            dockerfile,
+        )
         self.assertIn("load_state_machine_contract()", dockerfile)
         self.assertIn(
             "load_yaml_mapping("
@@ -377,14 +382,17 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
             dockerfile,
         )
         self.assertIn("AIContractValidator()", dockerfile)
+        self.assertIn("load_safety_rule_registry()", dockerfile)
         self.assertIn(
             "state_machine_contracts=contracts/state-machine",
             workflow,
         )
         self.assertIn("api_contracts=contracts/api", workflow)
         self.assertIn("ai_contracts=contracts/ai", workflow)
+        self.assertIn("code_contracts=contracts/codes", workflow)
         self.assertIn("BACKEND_RUNTIME_CONTRACTS_PASS", workflow)
         self.assertIn("BACKEND_AI_CONTRACTS_PASS", workflow)
+        self.assertIn("BACKEND_SAFETY_RULE_REGISTRY_PASS", workflow)
 
     def test_gunicorn_config_gate_uses_verify_full_without_runtime_secrets(
         self,
