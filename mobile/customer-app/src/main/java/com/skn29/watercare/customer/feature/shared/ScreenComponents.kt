@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -162,6 +163,35 @@ fun SectionCard(
             },
         )
         content()
+    }
+}
+
+/**
+ * 서버의 첫 응답을 기다리는 동안 사용하는 공통 로딩 상태.
+ *
+ * 중요한 이유:
+ * - 초기 로딩에서 화면을 비워 두면 사용자는 앱이 멈춘 것으로 느낄 수 있다.
+ * - 기존 데이터가 있는 새로고침에서는 이 화면으로 덮지 않고 기존 내용을 유지한다.
+ * - Pull-to-refresh indicator만 보여 화면 깜빡임과 불필요한 재구성을 줄인다.
+ */
+@Composable
+fun CustomerInitialLoadingState(
+    title: String =
+        "정보를 불러오고 있어요",
+    message: String =
+        "잠시만 기다려 주세요. 최신 정보를 확인하고 있어요.",
+) {
+    SectionCard(title) {
+        CircularProgressIndicator()
+
+        Text(
+            text = message,
+            style =
+                MaterialTheme.typography.bodyMedium,
+            color =
+                MaterialTheme.colorScheme
+                    .onSurfaceVariant,
+        )
     }
 }
 

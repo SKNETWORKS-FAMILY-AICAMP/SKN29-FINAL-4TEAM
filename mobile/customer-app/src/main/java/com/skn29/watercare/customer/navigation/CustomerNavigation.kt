@@ -315,6 +315,14 @@ fun CustomerNavigation() {
                                     entry.destination.id,
                             )
                     } else {
+                        // 실제 앱의 Back Stack UX:
+                        //
+                        // intake 화면을 replace하면 추가 질문 화면에서
+                        // 뒤로가기를 눌렀을 때 입력 화면이 사라진다.
+                        //
+                        // 일반 navigate()를 사용해 intake를 Back Stack에 남겨
+                        // Android 뒤로가기와 상단 뒤로가기가
+                        // 자연스럽게 동작하도록 한다.
                         navController.navigate(
                             CustomerRoute.followUp(
                                 inquiryId =

@@ -125,6 +125,12 @@ class SymptomIntakeViewModel(
         viewModelScope.launch {
             when (val result = repository.submitIntake(request)) {
                 is ApiResult.Success -> {
+                    // 문의 제출이 성공해도 사용자가 추가 질문 화면에서
+                    // 이전 화면으로 돌아올 수 있으므로
+                    // SavedState의 입력값을 지우지 않는다.
+                    //
+                    // 여기서 clearDraft()를 호출하면 뒤로 돌아왔을 때
+                    // 사용자가 작성했던 증상 내용이 사라진다.
                     _state.value = _state.value.clearFailure().copy(
                         isSubmitting = false,
                         completed = result.value,
