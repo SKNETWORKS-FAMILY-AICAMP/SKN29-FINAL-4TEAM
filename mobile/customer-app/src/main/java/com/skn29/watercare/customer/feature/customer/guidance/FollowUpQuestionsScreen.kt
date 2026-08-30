@@ -1,11 +1,17 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.skn29.watercare.customer.feature.customer.guidance
 
+import kotlinx.coroutines.delay
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.Lifecycle
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -14,13 +20,14 @@ import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.delay
 
 @Composable
 fun FollowUpQuestionsScreen(
     inquiryId: String,
     onBack: () -> Unit,
     onAuthExpired: () -> Unit = {},
+    onCancelledStartOver:
+        (String) -> Unit,
     onOpenGuidance:
         (CustomerInquirySnapshot) -> Unit,
 ) {
@@ -49,33 +56,58 @@ fun FollowUpQuestionsScreen(
             .collectAsStateWithLifecycle()
 
 
-    var processingRefreshCount by
+    // APP_WIDE_REFRESH_FOLLOWUP
+    var hasResumedOnce by
         remember(inquiryId) {
-            mutableIntStateOf(0)
+            mutableStateOf(false)
         }
 
-    LaunchedEffect(state) {
-        val empty =
-            state as? FollowUpUiState.Empty
-        val waiting =
-            empty?.snapshot
+    LifecycleEventEffect(
+        Lifecycle.Event.ON_RESUME
+    ) {
+        if (hasResumedOnce) {
+            viewModel.refreshSilently()
+        } else {
+            hasResumedOnce = true
+        }
+    }
+
+    val awaitingBackendAdvance =
+        state is FollowUpUiState.Empty &&
+            state.snapshotOrNull()
                 ?.statusCode
                 ?.trim()
                 ?.uppercase() ==
                 "QUESTIONNAIRE_IN_PROGRESS"
 
-        if (
-            waiting &&
-            processingRefreshCount < 15
-        ) {
-            delay(2_000)
-            processingRefreshCount += 1
-            viewModel.load()
-        } else if (
-            !waiting &&
-            state !is FollowUpUiState.Loading
-        ) {
-            processingRefreshCount = 0
+    LaunchedEffect(
+        inquiryId,
+        awaitingBackendAdvance,
+    ) {
+        if (!awaitingBackendAdvance) {
+            return@LaunchedEffect
+        }
+
+        repeat(12) {
+            delay(2_500)
+
+            val current =
+                viewModel.state.value
+
+            val stillWaiting =
+                current is
+                    FollowUpUiState.Empty &&
+                    current.snapshot
+                        .statusCode
+                        .trim()
+                        .uppercase() ==
+                    "QUESTIONNAIRE_IN_PROGRESS"
+
+            if (!stillWaiting) {
+                return@LaunchedEffect
+            }
+
+            viewModel.refreshSilently()
         }
     }
 
@@ -91,6 +123,27 @@ fun FollowUpQuestionsScreen(
         if (authExpired) {
             viewModel.consumeAuthExpired()
             onAuthExpired()
+        }
+    }
+
+    LaunchedEffect(cancelState) {
+        if (
+            cancelState is
+                CancelInquiryUiState.Success
+        ) {
+            val subscriptionId =
+                state.snapshotOrNull()
+                    ?.subscriptionId
+                    .orEmpty()
+                    .trim()
+
+            if (subscriptionId.isNotEmpty()) {
+                onCancelledStartOver(
+                    subscriptionId
+                )
+            } else {
+                onBack()
+            }
         }
     }
 
@@ -124,57 +177,76 @@ fun FollowUpQuestionsScreen(
             cancelState is CancelInquiryUiState.Conflict ||
             cancelState is CancelInquiryUiState.Success
 
-    WaterCareScreen(
-        title = "추가 질문",
-        onBack = onBack,
+    PullToRefreshBox(
+        isRefreshing =
+            state is FollowUpUiState.Loading,
+        onRefresh = viewModel::load,
     ) {
-        FollowUpCancelSection(
-            snapshot = snapshot,
-            cancelState = cancelState,
-            onConfirmCancel = { stateVersion ->
-                viewModel.cancelInquiry(
-                    stateVersion = stateVersion,
-                    reasonCode = "CUSTOMER_REQUEST",
-                )
-            },
-            onRetryConflict =
-                viewModel::retryCancelAfterConflict,
-            onRetryFailure = { stateVersion ->
-                viewModel.cancelInquiry(
-                    stateVersion = stateVersion,
-                    reasonCode = "CUSTOMER_REQUEST",
-                )
-            },
-            onReloadLatest =
-                viewModel::load,
-            onCancelledDone =
-                onBack,
-        )
-
-        if (
-            state is FollowUpUiState.Empty &&
-            snapshot?.statusCode
-                ?.trim()
-                ?.uppercase() ==
-                "QUESTIONNAIRE_IN_PROGRESS"
+        WaterCareScreen(
+            title = "추가 질문",
+            onBack = onBack,
         ) {
-            // Visible loading UI intentionally hidden.
-        }
-
-        if (!blockFollowUpInteraction) {
-            FollowUpQuestionsSection(
-                state = state,
-                onTextChange =
-                    viewModel::updateText,
-                onSelectOption =
-                    viewModel::selectOption,
-                onSubmit =
-                    viewModel::submitAnswers,
+            FollowUpCancelSection(
+                snapshot = snapshot,
+                cancelState = cancelState,
+                onConfirmCancel = { stateVersion ->
+                    viewModel.cancelInquiry(
+                        stateVersion = stateVersion,
+                        reasonCode = "CUSTOMER_REQUEST",
+                    )
+                },
                 onRetryConflict =
-                    viewModel::retryAfterConflict,
-                onReload =
+                    viewModel::retryCancelAfterConflict,
+                onRetryFailure = { stateVersion ->
+                    viewModel.cancelInquiry(
+                        stateVersion = stateVersion,
+                        reasonCode = "CUSTOMER_REQUEST",
+                    )
+                },
+                onReloadLatest =
                     viewModel::load,
+                onCancelledDone = {
+                    val subscriptionId =
+                        snapshot
+                            ?.subscriptionId
+                            .orEmpty()
+                            .trim()
+
+                    if (subscriptionId.isNotEmpty()) {
+                        onCancelledStartOver(
+                            subscriptionId
+                        )
+                    } else {
+                        onBack()
+                    }
+                },
             )
+
+            if (
+                state is FollowUpUiState.Empty &&
+                snapshot?.statusCode
+                    ?.trim()
+                    ?.uppercase() ==
+                    "QUESTIONNAIRE_IN_PROGRESS"
+            ) {
+                // Visible loading UI intentionally hidden.
+            }
+
+            if (!blockFollowUpInteraction) {
+                FollowUpQuestionsSection(
+                    state = state,
+                    onTextChange =
+                        viewModel::updateText,
+                    onSelectOption =
+                        viewModel::selectOption,
+                    onSubmit =
+                        viewModel::submitAnswers,
+                    onRetryConflict =
+                        viewModel::retryAfterConflict,
+                    onReload =
+                        viewModel::load,
+                )
+            }
         }
     }
 

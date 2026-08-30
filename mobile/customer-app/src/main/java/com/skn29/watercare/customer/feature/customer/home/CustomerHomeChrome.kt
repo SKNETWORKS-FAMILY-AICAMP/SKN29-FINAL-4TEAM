@@ -65,6 +65,11 @@ import com.skn29.watercare.core.ui.components.CustomerReferencePalette
 import com.skn29.watercare.core.ui.components.ReferencePearlBackground
 import com.skn29.watercare.customer.R
 
+internal enum class CustomerBottomTab {
+    HOME,
+    CARE,
+}
+
 @Composable
 fun CustomerCleanScaffold(
     displayName: String?,
@@ -87,7 +92,10 @@ fun CustomerCleanScaffold(
             bottomBar = {
                 if (showBottomBar) {
                     CustomerCleanBottomBar(
+                        selectedTab =
+                            CustomerBottomTab.HOME,
                         careEnabled = careEnabled,
+                        onOpenHome = {},
                         onOpenCare = onOpenCare,
                     )
                 }
@@ -192,8 +200,10 @@ private fun CustomerCleanHeader(
 }
 
 @Composable
-private fun CustomerCleanBottomBar(
+internal fun CustomerCleanBottomBar(
+    selectedTab: CustomerBottomTab,
     careEnabled: Boolean,
+    onOpenHome: () -> Unit,
     onOpenCare: () -> Unit,
 ) {
     val palette = CustomerReferencePalette
@@ -244,15 +254,27 @@ private fun CustomerCleanBottomBar(
             CustomerCleanBottomItem(
                 iconRes = R.drawable.ref_home,
                 label = "홈",
-                selected = true,
+                selected =
+                    selectedTab ==
+                        CustomerBottomTab.HOME,
                 enabled = true,
-                onClick = {},
+                onClick =
+                    if (
+                        selectedTab ==
+                            CustomerBottomTab.HOME
+                    ) {
+                        {}
+                    } else {
+                        onOpenHome
+                    },
                 modifier = Modifier.weight(1f),
             )
             CustomerCleanBottomItem(
                 iconRes = R.drawable.ref_care,
                 label = "관리",
-                selected = false,
+                selected =
+                    selectedTab ==
+                        CustomerBottomTab.CARE,
                 enabled = careEnabled,
                 onClick = onOpenCare,
                 modifier = Modifier.weight(1f),

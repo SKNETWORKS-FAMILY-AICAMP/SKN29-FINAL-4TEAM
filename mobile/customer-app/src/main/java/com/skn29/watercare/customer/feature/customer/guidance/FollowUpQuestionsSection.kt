@@ -1,11 +1,5 @@
 package com.skn29.watercare.customer.feature.customer.guidance
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.runtime.getValue
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -214,51 +208,9 @@ private fun FollowUpForm(
                 val draft =
                     drafts[question.questionId]
                         ?: FollowUpDraft()
-                val questionAnswered =
-                    when {
-                        question.isFreeText ->
-                            draft.text.isNotBlank()
-                        question.isSingleChoice ->
-                            !draft.selectedOption
-                                .isNullOrBlank()
-                        else -> false
-                    }
-                val questionScale by
-                    animateFloatAsState(
-                        targetValue =
-                            if (questionAnswered) {
-                                1.035f
-                            } else {
-                                1f
-                            },
-                        animationSpec = spring(
-                            dampingRatio =
-                                Spring
-                                    .DampingRatioHighBouncy,
-                            stiffness =
-                                Spring
-                                    .StiffnessMediumLow,
-                        ),
-                        label = "questionAnsweredScale",
-                    )
-
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateContentSize(
-                            animationSpec = spring(
-                                dampingRatio =
-                                    Spring
-                                        .DampingRatioMediumBouncy,
-                                stiffness =
-                                    Spring
-                                        .StiffnessMediumLow,
-                            )
-                        )
-                        .graphicsLayer {
-                            scaleX = questionScale
-                            scaleY = questionScale
-                        },
+                    modifier =
+                        Modifier.fillMaxWidth(),
                     verticalArrangement =
                         Arrangement.spacedBy(8.dp),
                 ) {
@@ -286,32 +238,9 @@ private fun FollowUpForm(
                             val optionSelected =
                                 draft.selectedOption ==
                                     option.value
-                            val optionScale by
-                                animateFloatAsState(
-                                    targetValue =
-                                        if (optionSelected) {
-                                            1.09f
-                                        } else {
-                                            1f
-                                        },
-                                    animationSpec = spring(
-                                        dampingRatio =
-                                            Spring
-                                                .DampingRatioMediumBouncy,
-                                        stiffness =
-                                            Spring.StiffnessMedium,
-                                    ),
-                                    label =
-                                        "followUpOptionScale",
-                                )
-
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .graphicsLayer {
-                                        scaleX = optionScale
-                                        scaleY = optionScale
-                                    }
                                     .heightIn(min = 48.dp)
                                     .clip(RoundedCornerShape(16.dp))
                                     .background(
@@ -350,9 +279,7 @@ private fun FollowUpForm(
                     text = "문진 완료하고 계속",
                     onClick = onSubmit,
                     enabled =
-                        submitAllowed &&
-                            !submitting &&
-                            allAnswersReady(questions, drafts),
+                        !submitting,
                     accent = true,
                     modifier = Modifier
                         .fillMaxWidth()

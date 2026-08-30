@@ -106,6 +106,15 @@ internal fun FollowUpCancelSection(
                         ),
                 )
 
+                Text(
+                    "\uC0C8\uB85C\uC6B4 \uBB38\uC758\uB97C "
+                        + "\uCC98\uC74C\uBD80\uD130 \uC791\uC131\uD560 "
+                        + "\uC218 \uC788\uC5B4\uC694.",
+                    style =
+                        MaterialTheme.typography
+                            .bodySmall,
+                )
+
                 if (current.idempotentReplay) {
                     Text(
                         "문의 취소가 이미 처리되어 있어요.",
@@ -116,7 +125,7 @@ internal fun FollowUpCancelSection(
                 }
 
                 LiquidGlassButton(
-                    text = "홈으로",
+                    text = "\uC0C8 \uBB38\uC758 \uC791\uC131\uD558\uAE30",
                     onClick =
                         onCancelledDone,
                     accent = true,

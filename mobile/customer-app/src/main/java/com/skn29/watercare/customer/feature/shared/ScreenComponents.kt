@@ -55,6 +55,7 @@ import com.skn29.watercare.core.ui.theme.WaterTokens
 fun WaterCareScreen(
     title: String,
     onBack: (() -> Unit)? = null,
+    bottomBar: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     LiquidGlassToneProvider(
@@ -63,6 +64,7 @@ fun WaterCareScreen(
         WaterCareScreenBody(
             title = title,
             onBack = onBack,
+            bottomBar = bottomBar,
             content = content,
         )
     }
@@ -72,6 +74,7 @@ fun WaterCareScreen(
 private fun WaterCareScreenBody(
     title: String,
     onBack: (() -> Unit)? = null,
+    bottomBar: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     ReferencePearlBackground(
@@ -81,6 +84,7 @@ private fun WaterCareScreenBody(
     ) {
         Scaffold(
             containerColor = Color.Transparent,
+            bottomBar = bottomBar,
             topBar = {
                 TopAppBar(
                     title = {
