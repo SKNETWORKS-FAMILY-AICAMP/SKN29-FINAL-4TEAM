@@ -37,6 +37,10 @@ class AIAnalysisResult:
         return str(self.payload["usage_guidance"]["guidance_status"])
 
     @property
+    def requires_consultation(self) -> bool:
+        return bool(self.payload["safety_assessment"]["requires_consultation"])
+
+    @property
     def is_fallback(self) -> bool:
         return self.payload["status"] == "FALLBACK"
 

@@ -17,6 +17,9 @@ class ReviewableAIResult(Protocol):
     @property
     def risk_level(self) -> str: ...
 
+    @property
+    def requires_consultation(self) -> bool: ...
+
 
 class GuidanceReviewPolicy:
     """Classify a validated AI draft without changing Inquiry state.
@@ -37,7 +40,11 @@ class GuidanceReviewPolicy:
         if result.is_fallback or result.is_no_evidence:
             return cls.REJECTED
         if result.risk_level == "caution":
-            return cls.PENDING
+            return (
+                cls.PENDING
+                if result.requires_consultation
+                else cls.CONFIRMED
+            )
         if result.risk_level in {"general", "danger"}:
             # CONFIRMED means the existing Backend safety/evidence gate, not
             # a human approval. APPROVED remains reserved for a future
