@@ -49,6 +49,7 @@ import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
 import com.skn29.watercare.customer.BuildConfig
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
+import com.skn29.watercare.customer.feature.shared.CustomerInitialLoadingState
 import kotlinx.coroutines.delay
 
 @Composable
@@ -98,6 +99,11 @@ fun CustomerHomeScreen(
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // 화면 최초 진입은 ViewModel init에서 이미 load()를 수행한다.
+    // 이후 다른 화면에서 홈으로 돌아오는 ON_RESUME에서만
+    // 다시 조회해 서버 최신 상태를 반영한다.
+    // 최초 진입에서도 다시 load하면 같은 API가 연속 호출될 수 있으므로
+    // hasResumedOnce로 중복 조회를 막는다.
     var hasResumedOnce by
         rememberSaveable {
             mutableStateOf(false)
@@ -351,7 +357,12 @@ fun CustomerHomeContent(
                 !emptySubscription
 
         if (initialLoading) {
-            // Visible loading UI intentionally hidden.
+            // 최초 홈 데이터가 아직 없을 때는 빈 화면 대신
+            // 명시적인 로딩 상태를 보여준다.
+            CustomerInitialLoadingState(
+                message =
+                    "정수기와 문의 상태를 확인하고 있어요.",
+            )
         }
 
         if (emptySubscription) {
@@ -457,7 +468,10 @@ fun CustomerHomeContent(
             state.loading &&
             state.home != null
         ) {
-            // Visible loading UI intentionally hidden.
+            // 기존 홈 데이터가 있는 새로고침은 화면을
+            // 로딩 화면으로 덮지 않는다.
+            // PullToRefreshBox의 indicator만 보여
+            // 사용자가 보던 정보를 유지한다.
         }
 
         if (
@@ -465,7 +479,9 @@ fun CustomerHomeContent(
             !state.loading &&
             state.home != null
         ) {
-            // Visible loading UI intentionally hidden.
+            // 제품 변경 중에도 기존 홈을 유지한다.
+            // 선택 결과가 도착한 뒤 화면 데이터만 교체해
+            // 깜빡임을 줄인다.
         }
 
         if (

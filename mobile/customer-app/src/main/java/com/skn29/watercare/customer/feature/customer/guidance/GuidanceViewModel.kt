@@ -180,6 +180,18 @@ class GuidanceViewModel(
         }
     }
 
+    // 서버 상태에 따라 호출 가능한 API가 다르므로
+    // snapshot을 먼저 보고 다음 조회를 결정한다.
+    //
+    // COMPLETION_PENDING:
+    //   상담이 끝나는 단계이므로 consultation-result를 조회한다.
+    //
+    // CONSULTATION_REQUIRED / CONSULTATION_IN_PROGRESS:
+    //   아직 guidance를 조회하면 409가 날 수 있어
+    //   snapshot만 유지하고 guidance API는 호출하지 않는다.
+    //
+    // 그 외 guidance 조회가 가능한 상태에서는
+    // 기존 guidance 조회 로직을 사용한다.
     private suspend fun loadStateForSnapshot(
         remote: CustomerInquiryRepository,
         snapshot: CustomerInquirySnapshot,
