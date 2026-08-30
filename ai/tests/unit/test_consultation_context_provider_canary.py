@@ -34,6 +34,7 @@ from ai.scripts.run_consultation_context_provider_canary import (
 
 INQUIRY_ID = UUID("018f2f9b-7c30-7981-b541-1a987c88b321")
 CORRELATION_ID = UUID("018f2f9b-7c30-7981-b541-1a987c88b421")
+BACKEND_RELEASE_SHA = "3" * 40
 GIT_IDENTITY = {
     "branch": "dongyoon",
     "git_sha": "1" * 40,
@@ -48,8 +49,9 @@ def canary_payload() -> dict:
     ai_request_id = "TEST_ONLY_AI_REQUEST"
     state_version = 7
     return {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "environment_id": "LOCAL_CANARY_TEST",
+        "backend_release_sha": BACKEND_RELEASE_SHA,
         "data_classification": "synthetic",
         "inquiry_id": str(INQUIRY_ID),
         "correlation_id": str(CORRELATION_ID),
@@ -74,8 +76,8 @@ def canary_payload() -> dict:
         "safety_assessment": {
             "risk_level": "caution",
             "priority": "consultation_recommended",
-            "requires_consultation": True,
-            "matched_safety_rule_ids": [],
+            "requires_consultation": False,
+            "matched_safety_rule_ids": ["SAFETY-TEMP-ABNORMAL-001"],
             "detected_risks": ["TEST_ONLY_CAUTION"],
             "safety_reason": "TEST_ONLY_SAFETY_REASON",
         },
@@ -105,6 +107,37 @@ def canary_payload() -> dict:
 
 def canary_input() -> ConsultationContextProviderCanaryInput:
     return ConsultationContextProviderCanaryInput.model_validate(canary_payload())
+
+
+def test_input_contract_accepts_official_caution_runtime_combination():
+    validated = canary_input()
+
+    assert validated.safety_assessment.requires_consultation is False
+    assert validated.safety_assessment.matched_safety_rule_ids == [
+        "SAFETY-TEMP-ABNORMAL-001"
+    ]
+    assert validated.backend_release_sha == BACKEND_RELEASE_SHA
+
+
+def test_input_contract_rejects_legacy_true_with_empty_rule_ids():
+    payload = canary_payload()
+    payload["safety_assessment"]["requires_consultation"] = True
+    payload["safety_assessment"]["matched_safety_rule_ids"] = []
+
+    with pytest.raises(ValidationError):
+        ConsultationContextProviderCanaryInput.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    "rule_id",
+    ["SAFETY-OTHER-001", "SAFETY-LEAK-001"],
+)
+def test_input_contract_rejects_non_target_or_danger_safety_rule(rule_id: str):
+    payload = canary_payload()
+    payload["safety_assessment"]["matched_safety_rule_ids"] = [rule_id]
+
+    with pytest.raises(ValidationError):
+        ConsultationContextProviderCanaryInput.model_validate(payload)
 
 
 def valid_candidate(request) -> ConsultationContextSynthesisCandidate:
@@ -151,6 +184,8 @@ def test_inspect_proves_initial_review_does_not_call_context_agent_or_provider()
     report = inspect_canary(canary_input(), git_identity=GIT_IDENTITY)
 
     assert report.overall_status == "INSPECTED"
+    assert report.backend_release_sha == BACKEND_RELEASE_SHA
+    assert report.git_sha == GIT_IDENTITY["git_sha"]
     assert report.harness_decision == "PASS"
     assert report.routing_disposition == "PRE_SEND_HUMAN_REVIEW"
     assert report.initial_review_status == "WAITING_FOR_REVIEW"
@@ -181,7 +216,10 @@ def test_cli_inspect_writes_sanitized_report_outside_repository(tmp_path, capsys
 
     assert exit_code == 0
     report_text = report_path.read_text(encoding="utf-8")
-    assert json.loads(report_text)["overall_status"] == "INSPECTED"
+    report = json.loads(report_text)
+    assert report["overall_status"] == "INSPECTED"
+    assert report["backend_release_sha"] == BACKEND_RELEASE_SHA
+    assert len(report["git_sha"]) == 40
     assert "TEST_ONLY_EVIDENCE_CONTENT" not in report_text
     assert "TEST_ONLY_EVIDENCE_SUMMARY" not in report_text
     assert "TEST_ONLY_GUIDANCE" not in report_text

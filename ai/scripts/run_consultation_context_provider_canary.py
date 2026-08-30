@@ -86,10 +86,11 @@ from ai.app.validation.routing import (
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
-INPUT_SCHEMA_VERSION = "1.0.0"
-REPORT_SCHEMA_VERSION = "1.0.0"
+INPUT_SCHEMA_VERSION = "1.1.0"
+REPORT_SCHEMA_VERSION = "1.1.0"
 TARGET_MODEL_CODE = "WPUJAC104DWH"
 TARGET_PRODUCT_FAMILY = ProductFamily.DIRECT_WATER_PURIFIER
+TARGET_CAUTION_SAFETY_RULE_ID = "SAFETY-TEMP-ABNORMAL-001"
 TARGET_SUPPORTED_FUNCTIONS = frozenset(
     {"cold_water", "hot_water", "purified_water"}
 )
@@ -130,6 +131,7 @@ class ConsultationContextProviderCanaryInput(_CanaryModel):
 
     schema_version: Literal[INPUT_SCHEMA_VERSION]
     environment_id: str = Field(pattern=r"^[A-Z0-9][A-Z0-9_.-]{2,99}$")
+    backend_release_sha: str = Field(pattern=r"^[a-f0-9]{40}$")
     data_classification: Literal["synthetic"]
     inquiry_id: UUID
     correlation_id: UUID
@@ -154,12 +156,19 @@ class ConsultationContextProviderCanaryInput(_CanaryModel):
     def validate_canary_boundary(self) -> "ConsultationContextProviderCanaryInput":
         if self.safety_assessment.risk_level != RiskLevel.CAUTION:
             raise ValueError("Provider Canary는 caution 입력만 허용합니다.")
-        if not self.safety_assessment.requires_consultation:
-            raise ValueError("Provider Canary는 상담 필요 판정이 필요합니다.")
+        if self.safety_assessment.requires_consultation:
+            raise ValueError(
+                "공식 caution Provider Canary는 requires_consultation=false여야 합니다."
+            )
         if self.safety_assessment.priority != SafetyPriority.CONSULTATION_RECOMMENDED:
             raise ValueError("Provider Canary 우선순위가 고정 계약과 다릅니다.")
-        if self.safety_assessment.matched_safety_rule_ids:
-            raise ValueError("caution Provider Canary에는 danger Rule ID를 둘 수 없습니다.")
+        if self.safety_assessment.matched_safety_rule_ids != [
+            TARGET_CAUTION_SAFETY_RULE_ID
+        ]:
+            raise ValueError(
+                "공식 caution Provider Canary는 허용된 단일 Safety Rule만 사용해야 "
+                "합니다."
+            )
         if self.guidance.guidance_status != UsageGuidanceStatus.PARTIAL_STOP:
             raise ValueError("Provider Canary 안내는 PARTIAL_STOP이어야 합니다.")
 
@@ -198,6 +207,7 @@ class ConsultationContextProviderCanaryReport(_CanaryModel):
     failure_stage: str | None = None
     failure_code: str | None = None
     environment_id: str
+    backend_release_sha: str = Field(pattern=r"^[a-f0-9]{40}$")
     git_branch: str
     git_sha: str = Field(pattern=r"^[a-f0-9]{40}$")
     origin_main_sha: str | None = Field(default=None, pattern=r"^[a-f0-9]{40}$")
@@ -524,6 +534,7 @@ def _base_report(
     return ConsultationContextProviderCanaryReport(
         overall_status=overall_status,
         environment_id=canary_input.environment_id,
+        backend_release_sha=canary_input.backend_release_sha,
         git_branch=str(git_identity["branch"]),
         git_sha=str(git_identity["git_sha"]),
         origin_main_sha=git_identity.get("origin_main_sha"),

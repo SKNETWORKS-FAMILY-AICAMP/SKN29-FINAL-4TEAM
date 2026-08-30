@@ -6,6 +6,8 @@
 
 작성일: 2026-08-28
 
+공식 caution 계약 정정일: 2026-08-30
+
 ## 결론
 
 요청한 세 항목을 기준으로 Runner 입력 연결 기준, `official_verified` 전용 제한,
@@ -21,8 +23,9 @@ Backend HTTP 호출은 최종 main SHA와 두 Hash를 승인하기 전까지 실
 
 | Runner 입력 | 기준 원천 | 이동·고정 기준 | Inspect 전 검증 | 상태 |
 | --- | --- | --- | --- | --- |
-| `schema_version` | Canary Runner 계약 | `1.0.0` 고정 | 다른 값 거절 | AI 확정 |
+| `schema_version` | Canary Runner 계약 | `1.1.0` 고정 | 다른 값 거절 | AI 확정 |
 | `environment_id` | Canary 실행 담당자 | 실제 보호형 실행 환경을 나타내는 비밀이 아닌 식별자 사용 | `^[A-Z0-9][A-Z0-9_.-]{2,99}$` | AI 확정 |
+| `backend_release_sha` | AWS Backend 원장 Release | 원장을 생성한 Release의 40자리 Commit SHA를 그대로 사용 | 소문자 16진수 40자리, Runner `git_sha`와 별도 기록 | Backend 확정 |
 | `data_classification` | Canary 정책 + Backend 합성 고객 기록 | `synthetic` 고정 | Backend 고객과 연결 User 모두 `is_synthetic=true`인지 확인 | Backend 확인 필요 |
 | `inquiry_id` | `Inquiry.public_id` | 내부 정수 PK 금지 | `AIRun.inquiry`, `HumanReview.inquiry`와 동일 UUID | Backend 확정 |
 | `correlation_id` | 원본 `AIRun.correlation_id` | HumanReview 결정 Correlation을 사용하지 않음 | 원본 AIRun과 Handoff 대상 Correlation 일치 | Backend 확정 |
@@ -76,12 +79,14 @@ Runner는 답변 길이를 500자로 제한한다. Backend 입력이 500자를 �
 | --- | --- | --- |
 | `safety_assessment.risk_level` | 원본 값 그대로 | `caution` |
 | `safety_assessment.priority` | 원본 값 그대로 | `consultation_recommended` |
-| `safety_assessment.requires_consultation` | 원본 Boolean 그대로 | `true` |
-| `safety_assessment.matched_safety_rule_ids` | 순서 보존 | 빈 배열 |
+| `safety_assessment.requires_consultation` | 원본 Boolean 그대로 | `false` |
+| `safety_assessment.matched_safety_rule_ids` | 순서 보존 | 정확히 `["SAFETY-TEMP-ABNORMAL-001"]` |
 | `safety_assessment.detected_risks` | 순서 보존 | 원본 AIRun과 동일 |
 | `safety_assessment.safety_reason` | 변환·요약 없음 | 원본 AIRun과 동일 |
 
 조건이 다르면 값을 고치지 않고 신규 합성 문의를 다시 선정한다.
+다른 caution Rule, 임의 Rule, danger Rule 또는 기존 테스트 전용 조합인
+`requires_consultation=true + 빈 Rule 목록`은 Provider 호출 전에 거절한다.
 
 ### 1.5 사용 안내
 
@@ -160,12 +165,16 @@ Backend Handoff v2는 전송 Payload에서 검증 상태를 받지 않고, 연�
 
 ### 3.1 Commit 기준
 
-- 보강본 최신 main 동기화 기준:
-  `4f71692a754836757b7d6437916c7c0a33a09623`
-- 위 Commit은 보강 전 기준이므로 실제 실행 SHA로 사용하지 않는다.
-- 보강 변경이 main에 병합된 뒤 `git fetch origin`을 실행하고 새
+- AWS Backend 원장 기준 Release (`v0.3.1`):
+  `d1ffd2739883d8c8fedc934131335ed1b1a28dbc`
+- Runner 정정 작업의 최신 main 기준:
+  `d0a8c9848cf8613079a82fbfbad6781c1b890e95`
+- 위 두 값은 역할이 다르다. 입력·보고서의 `backend_release_sha`에는 AWS 원장
+  Release를, 보고서의 `git_sha`에는 실제 Runner 실행 Commit을 기록한다.
+- 정정 변경이 main에 병합된 뒤 `git fetch origin`을 실행하고 Runner 실행용
   `origin/main`의 40자리 SHA를 양측이 다시 고정한다.
-- 실제 실행 보고서의 `git_sha`는 고정한 SHA와 같고 `git_dirty=false`여야 한다.
+- 실제 실행 보고서의 `git_sha`는 고정한 Runner SHA와 같고
+  `git_dirty=false`여야 한다.
 
 ### 3.2 Clean Worktree 준비
 
@@ -221,7 +230,8 @@ Inspect 완료 조건:
 채팅·회신문에 남기는 승인 증거는 다음 값으로 제한한다.
 
 ```text
-execution_git_sha
+git_sha
+backend_release_sha
 inquiry_id
 correlation_id
 ai_request_id
@@ -298,19 +308,21 @@ Handoff는 기본적으로 자동 전송하지 않는다. `--send-handoff`와
 ## 5. 보강 검증 결과
 
 검증 기준은 Branch `dongyoon`, 최신 main Commit
-`4f71692a754836757b7d6437916c7c0a33a09623`에 이번 변경을 적용한 작업 트리다.
-아직 커밋·main 병합 전이므로 이 Commit을 실제 Canary 실행 SHA로 사용하지 않는다.
+`d0a8c9848cf8613079a82fbfbad6781c1b890e95`에 이번 정정을 적용한 작업 트리다.
+아직 커밋·main 병합 전이므로 이 Commit을 정정본의 실제 Runner 실행 SHA로
+사용하지 않는다.
 
 - Python: `3.13.13` — `PASS`
 - Runner·Test Python Compile — `PASS`
-- Runner 입력 Schema:
-  `evidence[].verification_status.const=official_verified` — `PASS`
+- Runner 입력·보고서 Schema `1.1.0`, 공식 caution 조합 통과, 기존
+  `true + 빈 Rule` 및 임의·danger Rule 거절 — `PASS`
+- 비공식 Evidence Provider 호출 전 거절 — `PASS`
 - Runner·맥락정리 Agent·HITL·Harness·Handoff·v2 Contract 표적:
-  `137 passed in 1.17s` — `PASS`
+  `141 passed in 1.18s` — `PASS`
 - AI 전체 Unit:
-  `699 passed, 4 warnings, 41 subtests passed in 26.25s` — `PASS`
+  `703 passed, 4 warnings, 41 subtests passed in 25.52s` — `PASS`
 - `git diff --check` — `PASS`
-- 변경 파일 Secret·DSN Literal 확인: 비밀값 검출 없음 — `PASS`
+- 변경 파일 Secret·DSN Literal 확인: 검출 없음 — `PASS`
 - 실제 Provider 호출: `NOT_RUN`
 - 실제 Backend Handoff·Replay: `NOT_RUN`
 - 최종 실행용 main 40자리 SHA 고정: 커밋·병합 후 수행 — `HOLD`

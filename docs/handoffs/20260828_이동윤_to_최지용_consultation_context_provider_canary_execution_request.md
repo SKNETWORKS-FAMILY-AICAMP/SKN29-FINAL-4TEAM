@@ -6,6 +6,8 @@
 
 작성일: 2026-08-28
 
+공식 caution 계약 정정일: 2026-08-30
+
 ## 결론
 
 이번 실행은 **Provider 컴포넌트 Canary**다. 운영 API를 변경하지 않으며,
@@ -30,17 +32,21 @@ Backend 전송 전에 중단한다. 이번 시험의 목적이 결정론적 Fall
 
 - Runner 도입 Commit:
   `141829c438f5133a30538ef0ac91a1081b1cd2a2`
-- `official_verified` 보강 최신 main 동기화 기준:
-  `4f71692a754836757b7d6437916c7c0a33a09623`
+- AWS Backend 원장 기준 Release Commit (`v0.3.1`):
+  `d1ffd2739883d8c8fedc934131335ed1b1a28dbc`
+- Runner 정정 작업의 최신 main 기준:
+  `d0a8c9848cf8613079a82fbfbad6781c1b890e95`
 - Runner:
   `ai/scripts/run_consultation_context_provider_canary.py`
 - 단위 테스트:
   `ai/tests/unit/test_consultation_context_provider_canary.py`
-- 실제 실행 기준 Commit: **보강본 main 병합 후 새 40자리 SHA로 별도 회신 예정**
+- 실제 Runner 실행 Commit: **정정본 커밋·병합 후 새 40자리 SHA로 별도 회신 예정**
 
-`execute` 모드는 전달받은 실행 기준 Commit과 현재 `HEAD`가 다르거나 작업 트리가
-Dirty이면 실패한다. 따라서 위 도입·보강 기준 Commit을 실제 실행 SHA로 사용하면
-안 된다.
+AWS 원장을 만든 Release SHA와 Runner를 실행하는 SHA는 별도 증거다. 입력·보고서의
+`backend_release_sha`에는 전자를, 보고서의 `git_sha`에는 후자를 기록한다.
+`execute` 모드는 전달받은 Runner 실행 Commit과 현재 `HEAD`가 다르거나 작업
+트리가 Dirty이면 실패한다. 따라서 위 도입·main 기준 Commit을 정정본의 실제
+실행 SHA로 대신 사용하면 안 된다.
 
 ## 최지용님이 제공할 식별자
 
@@ -54,6 +60,7 @@ Dirty이면 실패한다. 따라서 위 도입·보강 기준 Commit을 실제 �
 - `review_id`: Backend HumanReview 공개 UUID
 - `review_state_version_after_reject`: 공식 거절 처리 후 Review Version
 - `checkpoint_thread_id`: Backend HumanReview에 저장된 `hitl-` 형식 식별자
+- `backend_release_sha`: 해당 원장을 생성한 AWS Release의 40자리 Commit SHA
 
 Runner 입력에서는 `source_inquiry_state_version`을 `state_version` 필드에 넣는다.
 Runner는 `inquiry_id + ai_request_id + state_version`으로 Checkpoint ID를 다시
@@ -65,8 +72,12 @@ Runner는 `inquiry_id + ai_request_id + state_version`으로 Checkpoint ID를 �
 ## 보호 입력 준비 원칙
 
 - 신규 합성 문의만 사용하고 완료된 기존 문의는 재사용하지 않는다.
-- 입력은 `data_classification=synthetic`, 모델은 `WPUJAC104DWH`, 위험도는
-  `caution`, 사용 안내는 `PARTIAL_STOP`으로 제한한다.
+- 입력 계약은 `schema_version=1.1.0`을 사용한다.
+- 입력은 `data_classification=synthetic`, 모델은 `WPUJAC104DWH`로 제한한다.
+- Safety는 공식 Runtime 조합인 `risk_level=caution`,
+  `priority=consultation_recommended`, `requires_consultation=false`,
+  `matched_safety_rule_ids=["SAFETY-TEMP-ABNORMAL-001"]`만 허용한다.
+- 사용 안내는 `PARTIAL_STOP`으로 제한한다.
 - Evidence는 해당 모델과 정확히 일치하며 `official_verified`,
   `allowed_use=true`, `runtime_eligible=true`인 항목만 넣는다.
 - `team_verified`를 포함한 다른 검증 상태는 입력 검증에서 거절하고 Provider와
@@ -168,6 +179,7 @@ Inspect 보고서의 `input_sha256`과 `evidence_binding_sha256`을 양측이 �
 최종 AI 보고서는 원문·Prompt·생성 Brief·Secret 없이 다음만 남긴다.
 
 - Git Branch, 40자리 SHA, `origin/main` SHA, Dirty 여부
+- AWS Backend 원장 Release의 40자리 `backend_release_sha`
 - Inquiry·Correlation·AI Request·Review·Checkpoint 식별자와 Version
 - 입력·Evidence 결속 Hash
 - Harness 결정과 승인 Evidence Chunk ID
