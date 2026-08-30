@@ -1,0 +1,86 @@
+{
+  "experiment_id": "E01",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "case_count": 50,
+  "passed_count": 50,
+  "positive_case_count": 43,
+  "negative_case_count": 7,
+  "hit_at_1": 0.674419,
+  "hit_at_3": 1.0,
+  "hit_at_5": 1.0,
+  "recall_at_1": 0.674419,
+  "recall_at_3": 1.0,
+  "recall_at_5": 1.0,
+  "mrr_at_5": 0.810078,
+  "ndcg_at_5": 0.858523,
+  "no_evidence_accuracy": 1.0,
+  "cross_model_hit_count": 0,
+  "forbidden_hit_count": 0,
+  "unverified_evidence_hit_count": 0,
+  "direct_parent_hit_count": 0,
+  "warmup": {
+    "excluded_from_latency": true,
+    "latency_ms": 20546.428
+  },
+  "latency_all": {
+    "count": 50,
+    "mean_ms": 322.733,
+    "p50_ms": 292.634,
+    "p95_ms": 673.571,
+    "max_ms": 776.847
+  },
+  "latency_positive": {
+    "count": 43,
+    "mean_ms": 375.267,
+    "p50_ms": 309.451,
+    "p95_ms": 689.597,
+    "max_ms": 776.847
+  },
+  "model_breakdown": {
+    "WPUIAC425SNW": {
+      "positive_cases": 18,
+      "hit_at_1": 0.722222,
+      "hit_at_3": 1.0,
+      "hit_at_5": 1.0,
+      "mrr_at_5": 0.842593,
+      "ndcg_at_5": 0.882933,
+      "latency": {
+        "count": 18,
+        "mean_ms": 255.26,
+        "p50_ms": 240.29,
+        "p95_ms": 319.817,
+        "max_ms": 405.088
+      }
+    },
+    "WPUIAC606SNW": {
+      "positive_cases": 18,
+      "hit_at_1": 0.777778,
+      "hit_at_3": 1.0,
+      "hit_at_5": 1.0,
+      "mrr_at_5": 0.87037,
+      "ndcg_at_5": 0.903437,
+      "latency": {
+        "count": 18,
+        "mean_ms": 410.145,
+        "p50_ms": 361.75,
+        "p95_ms": 700.055,
+        "max_ms": 733.371
+      }
+    },
+    "WPUJAC104DWH": {
+      "positive_cases": 7,
+      "hit_at_1": 0.285714,
+      "hit_at_3": 1.0,
+      "hit_at_5": 1.0,
+      "mrr_at_5": 0.571429,
+      "ndcg_at_5": 0.680266,
+      "latency": {
+        "count": 7,
+        "mean_ms": 594.168,
+        "p50_ms": 582.656,
+        "p95_ms": 738.309,
+        "max_ms": 776.847
+      }
+    }
+  }
+}

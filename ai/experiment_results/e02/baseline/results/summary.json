@@ -1,0 +1,341 @@
+{
+  "status": "E02_COMPLETE",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "provenance": {
+    "experiment_id": "E02",
+    "script_version": "1.0",
+    "result_label": "DRAFT_DIAGNOSTIC",
+    "branch": "main",
+    "git_sha": "8a25bb8825a1b5c76e316883af2036e8044485c3",
+    "build_git_sha": "8a25bb8825a1b5c76e316883af2036e8044485c3",
+    "embedding_model": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "embedding_dimension": 1024,
+    "embedding_normalized": true,
+    "search_engine": "LOCAL_NUMPY_COSINE_EXACT",
+    "ranking_postprocess": "NONE",
+    "top_k": 5,
+    "score_threshold": 0.4,
+    "product_filter": "EXACT_SALES_CODE_PRE_FILTER",
+    "cross_model_fallback": false,
+    "runtime_policy_profile": "three_model_integration",
+    "runtime_activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+    "query_expansion_policy": "RUNTIME_QUERY_EXPANSION_V1",
+    "answerability_policy": "ANSWERABILITY_CAPABILITY_GATE_V1",
+    "shared_query_embedding_seconds": 11.215256,
+    "document_embedding_seconds": {
+      "current": 46.353632,
+      "fixed512": 76.850669,
+      "section": 74.008426,
+      "parent_child": 41.973585
+    },
+    "input_hashes": {
+      "data\\config\\rag\\three_model_evaluation_cases.json": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1",
+      ".runtime\\e02_chunking\\manifest.json": "818023AEC20085414008167A19A552B90FDAC74D4025D192AE5AC2C92BCBDB49",
+      ".runtime\\e02_chunking\\variants\\current.jsonl": "B8D33EC8156BB195566378B617871A485030C659329C9D2EFCFD12DDD28EE61F",
+      ".runtime\\e02_chunking\\variants\\fixed512.jsonl": "714E344D5ED0C0B84FC14872002EE09B6D00FB38ED9D69D2C10B491EB71DC56F",
+      ".runtime\\e02_chunking\\variants\\section.jsonl": "ED295D8813F141CF6DBB0491BF93B125B98DDAD3EBFE22C044278900FFF75571",
+      ".runtime\\e02_chunking\\variants\\parent_child.jsonl": "26831E92D64863415CFD81FA1471DAF513461E24448B32345200A6F28A37BE8D"
+    },
+    "build_mapping_policy": {
+      "current": "NATIVE_CURATED_CHILD",
+      "section": "SECTION_CONTAINS_PARENT",
+      "fixed512": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+      "parent_child": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+      "minimum_best_overlap_ratio": 0.5,
+      "reason": "고정 window 경계가 기존 Gold source span을 절단할 수 있으므로 완전 포함만 요구하면 chunking 자체가 아니라 경계 위치 때문에 정답 라벨이 사라진다. 각 source span을 동일 Parent 내 최대 겹침 단 하나의 Chunk에만 연결해 다중 정답 부풀림을 방지한다."
+    },
+    "notes": [
+      "E01 3모델 50 Case contract를 평가셋으로 재사용한다.",
+      "청킹 Variant 간 검색 엔진 차이를 제거하기 위해 모두 동일 local exact cosine을 사용한다.",
+      "E01 pgvector latency와 본 실험 ranking latency를 직접 비교하지 않는다.",
+      "Public runtime activation은 변경하지 않는다."
+    ]
+  },
+  "summaries": [
+    {
+      "variant": "current",
+      "case_count": 50,
+      "positive_case_count": 43,
+      "negative_case_count": 7,
+      "passed_count": 44,
+      "positive_passed_count": 39,
+      "negative_passed_count": 5,
+      "hit_at_1": 0.674419,
+      "hit_at_3": 0.906977,
+      "hit_at_5": 0.906977,
+      "recall_at_1": 0.674419,
+      "recall_at_3": 0.906977,
+      "recall_at_5": 0.906977,
+      "mrr_at_5": 0.775194,
+      "ndcg_at_5": 0.808967,
+      "no_evidence_accuracy": 0.714286,
+      "wrong_product_hit_count": 0,
+      "forbidden_model_hit_count": 10,
+      "invalid_role_hit_count": 0,
+      "ranking_latency_p50_ms": 0.0446,
+      "ranking_latency_p95_ms": 0.102905,
+      "mean_retrieved_group_cardinality": 1.0,
+      "failed_case_ids": [
+        "RAG3-POS-039",
+        "RAG3-POS-041",
+        "RAG3-POS-042",
+        "RAG3-POS-043",
+        "RAG3-NEG-002",
+        "RAG3-NEG-003"
+      ]
+    },
+    {
+      "variant": "fixed512",
+      "case_count": 50,
+      "positive_case_count": 43,
+      "negative_case_count": 7,
+      "passed_count": 48,
+      "positive_passed_count": 43,
+      "negative_passed_count": 5,
+      "hit_at_1": 0.604651,
+      "hit_at_3": 0.930233,
+      "hit_at_5": 1.0,
+      "recall_at_1": 0.604651,
+      "recall_at_3": 0.930233,
+      "recall_at_5": 1.0,
+      "mrr_at_5": 0.75,
+      "ndcg_at_5": 0.812714,
+      "no_evidence_accuracy": 0.714286,
+      "wrong_product_hit_count": 0,
+      "forbidden_model_hit_count": 10,
+      "invalid_role_hit_count": 0,
+      "ranking_latency_p50_ms": 0.0424,
+      "ranking_latency_p95_ms": 0.07377,
+      "mean_retrieved_group_cardinality": 2.306667,
+      "failed_case_ids": [
+        "RAG3-NEG-002",
+        "RAG3-NEG-003"
+      ]
+    },
+    {
+      "variant": "section",
+      "case_count": 50,
+      "positive_case_count": 43,
+      "negative_case_count": 7,
+      "passed_count": 48,
+      "positive_passed_count": 43,
+      "negative_passed_count": 5,
+      "hit_at_1": 0.697674,
+      "hit_at_3": 1.0,
+      "hit_at_5": 1.0,
+      "recall_at_1": 0.697674,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr_at_5": 0.848837,
+      "ndcg_at_5": 0.888421,
+      "no_evidence_accuracy": 0.714286,
+      "wrong_product_hit_count": 0,
+      "forbidden_model_hit_count": 4,
+      "invalid_role_hit_count": 0,
+      "ranking_latency_p50_ms": 0.03375,
+      "ranking_latency_p95_ms": 0.05434,
+      "mean_retrieved_group_cardinality": 8.644444,
+      "failed_case_ids": [
+        "RAG3-NEG-002",
+        "RAG3-NEG-003"
+      ]
+    },
+    {
+      "variant": "parent_child",
+      "case_count": 50,
+      "positive_case_count": 43,
+      "negative_case_count": 7,
+      "passed_count": 44,
+      "positive_passed_count": 39,
+      "negative_passed_count": 5,
+      "hit_at_1": 0.534884,
+      "hit_at_3": 0.906977,
+      "hit_at_5": 0.906977,
+      "recall_at_1": 0.534884,
+      "recall_at_3": 0.906977,
+      "recall_at_5": 0.906977,
+      "mrr_at_5": 0.697674,
+      "ndcg_at_5": 0.751379,
+      "no_evidence_accuracy": 0.714286,
+      "wrong_product_hit_count": 0,
+      "forbidden_model_hit_count": 10,
+      "invalid_role_hit_count": 0,
+      "ranking_latency_p50_ms": 0.0417,
+      "ranking_latency_p95_ms": 0.055835,
+      "mean_retrieved_group_cardinality": 1.324444,
+      "failed_case_ids": [
+        "RAG3-POS-039",
+        "RAG3-POS-041",
+        "RAG3-POS-042",
+        "RAG3-POS-043",
+        "RAG3-NEG-002",
+        "RAG3-NEG-003"
+      ]
+    }
+  ],
+  "structural_statistics": {
+    "current": {
+      "chunk_count": 53,
+      "chunk_count_by_model": {
+        "WPUIAC425SNW": 19,
+        "WPUIAC606SNW": 19,
+        "WPUJAC104DWH": 15
+      },
+      "average_chunk_tokens": 107.736,
+      "min_chunk_tokens": 45,
+      "max_chunk_tokens": 234,
+      "total_indexed_tokens": 5710,
+      "context_payload_tokens": 0,
+      "chunks_without_gold_group": 0,
+      "lineage_complete_count": 53
+    },
+    "fixed512": {
+      "chunk_count": 28,
+      "chunk_count_by_model": {
+        "WPUIAC425SNW": 10,
+        "WPUIAC606SNW": 10,
+        "WPUJAC104DWH": 8
+      },
+      "average_chunk_tokens": 311.857,
+      "min_chunk_tokens": 75,
+      "max_chunk_tokens": 512,
+      "total_indexed_tokens": 8732,
+      "context_payload_tokens": 0,
+      "chunks_without_gold_group": 8,
+      "lineage_complete_count": 28
+    },
+    "section": {
+      "chunk_count": 6,
+      "chunk_count_by_model": {
+        "WPUIAC425SNW": 2,
+        "WPUIAC606SNW": 2,
+        "WPUJAC104DWH": 2
+      },
+      "average_chunk_tokens": 1316.667,
+      "min_chunk_tokens": 528,
+      "max_chunk_tokens": 2240,
+      "total_indexed_tokens": 7900,
+      "context_payload_tokens": 0,
+      "chunks_without_gold_group": 0,
+      "lineage_complete_count": 6
+    },
+    "parent_child": {
+      "chunk_count": 43,
+      "chunk_count_by_model": {
+        "WPUIAC425SNW": 15,
+        "WPUIAC606SNW": 15,
+        "WPUJAC104DWH": 13
+      },
+      "average_chunk_tokens": 204.558,
+      "min_chunk_tokens": 75,
+      "max_chunk_tokens": 256,
+      "total_indexed_tokens": 8796,
+      "context_payload_tokens": 73010,
+      "chunks_without_gold_group": 12,
+      "lineage_complete_count": 43
+    }
+  },
+  "mapping_qa": [
+    {
+      "variant": "current",
+      "status": "PASS",
+      "chunk_count": 53,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 0,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 1.0,
+        "mean_best_overlap_ratio": 1.0,
+        "full_coverage_assignment_count": 53,
+        "partial_assignment_count": 0,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "fixed512",
+      "status": "PASS",
+      "chunk_count": 28,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 8,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 0.781457,
+        "mean_best_overlap_ratio": 0.981273,
+        "full_coverage_assignment_count": 46,
+        "partial_assignment_count": 7,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "section",
+      "status": "PASS",
+      "chunk_count": 6,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 0,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 1.0,
+        "mean_best_overlap_ratio": 1.0,
+        "full_coverage_assignment_count": 53,
+        "partial_assignment_count": 0,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "parent_child",
+      "status": "PASS",
+      "chunk_count": 43,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 12,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 0.61,
+        "mean_best_overlap_ratio": 0.945247,
+        "full_coverage_assignment_count": 43,
+        "partial_assignment_count": 10,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    }
+  ]
+}

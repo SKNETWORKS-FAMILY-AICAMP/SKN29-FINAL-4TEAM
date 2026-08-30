@@ -23,7 +23,7 @@ Execution outline
 5. Run the repository's official Neo4j lineage runner for the clean baseline.
 6. Remove the exact container and anonymous volumes.
 7. Copy only sanitized evidence to:
-      ai/experiment_results/e12_neo4j_evidence_lineage/<run_id>/
+      ai/experiment_results/e12/<run_id>/
 
 Expected final status
 ---------------------
@@ -65,7 +65,7 @@ RESULT_ROOT = (
     REPO_ROOT
     / "ai"
     / "experiment_results"
-    / "e12_neo4j_evidence_lineage"
+    / "e12"
 )
 
 DEFAULT_NEO4J_IMAGE = "neo4j:2026.07.1"

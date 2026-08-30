@@ -1,0 +1,229 @@
+{
+  "experiment_id": "E02",
+  "experiment_name": "E01 기반 3모델 Chunking Strategy Ablation",
+  "status": "E02_VARIANTS_READY",
+  "source": {
+    "branch": "main",
+    "git_sha": "8a25bb8825a1b5c76e316883af2036e8044485c3"
+  },
+  "e01_contract": {
+    "parents": 15,
+    "children": 53,
+    "evidence_groups": 43,
+    "cases": 50,
+    "positive_cases": 43,
+    "negative_cases": 7
+  },
+  "controlled_variables": {
+    "models": [
+      "WPUIAC425SNW",
+      "WPUIAC606SNW",
+      "WPUJAC104DWH"
+    ],
+    "embedding_model": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "top_k": 5,
+    "product_filter": "EXACT_SALES_CODE_PRE_FILTER",
+    "cross_model_fallback": false,
+    "parent_search": false
+  },
+  "mapping_policy": {
+    "current": "NATIVE_CURATED_CHILD",
+    "section": "SECTION_CONTAINS_PARENT",
+    "fixed512": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+    "parent_child": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+    "minimum_best_overlap_ratio": 0.5,
+    "reason": "고정 window 경계가 기존 Gold source span을 절단할 수 있으므로 완전 포함만 요구하면 chunking 자체가 아니라 경계 위치 때문에 정답 라벨이 사라진다. 각 source span을 동일 Parent 내 최대 겹침 단 하나의 Chunk에만 연결해 다중 정답 부풀림을 방지한다."
+  },
+  "independent_variable": "chunking_strategy",
+  "variants": {
+    "current": {
+      "description": "E01 curated Child 53개 그대로 사용"
+    },
+    "fixed512": {
+      "description": "BGE-M3 tokenizer 기준 512-token window",
+      "window_tokens": 512,
+      "overlap_tokens": 64
+    },
+    "section": {
+      "description": "동일 모델 + 동일 section_title의 선정 Parent 페이지 병합"
+    },
+    "parent_child": {
+      "description": "BGE-M3 tokenizer 256-token Child 검색 + 동일 Section Parent Context",
+      "child_window_tokens": 256,
+      "child_overlap_tokens": 32
+    }
+  },
+  "input_hashes": {
+    "data\\processed\\structured\\rag\\expansion\\rag_parent_pages_3model_v1.jsonl": "EB58882ED9EC996C7665FE6C3C472A6B25273D278D79799F6F15A98AF9B1578E",
+    "data\\processed\\structured\\rag\\expansion\\rag_child_chunks_3model_v1.jsonl": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78",
+    "data\\processed\\structured\\evidence\\rag_evidence_groups_3model_v1.jsonl": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D",
+    "data\\config\\rag\\three_model_evaluation_cases.json": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
+  },
+  "variant_statistics": {
+    "current": {
+      "chunk_count": 53,
+      "chunk_count_by_model": {
+        "WPUIAC425SNW": 19,
+        "WPUIAC606SNW": 19,
+        "WPUJAC104DWH": 15
+      },
+      "average_chunk_tokens": 107.736,
+      "min_chunk_tokens": 45,
+      "max_chunk_tokens": 234,
+      "total_indexed_tokens": 5710,
+      "context_payload_tokens": 0,
+      "chunks_without_gold_group": 0,
+      "lineage_complete_count": 53
+    },
+    "fixed512": {
+      "chunk_count": 28,
+      "chunk_count_by_model": {
+        "WPUIAC425SNW": 10,
+        "WPUIAC606SNW": 10,
+        "WPUJAC104DWH": 8
+      },
+      "average_chunk_tokens": 311.857,
+      "min_chunk_tokens": 75,
+      "max_chunk_tokens": 512,
+      "total_indexed_tokens": 8732,
+      "context_payload_tokens": 0,
+      "chunks_without_gold_group": 8,
+      "lineage_complete_count": 28
+    },
+    "section": {
+      "chunk_count": 6,
+      "chunk_count_by_model": {
+        "WPUIAC425SNW": 2,
+        "WPUIAC606SNW": 2,
+        "WPUJAC104DWH": 2
+      },
+      "average_chunk_tokens": 1316.667,
+      "min_chunk_tokens": 528,
+      "max_chunk_tokens": 2240,
+      "total_indexed_tokens": 7900,
+      "context_payload_tokens": 0,
+      "chunks_without_gold_group": 0,
+      "lineage_complete_count": 6
+    },
+    "parent_child": {
+      "chunk_count": 43,
+      "chunk_count_by_model": {
+        "WPUIAC425SNW": 15,
+        "WPUIAC606SNW": 15,
+        "WPUJAC104DWH": 13
+      },
+      "average_chunk_tokens": 204.558,
+      "min_chunk_tokens": 75,
+      "max_chunk_tokens": 256,
+      "total_indexed_tokens": 8796,
+      "context_payload_tokens": 73010,
+      "chunks_without_gold_group": 12,
+      "lineage_complete_count": 43
+    }
+  },
+  "mapping_qa": [
+    {
+      "variant": "current",
+      "status": "PASS",
+      "chunk_count": 53,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 0,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 1.0,
+        "mean_best_overlap_ratio": 1.0,
+        "full_coverage_assignment_count": 53,
+        "partial_assignment_count": 0,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "fixed512",
+      "status": "PASS",
+      "chunk_count": 28,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 8,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 0.781457,
+        "mean_best_overlap_ratio": 0.981273,
+        "full_coverage_assignment_count": 46,
+        "partial_assignment_count": 7,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "section",
+      "status": "PASS",
+      "chunk_count": 6,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 0,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 1.0,
+        "mean_best_overlap_ratio": 1.0,
+        "full_coverage_assignment_count": 53,
+        "partial_assignment_count": 0,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "parent_child",
+      "status": "PASS",
+      "chunk_count": 43,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 12,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 0.61,
+        "mean_best_overlap_ratio": 0.945247,
+        "full_coverage_assignment_count": 43,
+        "partial_assignment_count": 10,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    }
+  ],
+  "errors": [],
+  "output_directory": ".runtime/e02_chunking"
+}

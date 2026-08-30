@@ -32,7 +32,7 @@ from ai.app.orchestration.pipelines.single_rag_pipeline import SingleRAGPipeline
 from ai.app.retrieval import RetrievedChunk
 from ai.app.schemas import TraceContext
 
-OUT_DIR = ROOT / "ai/experiment_results/e05_q2_conversation"
+OUT_DIR = ROOT / "ai/experiment_results/e05/q2_conversation"
 ENV_PATH = ROOT / "backend/.env"
 MANUAL_PATH = ROOT / "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl"
 

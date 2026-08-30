@@ -34,7 +34,7 @@ from ai.app.schemas import (
     UsageGuidanceStatus,
 )
 
-OUT = ROOT / "ai/experiment_results/e07_hitl_manual"
+OUT = ROOT / "ai/experiment_results/e07/manual"
 
 MODEL = "WPUJAC104DWH"
 STATE_VERSION = 7
@@ -623,7 +623,7 @@ def main() -> None:
             "handoff_present": result["after"]["handoff_present"],
             "handoff_reason": result["after"]["handoff_reason"],
             "pass": passed,
-            "output_dir": "ai/experiment_results/e07_hitl_manual",
+            "output_dir": "ai/experiment_results/e07/manual",
         },
         ensure_ascii=False,
         indent=2,

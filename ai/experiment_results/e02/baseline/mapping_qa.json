@@ -1,0 +1,114 @@
+{
+  "status": "E02_VARIANTS_READY",
+  "mapping_policy": {
+    "current": "NATIVE_CURATED_CHILD",
+    "section": "SECTION_CONTAINS_PARENT",
+    "fixed512": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+    "parent_child": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+    "minimum_best_overlap_ratio": 0.5,
+    "reason": "고정 window 경계가 기존 Gold source span을 절단할 수 있으므로 완전 포함만 요구하면 chunking 자체가 아니라 경계 위치 때문에 정답 라벨이 사라진다. 각 source span을 동일 Parent 내 최대 겹침 단 하나의 Chunk에만 연결해 다중 정답 부풀림을 방지한다."
+  },
+  "results": [
+    {
+      "variant": "current",
+      "status": "PASS",
+      "chunk_count": 53,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 0,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 1.0,
+        "mean_best_overlap_ratio": 1.0,
+        "full_coverage_assignment_count": 53,
+        "partial_assignment_count": 0,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "fixed512",
+      "status": "PASS",
+      "chunk_count": 28,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 8,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 0.781457,
+        "mean_best_overlap_ratio": 0.981273,
+        "full_coverage_assignment_count": 46,
+        "partial_assignment_count": 7,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "section",
+      "status": "PASS",
+      "chunk_count": 6,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 0,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 1.0,
+        "mean_best_overlap_ratio": 1.0,
+        "full_coverage_assignment_count": 53,
+        "partial_assignment_count": 0,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    },
+    {
+      "variant": "parent_child",
+      "status": "PASS",
+      "chunk_count": 43,
+      "model_set": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "evidence_group_coverage": "43/43",
+      "source_child_span_coverage": "53/53",
+      "chunks_without_gold_group": 12,
+      "overlap_qa": {
+        "assignment_count": 53,
+        "minimum_best_overlap_ratio": 0.61,
+        "mean_best_overlap_ratio": 0.945247,
+        "full_coverage_assignment_count": 43,
+        "partial_assignment_count": 10,
+        "below_minimum_count": 0,
+        "below_minimum": []
+      },
+      "missing_group_ids": [],
+      "missing_child_ids": [],
+      "errors": []
+    }
+  ],
+  "errors": []
+}

@@ -470,8 +470,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("ai/experiment_results/e09_mcp_contract_failure/summary.json"),
-        help="JSON result output path (default: ai/experiment_results/e09_mcp_contract_failure/summary.json)",
+        default=Path("ai/experiment_results/e09/summary.json"),
+        help="JSON result output path (default: ai/experiment_results/e09/summary.json)",
     )
     return parser.parse_args()
 

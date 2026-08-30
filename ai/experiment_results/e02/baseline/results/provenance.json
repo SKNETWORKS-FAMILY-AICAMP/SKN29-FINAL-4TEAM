@@ -1,0 +1,51 @@
+{
+  "experiment_id": "E02",
+  "script_version": "1.0",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "branch": "main",
+  "git_sha": "8a25bb8825a1b5c76e316883af2036e8044485c3",
+  "build_git_sha": "8a25bb8825a1b5c76e316883af2036e8044485c3",
+  "embedding_model": "BAAI/bge-m3",
+  "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+  "embedding_dimension": 1024,
+  "embedding_normalized": true,
+  "search_engine": "LOCAL_NUMPY_COSINE_EXACT",
+  "ranking_postprocess": "NONE",
+  "top_k": 5,
+  "score_threshold": 0.4,
+  "product_filter": "EXACT_SALES_CODE_PRE_FILTER",
+  "cross_model_fallback": false,
+  "runtime_policy_profile": "three_model_integration",
+  "runtime_activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+  "query_expansion_policy": "RUNTIME_QUERY_EXPANSION_V1",
+  "answerability_policy": "ANSWERABILITY_CAPABILITY_GATE_V1",
+  "shared_query_embedding_seconds": 11.215256,
+  "document_embedding_seconds": {
+    "current": 46.353632,
+    "fixed512": 76.850669,
+    "section": 74.008426,
+    "parent_child": 41.973585
+  },
+  "input_hashes": {
+    "data\\config\\rag\\three_model_evaluation_cases.json": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1",
+    ".runtime\\e02_chunking\\manifest.json": "818023AEC20085414008167A19A552B90FDAC74D4025D192AE5AC2C92BCBDB49",
+    ".runtime\\e02_chunking\\variants\\current.jsonl": "B8D33EC8156BB195566378B617871A485030C659329C9D2EFCFD12DDD28EE61F",
+    ".runtime\\e02_chunking\\variants\\fixed512.jsonl": "714E344D5ED0C0B84FC14872002EE09B6D00FB38ED9D69D2C10B491EB71DC56F",
+    ".runtime\\e02_chunking\\variants\\section.jsonl": "ED295D8813F141CF6DBB0491BF93B125B98DDAD3EBFE22C044278900FFF75571",
+    ".runtime\\e02_chunking\\variants\\parent_child.jsonl": "26831E92D64863415CFD81FA1471DAF513461E24448B32345200A6F28A37BE8D"
+  },
+  "build_mapping_policy": {
+    "current": "NATIVE_CURATED_CHILD",
+    "section": "SECTION_CONTAINS_PARENT",
+    "fixed512": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+    "parent_child": "MAX_CHAR_OVERLAP_SINGLE_CHUNK",
+    "minimum_best_overlap_ratio": 0.5,
+    "reason": "고정 window 경계가 기존 Gold source span을 절단할 수 있으므로 완전 포함만 요구하면 chunking 자체가 아니라 경계 위치 때문에 정답 라벨이 사라진다. 각 source span을 동일 Parent 내 최대 겹침 단 하나의 Chunk에만 연결해 다중 정답 부풀림을 방지한다."
+  },
+  "notes": [
+    "E01 3모델 50 Case contract를 평가셋으로 재사용한다.",
+    "청킹 Variant 간 검색 엔진 차이를 제거하기 위해 모두 동일 local exact cosine을 사용한다.",
+    "E01 pgvector latency와 본 실험 ranking latency를 직접 비교하지 않는다.",
+    "Public runtime activation은 변경하지 않는다."
+  ]
+}

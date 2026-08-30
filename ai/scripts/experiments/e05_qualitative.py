@@ -15,7 +15,7 @@ from ai.app.orchestration.pipelines.single_rag_pipeline import SingleRAGPipeline
 from ai.app.retrieval import RetrievedChunk
 from ai.app.schemas import TraceContext
 
-OUT = ROOT / "ai/experiment_results/e05_qualitative"
+OUT = ROOT / "ai/experiment_results/e05/qualitative"
 ENV_PATH = ROOT / "backend/.env"
 
 

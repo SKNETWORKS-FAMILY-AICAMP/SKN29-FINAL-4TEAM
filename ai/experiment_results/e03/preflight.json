@@ -1,0 +1,163 @@
+{
+  "status": "E03_PREFLIGHT_READY",
+  "experiment_id": "E03",
+  "git": {
+    "branch": "main",
+    "head_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f"
+  },
+  "purpose": "E02-v2 우승 Parent-Child-256 Corpus를 고정하고 Dense Embedding 모델만 변경하여 retrieval ranking 품질과 CPU 추론 비용을 비교",
+  "fixed_contract": {
+    "corpus": "E02-v2 parent_child_256",
+    "corpus_chunk_count": 216,
+    "candidate_counts_after_product_filter": {
+      "WPUIAC425SNW": 76,
+      "WPUIAC606SNW": 74,
+      "WPUJAC104DWH": 66
+    },
+    "evidence_group_count": 43,
+    "source_child_count": 53,
+    "primary_query_set": "E01 positive 43 cases",
+    "primary_case_count": 43,
+    "supplemental_query_set": "FAQ-origin compatible UNREVIEWED_DRAFT",
+    "supplemental_case_count": 5,
+    "top_k": 5,
+    "exact_sales_code_pre_filter": true,
+    "cross_model_fallback": false,
+    "retrieval_text": "CHILD_TEXT_ONLY",
+    "parent_context_scored": false,
+    "query_expansion": "SAME_RUNTIME_POLICY_FOR_ALL_MODELS",
+    "normalization": "L2_NORMALIZED",
+    "similarity": "COSINE_VIA_NORMALIZED_DOT_PRODUCT",
+    "score_threshold": null,
+    "no_evidence_metric": "EXCLUDED_FROM_E03_PRIMARY",
+    "reason_threshold_excluded": "Embedding 모델별 cosine score 분포가 달라 동일 threshold=0.4 적용이 불공정하므로 E03은 순위 지표만 비교. Threshold/No-Evidence는 E09에서 별도 평가.",
+    "metrics": [
+      "Hit@1",
+      "Hit@3",
+      "Hit@5",
+      "MRR@5",
+      "nDCG@5",
+      "document_embedding_time",
+      "query_embedding_time",
+      "ranking_latency",
+      "embedding_dimension"
+    ]
+  },
+  "models": [
+    {
+      "key": "bge_m3",
+      "model_id": "BAAI/bge-m3",
+      "requested_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "expected_dimension": 1024,
+      "declared_max_tokens": 8192,
+      "trust_remote_code": false,
+      "query_prefix": "",
+      "document_prefix": "",
+      "role": "CURRENT_BASELINE",
+      "family": "BGE",
+      "resolved_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "license": "mit",
+      "safetensors_bytes": null,
+      "safetensors_mb": null,
+      "tokenizer_class": "XLMRobertaTokenizer",
+      "tokenizer_is_fast": true,
+      "document_tokens": {
+        "min": 2,
+        "mean": 211.25,
+        "max": 258,
+        "over_declared_max_count": 0
+      },
+      "query_tokens": {
+        "min": 12,
+        "mean": 25.896,
+        "max": 65,
+        "over_declared_max_count": 0
+      },
+      "truncation_gate": "PASS"
+    },
+    {
+      "key": "multilingual_e5_base",
+      "model_id": "intfloat/multilingual-e5-base",
+      "requested_revision": "main",
+      "expected_dimension": 768,
+      "declared_max_tokens": 512,
+      "trust_remote_code": false,
+      "query_prefix": "query: ",
+      "document_prefix": "passage: ",
+      "role": "MULTILINGUAL_RETRIEVAL_ALTERNATIVE",
+      "family": "E5",
+      "resolved_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+      "license": "mit",
+      "safetensors_bytes": 1112201288,
+      "safetensors_mb": 1060.7,
+      "tokenizer_class": "XLMRobertaTokenizer",
+      "tokenizer_is_fast": true,
+      "document_tokens": {
+        "min": 4,
+        "mean": 213.25,
+        "max": 260,
+        "over_declared_max_count": 0
+      },
+      "query_tokens": {
+        "min": 15,
+        "mean": 28.896,
+        "max": 68,
+        "over_declared_max_count": 0
+      },
+      "truncation_gate": "PASS"
+    },
+    {
+      "key": "gte_multilingual_base",
+      "model_id": "Alibaba-NLP/gte-multilingual-base",
+      "requested_revision": "main",
+      "expected_dimension": 768,
+      "declared_max_tokens": 8192,
+      "trust_remote_code": true,
+      "query_prefix": "",
+      "document_prefix": "",
+      "role": "MULTILINGUAL_RETRIEVAL_ALTERNATIVE",
+      "family": "GTE",
+      "resolved_revision": "9bbca17d9273fd0d03d5725c7a4b0f6b45142062",
+      "license": "apache-2.0",
+      "safetensors_bytes": 610753338,
+      "safetensors_mb": 582.5,
+      "tokenizer_class": "XLMRobertaTokenizer",
+      "tokenizer_is_fast": true,
+      "document_tokens": {
+        "min": 2,
+        "mean": 211.25,
+        "max": 258,
+        "over_declared_max_count": 0
+      },
+      "query_tokens": {
+        "min": 12,
+        "mean": 25.896,
+        "max": 65,
+        "over_declared_max_count": 0
+      },
+      "truncation_gate": "PASS"
+    }
+  ],
+  "environment": {
+    "python": "3.13.13",
+    "sentence_transformers": "5.5.1",
+    "transformers": "5.14.1",
+    "huggingface_hub": "1.25.1",
+    "torch": "2.13.0",
+    "numpy": "2.2.6"
+  },
+  "input_hashes": {
+    ".runtime/e02_v2/preflight.json": "6ABC0FE5BB308604C60C59FEDDC09804F7F62F86E4E6C4EC1440B1E732638CAF",
+    ".runtime/e02_v2/manifest.json": "5D571256F3DCEAB25FBF5C43F6F8FA9E5B2F216E87C568911E21413DFE2F90D6",
+    ".runtime/e02_v2/results/summary.json": "4B13ADE033B1A186475352000376604D5905C81ACA092FD99AE9E307C2997363",
+    ".runtime/e02_v2/variants/parent_child_256.jsonl": "68186B514CBDE269EE886E6D758C01AFE18B8A66CA95ABCA2E74477AD3F161D9",
+    "data/config/rag/three_model_evaluation_cases.json": "B0316CE050C91C8900E805E85A5F8FFF836CCD2E04CDCF328437C2C68A70FBF1"
+  },
+  "publication_guardrail": {
+    "result_label": "DRAFT_DIAGNOSTIC",
+    "primary": "E01 positive 43 case ranking metric",
+    "supplemental": "FAQ-origin 5 case는 UNREVIEWED_DRAFT이며 공식 Metric에 합산하지 않음"
+  },
+  "warnings": [],
+  "errors": []
+}

@@ -71,7 +71,7 @@ RESULT_ROOT = (
     REPO_ROOT
     / "ai"
     / "experiment_results"
-    / "e13_deployment_reproducibility"
+    / "e13"
 )
 
 EXPECTED_REPOSITORY = (

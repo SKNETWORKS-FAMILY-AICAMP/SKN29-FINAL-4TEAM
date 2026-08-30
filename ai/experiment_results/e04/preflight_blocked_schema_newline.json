@@ -1,0 +1,247 @@
+{
+  "status": "E04_V2_10MODEL_PREFLIGHT_BLOCKED",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "git_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f",
+  "prompt_version": "customer_guidance/v3",
+  "runtime_baseline": {
+    "provider": "openai",
+    "model_name": "gpt-4.1-mini",
+    "temperature": 0.0,
+    "max_tokens": 500
+  },
+  "fixed_retrieval": {
+    "experiment": "E03",
+    "embedding_model": "gte_multilingual_base",
+    "chunking": "parent_child_256",
+    "top_k": 5,
+    "source_case_count": 43,
+    "included_answerable_case_count": 39,
+    "excluded_retrieval_failure_count": 4,
+    "excluded_source_case_ids": [
+      "RAG3-POS-009",
+      "RAG3-POS-039",
+      "RAG3-POS-041",
+      "RAG3-POS-042"
+    ]
+  },
+  "matrix": {
+    "mini_generation": [
+      "gpt_4o_mini",
+      "gpt_4_1_mini",
+      "gpt_5_mini",
+      "gpt_5_4_mini"
+    ],
+    "size_by_family": {
+      "4.1": [
+        "gpt_4_1_nano",
+        "gpt_4_1_mini",
+        "gpt_4_1_full"
+      ],
+      "5": [
+        "gpt_5_nano",
+        "gpt_5_mini",
+        "gpt_5_full"
+      ],
+      "5.4": [
+        "gpt_5_4_nano",
+        "gpt_5_4_mini",
+        "gpt_5_4_full"
+      ]
+    }
+  },
+  "models": [],
+  "pricing_verified_date": "2026-08-27",
+  "pricing_basis": "OpenAI published standard text-token prices. Runner separately accounts for cached input tokens when usage exposes them.",
+  "dataset_path": ".runtime/e04_generation_v2/dataset.json",
+  "live_smoke": {
+    "gpt_4o_mini": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-4o-mini-2024-07-18",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-4o-mini",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_4_1_nano": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-4.1-nano-2025-04-14",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-4.1-nano",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_4_1_mini": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-4.1-mini-2025-04-14",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-4.1-mini",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_4_1_full": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-4.1-2025-04-14",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-4.1",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_5_nano": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-5-nano-2025-08-07",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-5-nano",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_5_mini": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-5-mini-2025-08-07",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-5-mini",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_5_full": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-5-2025-08-07",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-5",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_5_4_nano": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-5.4-nano-2026-03-17",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-5.4-nano",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_5_4_mini": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-5.4-mini-2026-03-17",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-5.4-mini",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    },
+    "gpt_5_4_full": {
+      "status": "FAIL",
+      "attempts": [
+        {
+          "model_id": "gpt-5.4-2026-03-05",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        },
+        {
+          "model_id": "gpt-5.4",
+          "status": "FAIL",
+          "error_type": "RuntimeError",
+          "error": "HTTP 400: {\n  \"error\": {\n    \"message\": \"Invalid schema for response_format 'customer_guidance': In context=('properties', 'message'), \\n is not allowed in string literals for structured outputs (strict=true).\",\n    \"type\": \"invalid_request_error\",\n    \"param\": \"text.format.schema\",\n    \"code\": \"invalid_json_schema\"\n  }\n}"
+        }
+      ]
+    }
+  },
+  "input_hashes": {
+    ".runtime/e03_embedding/results/summary.json": "6D0BB0973D9AD1ACF7C55EC555083BE5DCE36531581FB99D5970F8DFDF41C8AD",
+    ".runtime/e03_embedding/results/case_results.jsonl": "9881A54D8C6789A194B7B276D7D790B3551618068EE7B501E30A156C8374BC8B",
+    ".runtime/e02_v2/variants/parent_child_256.jsonl": "68186B514CBDE269EE886E6D758C01AFE18B8A66CA95ABCA2E74477AD3F161D9",
+    "ai/configs/model_profiles.yaml": "43AF8B0319AB7FEAD37F8EB68D3D3CB77D8D1B98B6EFD7064FCCFE945D1F4BDD"
+  },
+  "warnings": [],
+  "errors": [
+    "gpt_4o_mini: snapshot/alias live smoke 모두 실패",
+    "gpt_4_1_nano: snapshot/alias live smoke 모두 실패",
+    "gpt_4_1_mini: snapshot/alias live smoke 모두 실패",
+    "gpt_4_1_full: snapshot/alias live smoke 모두 실패",
+    "gpt_5_nano: snapshot/alias live smoke 모두 실패",
+    "gpt_5_mini: snapshot/alias live smoke 모두 실패",
+    "gpt_5_full: snapshot/alias live smoke 모두 실패",
+    "gpt_5_4_nano: snapshot/alias live smoke 모두 실패",
+    "gpt_5_4_mini: snapshot/alias live smoke 모두 실패",
+    "gpt_5_4_full: snapshot/alias live smoke 모두 실패"
+  ]
+}
