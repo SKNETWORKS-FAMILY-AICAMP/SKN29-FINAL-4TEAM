@@ -8,6 +8,35 @@ from typing import Any
 
 LOGGER = logging.getLogger("watercare.ai.llm")
 
+_ALLOWED_FIELDS = {
+    "correlation_id",
+    "ai_request_id",
+    "inquiry_id",
+    "model_code",
+    "task",
+    "model_name",
+    "prompt_version",
+    "reason",
+    "validation_result",
+    "fallback_fields",
+    "target_field",
+    "input_tokens",
+    "output_tokens",
+    "total_tokens",
+    "latency_ms",
+    "retry_count",
+}
+_USAGE_EVENTS = {
+    "llm_guidance_completed",
+    "llm_symptom_structuring_completed",
+    "llm_followup_wording_completed",
+}
+_FALLBACK_EVENTS = {
+    "llm_symptom_structuring_fallback",
+    "llm_followup_wording_fallback",
+    "llm_client_configuration_fallback",
+}
+
 
 def configure_llm_usage_logging() -> None:
     level_name = os.getenv("AI_LOG_LEVEL", "INFO").upper()
@@ -23,24 +52,29 @@ def configure_llm_usage_logging() -> None:
 
 
 def log_llm_usage(*, event: str = "llm_guidance_completed", **fields: Any) -> None:
-    allowed = {
-        "correlation_id",
-        "ai_request_id",
-        "model_name",
-        "prompt_version",
-        "input_tokens",
-        "output_tokens",
-        "total_tokens",
-        "latency_ms",
-        "retry_count",
-    }
-    allowed_events = {
-        "llm_guidance_completed",
-        "llm_symptom_structuring_completed",
-        "llm_followup_wording_completed",
-    }
-    if event not in allowed_events:
+    if event not in _USAGE_EVENTS:
         raise ValueError("허용되지 않은 LLM usage event입니다.")
+    _log_event(logging.INFO, event, fields)
+
+
+def log_llm_fallback(*, event: str, **fields: Any) -> None:
+    """고객 원문이나 Provider 오류 본문 없이 fallback 사유만 경고한다."""
+
+    if event not in _FALLBACK_EVENTS:
+        raise ValueError("허용되지 않은 LLM fallback event입니다.")
+    _log_event(logging.WARNING, event, fields)
+
+
+def _log_event(level: int, event: str, fields: dict[str, Any]) -> None:
     payload = {"event": event}
-    payload.update({key: value for key, value in fields.items() if key in allowed})
-    LOGGER.info(json.dumps(payload, ensure_ascii=False, default=str, sort_keys=True))
+    payload.update(
+        {
+            key: value
+            for key, value in fields.items()
+            if key in _ALLOWED_FIELDS and value is not None
+        }
+    )
+    LOGGER.log(
+        level,
+        json.dumps(payload, ensure_ascii=False, default=str, sort_keys=True),
+    )

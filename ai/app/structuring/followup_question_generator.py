@@ -131,6 +131,7 @@ class FollowUpQuestionGenerator:
                     prompt_version=response.prompt_version,
                     target_fields=target_fields,
                     reason="DOMAIN_VALIDATION_FAILED",
+                    model_name=response.model_name,
                 )
                 return fallback
             span.set_attribute("validation.result", "ACCEPTED")
@@ -218,6 +219,7 @@ class FollowUpQuestionGenerator:
         prompt_version: str,
         target_fields: tuple[str, ...],
         reason: str,
+        model_name: str = "",
     ) -> None:
         with _FOLLOWUP_TRACER.start_as_current_span(
             "waterbridge.followup.fallback"
@@ -231,6 +233,22 @@ class FollowUpQuestionGenerator:
             )
             span.set_attribute("fallback.used", True)
             span.set_attribute("validation.result", reason)
+
+        from ..integrations.llm.token_usage import log_llm_fallback
+
+        log_llm_fallback(
+            event="llm_followup_wording_fallback",
+            correlation_id=(trace_context.correlation_id if trace_context else None),
+            ai_request_id=(trace_context.ai_request_id if trace_context else None),
+            inquiry_id=(trace_context.inquiry_id if trace_context else None),
+            model_code=model_code or None,
+            task="followup_question",
+            model_name=model_name or None,
+            prompt_version=prompt_version,
+            reason=reason,
+            validation_result="FALLBACK",
+            target_field=",".join(target_fields),
+        )
 
     @staticmethod
     def _set_span_context(

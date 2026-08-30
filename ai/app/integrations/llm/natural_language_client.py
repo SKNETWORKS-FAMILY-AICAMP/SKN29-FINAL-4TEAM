@@ -11,7 +11,6 @@ import httpx
 import yaml
 from pydantic import ValidationError
 
-from ...schemas import StructuredSymptom
 from ...structuring.llm_contracts import (
     ALLOWED_SYMPTOM_TYPES,
     ALLOWED_WATER_TYPES,
@@ -19,6 +18,7 @@ from ...structuring.llm_contracts import (
     FollowUpWordingLLMResponse,
     FollowUpWordingRequest,
     FollowUpWordingResult,
+    SymptomStructuringResult,
     SymptomStructuringLLMResponse,
     SymptomStructuringRequest,
 )
@@ -121,13 +121,16 @@ class OpenAIResponsesSymptomStructuringClient(_TaskConfiguredResponsesClient):
             timeout_seconds=timeout_seconds,
         )
         try:
-            output = StructuredSymptom.model_validate_json(response.output_text)
+            result = SymptomStructuringResult.model_validate_json(
+                response.output_text
+            )
         except (ValidationError, ValueError) as exc:
             raise LLMOutputValidationError(
                 "증상 구조화 출력이 canonical Schema와 일치하지 않습니다."
             ) from exc
         return SymptomStructuringLLMResponse(
-            output=output,
+            output=result.structured_symptom,
+            evidence_claims=tuple(result.evidence_claims),
             model_name=response.model_name,
             prompt_version=self.prompt_version,
             usage=response.usage,
@@ -136,8 +139,9 @@ class OpenAIResponsesSymptomStructuringClient(_TaskConfiguredResponsesClient):
 
     @staticmethod
     def _schema() -> dict[str, object]:
-        schema = StructuredSymptom.model_json_schema()
-        properties = schema["properties"]
+        schema = SymptomStructuringResult.model_json_schema()
+        symptom_schema = schema["$defs"]["StructuredSymptom"]
+        properties = symptom_schema["properties"]
         properties["symptom_type"]["enum"] = list(ALLOWED_SYMPTOM_TYPES)
         properties["target_water_type"] = {
             "anyOf": [
@@ -146,7 +150,10 @@ class OpenAIResponsesSymptomStructuringClient(_TaskConfiguredResponsesClient):
             ],
             "description": "대상 출수 종류",
         }
-        schema["required"] = list(properties)
+        symptom_schema["required"] = list(properties)
+        claim_schema = schema["$defs"]["SymptomEvidenceClaim"]
+        claim_schema["required"] = list(claim_schema["properties"])
+        schema["required"] = list(schema["properties"])
         return schema
 
 

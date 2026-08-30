@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -21,6 +21,34 @@ ALLOWED_SYMPTOM_TYPES = (
     "기타 증상",
 )
 ALLOWED_WATER_TYPES = ("냉수", "온수", "정수", "전체")
+
+
+class SymptomEvidenceClaim(BaseModel):
+    """내부 LLM 후보 필드와 실제 고객 입력 사이의 출처 주장."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    field_name: Literal[
+        "symptom_type",
+        "occurrence_time",
+        "target_water_type",
+        "occurrence_condition",
+        "error_code",
+        "accompanying_symptoms",
+        "actions_taken",
+    ]
+    value: str = Field(min_length=1, max_length=500)
+    source: Literal["RAW_SYMPTOM", "SELECTED_SYMPTOM", "PREVIOUS_ANSWER"]
+    evidence_quote: str = Field(min_length=1, max_length=500)
+
+
+class SymptomStructuringResult(BaseModel):
+    """Provider 전용 결과이며 외부 DTO는 StructuredSymptom으로 유지한다."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    structured_symptom: StructuredSymptom
+    evidence_claims: list[SymptomEvidenceClaim] = Field(max_length=60)
 
 
 class LLMUsageMetadata(Protocol):
@@ -43,6 +71,7 @@ class SymptomStructuringLLMResponse:
     prompt_version: str
     usage: LLMUsageMetadata
     latency_ms: float
+    evidence_claims: tuple[SymptomEvidenceClaim, ...] = ()
 
 
 class SymptomStructuringLLMClient(Protocol):
