@@ -47,7 +47,10 @@ class SupervisorConsultationService:
     @staticmethod
     def _lock_consultation(consultation_id: int) -> Consultation:
         consultation = (
-            Consultation.objects.select_for_update()
+            # Lock only the aggregate root row. ``consultant`` is nullable, so
+            # PostgreSQL renders that relation as a LEFT OUTER JOIN and rejects
+            # an unrestricted FOR UPDATE on the nullable side of the join.
+            Consultation.objects.select_for_update(of=("self",))
             .select_related(
                 "inquiry__initiated_by",
                 "inquiry__subscription__customer",

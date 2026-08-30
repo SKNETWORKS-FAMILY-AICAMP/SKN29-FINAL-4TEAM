@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
@@ -148,6 +149,27 @@ def test_supervisor_can_reassign_and_complete_through_state_machine():
         "CONSULTATION_COMPLETED",
     ]
     assert set(events.values_list("actor", flat=True)) == {supervisor.pk}
+
+
+def test_supervisor_lock_targets_only_the_consultation_row():
+    supervisor, _, consultant_b, _, consultation = consultation_fixture(
+        sequence=5
+    )
+    select_for_update = Consultation.objects.select_for_update
+
+    with patch.object(
+        Consultation.objects,
+        "select_for_update",
+        wraps=select_for_update,
+    ) as lock:
+        SupervisorConsultationService.reassign(
+            actor=supervisor,
+            consultation_id=consultation.pk,
+            target_consultant_id=consultant_b.pk,
+            reason="Verify PostgreSQL nullable-join lock scope",
+        )
+
+    lock.assert_called_once_with(of=("self",))
 
 
 def test_supervisor_cancel_consultation_uses_terminal_inquiry_transition():

@@ -8,10 +8,8 @@
 
 ## 1. 결론
 
-Water Bridge 내부 운영 기능은 Django Admin의 `/admin/` 경로로 제공한다.
-등록된 단일 합성 `Supervisor`만 Session·CSRF 인증을 거쳐 접근할 수 있다.
-유효한 Django superuser이더라도 설정된 Supervisor ID와 다르면 서버에서 403으로
-차단된다. 설정값이 없을 때도 Admin은 열리지 않는 Fail-closed 구조다.
+Water Bridge 내부 운영 기능은 Django Admin의 `/admin/` 경로로 제공하며, 등록된
+단일 합성 `Supervisor`만 접근한다. ID 불일치·설정 누락 시 Fail-closed로 차단한다.
 
 운영 화면에서는 다음 범위를 처리한다.
 
@@ -43,13 +41,9 @@ Admin View에 다시 적용한다. 익명 사용자는 로그인 화면으로 �
 
 ### 2.2 비밀번호 저장 방식
 
-보호 환경에서 전달된 평문 비밀번호는 계정 최초 생성 또는 회전 명령이 실행되는
-순간에만 사용한다. PostgreSQL에는 Django가 만든 단방향 비밀번호 해시만 저장한다.
-Admin 화면·감사 원장·명령 결과에는 평문과 해시를 표시하지 않는다.
-
-비밀번호를 회전하면 `auth_version`을 올리고 기존 Refresh Token을 전부
-Blacklist 처리한다. 따라서 이미 발급된 로그인 세션용 JWT를 계속 재사용할 수
-없다.
+평문 비밀번호는 최초 생성·회전 순간에만 사용하고 PostgreSQL에는 단방향 해시만
+저장한다. 화면·감사·명령 결과에는 비밀값을 표시하지 않으며, 회전 시
+`auth_version`을 올리고 기존 Refresh Token을 모두 폐기한다.
 
 ## 3. 계정 관리 규칙
 
@@ -71,20 +65,22 @@ ID 또는 비밀번호가 바뀌면 계정 변경 사유와 비밀값이 없는
 
 ### 3.2 고객과 구독 삭제 해석
 
-참조 중인 고객·구독을 물리 삭제하면 문의·상담·상태 이력이 끊어진다. 따라서
-Admin의 기본 삭제 버튼은 제거했다.
+참조 중인 고객·구독의 물리 삭제는 이력을 끊으므로 기본 삭제 버튼을 제거했다.
 
 - 고객 계정: 계정 비활성화
 - 고객 프로필: `deleted_at`, `deleted_by`를 기록하는 논리 삭제
 - 구독: `status_code=CANCELLED`, `ended_on` 기록
 
-이는 합성 데이터에서도 운영 이력과 외래키 무결성을 보존하기 위한 기본값이다.
-참조 없는 합성 테스트 행의 예외적 물리 삭제는 이 화면에서 제공하지 않는다.
+합성 데이터도 이력과 외래키를 보존하며, 예외적 물리 삭제는 제공하지 않는다.
 
 ## 4. 상담 운영 흐름
 
 [Supervisor 상담 서비스](../../../../backend/apps/consultations/services/supervisor_consultation_service.py)는
 합성 고객의 최신 상담만 잠그고 처리한다.
+
+PostgreSQL에서는 nullable 상담사 관계가 `LEFT OUTER JOIN`으로 조회된다. 따라서
+`select_for_update(of=("self",))`로 Consultation 본행만 잠가 nullable JOIN까지
+잠그려 할 때 발생하는 PostgreSQL 오류를 차단한다.
 
 1. 활성 합성 상담사로 담당자를 변경한다.
 2. `상담 시작` 작업으로 기존 `START_CONSULTATION` 전이를 실행한다.
@@ -170,19 +166,11 @@ Manager 또는 동일한 보호 환경에서 주입한다. 실제 값은 문서�
 
 ## 7. 구현 파일
 
-| 분류 | 파일 |
-| --- | --- |
-| 접근 정책 | [supervisor_policy.py](../../../../backend/apps/accounts/supervisor_policy.py) |
-| AdminSite | [admin_site.py](../../../../backend/apps/accounts/admin_site.py) |
-| 계정 Admin | [accounts/admin.py](../../../../backend/apps/accounts/admin.py) |
-| 자격증명 Form·정책 | [admin_forms.py](../../../../backend/apps/accounts/admin_forms.py), [credential_policy.py](../../../../backend/apps/accounts/credential_policy.py) |
-| Supervisor Bootstrap | [bootstrap_waterbridge_supervisor.py](../../../../backend/apps/accounts/management/commands/bootstrap_waterbridge_supervisor.py) |
-| 구독 Admin | [subscriptions/admin.py](../../../../backend/apps/subscriptions/admin.py) |
-| 상담 Admin·Service | [consultations/admin.py](../../../../backend/apps/consultations/admin.py), [supervisor_consultation_service.py](../../../../backend/apps/consultations/services/supervisor_consultation_service.py) |
-| 공통 취소 Runtime | [inquiry_service.py](../../../../backend/apps/inquiries/services/inquiry_service.py), [consultation_repository.py](../../../../backend/apps/consultations/repositories/consultation_repository.py) |
-| 취소 상태계약 | [transition-rules.yaml](../../../../contracts/state-machine/transition-rules.yaml), [allowed-actions.yaml](../../../../contracts/state-machine/allowed-actions.yaml) |
-| 문의 Admin | [inquiries/admin.py](../../../../backend/apps/inquiries/admin.py) |
-| UI | [base_site.html](../../../../backend/apps/accounts/templates/admin/base_site.html), [waterbridge_admin.css](../../../../backend/apps/accounts/static/accounts/admin/waterbridge_admin.css) |
+- 접근·Admin: [supervisor_policy.py](../../../../backend/apps/accounts/supervisor_policy.py), [admin_site.py](../../../../backend/apps/accounts/admin_site.py), [accounts/admin.py](../../../../backend/apps/accounts/admin.py)
+- 자격증명·Bootstrap: [credential_policy.py](../../../../backend/apps/accounts/credential_policy.py), [bootstrap_waterbridge_supervisor.py](../../../../backend/apps/accounts/management/commands/bootstrap_waterbridge_supervisor.py)
+- 운영 Runtime: [subscriptions/admin.py](../../../../backend/apps/subscriptions/admin.py), [consultations/admin.py](../../../../backend/apps/consultations/admin.py), [supervisor_consultation_service.py](../../../../backend/apps/consultations/services/supervisor_consultation_service.py)
+- 취소 Runtime: [inquiry_service.py](../../../../backend/apps/inquiries/services/inquiry_service.py), [consultation_repository.py](../../../../backend/apps/consultations/repositories/consultation_repository.py)
+- UI: [base_site.html](../../../../backend/apps/accounts/templates/admin/base_site.html), [waterbridge_admin.css](../../../../backend/apps/accounts/static/accounts/admin/waterbridge_admin.css)
 
 ## 8. 검증 결과
 
@@ -190,10 +178,11 @@ Manager 또는 동일한 보호 환경에서 주입한다. 실제 값은 문서�
 | --- | --- | --- |
 | Django `check` | PASS | Admin 등록·URL·설정 구조 정상 |
 | `makemigrations --check --dry-run` | PASS, 변경 없음 | 새 Schema Migration 불필요 |
-| 신규 Supervisor 표적 검증 | PASS | 단일 접근, Bootstrap, 비밀 비노출, 상담 운영 흐름 확인 |
+| 신규 Supervisor 표적 검증 | 11 passed | 단일 접근, Bootstrap, 잠금 범위, 상담 운영 흐름 확인 |
 | 상담 취소 계약·API 표적 검증 | 91 passed, 2 skipped | 4개 상태·3개 역할·Visit 차단·원자적 Rollback 검증 |
 | State Machine·Crosswalk | PASS, 13 states·39 transitions | Mermaid·OpenAPI·Action 계약 정합 |
-| Backend CI 동일 3 Shard | 1,650 passed, 45 skipped | Domain 608·Platform 599·API/Integration 443 통과 |
+| Backend CI 동일 3 Shard | 1,657 passed, 45 skipped | Domain 609·Platform 599·API/Integration 449 통과 |
+| Supervisor 실제 PostgreSQL 복제 DB | 27 passed, 0 failed | 계정·고객·구독·상담·취소·감사 기능과 원본 DB 불변 확인 |
 | PostgreSQL 취소 표적 | 32 passed | 실제 PostgreSQL에서 역할·원자성·동시 Row-lock 통과 |
 | `git diff --check` | PASS | 공백·Patch 형식 오류 없음 |
 
@@ -204,11 +193,5 @@ pgvector/PostgreSQL에서 실제 실행해 통과했다. 이 작성자 검증은
 
 ## 9. 브랜치 게시 이후 남은 외부 Gate
 
-- `main` 병합
-- AWS Secrets Manager 값 생성·변경
-- AWS Backend 배포
-- 운영 RDS 계정 생성·비밀번호 회전
-- 실제 도메인 `/admin/` E2E 및 김은진 독립 QA
-
-따라서 이 문서의 완료 표시는 `jiyong` 구현과 작성자 검증 완료만 뜻한다.
-`main` 반영·AWS 배포·독립 QA·PM 완료 판정은 별도다.
+`main` 병합, AWS 보호값·Backend 배포, 운영 RDS Supervisor Bootstrap,
+실제 도메인 `/admin/` E2E, 김은진 독립 QA와 PM 판정은 별도 Gate다.
