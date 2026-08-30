@@ -40,13 +40,15 @@ Backend 전송 전에 중단한다. 이번 시험의 목적이 결정론적 Fall
   `ai/scripts/run_consultation_context_provider_canary.py`
 - 단위 테스트:
   `ai/tests/unit/test_consultation_context_provider_canary.py`
-- 실제 Runner 실행 Commit: **정정본 커밋·병합 후 새 40자리 SHA로 별도 회신 예정**
+- 수정된 Runner Commit (`origin/dongyoon`):
+  `f8d4b0f30a23bbf51ee0902ff9b317a6a4aa00dd`
 
 AWS 원장을 만든 Release SHA와 Runner를 실행하는 SHA는 별도 증거다. 입력·보고서의
 `backend_release_sha`에는 전자를, 보고서의 `git_sha`에는 후자를 기록한다.
 `execute` 모드는 전달받은 Runner 실행 Commit과 현재 `HEAD`가 다르거나 작업
-트리가 Dirty이면 실패한다. 따라서 위 도입·main 기준 Commit을 정정본의 실제
-실행 SHA로 대신 사용하면 안 된다.
+트리가 Dirty이면 실패한다. 이번 로컬 Component Canary는 수정된 Runner Commit을
+정확히 Checkout한 Clean Worktree에서 실행한다. 팀 정책상 main 병합본만 실행해야
+한다면 병합 후 새 SHA로 다시 승인한다.
 
 ## 최지용님이 제공할 식별자
 

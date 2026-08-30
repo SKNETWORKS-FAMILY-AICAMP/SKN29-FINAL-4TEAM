@@ -169,11 +169,15 @@ Backend Handoff v2는 전송 Payload에서 검증 상태를 받지 않고, 연�
   `d1ffd2739883d8c8fedc934131335ed1b1a28dbc`
 - Runner 정정 작업의 최신 main 기준:
   `d0a8c9848cf8613079a82fbfbad6781c1b890e95`
-- 위 두 값은 역할이 다르다. 입력·보고서의 `backend_release_sha`에는 AWS 원장
-  Release를, 보고서의 `git_sha`에는 실제 Runner 실행 Commit을 기록한다.
-- 정정 변경이 main에 병합된 뒤 `git fetch origin`을 실행하고 Runner 실행용
-  `origin/main`의 40자리 SHA를 양측이 다시 고정한다.
-- 실제 실행 보고서의 `git_sha`는 고정한 Runner SHA와 같고
+- 수정된 Runner Commit (`origin/dongyoon`):
+  `f8d4b0f30a23bbf51ee0902ff9b317a6a4aa00dd`
+- 위 값들은 역할이 다르다. 입력·보고서의 `backend_release_sha`에는 AWS 원장
+  Release를, 보고서의 `git_sha`에는 수정된 Runner Commit을 기록한다.
+- 이번 로컬 Provider Component Canary는 AWS 애플리케이션 재배포 없이 수정된
+  Runner Commit을 정확히 Checkout한 Clean Worktree에서 실행한다.
+- 팀 정책상 main 병합본만 실행해야 한다면 병합 후 새 `origin/main` SHA로
+  Runner 실행 SHA와 승인을 다시 고정한다.
+- 실제 실행 보고서의 `git_sha`는 위 Runner SHA와 같고
   `git_dirty=false`여야 한다.
 
 ### 3.2 Clean Worktree 준비
@@ -183,8 +187,7 @@ Backend Handoff v2는 전송 Payload에서 검증 상태를 받지 않고, 연�
 
 ```powershell
 git fetch origin
-git switch main
-git pull --ff-only origin main
+git switch --detach f8d4b0f30a23bbf51ee0902ff9b317a6a4aa00dd
 git rev-parse HEAD
 git status --porcelain
 .\ai\.venv\Scripts\python.exe --version
@@ -192,7 +195,7 @@ git status --porcelain
 
 완료 조건:
 
-- `git rev-parse HEAD`가 합의한 40자리 main SHA와 일치
+- `git rev-parse HEAD`가 합의한 40자리 Runner SHA와 일치
 - `git status --porcelain` 출력이 비어 있음
 - Python `3.13.13`
 - 보호 입력과 보고서는 Git에서 무시되는 `.runtime/**` 또는 저장소 밖에 존재
@@ -307,10 +310,10 @@ Handoff는 기본적으로 자동 전송하지 않는다. `--send-handoff`와
 
 ## 5. 보강 검증 결과
 
-검증 기준은 Branch `dongyoon`, 최신 main Commit
-`d0a8c9848cf8613079a82fbfbad6781c1b890e95`에 이번 정정을 적용한 작업 트리다.
-아직 커밋·main 병합 전이므로 이 Commit을 정정본의 실제 Runner 실행 SHA로
-사용하지 않는다.
+검증 기준은 Branch `dongyoon`, Runner 정정 Commit
+`f8d4b0f30a23bbf51ee0902ff9b317a6a4aa00dd`다. 이 Commit의 Parent는 최신 main
+기준 `d0a8c9848cf8613079a82fbfbad6781c1b890e95`이며, `origin/dongyoon`에서
+조회 가능하다. 커밋 직후 `git status --short` 출력이 비어 있음을 확인했다.
 
 - Python: `3.13.13` — `PASS`
 - Runner·Test Python Compile — `PASS`
@@ -325,4 +328,6 @@ Handoff는 기본적으로 자동 전송하지 않는다. `--send-handoff`와
 - 변경 파일 Secret·DSN Literal 확인: 검출 없음 — `PASS`
 - 실제 Provider 호출: `NOT_RUN`
 - 실제 Backend Handoff·Replay: `NOT_RUN`
-- 최종 실행용 main 40자리 SHA 고정: 커밋·병합 후 수행 — `HOLD`
+- 로컬 Component Canary Runner SHA 고정:
+  `f8d4b0f30a23bbf51ee0902ff9b317a6a4aa00dd` — `READY`
+- main 병합본만 실행해야 하는 팀 정책 확인 — `HOLD`
