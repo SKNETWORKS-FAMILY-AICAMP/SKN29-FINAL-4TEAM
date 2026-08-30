@@ -6,6 +6,10 @@ from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
 from ...common.timeout import CancellationToken, get_stage_timeout_policy
 from ...integrations.llm import GuidanceLLMClient
+from ...structuring.llm_contracts import (
+    FollowUpWordingLLMClient,
+    SymptomStructuringLLMClient,
+)
 from ...retrieval import EvidenceApplicabilityGate, RetrievalConfigurationError
 from ...schemas import AiStage
 from ..stages import (
@@ -28,10 +32,14 @@ class SingleRAGPipeline:
         *,
         retrieval_configuration_error: RetrievalConfigurationError | None = None,
         llm_client: GuidanceLLMClient | None = None,
+        symptom_llm_client: SymptomStructuringLLMClient | None = None,
+        followup_llm_client: FollowUpWordingLLMClient | None = None,
     ) -> None:
         self.search_service = search_service
         self.retrieval_configuration_error = retrieval_configuration_error
         self.llm_client = llm_client
+        self.symptom_llm_client = symptom_llm_client
+        self.followup_llm_client = followup_llm_client
         self.cancellation_token = CancellationToken()
         self.timeout_policy = get_stage_timeout_policy()
         graph = StateGraph(dict)
@@ -64,7 +72,16 @@ class SingleRAGPipeline:
         self.graph = graph.compile()
 
     def _structuring(self, state):
-        self._run_stage(AiStage.STRUCTURING, execute_structuring_stage, state["ctx"])
+        timeout_seconds = self.timeout_policy.for_stage(AiStage.STRUCTURING.value)
+        self._run_stage(
+            AiStage.STRUCTURING,
+            lambda ctx: execute_structuring_stage(
+                ctx,
+                self.symptom_llm_client,
+                timeout_seconds=min(4.0, timeout_seconds),
+            ),
+            state["ctx"],
+        )
         return state
 
     def _safety(self, state):
@@ -73,10 +90,25 @@ class SingleRAGPipeline:
 
     @staticmethod
     def _route_after_safety(state):
-        return "danger" if state["ctx"].safety_assessment.risk_level.value == "danger" else "questionnaire"
+        return (
+            "danger"
+            if state["ctx"].safety_assessment.risk_level.value == "danger"
+            else "questionnaire"
+        )
 
     def _missing_fields(self, state):
-        self._run_stage(AiStage.CHECKING_MISSING_FIELDS, execute_missing_fields_stage, state["ctx"])
+        timeout_seconds = self.timeout_policy.for_stage(
+            AiStage.CHECKING_MISSING_FIELDS.value
+        )
+        self._run_stage(
+            AiStage.CHECKING_MISSING_FIELDS,
+            lambda ctx: execute_missing_fields_stage(
+                ctx,
+                self.followup_llm_client,
+                timeout_seconds=min(4.0, timeout_seconds),
+            ),
+            state["ctx"],
+        )
         return state
 
     @staticmethod

@@ -34,7 +34,7 @@ class LLMProviderTimeoutError(TimeoutError):
 
 
 class LLMOutputValidationError(ValueError):
-    """Provider 출력이 Guidance 전용 계약을 충족하지 못했다."""
+    """Provider 출력이 요청된 strict Structured Output 계약을 충족하지 못했다."""
 
 
 class LLMRefusalError(ValueError):
@@ -55,6 +55,16 @@ class GuidanceLLMResponse:
     """Provider 종속 응답을 제거한 Guidance 생성 결과."""
 
     output: GuidanceGenerationResult
+    model_name: str
+    usage: LLMUsage
+    latency_ms: float
+
+
+@dataclass(frozen=True, slots=True)
+class StructuredOutputLLMResponse:
+    """Responses API의 공통 strict JSON Schema 호출 결과."""
+
+    output_text: str
     model_name: str
     usage: LLMUsage
     latency_ms: float
@@ -132,22 +142,51 @@ class OpenAIResponsesLLMClient:
 
         schema = self._guidance_schema(request)
         system_prompt, user_prompt = self._prompts(request)
+        raw_response = self._request_structured_output(
+            schema_name="customer_guidance",
+            schema=schema,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            timeout_seconds=timeout_seconds,
+        )
+        try:
+            output = GuidanceGenerationResult.model_validate_json(
+                raw_response.output_text
+            )
+        except (ValidationError, ValueError) as exc:
+            raise LLMOutputValidationError(
+                "OpenAI Guidance 출력이 내부 Schema와 일치하지 않습니다."
+            ) from exc
+        return GuidanceLLMResponse(
+            output=output,
+            model_name=raw_response.model_name,
+            usage=raw_response.usage,
+            latency_ms=raw_response.latency_ms,
+        )
+
+    def _request_structured_output(
+        self,
+        *,
+        schema_name: str,
+        schema: dict[str, object],
+        system_prompt: str,
+        user_prompt: str,
+        timeout_seconds: float,
+    ) -> StructuredOutputLLMResponse:
+        """공식 Responses API strict Structured Output 전송을 공통 처리한다."""
+
+        if timeout_seconds <= 0:
+            raise LLMProviderTimeoutError("LLM 호출 시간 예산이 남아 있지 않습니다.")
         payload = {
             "model": self.model_name,
             "input": [
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt,
-                },
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
             ],
             "text": {
                 "format": {
                     "type": "json_schema",
-                    "name": "customer_guidance",
+                    "name": schema_name,
                     "strict": True,
                     "schema": schema,
                 }
@@ -206,13 +245,6 @@ class OpenAIResponsesLLMClient:
             raise LLMOutputValidationError("OpenAI 응답이 완료 상태가 아닙니다.")
 
         output_text = self._extract_output_text(body)
-        try:
-            output = GuidanceGenerationResult.model_validate_json(output_text)
-        except (ValidationError, ValueError) as exc:
-            raise LLMOutputValidationError(
-                "OpenAI Guidance 출력이 내부 Schema와 일치하지 않습니다."
-            ) from exc
-
         usage_body = body.get("usage") if isinstance(body, dict) else None
         usage_body = usage_body if isinstance(usage_body, dict) else {}
         usage = LLMUsage(
@@ -220,8 +252,8 @@ class OpenAIResponsesLLMClient:
             output_tokens=self._nonnegative_int(usage_body.get("output_tokens")),
             total_tokens=self._nonnegative_int(usage_body.get("total_tokens")),
         )
-        return GuidanceLLMResponse(
-            output=output,
+        return StructuredOutputLLMResponse(
+            output_text=output_text,
             model_name=str(body.get("model") or self.model_name),
             usage=usage,
             latency_ms=round((time.perf_counter() - started_at) * 1000.0, 2),
@@ -253,18 +285,24 @@ class OpenAIResponsesLLMClient:
                 if not isinstance(item, dict):
                     continue
                 if item.get("type") == "refusal":
-                    raise LLMRefusalError("OpenAI가 Guidance 생성을 거부했습니다.")
+                    raise LLMRefusalError("OpenAI가 Structured Output 생성을 거부했습니다.")
                 if item.get("type") == "output_text" and isinstance(item.get("text"), str):
                     output_texts.append(item["text"])
         if len(output_texts) != 1:
             raise LLMOutputValidationError(
-                "OpenAI 응답에는 Guidance 출력이 정확히 1개여야 합니다."
+                "OpenAI 응답에는 Structured Output이 정확히 1개여야 합니다."
             )
         return output_texts[0]
 
     @staticmethod
     def _nonnegative_int(value: object) -> int:
-        return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
+        return (
+            value
+            if isinstance(value, int)
+            and not isinstance(value, bool)
+            and value >= 0
+            else 0
+        )
 
     @staticmethod
     def _prompts(request: GuidanceGenerationRequest) -> tuple[str, str]:

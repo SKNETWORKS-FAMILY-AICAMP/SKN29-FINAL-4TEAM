@@ -3,20 +3,33 @@
 import time
 from ...schemas import AiStage, ProcessingTrace
 from ...structuring import SymptomStructurer
+from ...structuring.llm_contracts import SymptomStructuringLLMClient
 from ..pipeline_context import PipelineContext
 
 
-def execute_structuring_stage(ctx: PipelineContext) -> None:
+def execute_structuring_stage(
+    ctx: PipelineContext,
+    llm_client: SymptomStructuringLLMClient | None = None,
+    *,
+    timeout_seconds: float = 4.0,
+) -> None:
     """고객 입력 증상을 표준 항목으로 구조화"""
     start_time = time.perf_counter()
 
-    ctx.structured_symptom = SymptomStructurer().structure(
+    ctx.structured_symptom = SymptomStructurer(llm_client=llm_client).structure(
         raw_text=ctx.raw_symptom,
         selected_symptoms=ctx.selected_symptoms,
         previous_answers=ctx.previous_answers,
+        trace_context=ctx.trace_context,
+        model_code=ctx.model_code,
+        timeout_seconds=timeout_seconds,
     )
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(
-        ProcessingTrace(stage=AiStage.STRUCTURING, status="SUCCEEDED", latency_ms=round(elapsed_ms, 2))
+        ProcessingTrace(
+            stage=AiStage.STRUCTURING,
+            status="SUCCEEDED",
+            latency_ms=round(elapsed_ms, 2),
+        )
     )
