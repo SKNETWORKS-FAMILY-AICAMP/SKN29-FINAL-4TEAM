@@ -15,7 +15,8 @@
       "is_synthetic": true,
       "display_name": "합성고객 01",
       "phone": "010-****-0101",
-      "phone_masked": "010-****-0101"
+      "phone_masked": "010-****-0101",
+      "contact_phone": "010-0000-0101"
     },
     "product_and_care": {
       "product_model": "SYN-WP-01",

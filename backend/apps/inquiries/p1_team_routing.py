@@ -38,6 +38,21 @@ class P1TeamConsultantRouting:
         return P1_TEAM_RESERVED_CONTRACTS
 
     @classmethod
+    def is_exact_reserved_pair(
+        cls,
+        *,
+        actor: Any,
+        contract_no: str,
+    ) -> bool:
+        """Return true only for one of the six exact consultant-contract pairs."""
+
+        normalized_contract_no = str(contract_no or "").strip()
+        return (
+            normalized_contract_no in P1_TEAM_RESERVED_CONTRACTS
+            and cls.assigned_contract(actor) == normalized_contract_no
+        )
+
+    @classmethod
     def can_access_contract(cls, *, actor: Any, contract_no: str) -> bool:
         required_username = P1_TEAM_CONTRACT_CONSULTANT_MAP.get(
             str(contract_no).strip()

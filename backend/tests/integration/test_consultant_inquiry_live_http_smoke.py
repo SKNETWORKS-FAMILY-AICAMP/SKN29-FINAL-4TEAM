@@ -123,6 +123,7 @@ def test_consultant_inquiry_seed_passes_actual_http_smoke(
     customer = detail_payload["data"]["customer"]
     assert customer["phone"] == "010-****-0000"
     assert customer["phone_masked"] == "010-****-0000"
+    assert customer["contact_phone"] is None
 
     missing_status, missing_headers, missing_payload = request_json(
         live_server.url,

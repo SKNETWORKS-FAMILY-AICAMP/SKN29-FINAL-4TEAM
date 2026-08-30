@@ -626,6 +626,7 @@ def test_consultant_detail_returns_closed_assigned_projection(
         "display_name": "A" * 80,
         "phone": "010-****-0031",
         "phone_masked": "010-****-0031",
+        "contact_phone": None,
     }
     assert data["product_and_care"] == {
         "product_model": inquiry.subscription.product_model.model_code,
@@ -686,6 +687,75 @@ def test_consultant_detail_returns_closed_assigned_projection(
         "internal_target",
     ):
         assert forbidden not in serialized
+
+
+@pytest.mark.parametrize("pair_index", range(1, 7))
+def test_consultant_detail_exposes_contact_only_for_exact_p1_pair(
+    pair_index,
+):
+    consultant = create_user(80, role=User.Role.CONSULTANT)
+    consultant.username = f"SKN-{pair_index:03d}"
+    consultant.save(update_fields=["username"])
+
+    matched_owner = create_user(81, role=User.Role.CUSTOMER)
+    matched = create_assigned_inquiry(
+        sequence=80,
+        owner=matched_owner,
+        consultant=consultant,
+    )
+    CustomerSubscription.objects.filter(pk=matched.subscription_id).update(
+        contract_no=f"SYN-P1-TEAM-CONTRACT-{pair_index:03d}"
+    )
+
+    mismatched_owner = create_user(82, role=User.Role.CUSTOMER)
+    mismatched = create_assigned_inquiry(
+        sequence=81,
+        owner=mismatched_owner,
+        consultant=consultant,
+    )
+    CustomerSubscription.objects.filter(
+        pk=mismatched.subscription_id
+    ).update(
+        contract_no=(
+            "SYN-P1-TEAM-CONTRACT-001"
+            if pair_index == 6
+            else f"SYN-P1-TEAM-CONTRACT-{pair_index + 1:03d}"
+        )
+    )
+
+    client = authenticated_client(consultant)
+    matched_response = client.get(
+        f"/api/v1/inquiries/{matched.public_id}"
+    )
+    mismatched_response = client.get(
+        f"/api/v1/inquiries/{mismatched.public_id}"
+    )
+    list_response = client.get("/api/v1/inquiries")
+
+    assert matched_response.status_code == 200
+    matched_customer = matched_response.json()["data"]["customer"]
+    assert matched_customer == {
+        "is_synthetic": True,
+        "display_name": matched_owner.customer_profile.customer_name,
+        "phone": "010-****-0081",
+        "phone_masked": "010-****-0081",
+        "contact_phone": matched_owner.customer_profile.phone,
+    }
+
+    assert mismatched_response.status_code == 200
+    mismatched_customer = mismatched_response.json()["data"]["customer"]
+    assert mismatched_customer["phone"] == "010-****-0082"
+    assert mismatched_customer["phone_masked"] == "010-****-0082"
+    assert mismatched_customer["contact_phone"] is None
+    assert mismatched_owner.customer_profile.phone not in str(
+        mismatched_response.json()
+    )
+
+    assert list_response.status_code == 200
+    list_items = list_response.json()["data"]["items"]
+    assert all("contact_phone" not in item for item in list_items)
+    assert matched_owner.customer_profile.phone not in str(list_items)
+    assert mismatched_owner.customer_profile.phone not in str(list_items)
 
 
 def test_consultant_detail_projects_latest_synthetic_visit():
