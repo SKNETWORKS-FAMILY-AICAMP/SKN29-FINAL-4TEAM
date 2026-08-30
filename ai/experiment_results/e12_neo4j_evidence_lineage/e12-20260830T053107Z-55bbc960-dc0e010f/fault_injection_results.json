@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "baseline_database_validation": "PASS",
+      "case_id": "E12-03A",
+      "corrupted_database_validation": "FAIL",
+      "detected": true,
+      "fault_mutation_count": 1,
+      "issues": [
+        "RELATIONSHIP_COUNT_MISMATCH",
+        "RELATIONSHIP_IDENTITY_SET_MISMATCH",
+        "GRAPH_SNAPSHOT_SHA256_MISMATCH",
+        "ORPHAN_CHUNK_PRESENT",
+        "VISUAL_QUERY_ROW_COUNT_MISMATCH:product_lineage_wpuiac425snw",
+        "VISUAL_QUERY_ROW_COUNT_MISMATCH:consultation_required_lineage",
+        "VISUAL_QUERY_ROW_COUNT_MISMATCH:integrity_anomalies"
+      ],
+      "name": "ORPHAN_CHUNK_RELATIONSHIP",
+      "orphan_chunk_count": 1,
+      "relationship_count_after": 209,
+      "relationship_count_before": 210
+    },
+    {
+      "baseline_database_validation": "PASS",
+      "case_id": "E12-03B",
+      "corrupted_database_validation": "FAIL",
+      "cross_model_path_count": 1,
+      "detected": true,
+      "fault_mutation_count": 1,
+      "issues": [
+        "RELATIONSHIP_IDENTITY_SET_MISMATCH",
+        "GRAPH_SNAPSHOT_SHA256_MISMATCH",
+        "CROSS_MODEL_PATH_PRESENT"
+      ],
+      "name": "CROSS_MODEL_RELATIONSHIP",
+      "relationship_count_after": 210,
+      "relationship_count_before": 210,
+      "same_relationship_count": true,
+      "source_model_code": "WPUIAC425SNW",
+      "wrong_parent_model_code": "WPUIAC606SNW"
+    }
+  ],
+  "status": "PASS"
+}

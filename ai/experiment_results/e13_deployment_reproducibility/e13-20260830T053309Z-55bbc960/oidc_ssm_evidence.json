@@ -1,0 +1,23 @@
+{
+  "claims": {
+    "ecr_repositories_3_of_3": true,
+    "github_oidc_to_aws_role": true,
+    "ssm_command_path": true
+  },
+  "conclusion": "success",
+  "created_at": "2026-08-30T05:33:15Z",
+  "head_sha": "04b7db2bb9e3b196c15152c9729745eeb8dc4910",
+  "job_conclusion": "success",
+  "job_id": 99212900217,
+  "sensitive_values_captured": false,
+  "status": "PASS",
+  "steps": {
+    "Configure temporary AWS credentials": true,
+    "Validate repository variables": true,
+    "Verify ECR repositories": true,
+    "Verify SSM command path": true,
+    "Verify assumed AWS account and role": true
+  },
+  "workflow_run_id": 33294950486,
+  "workflow_run_url": "https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/33294950486"
+}

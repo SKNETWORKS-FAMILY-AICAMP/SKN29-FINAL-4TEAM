@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1890" viewBox="0 0 1440 1890">
+<defs>
+<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+<feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.22"/>
+</filter>
+</defs>
+<rect width="100%" height="100%" fill="#07111F"/>
+<text x="70" y="62" fill="#F7FAFC" font-family="Segoe UI, sans-serif" font-size="30" font-weight="700">Neo4j Evidence Lineage QA</text>
+<text x="70" y="96" fill="#93A4BA" font-family="Segoe UI, sans-serif" font-size="16">JSONL input · Query API validated · Production runtime disconnected</text>
+<text x="250" y="128" text-anchor="middle" fill="#8DA2BD" font-family="Segoe UI, sans-serif" font-size="15">PRODUCT</text>
+<text x="1120" y="128" text-anchor="middle" fill="#8DA2BD" font-family="Segoe UI, sans-serif" font-size="15">EVIDENCE TOPIC</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 150.0, 965.0 150.0" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="150.0" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="155.0" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 217.9, 965.0 217.9" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="184.0" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="189.0" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 285.8, 965.0 285.8" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="217.9" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="222.9" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 353.8, 965.0 353.8" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="251.9" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="256.9" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 421.7, 965.0 421.7" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="285.8" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="290.8" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 489.6, 965.0 489.6" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="319.8" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="324.8" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 557.5, 965.0 557.5" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="353.8" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="358.8" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 625.4, 965.0 625.4" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="387.7" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="392.7" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 693.3, 965.0 693.3" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="421.7" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="426.7" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 761.2, 965.0 761.2" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="455.6" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="460.6" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 829.2, 965.0 829.2" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="489.6" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="494.6" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 897.1, 965.0 897.1" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="523.5" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="528.5" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 965.0, 965.0 965.0" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="557.5" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="562.5" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 1032.9, 965.0 1032.9" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="591.5" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="596.5" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 1100.8, 965.0 1100.8" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="625.4" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="630.4" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 1168.8, 965.0 1168.8" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="659.4" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="664.4" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 1236.7, 965.0 1236.7" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="693.3" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="698.3" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 150.0 C 685.0 150.0, 685.0 1780.0, 965.0 1780.0" stroke="#00B7C7" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="965.0" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="970.0" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 150.0, 965.0 150.0" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="557.5" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="562.5" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 217.9, 965.0 217.9" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="591.5" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="596.5" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 285.8, 965.0 285.8" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="625.4" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="630.4" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 353.8, 965.0 353.8" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="659.4" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="664.4" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 421.7, 965.0 421.7" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="693.3" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="698.3" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 489.6, 965.0 489.6" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="727.3" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="732.3" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 557.5, 965.0 557.5" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="761.2" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="766.2" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 625.4, 965.0 625.4" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="795.2" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="800.2" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 693.3, 965.0 693.3" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="829.2" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="834.2" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 761.2, 965.0 761.2" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="863.1" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="868.1" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 829.2, 965.0 829.2" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="897.1" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="902.1" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 897.1, 965.0 897.1" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="931.0" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="936.0" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 965.0, 965.0 965.0" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="965.0" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="970.0" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 1032.9, 965.0 1032.9" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="999.0" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1004.0" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 1100.8, 965.0 1100.8" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1032.9" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1037.9" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 1168.8, 965.0 1168.8" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1066.9" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1071.9" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 1236.7, 965.0 1236.7" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1100.8" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1105.8" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 965.0 C 685.0 965.0, 685.0 1780.0, 965.0 1780.0" stroke="#7B61FF" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1372.5" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1377.5" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 1780.0 C 685.0 1780.0, 685.0 1304.6, 965.0 1304.6" stroke="#FF8A4C" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1542.3" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1547.3" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 1780.0 C 685.0 1780.0, 685.0 1372.5, 965.0 1372.5" stroke="#FF8A4C" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1576.2" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1581.2" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 1780.0 C 685.0 1780.0, 685.0 1440.4, 965.0 1440.4" stroke="#FF8A4C" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1610.2" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1615.2" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 1780.0 C 685.0 1780.0, 685.0 1508.3, 965.0 1508.3" stroke="#FF8A4C" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1644.2" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1649.2" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 1780.0 C 685.0 1780.0, 685.0 1576.2, 965.0 1576.2" stroke="#FF8A4C" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1678.1" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1683.1" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 1780.0 C 685.0 1780.0, 685.0 1644.2, 965.0 1644.2" stroke="#FF8A4C" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1712.1" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1717.1" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<path d="M 385.0 1780.0 C 685.0 1780.0, 685.0 1712.1, 965.0 1712.1" stroke="#FF8A4C" stroke-opacity="0.42" stroke-width="2.5" fill="none"/>
+<circle cx="685.0" cy="1746.0" r="12" fill="#13263D" stroke="#5A6F89"/>
+<text x="685.0" y="1751.0" text-anchor="middle" fill="#E7EEF8" font-family="Segoe UI, sans-serif" font-size="12">1</text>
+<rect x="115" y="120.0" width="270" height="60" rx="16" fill="#10243A" stroke="#00B7C7" stroke-width="2" filter="url(#shadow)"/>
+<text x="250" y="156.0" text-anchor="middle" fill="#F7FAFC" font-family="Segoe UI, sans-serif" font-size="17" font-weight="650">WPUIAC425SNW</text>
+<rect x="115" y="935.0" width="270" height="60" rx="16" fill="#10243A" stroke="#7B61FF" stroke-width="2" filter="url(#shadow)"/>
+<text x="250" y="971.0" text-anchor="middle" fill="#F7FAFC" font-family="Segoe UI, sans-serif" font-size="17" font-weight="650">WPUIAC606SNW</text>
+<rect x="115" y="1750.0" width="270" height="60" rx="16" fill="#10243A" stroke="#FF8A4C" stroke-width="2" filter="url(#shadow)"/>
+<text x="250" y="1786.0" text-anchor="middle" fill="#F7FAFC" font-family="Segoe UI, sans-serif" font-size="17" font-weight="650">WPUJAC104DWH</text>
+<rect x="965" y="125.0" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="155.0" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">cold_lock</text>
+<rect x="965" y="192.9" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="222.9" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">cold_temperature_fault</text>
+<rect x="965" y="260.8" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="290.8" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">cold_temperature_normal</text>
+<rect x="965" y="328.8" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="358.8" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">defrost_noise</text>
+<rect x="965" y="396.7" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="426.7" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">hot_steam</text>
+<rect x="965" y="464.6" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="494.6" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">hot_water_interruption</text>
+<rect x="965" y="532.5" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="562.5" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">hot_water_stopped</text>
+<rect x="965" y="600.4" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="630.4" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">ice_making_noise</text>
+<rect x="965" y="668.3" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="698.3" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">ice_quality</text>
+<rect x="965" y="736.2" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="766.2" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">leak</text>
+<rect x="965" y="804.2" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="834.2" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">low_flow</text>
+<rect x="965" y="872.1" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="902.1" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">no_hot_water</text>
+<rect x="965" y="940.0" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="970.0" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">no_ice</text>
+<rect x="965" y="1007.9" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1037.9" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">no_water</text>
+<rect x="965" y="1075.8" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1105.8" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">noise_normal</text>
+<rect x="965" y="1143.8" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1173.8" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">noise_ventilation</text>
+<rect x="965" y="1211.7" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1241.7" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">particles</text>
+<rect x="965" y="1279.6" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1309.6" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">symptom_cold_temperature</text>
+<rect x="965" y="1347.5" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1377.5" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">symptom_hot_water_safety</text>
+<rect x="965" y="1415.4" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1445.4" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">symptom_leak</text>
+<rect x="965" y="1483.3" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1513.3" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">symptom_low_flow</text>
+<rect x="965" y="1551.2" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1581.2" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">symptom_no_water</text>
+<rect x="965" y="1619.2" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1649.2" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">symptom_noise</text>
+<rect x="965" y="1687.1" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1717.1" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">symptom_taste_odor</text>
+<rect x="965" y="1755.0" width="310" height="50" rx="25" fill="#14263B" stroke="#7890AB" stroke-width="1.5"/>
+<text x="1120" y="1785.0" text-anchor="middle" fill="#E9F0F8" font-family="Segoe UI, sans-serif" font-size="14">taste_odor</text>
+<text x="70" y="1818" fill="#91A5BE" font-family="Segoe UI, sans-serif" font-size="14">Neo4j Community 2026.07.1 · Edge labels show Evidence Group counts</text>
+<text x="70" y="1846" fill="#647A94" font-family="Segoe UI, sans-serif" font-size="13">No source text, vectors, prompts, scores, customer data, or public runtime claims.</text>
+</svg>

@@ -1,0 +1,167 @@
+[
+  {
+    "name": "waterbridge.e10.export_probe",
+    "trace_id": "463e690489668119dd2eb6ee2321eb5e",
+    "span_id": "d01dcb5bcd3872b1",
+    "parent_span_id": "",
+    "scope_name": "waterbridge.e10.experiment",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "e10.case": "E10-01"
+    }
+  },
+  {
+    "name": "waterbridge.harness.verify",
+    "trace_id": "c23853ee4b4d06f3b02bfc8fd9bfbdc0",
+    "span_id": "498c82b1c5d91c9d",
+    "parent_span_id": "8e89a0cbb6bb3156",
+    "scope_name": "waterbridge.ai.harness",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "waterbridge.model.code": "WPU-JAC104",
+      "waterbridge.product.family": "DIRECT_WATER_PURIFIER",
+      "waterbridge.harness.tool_failure.present": false,
+      "waterbridge.harness.decision": "ESCALATE",
+      "waterbridge.harness.error_code": "AI_PROCESSING_TIMEOUT"
+    }
+  },
+  {
+    "name": "waterbridge.harness.runtime",
+    "trace_id": "c23853ee4b4d06f3b02bfc8fd9bfbdc0",
+    "span_id": "8e89a0cbb6bb3156",
+    "parent_span_id": "",
+    "scope_name": "waterbridge.ai.harness",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "waterbridge.model.code": "WPU-JAC104",
+      "waterbridge.product.family": "DIRECT_WATER_PURIFIER",
+      "waterbridge.harness.decision": "ESCALATE",
+      "waterbridge.harness.human_review.present": false,
+      "waterbridge.harness.handoff.present": true
+    }
+  },
+  {
+    "name": "waterbridge.handoff.create",
+    "trace_id": "c23853ee4b4d06f3b02bfc8fd9bfbdc0",
+    "span_id": "c10e83394bff5c09",
+    "parent_span_id": "8e89a0cbb6bb3156",
+    "scope_name": "waterbridge.ai.handoff",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "waterbridge.model.code": "WPU-JAC104",
+      "waterbridge.product.family": "DIRECT_WATER_PURIFIER",
+      "waterbridge.handoff.redaction.enabled": true,
+      "waterbridge.handoff.context_synthesis.present": false
+    }
+  },
+  {
+    "name": "waterbridge.harness.verify",
+    "trace_id": "d3e871fbecb868b85954581bdf733428",
+    "span_id": "3b97da08d2ef1d9b",
+    "parent_span_id": "d1630c34051ffd78",
+    "scope_name": "waterbridge.ai.harness",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "waterbridge.model.code": "WPU-JAC104",
+      "waterbridge.product.family": "DIRECT_WATER_PURIFIER",
+      "waterbridge.harness.tool_failure.present": false,
+      "waterbridge.harness.decision": "HUMAN_REVIEW"
+    }
+  },
+  {
+    "name": "waterbridge.harness.runtime",
+    "trace_id": "d3e871fbecb868b85954581bdf733428",
+    "span_id": "d1630c34051ffd78",
+    "parent_span_id": "",
+    "scope_name": "waterbridge.ai.harness",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "waterbridge.model.code": "WPU-JAC104",
+      "waterbridge.product.family": "DIRECT_WATER_PURIFIER",
+      "waterbridge.harness.decision": "HUMAN_REVIEW",
+      "waterbridge.harness.human_review.present": true,
+      "waterbridge.harness.handoff.present": false
+    }
+  },
+  {
+    "name": "waterbridge.harness.resume_review",
+    "trace_id": "8be6a51041f10ee68c9e581240ab9af2",
+    "span_id": "92fdfac72868a1fc",
+    "parent_span_id": "",
+    "scope_name": "waterbridge.ai.harness",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "waterbridge.model.code": "WPU-JAC104",
+      "waterbridge.hitl.state_version": 4,
+      "waterbridge.hitl.decision": "modify",
+      "waterbridge.harness.handoff.present": false,
+      "waterbridge.hitl.guidance.present": true
+    }
+  },
+  {
+    "name": "waterbridge.hitl.start",
+    "trace_id": "d3e871fbecb868b85954581bdf733428",
+    "span_id": "21d25ce49642f220",
+    "parent_span_id": "d1630c34051ffd78",
+    "scope_name": "waterbridge.ai.hitl",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "waterbridge.model.code": "WPU-JAC104",
+      "waterbridge.product.family": "DIRECT_WATER_PURIFIER",
+      "waterbridge.hitl.state_version": 4,
+      "waterbridge.hitl.status": "WAITING_FOR_REVIEW"
+    }
+  },
+  {
+    "name": "waterbridge.hitl.resume",
+    "trace_id": "8be6a51041f10ee68c9e581240ab9af2",
+    "span_id": "a6fe1636cc5384a3",
+    "parent_span_id": "92fdfac72868a1fc",
+    "scope_name": "waterbridge.ai.hitl",
+    "resource_attributes": {
+      "service.name": "waterbridge-ai-e10",
+      "service.version": "1.0.0",
+      "deployment.environment.name": "experiment"
+    },
+    "attributes": {
+      "waterbridge.hitl.state_version": 4,
+      "waterbridge.hitl.decision": "modify",
+      "waterbridge.hitl.modified_guidance.present": true,
+      "waterbridge.hitl.reviewer_note.present": true,
+      "waterbridge.hitl.status": "COMPLETED",
+      "waterbridge.hitl.approved": true
+    }
+  }
+]

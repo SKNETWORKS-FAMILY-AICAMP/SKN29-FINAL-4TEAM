@@ -1,0 +1,81 @@
+{
+  "production_runtime_connected": false,
+  "profile": "qa_ephemeral_loopback",
+  "queries": [
+    {
+      "expected_result": {
+        "node_count": 28,
+        "relationship_count": 43,
+        "row_count": 43
+      },
+      "purpose": "제품별 공식 Evidence Topic 범위와 중첩을 확인한다.",
+      "query_id": "product_topic_overview",
+      "statement_sha256": "D0E5121AF614BFD9BD58044B1FBCBDB5785F0ECA55CCDD12F6887E608F0C2B65",
+      "title": "Product to Evidence Topic Overview"
+    },
+    {
+      "expected_result": {
+        "evidence_group_count": 18,
+        "model_code": "WPUIAC425SNW",
+        "path_count": 19,
+        "row_count": 19,
+        "topic_count": 18
+      },
+      "purpose": "한 제품의 Document부터 Topic까지 정제된 Evidence 계보를 드릴다운한다.",
+      "query_id": "product_lineage_wpuiac425snw",
+      "statement_sha256": "D735BE4D7D9573AB89D5D188996237C88B2D2AAC9D56B13E2DEFC955E9118744",
+      "title": "Evidence Lineage for WPUIAC425SNW"
+    },
+    {
+      "expected_result": {
+        "evidence_group_count": 18,
+        "model_code": "WPUIAC606SNW",
+        "path_count": 19,
+        "row_count": 19,
+        "topic_count": 18
+      },
+      "purpose": "한 제품의 Document부터 Topic까지 정제된 Evidence 계보를 드릴다운한다.",
+      "query_id": "product_lineage_wpuiac606snw",
+      "statement_sha256": "93332C921DC5CC1AC81FCE39ADEB534B3ABF35F2EED85E42B69EC4014368D684",
+      "title": "Evidence Lineage for WPUIAC606SNW"
+    },
+    {
+      "expected_result": {
+        "evidence_group_count": 7,
+        "model_code": "WPUJAC104DWH",
+        "path_count": 15,
+        "row_count": 15,
+        "topic_count": 7
+      },
+      "purpose": "한 제품의 Document부터 Topic까지 정제된 Evidence 계보를 드릴다운한다.",
+      "query_id": "product_lineage_wpujac104dwh",
+      "statement_sha256": "94E1341FB0FA7389302B989E8F1BD4C0326733E455EBD869EAB07D821A948A44",
+      "title": "Evidence Lineage for WPUJAC104DWH"
+    },
+    {
+      "expected_result": {
+        "evidence_group_count": 25,
+        "path_count": 35,
+        "row_count": 35
+      },
+      "purpose": "상담이 필요한 Evidence Group의 제품별 계보가 유지되는지 확인한다.",
+      "query_id": "consultation_required_lineage",
+      "statement_sha256": "A9E085D657CDB45A0BEC005A696A0F5DFA7A751393DE8783190C3DBD5D3B9F60",
+      "title": "Consultation Required Evidence Lineage"
+    },
+    {
+      "expected_result": {
+        "row_count": 0
+      },
+      "purpose": "고아 Chunk 또는 Parent·Evidence Group과 제품이 다른 관계를 탐지한다.",
+      "query_id": "integrity_anomalies",
+      "statement_sha256": "9D6C85EAFA17C22AAA4AD673F24BA17CF744723C3531593371876D3C94538A9A",
+      "title": "Evidence Lineage Integrity Anomalies"
+    }
+  ],
+  "query_count": 6,
+  "rds_connected": false,
+  "run_id": "e12-20260830T053107Z-55bbc960-dc0e010f",
+  "schema_version": "2.0.0",
+  "scope": "JSONL_BASED_LINEAGE_QA"
+}

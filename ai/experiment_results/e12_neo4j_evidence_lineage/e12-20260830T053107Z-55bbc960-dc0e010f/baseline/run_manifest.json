@@ -1,0 +1,60 @@
+{
+  "application_validation": "PASS",
+  "artifacts": {
+    "evidence": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/neo4j_lab_evidence.json",
+    "graph_cleanup": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/cleanup_evidence.json",
+    "projection_manifest": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/projection_manifest.json",
+    "visual": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/neo4j_evidence_lineage_visual.svg",
+    "visual_query_bundle": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/neo4j_browser_visual_query.cypher",
+    "visual_query_catalog": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/visual_query_catalog.json"
+  },
+  "execution_reference": {
+    "ci_job": null,
+    "ci_run_id": null,
+    "local_execution": true
+  },
+  "infra_completion_required": [
+    "CI_RUN_LOG_OR_RUN_ID",
+    "IMAGE_REPO_DIGEST_COLLECTION",
+    "CONTAINER_AND_VOLUME_ZERO_AFTER_ALWAYS_CLEANUP",
+    "INFRA_CLEANUP_EVIDENCE",
+    "EXTERNAL_SUBMISSION_MANIFEST_AND_CHECKSUMS"
+  ],
+  "profile": "qa_ephemeral_loopback",
+  "result": "PARTIAL",
+  "run_id": "e12-20260830T053107Z-55bbc960-dc0e010f",
+  "schema_version": "1.0.0",
+  "scope": "JSONL_BASED_LINEAGE_QA",
+  "source": {
+    "after": {
+      "branch": "DETACHED",
+      "checkout_mode": "DETACHED",
+      "ci_expected_sha": null,
+      "ci_head_ref": null,
+      "ci_ref_name": null,
+      "ci_sha_matches_head": null,
+      "git_dirty": false,
+      "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+      "worktree_status_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "before": {
+      "branch": "DETACHED",
+      "checkout_mode": "DETACHED",
+      "ci_expected_sha": null,
+      "ci_head_ref": null,
+      "ci_ref_name": null,
+      "ci_sha_matches_head": null,
+      "git_dirty": false,
+      "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+      "worktree_status_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "validation": {
+      "ci_sha_matches_head": true,
+      "clean_head": true,
+      "head_stable": true,
+      "status": "PASS",
+      "worktree_status_stable": true
+    }
+  },
+  "submission_status": "HOLD_PENDING_INFRA_FINALIZATION"
+}

@@ -1,0 +1,192 @@
+{
+  "status": "E08_COMPLETE",
+  "experiment_id": "E08",
+  "title": "A2A Agent Failure Isolation",
+  "result_label": "INTEGRATION_PRESENTATION_EVIDENCE",
+  "git_sha": "0e2d5ee2a023e5e9c35b3a724ee339b0bebf6d57",
+  "executed_at_utc": "2026-08-28T07:30:33.867717+00:00",
+  "a2a_agent_process": "REAL_SEPARATE_UVICORN_PROCESS",
+  "a2a_protocol_path": "Agent Card discovery + A2A SDK JSON-RPC",
+  "real_process_cases": [
+    "REMOTE_SUCCESS",
+    "AGENT_DOWN"
+  ],
+  "controlled_fault_cases": [
+    "INVALID_IDENTITY",
+    "TIMEOUT"
+  ],
+  "cases_passed": 4,
+  "cases_total": 4,
+  "all_cases_passed": true,
+  "cases": [
+    {
+      "case_id": "REMOTE_SUCCESS",
+      "mode": "REAL_A2A_SERVER_PROCESS",
+      "remote_server": "http://127.0.0.1:58767",
+      "elapsed_ms": 405.96,
+      "used_local_fallback": false,
+      "failure_kind": null,
+      "local_classifier_calls": 0,
+      "response": {
+        "inquiry_id": "11111111-1111-4111-8111-111111111111",
+        "correlation_id": "22222222-2222-4222-8222-222222222222",
+        "model_code": "WPUJAC104DWH",
+        "product_family": "DIRECT_WATER_PURIFIER",
+        "assessment": {
+          "risk_level": "caution",
+          "priority": "consultation_recommended",
+          "requires_consultation": false,
+          "matched_safety_rule_ids": [
+            "SAFETY-TEMP-ABNORMAL-001"
+          ],
+          "detected_risks": [
+            "냉/온수 미흡 및 출수량 저하"
+          ],
+          "safety_reason": "[냉/온수 미흡 및 출수량 저하] 키워드('미지근') 감지"
+        }
+      },
+      "direct_local_assessment": {
+        "risk_level": "caution",
+        "priority": "consultation_recommended",
+        "requires_consultation": false,
+        "matched_safety_rule_ids": [
+          "SAFETY-TEMP-ABNORMAL-001"
+        ],
+        "detected_risks": [
+          "냉/온수 미흡 및 출수량 저하"
+        ],
+        "safety_reason": "[냉/온수 미흡 및 출수량 저하] 키워드('미지근') 감지"
+      },
+      "checks": {
+        "health_ok": true,
+        "agent_card_reachable": true,
+        "agent_card_exposes_jsonrpc": true,
+        "agent_card_exposes_a2a_endpoint": true,
+        "remote_result_used": true,
+        "failure_kind_none": true,
+        "local_fallback_not_called": true,
+        "inquiry_identity_preserved": true,
+        "correlation_identity_preserved": true,
+        "model_identity_preserved": true,
+        "product_family_preserved": true,
+        "remote_local_safety_semantics_equal": true
+      },
+      "pass": true
+    },
+    {
+      "case_id": "AGENT_DOWN",
+      "mode": "REAL_A2A_SERVER_PROCESS_TERMINATED",
+      "remote_server": "http://127.0.0.1:58767",
+      "elapsed_ms": 1009.875,
+      "exception_propagated": null,
+      "used_local_fallback": true,
+      "failure_kind": "TIMEOUT",
+      "failure_taxonomy_note": "실제 Agent 프로세스 종료는 A2A SDK/Agent Card discovery의 동작과 timeout budget에 따라 TIMEOUT 또는 UNAVAILABLE로 관측될 수 있다. E08-B는 둘 중 하나를 Remote 장애로 인정한다.",
+      "local_classifier_calls": 1,
+      "response": {
+        "inquiry_id": "11111111-1111-4111-8111-111111111111",
+        "correlation_id": "22222222-2222-4222-8222-222222222222",
+        "model_code": "WPUJAC104DWH",
+        "product_family": "DIRECT_WATER_PURIFIER",
+        "assessment": {
+          "risk_level": "caution",
+          "priority": "consultation_recommended",
+          "requires_consultation": false,
+          "matched_safety_rule_ids": [
+            "SAFETY-TEMP-ABNORMAL-001"
+          ],
+          "detected_risks": [
+            "냉/온수 미흡 및 출수량 저하"
+          ],
+          "safety_reason": "[냉/온수 미흡 및 출수량 저하] 키워드('미지근') 감지"
+        }
+      },
+      "checks": {
+        "server_confirmed_down": true,
+        "main_runtime_exception_not_propagated": true,
+        "result_available": true,
+        "local_fallback_used": true,
+        "failure_kind_is_remote_failure": true,
+        "local_classifier_called_once": true,
+        "original_model_preserved": true,
+        "safety_result_available": true
+      },
+      "pass": true
+    },
+    {
+      "case_id": "INVALID_IDENTITY",
+      "mode": "CONTROLLED_FAULT_INJECTION",
+      "injected_remote_model": "WPUIAC606SNW",
+      "expected_model": "WPUJAC104DWH",
+      "used_local_fallback": true,
+      "failure_kind": "INVALID_RESPONSE",
+      "local_classifier_calls": 1,
+      "final_response": {
+        "inquiry_id": "11111111-1111-4111-8111-111111111111",
+        "correlation_id": "22222222-2222-4222-8222-222222222222",
+        "model_code": "WPUJAC104DWH",
+        "product_family": "DIRECT_WATER_PURIFIER",
+        "assessment": {
+          "risk_level": "caution",
+          "priority": "consultation_recommended",
+          "requires_consultation": false,
+          "matched_safety_rule_ids": [
+            "SAFETY-TEMP-ABNORMAL-001"
+          ],
+          "detected_risks": [
+            "냉/온수 미흡 및 출수량 저하"
+          ],
+          "safety_reason": "[냉/온수 미흡 및 출수량 저하] 키워드('미지근') 감지"
+        }
+      },
+      "checks": {
+        "remote_response_rejected": true,
+        "failure_kind_invalid_response": true,
+        "local_classifier_called_once": true,
+        "wrong_remote_model_not_released": true,
+        "inquiry_identity_preserved": true,
+        "safety_result_available": true
+      },
+      "pass": true
+    },
+    {
+      "case_id": "TIMEOUT",
+      "mode": "CONTROLLED_FAULT_INJECTION",
+      "configured_timeout_seconds": 0.03,
+      "injected_remote_delay_seconds": 0.25,
+      "elapsed_ms": 44.74,
+      "used_local_fallback": true,
+      "failure_kind": "TIMEOUT",
+      "local_classifier_calls": 1,
+      "final_response": {
+        "inquiry_id": "11111111-1111-4111-8111-111111111111",
+        "correlation_id": "22222222-2222-4222-8222-222222222222",
+        "model_code": "WPUJAC104DWH",
+        "product_family": "DIRECT_WATER_PURIFIER",
+        "assessment": {
+          "risk_level": "caution",
+          "priority": "consultation_recommended",
+          "requires_consultation": false,
+          "matched_safety_rule_ids": [
+            "SAFETY-TEMP-ABNORMAL-001"
+          ],
+          "detected_risks": [
+            "냉/온수 미흡 및 출수량 저하"
+          ],
+          "safety_reason": "[냉/온수 미흡 및 출수량 저하] 키워드('미지근') 감지"
+        }
+      },
+      "checks": {
+        "local_fallback_used": true,
+        "failure_kind_timeout": true,
+        "local_classifier_called_once": true,
+        "original_model_preserved": true,
+        "safety_result_available": true
+      },
+      "pass": true
+    }
+  ],
+  "experiment_total_seconds": 4.282,
+  "claim": "Safety 역할을 별도 A2A Agent로 분리한 상태에서 정상 통신을 확인했고, Agent 종료·Timeout·잘못된 Product Context가 발생해도 장애를 Local Safety fallback으로 격리했다.",
+  "claim_boundary": "A2A 자체가 자동으로 장애 복원력을 제공한다는 의미가 아니다. A2A는 Agent 분리/통신 계약이며, 장애 격리는 WaterBridgeA2ASafetyClient의 검증 및 Local fallback 정책으로 구현했다."
+}

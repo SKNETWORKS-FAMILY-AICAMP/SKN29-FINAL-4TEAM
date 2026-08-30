@@ -1,0 +1,155 @@
+{
+  "experiment_id": "E10",
+  "experiment_name": "OpenTelemetry Trace Observability",
+  "status": "E10_COMPLETE",
+  "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+  "python": "3.13.13",
+  "scope": "AI_RUNTIME_LOCAL_OTLP_TRACE_OBSERVABILITY",
+  "otel_transport": "OTLP_HTTP_PROTOBUF",
+  "service_name": "waterbridge-ai-e10",
+  "deployment_environment": "experiment",
+  "scenario_count": 4,
+  "pass_count": 4,
+  "all_passed": true,
+  "otlp_request_count": 3,
+  "decoded_span_count": 9,
+  "key_span_coverage": {
+    "present_count": 8,
+    "required_count": 8,
+    "all_present": true,
+    "requirements": {
+      "waterbridge.e10.export_probe": true,
+      "waterbridge.harness.runtime/ESCALATE": true,
+      "waterbridge.harness.verify/TIMEOUT": true,
+      "waterbridge.handoff.create": true,
+      "waterbridge.harness.runtime/HUMAN_REVIEW": true,
+      "waterbridge.hitl.start": true,
+      "waterbridge.harness.resume_review": true,
+      "waterbridge.hitl.resume": true
+    }
+  },
+  "sensitive_payload_leak_count": 0,
+  "results": [
+    {
+      "case_id": "E10-01",
+      "scenario": "REAL_OTLP_EXPORT",
+      "passed": true,
+      "checks": {
+        "force_flush_success": true,
+        "otlp_http_request_received": true,
+        "otlp_trace_path_used": true,
+        "protobuf_decode_success": true,
+        "service_name_preserved": true,
+        "service_version_present": true,
+        "deployment_environment_preserved": true
+      },
+      "evidence": {
+        "otlp_request_count_after_flush": 1,
+        "probe_trace_id": "463e690489668119dd2eb6ee2321eb5e",
+        "probe_span_id": "d01dcb5bcd3872b1",
+        "resource_attributes": {
+          "telemetry.sdk.language": "python",
+          "telemetry.sdk.name": "opentelemetry",
+          "telemetry.sdk.version": "1.44.0",
+          "service.instance.id": "ff0929a2-1837-490a-bc4b-ad295ec6a02a",
+          "service.name": "waterbridge-ai-e10",
+          "service.version": "1.0.0",
+          "deployment.environment.name": "experiment"
+        }
+      },
+      "notes": "Real OTLP/HTTP protobuf export to an out-of-process HTTP receiver running on loopback."
+    },
+    {
+      "case_id": "E10-02",
+      "scenario": "FAILURE_TRACE_TOPOLOGY",
+      "passed": true,
+      "checks": {
+        "runtime_result_escalate": true,
+        "runtime_handoff_created": true,
+        "force_flush_success": true,
+        "runtime_span_present": true,
+        "verify_span_present": true,
+        "handoff_span_present": true,
+        "same_trace_id": true,
+        "verify_parent_is_runtime": true,
+        "handoff_parent_is_runtime": true,
+        "timeout_error_code_observable": true,
+        "handoff_observable": true,
+        "handoff_redaction_metadata_present": true
+      },
+      "evidence": {
+        "runtime_trace_id": "c23853ee4b4d06f3b02bfc8fd9bfbdc0",
+        "runtime_span_id": "8e89a0cbb6bb3156",
+        "verify_parent_span_id": "8e89a0cbb6bb3156",
+        "handoff_parent_span_id": "8e89a0cbb6bb3156",
+        "decision": "ESCALATE",
+        "error_code": "AI_PROCESSING_TIMEOUT"
+      },
+      "notes": "Actual Harness timeout path. No external LLM is invoked for supplementary context synthesis."
+    },
+    {
+      "case_id": "E10-03",
+      "scenario": "HITL_TRACE",
+      "passed": true,
+      "checks": {
+        "runtime_entered_human_review": true,
+        "runtime_waiting_for_review": true,
+        "resume_completed": true,
+        "modified_guidance_released": true,
+        "force_flush_success": true,
+        "hitl_start_span_present": true,
+        "hitl_resume_span_present": true,
+        "harness_resume_span_present": true,
+        "hitl_start_child_of_runtime": true,
+        "hitl_resume_child_of_harness_resume": true,
+        "waiting_status_observable": true,
+        "modify_decision_observable": true,
+        "modified_guidance_presence_observable": true,
+        "reviewer_note_presence_observable": true,
+        "completed_status_observable": true,
+        "approved_observable": true
+      },
+      "evidence": {
+        "hitl_start_trace_id": "d3e871fbecb868b85954581bdf733428",
+        "hitl_resume_trace_id": "8be6a51041f10ee68c9e581240ab9af2",
+        "checkpoint_thread_id": "hitl-3d5e571f64dba959548746d0ca266b71",
+        "start_status": "WAITING_FOR_REVIEW",
+        "resume_decision": "modify",
+        "resume_status": "COMPLETED",
+        "note_content_recorded_in_evidence": false
+      },
+      "notes": "HITL start belongs to the original Harness runtime trace. The later resume call creates a new local root (waterbridge.harness.resume_review), with hitl.resume as its child. This experiment does not claim cross-request traceparent propagation."
+    },
+    {
+      "case_id": "E10-04",
+      "scenario": "METADATA_ONLY",
+      "passed": true,
+      "checks": {
+        "sensitive_payload_leak_count_zero": true,
+        "reviewer_note_content_not_exported": true,
+        "evidence_content_not_exported": true,
+        "modified_guidance_content_not_exported": true,
+        "phone_not_exported": true,
+        "email_not_exported": true,
+        "reviewer_note_presence_metadata_kept": true,
+        "handoff_redaction_metadata_kept": true,
+        "failure_code_metadata_kept": true
+      },
+      "evidence": {
+        "otlp_request_count": 3,
+        "decoded_span_count": 9,
+        "sensitive_payload_leak_count": 0,
+        "forbidden_marker_count_checked": 5,
+        "metadata_examples": {
+          "reviewer_note_present": true,
+          "handoff_redaction_enabled": true,
+          "harness_error_code": "AI_PROCESSING_TIMEOUT"
+        }
+      },
+      "notes": "Leak detection scans both decoded span data and the raw OTLP protobuf bodies. Artifact files never persist the injected sensitive marker values."
+    }
+  ],
+  "experiment_total_seconds": 8.333,
+  "claim": "WaterBridge AI Runtime에서 실제 OTLP/HTTP trace export를 확인했고, Harness Timeout→ESCALATE→Handoff 및 HITL 상태/결정을 Span metadata로 추적할 수 있었다. 주입한 Evidence 본문, Human reviewer note, 전화번호, 이메일, 수정 Guidance 본문은 exported OTLP payload에서 검출되지 않았다.",
+  "claim_boundary": "본 실험은 AI Runtime 내부 OpenTelemetry trace와 OTLP export만 검증한다. Web→Backend→AI traceparent propagation 또는 전체 Distributed Tracing, OpenTelemetry GenAI Semantic Conventions 적용을 증명하지 않는다."
+}

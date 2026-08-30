@@ -1,0 +1,58 @@
+{
+  "build_job": {
+    "checks": {
+      "ai_build_push": true,
+      "aws_credentials": true,
+      "backend_build_push": true,
+      "ecr_login": true,
+      "published_image_runtime_checks": true,
+      "release_bundle_upload": true,
+      "validate_aws_variables": true,
+      "web_build_push": true
+    },
+    "job_id": 99063711445,
+    "success": true
+  },
+  "created_at": "2026-08-29T06:23:28Z",
+  "deploy_job": {
+    "checks": {
+      "aws_credentials": true,
+      "external_https_smoke": true,
+      "record_deployment_result": true,
+      "ssm_deployment": true
+    },
+    "job_id": 99064469166,
+    "success": true
+  },
+  "ecr_image_digest_evidence": {
+    "ai": null,
+    "backend": null,
+    "canonical_digest_checks": {
+      "ai": false,
+      "backend": false,
+      "web": false
+    },
+    "exact_digests_captured": false,
+    "note": "Digest values are best-effort extracted from the successful build job log. A successful Production run still executes the committed digest-pinning workflow contract even when GitHub log formatting prevents exact digest extraction.",
+    "web": null
+  },
+  "raw_job_logs_persisted": false,
+  "release_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+  "release_sha_canonical": true,
+  "release_sha_is_ancestor_of_current_head": true,
+  "runtime_markers": {
+    "deployment_runtime_pass_seen": true,
+    "marker_source": "deploy_job_log_best_effort",
+    "observability_partial_seen": true
+  },
+  "sensitive_values_captured": false,
+  "source_guard_job": {
+    "present": true,
+    "success": true
+  },
+  "stable_semver_observed": true,
+  "status": "VERIFIED",
+  "tag_or_branch_observed": "v0.2.10",
+  "workflow_run_id": 33238345342,
+  "workflow_run_url": "https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/33238345342"
+}

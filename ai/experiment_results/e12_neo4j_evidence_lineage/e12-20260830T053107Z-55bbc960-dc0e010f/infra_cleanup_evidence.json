@@ -1,0 +1,9 @@
+{
+  "anonymous_volume_count": 0,
+  "container_count": 0,
+  "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+  "image_repo_digest": "sha256:dbc377fb9cd8fe8dabc19d3041b197d5ca0ef8bae514cea175b8df265e5b7a76",
+  "run_id": "e12-20260830T053107Z-55bbc960-dc0e010f",
+  "status": "PASS",
+  "tracked_volume_count": 2
+}

@@ -1,0 +1,45 @@
+{
+  "algorithm": "SHA-256",
+  "artifacts": [
+    {
+      "file_sha256": "2E30AC6298C2F0FAEEFEAE4AC30183C914F57A6E926320715FEF7515DF0BEA43",
+      "path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/run_manifest.json",
+      "size_bytes": 2326
+    },
+    {
+      "file_sha256": "31B2DF9BAE2EA9FDA2B32D09EE75ADCE0D484C80C8AAA39040A223F21729FDB5",
+      "path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/projection_manifest.json",
+      "size_bytes": 2601
+    },
+    {
+      "file_sha256": "81AA166F88778070796AB9AFDAB86F49077FBF7CE3ADE829E283AAC9CA32B249",
+      "path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/neo4j_lab_evidence.json",
+      "size_bytes": 13680
+    },
+    {
+      "file_sha256": "DAAD75B74DE87B3DE88A369AEBD59B60486B359389E75E8EC30A287E0FCA3875",
+      "path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/neo4j_evidence_lineage_visual.svg",
+      "size_bytes": 22282
+    },
+    {
+      "file_sha256": "113B02C890832AEA1C5232AC52B53AE4627F803FF991106C78D63772A4BC3F8B",
+      "path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/visual_query_catalog.json",
+      "size_bytes": 3001
+    },
+    {
+      "file_sha256": "2DDEFE2796F8CAEC7D6F0AF1152E8E66938915F8E1371A037FB1F9AFA0F0B6D0",
+      "path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/neo4j_browser_visual_query.cypher",
+      "size_bytes": 3895
+    },
+    {
+      "file_sha256": "B7AA2007E9FB4F190BB677B1579B19A89E4CFA11DB108244F4C20B2EF4FB38DB",
+      "path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/cleanup_evidence.json",
+      "size_bytes": 318
+    }
+  ],
+  "excluded_from_durable_upload": [
+    "graph_projection.json"
+  ],
+  "run_id": "e12-20260830T053107Z-55bbc960-dc0e010f",
+  "schema_version": "1.0.0"
+}

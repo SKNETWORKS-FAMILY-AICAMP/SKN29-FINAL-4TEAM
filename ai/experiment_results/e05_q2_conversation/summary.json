@@ -1,0 +1,46 @@
+{
+  "status": "E05_Q2_CONVERSATION_COMPLETE",
+  "result_label": "QUALITATIVE_PLUS_REPEATED_DIAGNOSTIC",
+  "git_sha": "95f90f843124373fc97c6cd9e258b1427e0cbde8",
+  "original_e05_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f",
+  "same_sha_as_original_e05": false,
+  "model": "gpt-4.1-mini-2025-04-14",
+  "scenario_count": 15,
+  "repeats": 3,
+  "retrieval_design": "SCRIPTED_FAULT_ISOLATION: Turn1=NO_MATCH, Turn2=actual processed JAC104 manual excerpt. Not a live vector-retrieval benchmark.",
+  "experiment_total_seconds": 178.301,
+  "trial_count": 45,
+  "metrics": {
+    "single_turn1_fallback_rate": 1.0,
+    "multi_turn1_customer_input_pending_rate": 1.0,
+    "multi_turn1_feedback_handoff_rate": 1.0,
+    "native_continuation_eligibility_single": 0.0,
+    "native_continuation_eligibility_multi": 1.0,
+    "multi_native_turn2_success_rate": 1.0,
+    "single_forced_reentry_turn2_success_rate": 1.0,
+    "multi_native_turn2_grounded_rate": 1.0,
+    "single_forced_turn2_grounded_rate": 1.0
+  },
+  "api_usage": {
+    "actual_generation_calls_expected_max": 90,
+    "total_tokens": {
+      "multi_agent_native_t2": 16641,
+      "single_rag_forced_t2": 16641
+    },
+    "llm_latency_ms": {
+      "multi_agent_native_t2": {
+        "p50": 1866.53,
+        "p95": 2651.446,
+        "mean": 1900.341
+      },
+      "single_rag_forced_t2": {
+        "p50": 1686.93,
+        "p95": 4164.112,
+        "mean": 2013.408
+      }
+    }
+  },
+  "error_count": 0,
+  "errors": [],
+  "recommended_claim": "Multi-Agent의 핵심 우위는 'Single이 답을 생성할 능력이 없다'는 것이 아니라, 검색 실패 후 CUSTOMER_INPUT_PENDING과 Feedback Handoff를 Runtime 계약으로 유지해 다음 고객 턴을 자연스럽게 이어가는 데 있다. Single도 외부에서 강제 재진입시키면 근거가 주어진 2턴 답변을 생성할 수 있으므로, 발표에서는 답변 지능보다 상태 기반 실패 복구 능력을 강조해야 한다."
+}

@@ -1,0 +1,81 @@
+{
+  "experiment_id": "E09",
+  "experiment_name": "MCP Tool Contract & Failure Handling",
+  "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+  "python": "3.13.13",
+  "scenario_count": 5,
+  "pass_count": 5,
+  "all_passed": true,
+  "metrics": {
+    "contract_match_count": 5,
+    "invalid_data_release_count": 0,
+    "sensitive_detail_leak_count": 0
+  },
+  "results": [
+    {
+      "scenario_id": "E09-01",
+      "scenario": "NORMAL_STDIO_CALL",
+      "expected": "Structured output + direct/MCP parity",
+      "actual": "STRUCTURED_PARITY",
+      "latency_ms": 5289.754800032824,
+      "retryable": null,
+      "contract_valid": true,
+      "invalid_data_released": false,
+      "sensitive_detail_leaked": false,
+      "passed": true,
+      "notes": "Actual MCP stdio subprocess path; policy-blocked before pgvector."
+    },
+    {
+      "scenario_id": "E09-02",
+      "scenario": "INVALID_INPUT",
+      "expected": "MCP input contract rejection",
+      "actual": "INPUT_CONTRACT_REJECTED",
+      "latency_ms": 4548.629600030836,
+      "retryable": false,
+      "contract_valid": true,
+      "invalid_data_released": false,
+      "sensitive_detail_leaked": false,
+      "passed": true,
+      "notes": "Required model_code omitted intentionally."
+    },
+    {
+      "scenario_id": "E09-03",
+      "scenario": "TIMEOUT",
+      "expected": "TIMEOUT / retryable=true",
+      "actual": "TIMEOUT",
+      "latency_ms": 108.11939998529851,
+      "retryable": true,
+      "contract_valid": true,
+      "invalid_data_released": false,
+      "sensitive_detail_leaked": false,
+      "passed": true,
+      "notes": "Injected client sleeps 0.25s while MCP context timeout is 0.10s."
+    },
+    {
+      "scenario_id": "E09-04",
+      "scenario": "UNAVAILABLE",
+      "expected": "UNAVAILABLE / retryable=true",
+      "actual": "UNAVAILABLE",
+      "latency_ms": 2.4187000235542655,
+      "retryable": true,
+      "contract_valid": true,
+      "invalid_data_released": false,
+      "sensitive_detail_leaked": false,
+      "passed": true,
+      "notes": "Injected ConnectionError contains a secret marker and private URL."
+    },
+    {
+      "scenario_id": "E09-05",
+      "scenario": "INVALID_RESPONSE",
+      "expected": "INVALID_RESPONSE / retryable=false / fail-closed",
+      "actual": "INVALID_RESPONSE",
+      "latency_ms": 2.521799993701279,
+      "retryable": false,
+      "contract_valid": true,
+      "invalid_data_released": false,
+      "sensitive_detail_leaked": false,
+      "passed": true,
+      "notes": "Requested WPUJAC104DWH, injected WPUIAC606SNW."
+    }
+  ]
+}

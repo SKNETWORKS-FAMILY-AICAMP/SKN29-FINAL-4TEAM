@@ -1,0 +1,160 @@
+{
+  "status": "E06_QUALITATIVE_COMPLETE",
+  "result_label": "QUALITATIVE_PRESENTATION_EVIDENCE",
+  "variant": "V2_HARNESS_DISTINCT_DECISION_PATHS",
+  "git_sha": "ca1ec8f858590b776746d7dceeab4e90c9abbb50",
+  "original_e06_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f",
+  "matches_original_e06_sha": false,
+  "scope": "BEFORE_HARNESS_AFTER_PRESENTATION_CASES",
+  "design": {
+    "goal": "Harness의 네 가지 대표 의사결정 경로를 중복 없이 사람이 읽기 쉬운 사례로 제시",
+    "decision_paths": [
+      "RETRY_RETRIEVAL",
+      "RETRY_GENERATION",
+      "ESCALATE",
+      "HUMAN_REVIEW"
+    ],
+    "excluded_from_main_showcase": [
+      "SAFETY_CONFLICT"
+    ],
+    "exclusion_reason": "누수/DANGER는 정상 파이프라인에서 앞단 Rule-based Safety Guard가 이미 결정론적으로 TOTAL_STOP 처리하므로 Harness 고유 가치 설명에 중복이 생김. Safety Conflict는 Defense-in-Depth 보조 사례로만 해석."
+  },
+  "note": "E06 정량 Fault Injection Ablation을 대체하지 않는 발표용 정성 사례. 외부 LLM/Vector DB 없이 실제 Harness decision/routing contract를 사용한다.",
+  "cases": [
+    {
+      "case_id": "WRONG_MODEL_EVIDENCE",
+      "presentation_role": "RETRY_RETRIEVAL",
+      "before": {
+        "customer_symptom": "냉수가 예전보다 적게 나와요.",
+        "customer_model": "WPUJAC104DWH",
+        "retrieved_document_model": "WPUIAC606SNW",
+        "retrieved_document_title": "WPUIAC606SNW 공식 사용설명서",
+        "candidate_evidence_text": "출수량이 적을 때는 급수 상태와 제품 내부 공급 상태를 확인하고, 증상이 지속되면 점검을 요청합니다.",
+        "why_it_looks_plausible": "출수량 관련 내용은 유사하지만 고객 제품과 문서 모델이 다름"
+      },
+      "harness": {
+        "first_decision": "RETRY_RETRIEVAL",
+        "issues": [
+          "WRONG_MODEL_EVIDENCE",
+          "NO_EVIDENCE"
+        ],
+        "blocked_chunk_ids": [
+          "E06Q-WRONG-001"
+        ],
+        "retry_count": 1,
+        "final_decision": "PASS"
+      },
+      "after": {
+        "first_attempt_forwarded_count": 0,
+        "wrong_model_evidence_released": false,
+        "accepted_retry_model": "WPUJAC104DWH",
+        "customer_guidance": "냉수 출수량이 적을 때는 원수 공급 상태와 필터 장착 상태를 확인하고, 기본 점검 후에도 증상이 지속되면 전문 상담 및 점검을 요청합니다."
+      }
+    },
+    {
+      "case_id": "OUTPUT_SCHEMA_INVALID",
+      "presentation_role": "RETRY_GENERATION",
+      "before": {
+        "expected_contract_fields": [
+          "guidance_status",
+          "message",
+          "restricted_functions",
+          "next_actions"
+        ],
+        "llm_output_payload": {
+          "message": "냉수 출수량이 적을 때는 원수 공급 상태와 필터 장착 상태를 확인합니다.",
+          "recommendation": "상태 확인"
+        },
+        "problem": "내용은 읽을 수 있지만 Backend 공개 응답 계약 필드가 누락됨"
+      },
+      "harness": {
+        "first_decision": "RETRY_GENERATION",
+        "issues": [
+          "OUTPUT_SCHEMA_INVALID"
+        ],
+        "generation_retry_count": 1,
+        "final_decision": "PASS"
+      },
+      "after": {
+        "regenerated_payload": {
+          "guidance_status": "NORMAL",
+          "message": "냉수 출수량이 적을 때는 원수 공급 상태와 필터 장착 상태를 확인합니다.",
+          "restricted_functions": [],
+          "next_actions": [
+            "상태 확인"
+          ]
+        },
+        "schema_contract_satisfied": true,
+        "customer_guidance": {
+          "guidance_status": "NORMAL",
+          "message": "냉수 출수량이 적을 때는 원수 공급 상태와 필터 장착 상태를 확인합니다.",
+          "restricted_functions": [],
+          "next_actions": [
+            "상태 확인"
+          ]
+        }
+      }
+    },
+    {
+      "case_id": "MCP_NONRETRYABLE_FAILURE",
+      "presentation_role": "ESCALATE",
+      "before": {
+        "customer_symptom": "냉수가 갑자기 안 나와요.",
+        "required_tool": "search_official_evidence",
+        "tool_failure_kind": "UNAVAILABLE",
+        "retryable": false,
+        "official_evidence_available_to_runtime": false,
+        "raw_exception_exposed": false
+      },
+      "harness": {
+        "decision": "ESCALATE",
+        "issues": [
+          "MCP_TOOL_FAILURE"
+        ],
+        "error_code": "MCP_TOOL_FAILURE",
+        "should_escalate": true,
+        "handoff_present": true,
+        "handoff_reason": "MCP_TOOL_FAILURE"
+      },
+      "after": {
+        "automatic_guidance_released": false,
+        "hallucinated_manual_guidance_generated": false,
+        "next_state": "Consultation Handoff",
+        "customer_facing_policy": "공식 근거 조회 Tool을 사용할 수 없으므로 추측성 자가조치를 생성하지 않고 상담 경로로 전환"
+      }
+    },
+    {
+      "case_id": "UNSUPPORTED_FUNCTION",
+      "presentation_role": "HUMAN_REVIEW",
+      "before": {
+        "customer_product": "WPUJAC104DWH",
+        "supported_functions": [
+          "cold_water",
+          "hot_water"
+        ],
+        "requested_function": "ice",
+        "guidance_candidate": {
+          "guidance_status": "NORMAL",
+          "message": "냉수 상태를 확인하는 안내 후보입니다.",
+          "restricted_functions": [],
+          "next_actions": [
+            "상태 확인"
+          ]
+        }
+      },
+      "harness": {
+        "decision": "HUMAN_REVIEW",
+        "issues": [
+          "UNSUPPORTED_FUNCTION"
+        ],
+        "human_review_present": true,
+        "human_review_status": "WAITING_FOR_REVIEW"
+      },
+      "after": {
+        "customer_release": "자동 확정하지 않음",
+        "next_state": "HITL Human Review 대기"
+      }
+    }
+  ],
+  "experiment_total_seconds": 0.058
+}

@@ -1,0 +1,435 @@
+{
+  "application_validation": "PASS",
+  "database": {
+    "cross_model_path_count": 0,
+    "cross_namespace_relationship_count": 0,
+    "database_validation": "PASS",
+    "graph_identity_validation": {
+      "nodes": {
+        "actual_count": 142,
+        "actual_identity_sha256": "8A0B0CBE6CDF60ECF1F8D3ED71A2E7EAF7846953C861633B05897AC5AE0D3029",
+        "actual_snapshot_sha256": "096E02EE7D83212DE88AF0919B1C042130EC868F6ED3E747E7D028C0C9754E56",
+        "expected_count": 142,
+        "expected_identity_sha256": "8A0B0CBE6CDF60ECF1F8D3ED71A2E7EAF7846953C861633B05897AC5AE0D3029",
+        "expected_snapshot_sha256": "096E02EE7D83212DE88AF0919B1C042130EC868F6ED3E747E7D028C0C9754E56",
+        "match": true
+      },
+      "relationships": {
+        "actual_count": 210,
+        "actual_identity_sha256": "490E5D50F6020AFC71245CD724E88CD74BA05C929C92A04A3C61FF48AD40BC19",
+        "actual_snapshot_sha256": "32CED485C246541E09732FF89CDED8095FD73A8AA3CB99C7E5E54531993F33E8",
+        "expected_count": 210,
+        "expected_identity_sha256": "490E5D50F6020AFC71245CD724E88CD74BA05C929C92A04A3C61FF48AD40BC19",
+        "expected_snapshot_sha256": "32CED485C246541E09732FF89CDED8095FD73A8AA3CB99C7E5E54531993F33E8",
+        "match": true
+      },
+      "snapshot": {
+        "actual_sha256": "C494ED7ECA983741F52A98F10428923FED17110E0142E654B314970B3B3121B6",
+        "expected_sha256": "C494ED7ECA983741F52A98F10428923FED17110E0142E654B314970B3B3121B6",
+        "match": true
+      },
+      "status": "PASS"
+    },
+    "issues": [],
+    "neo4j": {
+      "database": "neo4j",
+      "edition": "community",
+      "endpoint_class": "QA_EPHEMERAL_LOOPBACK_QUERY_API_V2_BASIC_AUTH",
+      "name": "Neo4j Kernel",
+      "version": "2026.07.1"
+    },
+    "node_counts": {
+      "Document": 3,
+      "EvidenceChunk": 53,
+      "EvidenceGroup": 43,
+      "ParentPage": 15,
+      "Product": 3,
+      "Topic": 25
+    },
+    "orphan_chunk_count": 0,
+    "relationship_counts": {
+      "ABOUT": 43,
+      "COVERS_TOPIC": 43,
+      "HAS_CHILD": 53,
+      "HAS_DOCUMENT": 3,
+      "HAS_PARENT_PAGE": 15,
+      "MEMBER_OF": 53
+    },
+    "visual_query_validation": {
+      "query_count": 6,
+      "results": [
+        {
+          "actual_row_count": 43,
+          "expected_row_count": 43,
+          "query_id": "product_topic_overview",
+          "status": "PASS"
+        },
+        {
+          "actual_row_count": 19,
+          "expected_row_count": 19,
+          "query_id": "product_lineage_wpuiac425snw",
+          "status": "PASS"
+        },
+        {
+          "actual_row_count": 19,
+          "expected_row_count": 19,
+          "query_id": "product_lineage_wpuiac606snw",
+          "status": "PASS"
+        },
+        {
+          "actual_row_count": 15,
+          "expected_row_count": 15,
+          "query_id": "product_lineage_wpujac104dwh",
+          "status": "PASS"
+        },
+        {
+          "actual_row_count": 35,
+          "expected_row_count": 35,
+          "query_id": "consultation_required_lineage",
+          "status": "PASS"
+        },
+        {
+          "actual_row_count": 0,
+          "expected_row_count": 0,
+          "query_id": "integrity_anomalies",
+          "status": "PASS"
+        }
+      ],
+      "status": "PASS"
+    },
+    "visual_summary": {
+      "actual_result_set_sha256": "223F5297751BE8BE5FD618A5533043E339B1C1E0520BA0F7183C6AC824A0488D",
+      "expected_result_set_sha256": "223F5297751BE8BE5FD618A5533043E339B1C1E0520BA0F7183C6AC824A0488D",
+      "match": true,
+      "row_count": 43,
+      "rows": [
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "cold_lock"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "cold_temperature_fault"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "cold_temperature_normal"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "defrost_noise"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "hot_steam"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "hot_water_interruption"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "hot_water_stopped"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "ice_making_noise"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "ice_quality"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "leak"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "low_flow"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "no_hot_water"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "no_ice"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "no_water"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "noise_normal"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "noise_ventilation"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "particles"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC425SNW",
+          "topic_code": "taste_odor"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "cold_lock"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "cold_temperature_fault"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "cold_temperature_normal"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "defrost_noise"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "hot_steam"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "hot_water_interruption"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "hot_water_stopped"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "ice_making_noise"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "ice_quality"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "leak"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "low_flow"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "no_hot_water"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "no_ice"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "no_water"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "noise_normal"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "noise_ventilation"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "particles"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUIAC606SNW",
+          "topic_code": "taste_odor"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUJAC104DWH",
+          "topic_code": "symptom_cold_temperature"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUJAC104DWH",
+          "topic_code": "symptom_hot_water_safety"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUJAC104DWH",
+          "topic_code": "symptom_leak"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUJAC104DWH",
+          "topic_code": "symptom_low_flow"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUJAC104DWH",
+          "topic_code": "symptom_no_water"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUJAC104DWH",
+          "topic_code": "symptom_noise"
+        },
+        {
+          "evidence_group_count": 1,
+          "model_code": "WPUJAC104DWH",
+          "topic_code": "symptom_taste_odor"
+        }
+      ]
+    }
+  },
+  "execution_reference": {
+    "ci_job": null,
+    "ci_run_id": null,
+    "local_execution": true
+  },
+  "generated_at": "2026-08-30T05:32:50.042823+00:00",
+  "graph_cleanup": {
+    "container_cleanup": "NOT_RUN_INFRA_OWNED",
+    "deleted_node_count": 142,
+    "evidence_path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/cleanup_evidence.json",
+    "residual_node_count": 0,
+    "residual_relationship_count": 0,
+    "scope": "QA_RUN_ONLY",
+    "status": "PASS",
+    "target_marker_validation": "PASS",
+    "unexpected_node_count_excluding_target_marker": 0,
+    "unexpected_relationship_count": 0
+  },
+  "input_source": "REPOSITORY_JSONL_ONLY",
+  "integrity": {
+    "algorithm": "SHA-256",
+    "canonical_payload_sha256": "98280A0E826BAC12AE7D033AE290C91E708B0F80980EB373C8892BAB77E15B4E"
+  },
+  "neo4j_image": {
+    "digest_collection_owner": "INFRA_JOB",
+    "infra_supplied_repo_digest": "sha256:dbc377fb9cd8fe8dabc19d3041b197d5ca0ef8bae514cea175b8df265e5b7a76",
+    "tag": "neo4j:2026.07.1"
+  },
+  "official_metrics_allowed": false,
+  "owner_boundaries": {
+    "backend_rds": "NOT_CONNECTED",
+    "container_cleanup_and_digest": "INFRA_JOB_OWNED",
+    "harness_hitl_handoff": "NOT_CONNECTED",
+    "pipeline_router": "NOT_CONNECTED",
+    "production_retrieval": "UNCHANGED_PGVECTOR"
+  },
+  "pm_approval_status": "HOLD_PENDING_INFRA_FINALIZATION",
+  "production_runtime_connected": false,
+  "profile": "qa_ephemeral_loopback",
+  "projection_manifest": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/projection_manifest.json",
+  "projection_sha256": "0592629DB552FBB418F72E40B2E2C9E976B57D09406EA7EF35CF6576A6DA702A",
+  "public_runtime_activation": "HOLD",
+  "rds_connected": false,
+  "rds_lineage_validation": "NOT_RUN_SEPARATE_FUTURE_GATE",
+  "result": "PARTIAL",
+  "run_id": "e12-20260830T053107Z-55bbc960-dc0e010f",
+  "schema_version": "2.0.0",
+  "scope": "JSONL_BASED_LINEAGE_QA",
+  "source": {
+    "after": {
+      "branch": "DETACHED",
+      "checkout_mode": "DETACHED",
+      "ci_expected_sha": null,
+      "ci_head_ref": null,
+      "ci_ref_name": null,
+      "ci_sha_matches_head": null,
+      "git_dirty": false,
+      "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+      "worktree_status_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "before": {
+      "branch": "DETACHED",
+      "checkout_mode": "DETACHED",
+      "ci_expected_sha": null,
+      "ci_head_ref": null,
+      "ci_ref_name": null,
+      "ci_sha_matches_head": null,
+      "git_dirty": false,
+      "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+      "worktree_status_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    "validation": {
+      "ci_sha_matches_head": true,
+      "clean_head": true,
+      "head_stable": true,
+      "status": "PASS",
+      "worktree_status_stable": true
+    }
+  },
+  "submission_status": "HOLD_PENDING_INFRA_FINALIZATION",
+  "target_preflight": {
+    "database": "neo4j",
+    "marker_validated": true,
+    "profile": "qa_ephemeral_loopback",
+    "relationship_count": 0,
+    "status": "PASS",
+    "unexpected_node_count": 0
+  },
+  "trigger_scope": {
+    "excluded": [
+      "RDS_LINEAGE_VIEW_CHANGE"
+    ],
+    "included": [
+      "JSONL_INPUT_CHANGE",
+      "PROJECTION_OR_QUERY_CHANGE",
+      "NEO4J_QA_CONFIG_CHANGE",
+      "MANUAL_RELEASE_CANDIDATE_RUN"
+    ]
+  },
+  "visual_artifact": {
+    "contains_source_text": false,
+    "file_sha256": "DAAD75B74DE87B3DE88A369AEBD59B60486B359389E75E8EC30A287E0FCA3875",
+    "path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/neo4j_evidence_lineage_visual.svg"
+  },
+  "visual_queries": {
+    "bundle_path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/neo4j_browser_visual_query.cypher",
+    "catalog_canonical_payload_sha256": "7AE2268B355DB4AD184FFF797525C933A4A1F354827F4E2B3905C2097E331C65",
+    "catalog_file_sha256": "113B02C890832AEA1C5232AC52B53AE4627F803FF991106C78D63772A4BC3F8B",
+    "catalog_path": ".runtime/e12_neo4j_lineage/e12-20260830T053107Z-55bbc960-dc0e010f/visual_query_catalog.json",
+    "query_count": 6
+  }
+}

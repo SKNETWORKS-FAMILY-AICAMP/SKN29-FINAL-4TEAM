@@ -1,0 +1,11 @@
+{
+  "container_cleanup": "NOT_RUN_INFRA_OWNED",
+  "deleted_node_count": 142,
+  "residual_node_count": 0,
+  "residual_relationship_count": 0,
+  "scope": "QA_RUN_ONLY",
+  "status": "PASS",
+  "target_marker_validation": "PASS",
+  "unexpected_node_count_excluding_target_marker": 0,
+  "unexpected_relationship_count": 0
+}

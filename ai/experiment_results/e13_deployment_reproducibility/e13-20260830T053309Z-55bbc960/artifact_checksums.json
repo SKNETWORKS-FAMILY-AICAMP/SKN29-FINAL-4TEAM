@@ -1,0 +1,35 @@
+{
+  "algorithm": "SHA-256",
+  "artifacts": [
+    {
+      "path": "deployment_evidence.json",
+      "sha256": "A9A54508C904AB4D08CAD9CE412C8F017BC112CAE7D98E8EA62C013F419A7583",
+      "size_bytes": 1800
+    },
+    {
+      "path": "oidc_ssm_evidence.json",
+      "sha256": "C7F940EEE8B12EC2807170FF1375A5BF9D9ACCF835D89E74D60298A8CCE34C05",
+      "size_bytes": 742
+    },
+    {
+      "path": "report.md",
+      "sha256": "BF7AE1648105A0BE63238885A4DEEEEE658D04D69336EF5D32ED95C7FC92D8A2",
+      "size_bytes": 2270
+    },
+    {
+      "path": "rollback_contract.json",
+      "sha256": "9C584D6917BC35964AEF9623D99703786438F2C61ADBC507D57549F214076D15",
+      "size_bytes": 443
+    },
+    {
+      "path": "source_contract.json",
+      "sha256": "AAC81E420A7AEB8C4F069E07B7003DB7BBAA998A0AC6CD2165839E30B71689D5",
+      "size_bytes": 1744
+    },
+    {
+      "path": "summary.json",
+      "sha256": "6E70D38120B55D0A8BA5300B5A51CF423EED41A0BC97150384EF3C054D2BAD3E",
+      "size_bytes": 5968
+    }
+  ]
+}

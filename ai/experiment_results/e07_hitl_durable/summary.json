@@ -1,0 +1,213 @@
+{
+  "status": "E07_COMPLETE",
+  "experiment_id": "E07",
+  "title": "HITL + LangGraph Checkpointed Resume",
+  "result_label": "QUALITATIVE_RUNTIME_EVIDENCE",
+  "git_sha": "5611f31337a76a089d43959c57994dc01de77a48",
+  "scope": "SAME_PROCESS_CHECKPOINTED_INTERRUPT_RESUME",
+  "checkpointer_type": "InMemorySaver",
+  "persistent_process_restart_durability_claimed": false,
+  "state_version_semantics": "PRESERVE_AND_MATCH_CHECKPOINT_VERSION",
+  "cases_passed": 4,
+  "cases_total": 4,
+  "cases": [
+    {
+      "case_id": "APPROVE",
+      "before": {
+        "customer_request": "얼음 기능도 사용할 수 있는지 확인해 주세요.",
+        "product_model": "WPUJAC104DWH",
+        "supported_functions": [
+          "cold_water",
+          "hot_water"
+        ],
+        "requested_function": "ice",
+        "harness_decision": "HUMAN_REVIEW",
+        "harness_issues": [
+          "UNSUPPORTED_FUNCTION"
+        ],
+        "hitl_status": "WAITING_FOR_REVIEW",
+        "thread_id": "hitl-320e7abb4c034be60e8d8126120ef154",
+        "state_version": 7,
+        "evidence_chunk_ids": [
+          "E07-JAC104-EVIDENCE-001"
+        ],
+        "harness_run_calls": 1
+      },
+      "after": {
+        "status": "COMPLETED",
+        "final_guidance": {
+          "guidance_status": "NORMAL",
+          "message": "요청하신 기능은 현재 자동 안내 범위를 벗어나므로 제품 사양을 추가 확인해 주세요.",
+          "restricted_functions": [],
+          "next_actions": [
+            "제품 사양 확인"
+          ]
+        },
+        "handoff_present": false,
+        "harness_run_calls": 1
+      },
+      "checks": {
+        "completed": true,
+        "approved": true,
+        "same_thread_id": true,
+        "original_guidance_preserved": true,
+        "no_harness_reverification_on_resume": true,
+        "interrupt_inquiry_preserved": true,
+        "checkpoint_inquiry_preserved": true,
+        "ai_request_id_preserved": true,
+        "model_code_preserved": true,
+        "state_version_preserved": true,
+        "evidence_ids_preserved": true
+      },
+      "pass": true
+    },
+    {
+      "case_id": "MODIFY",
+      "before": {
+        "customer_request": "얼음 기능도 사용할 수 있는지 확인해 주세요.",
+        "product_model": "WPUJAC104DWH",
+        "supported_functions": [
+          "cold_water",
+          "hot_water"
+        ],
+        "requested_function": "ice",
+        "harness_decision": "HUMAN_REVIEW",
+        "harness_issues": [
+          "UNSUPPORTED_FUNCTION"
+        ],
+        "hitl_status": "WAITING_FOR_REVIEW",
+        "thread_id": "hitl-013d69d88e7c4569c924f40327f74634",
+        "state_version": 7,
+        "evidence_chunk_ids": [
+          "E07-JAC104-EVIDENCE-001"
+        ],
+        "harness_run_calls": 1
+      },
+      "after": {
+        "status": "COMPLETED",
+        "final_guidance": {
+          "guidance_status": "NORMAL",
+          "message": "상담사가 제품 사양을 확인한 뒤 얼음 기능 지원 여부를 안내합니다.",
+          "restricted_functions": [],
+          "next_actions": [
+            "상담사 사양 확인"
+          ]
+        },
+        "reviewer_note": "제품 사양 확인 표현으로 수정",
+        "handoff_present": false,
+        "harness_run_calls": 1
+      },
+      "checks": {
+        "completed": true,
+        "approved": true,
+        "same_thread_id": true,
+        "human_modified_guidance_applied": true,
+        "original_guidance_not_released": true,
+        "no_harness_reverification_on_resume": true,
+        "interrupt_inquiry_preserved": true,
+        "checkpoint_inquiry_preserved": true,
+        "ai_request_id_preserved": true,
+        "model_code_preserved": true,
+        "state_version_preserved": true,
+        "evidence_ids_preserved": true
+      },
+      "pass": true
+    },
+    {
+      "case_id": "REJECT",
+      "before": {
+        "customer_request": "얼음 기능도 사용할 수 있는지 확인해 주세요.",
+        "product_model": "WPUJAC104DWH",
+        "supported_functions": [
+          "cold_water",
+          "hot_water"
+        ],
+        "requested_function": "ice",
+        "harness_decision": "HUMAN_REVIEW",
+        "harness_issues": [
+          "UNSUPPORTED_FUNCTION"
+        ],
+        "hitl_status": "WAITING_FOR_REVIEW",
+        "thread_id": "hitl-360c483a4bb9f191652255e54854f416",
+        "state_version": 7,
+        "evidence_chunk_ids": [
+          "E07-JAC104-EVIDENCE-001"
+        ],
+        "harness_run_calls": 1
+      },
+      "after": {
+        "status": "COMPLETED",
+        "final_guidance": null,
+        "handoff_present": true,
+        "handoff_reason": "HUMAN_REVIEW_REJECTED",
+        "harness_run_calls": 1
+      },
+      "checks": {
+        "completed": true,
+        "rejected": true,
+        "same_thread_id": true,
+        "guidance_release_blocked": true,
+        "handoff_created": true,
+        "handoff_reason_is_human_review_rejected": true,
+        "no_harness_reverification_on_resume": true,
+        "interrupt_inquiry_preserved": true,
+        "checkpoint_inquiry_preserved": true,
+        "ai_request_id_preserved": true,
+        "model_code_preserved": true,
+        "state_version_preserved": true,
+        "evidence_ids_preserved": true
+      },
+      "pass": true
+    },
+    {
+      "case_id": "STALE_STATE_VERSION",
+      "before": {
+        "customer_request": "얼음 기능도 사용할 수 있는지 확인해 주세요.",
+        "product_model": "WPUJAC104DWH",
+        "supported_functions": [
+          "cold_water",
+          "hot_water"
+        ],
+        "requested_function": "ice",
+        "harness_decision": "HUMAN_REVIEW",
+        "harness_issues": [
+          "UNSUPPORTED_FUNCTION"
+        ],
+        "hitl_status": "WAITING_FOR_REVIEW",
+        "thread_id": "hitl-f041a880e157de531ac53a5b77ee7cf6",
+        "state_version": 7,
+        "evidence_chunk_ids": [
+          "E07-JAC104-EVIDENCE-001"
+        ],
+        "harness_run_calls": 1
+      },
+      "stale_attempt": {
+        "checkpoint_state_version": 7,
+        "submitted_state_version": 8,
+        "blocked": true,
+        "error_type": "ValueError",
+        "error_message": "human review state_version does not match the checkpointed request"
+      },
+      "after": {
+        "automatic_guidance_released": false,
+        "resume_result": "BLOCKED_FAIL_CLOSED",
+        "same_checkpoint_retry_claimed": false,
+        "normal_resume_is_verified_by": "APPROVE case",
+        "harness_run_calls": 1
+      },
+      "checks": {
+        "stale_version_blocked": true,
+        "state_version_error_reported": true,
+        "no_harness_reverification_on_failed_resume": true,
+        "interrupt_inquiry_preserved": true,
+        "checkpoint_inquiry_preserved": true,
+        "ai_request_id_preserved": true,
+        "model_code_preserved": true,
+        "state_version_preserved": true,
+        "evidence_ids_preserved": true
+      },
+      "pass": true
+    }
+  ],
+  "experiment_total_seconds": 0.214
+}

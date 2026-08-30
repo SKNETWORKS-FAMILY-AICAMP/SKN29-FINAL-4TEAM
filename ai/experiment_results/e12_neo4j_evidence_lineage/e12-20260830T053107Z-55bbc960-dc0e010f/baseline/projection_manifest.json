@@ -1,0 +1,76 @@
+{
+  "data_policy": {
+    "customer_data_included": false,
+    "prompts_included": false,
+    "scores_included": false,
+    "source_text_included": false,
+    "vectors_included": false
+  },
+  "durable_artifact_policy": {
+    "canonical_hashes_and_counts_only": true,
+    "graph_projection_json": "EXCLUDED"
+  },
+  "generated_at": "2026-08-30T05:32:50.042823+00:00",
+  "input_files": {
+    "children": {
+      "path": "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+      "row_count": 53,
+      "sha256": "B4BA15C045D7C4EAF1E4CF90DFF83EC9FA2C236F9CFCDAD85467A42F1921EB78"
+    },
+    "evidence_groups": {
+      "path": "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl",
+      "row_count": 43,
+      "sha256": "CCD797DB8C87B9B90EFD88EBE16BE5AC4D80008BC75E0CCE46B3854F70C3143D"
+    },
+    "parents": {
+      "path": "data/processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl",
+      "row_count": 15,
+      "sha256": "EB58882ED9EC996C7665FE6C3C472A6B25273D278D79799F6F15A98AF9B1578E"
+    }
+  },
+  "input_source": "REPOSITORY_JSONL_ONLY",
+  "neo4j_docker_reference": "https://neo4j.com/docs/operations-manual/current/docker/introduction/",
+  "neo4j_image": {
+    "digest_collection_owner": "INFRA_JOB",
+    "infra_supplied_repo_digest": "sha256:dbc377fb9cd8fe8dabc19d3041b197d5ca0ef8bae514cea175b8df265e5b7a76",
+    "tag": "neo4j:2026.07.1"
+  },
+  "neo4j_query_api_reference": "https://neo4j.com/docs/query-api/current/query/",
+  "node_counts": {
+    "Document": 3,
+    "EvidenceChunk": 53,
+    "EvidenceGroup": 43,
+    "ParentPage": 15,
+    "Product": 3,
+    "Topic": 25
+  },
+  "official_metrics_allowed": false,
+  "production_runtime_connected": false,
+  "profile": "qa_ephemeral_loopback",
+  "projection_sha256": "0592629DB552FBB418F72E40B2E2C9E976B57D09406EA7EF35CF6576A6DA702A",
+  "public_runtime_activation": "HOLD",
+  "rds_connected": false,
+  "relationship_counts": {
+    "ABOUT": 43,
+    "COVERS_TOPIC": 43,
+    "HAS_CHILD": 53,
+    "HAS_DOCUMENT": 3,
+    "HAS_PARENT_PAGE": 15,
+    "MEMBER_OF": 53
+  },
+  "run_id": "e12-20260830T053107Z-55bbc960-dc0e010f",
+  "schema_version": "2.0.0",
+  "scope": "JSONL_BASED_LINEAGE_QA",
+  "source": {
+    "branch": "DETACHED",
+    "checkout_mode": "DETACHED",
+    "ci_expected_sha": null,
+    "ci_head_ref": null,
+    "ci_ref_name": null,
+    "ci_sha_matches_head": null,
+    "git_dirty": false,
+    "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+    "worktree_status_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  "status": "JSONL_PROJECTION_READY"
+}

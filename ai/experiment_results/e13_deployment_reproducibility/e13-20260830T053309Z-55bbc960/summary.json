@@ -1,0 +1,174 @@
+{
+  "claim_boundary": {
+    "blue_green_claim": false,
+    "deployment_runtime": "VERIFIED",
+    "observability": "OBSERVABILITY_PARTIAL",
+    "production_fault_injection": false,
+    "real_rollback_execution_required": false,
+    "zero_downtime_claim": false
+  },
+  "git_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+  "git_tag_created": false,
+  "github_cli": {
+    "gh_authenticated": true,
+    "gh_available": true,
+    "repository": "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM"
+  },
+  "oidc_evidence": {
+    "claims": {
+      "ecr_repositories_3_of_3": true,
+      "github_oidc_to_aws_role": true,
+      "ssm_command_path": true
+    },
+    "conclusion": "success",
+    "created_at": "2026-08-30T05:33:15Z",
+    "head_sha": "04b7db2bb9e3b196c15152c9729745eeb8dc4910",
+    "job_conclusion": "success",
+    "job_id": 99212900217,
+    "sensitive_values_captured": false,
+    "status": "PASS",
+    "steps": {
+      "Configure temporary AWS credentials": true,
+      "Validate repository variables": true,
+      "Verify ECR repositories": true,
+      "Verify SSM command path": true,
+      "Verify assumed AWS account and role": true
+    },
+    "workflow_run_id": 33294950486,
+    "workflow_run_url": "https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/33294950486"
+  },
+  "production_deployment_evidence": {
+    "build_job": {
+      "checks": {
+        "ai_build_push": true,
+        "aws_credentials": true,
+        "backend_build_push": true,
+        "ecr_login": true,
+        "published_image_runtime_checks": true,
+        "release_bundle_upload": true,
+        "validate_aws_variables": true,
+        "web_build_push": true
+      },
+      "job_id": 99063711445,
+      "success": true
+    },
+    "created_at": "2026-08-29T06:23:28Z",
+    "deploy_job": {
+      "checks": {
+        "aws_credentials": true,
+        "external_https_smoke": true,
+        "record_deployment_result": true,
+        "ssm_deployment": true
+      },
+      "job_id": 99064469166,
+      "success": true
+    },
+    "ecr_image_digest_evidence": {
+      "ai": null,
+      "backend": null,
+      "canonical_digest_checks": {
+        "ai": false,
+        "backend": false,
+        "web": false
+      },
+      "exact_digests_captured": false,
+      "note": "Digest values are best-effort extracted from the successful build job log. A successful Production run still executes the committed digest-pinning workflow contract even when GitHub log formatting prevents exact digest extraction.",
+      "web": null
+    },
+    "raw_job_logs_persisted": false,
+    "release_sha": "55bbc96057e46ebbf11d165da25c63fd6cde61a0",
+    "release_sha_canonical": true,
+    "release_sha_is_ancestor_of_current_head": true,
+    "runtime_markers": {
+      "deployment_runtime_pass_seen": true,
+      "marker_source": "deploy_job_log_best_effort",
+      "observability_partial_seen": true
+    },
+    "sensitive_values_captured": false,
+    "source_guard_job": {
+      "present": true,
+      "success": true
+    },
+    "stable_semver_observed": true,
+    "status": "VERIFIED",
+    "tag_or_branch_observed": "v0.2.10",
+    "workflow_run_id": 33238345342,
+    "workflow_run_url": "https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/33238345342"
+  },
+  "production_dispatch_performed": false,
+  "repository": "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM",
+  "rollback_contract": {
+    "checks": {
+      "host_previous_release_restore": true,
+      "rollback_via_ssm": true,
+      "standalone_rollback_asset": true,
+      "volumes_not_deleted": true,
+      "workflow_post_failure_rollback": true
+    },
+    "claim_boundary": "Rollback implementation contract is verified statically. E13 does not inject a Production failure.",
+    "fault_injection_performed": false,
+    "real_rollback_execution": "NOT_REQUIRED_FOR_E13",
+    "status": "PASS"
+  },
+  "sensitive_evidence": {
+    "aws_credentials": false,
+    "customer_data": false,
+    "ecr_password": false,
+    "oidc_token": false,
+    "raw_github_job_logs": false,
+    "raw_ssm_stdout": false,
+    "runtime_env": false
+  },
+  "source_contract": {
+    "checks": {
+      "ai_digest_output": true,
+      "ai_push": true,
+      "aws_role_assumption": true,
+      "backend_digest_output": true,
+      "backend_gate": true,
+      "backend_prod_config_gate": true,
+      "backend_push": true,
+      "backend_to_ai_socket": true,
+      "compose_pull_no_build": true,
+      "contract_data_gate": true,
+      "deployment_runtime_marker_gate": true,
+      "ecr_registry_guard": true,
+      "external_https_smoke": true,
+      "healthcheck_guard": true,
+      "host_rollback_function": true,
+      "main_ancestry_guard": true,
+      "mutable_latest_guard": true,
+      "non_root_image_guard": true,
+      "observability_partial_boundary": true,
+      "oidc_id_token_permission": true,
+      "provenance_enabled": true,
+      "release_archive_checksum": true,
+      "release_bundle_pins_digests": true,
+      "release_sha_forwarded": true,
+      "release_tag_forwarded": true,
+      "runtime_marker_emitted": true,
+      "sbom_enabled": true,
+      "sha_tagged_images": true,
+      "socket_e2e_gate": true,
+      "ssm_deploy": true,
+      "ssm_status_poll": true,
+      "stable_semver_runtime_guard": true,
+      "stable_semver_tag_trigger": true,
+      "standalone_rollback_asset_nonempty": true,
+      "trusted_workflow_reference_main": true,
+      "web_digest_output": true,
+      "web_gate": true,
+      "web_push": true,
+      "workflow_rollback_path": true
+    },
+    "failed_checks": [],
+    "status": "PASS",
+    "workflow_implementation_boundary": {
+      "application_source_pinned_to_release_sha": true,
+      "claim": "Application source is pinned to the release SHA, while the trusted reusable workflow implementation is referenced from main.",
+      "workflow_implementation_pinned_to_release_sha": false,
+      "workflow_implementation_reference": "production-deploy.yml@main"
+    }
+  },
+  "status": "E13_COMPLETE"
+}

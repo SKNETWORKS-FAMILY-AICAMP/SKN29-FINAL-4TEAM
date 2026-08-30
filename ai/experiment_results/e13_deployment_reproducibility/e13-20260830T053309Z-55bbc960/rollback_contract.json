@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "host_previous_release_restore": true,
+    "rollback_via_ssm": true,
+    "standalone_rollback_asset": true,
+    "volumes_not_deleted": true,
+    "workflow_post_failure_rollback": true
+  },
+  "claim_boundary": "Rollback implementation contract is verified statically. E13 does not inject a Production failure.",
+  "fault_injection_performed": false,
+  "real_rollback_execution": "NOT_REQUIRED_FOR_E13",
+  "status": "PASS"
+}
