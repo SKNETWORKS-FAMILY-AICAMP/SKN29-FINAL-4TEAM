@@ -21,6 +21,25 @@ class SymptomNormalizer:
         "OTHER": "기타 증상",
     }
 
+    @classmethod
+    def canonical_selected_symptom(cls, value: str) -> str | None:
+        """Backend 코드 또는 canonical label을 선택 증상 계약으로 변환한다."""
+
+        mapped = cls._SELECTED_SYMPTOM_CODE_MAP.get(value.upper())
+        if mapped is not None:
+            return mapped
+        canonical = {
+            "제품 누수",
+            "전기 이상",
+            "온도 이상",
+            "출수량 저하",
+            "물맛/냄새 이상",
+            "소음 이상",
+            "필터/관리 문의",
+            "기타 증상",
+        }
+        return value if value in canonical else None
+
     _SYMPTOM_RULES = (
         ("제품 누수", ("누수", "물이 새", "물 새", "바닥에 물", "젖어")),
         ("전기 이상", ("스파크", "탄 냄새", "타는 냄새", "연기", "전원선")),
@@ -82,7 +101,11 @@ class SymptomNormalizer:
         return "기타 증상"
 
     def normalize_water_type(self, text: str) -> str | None:
-        found = [normalized for normalized, keywords in self._WATER_RULES if any(k in text for k in keywords)]
+        found = [
+            normalized
+            for normalized, keywords in self._WATER_RULES
+            if any(keyword in text for keyword in keywords)
+        ]
         if len(found) > 1:
             return "전체"
         return found[0] if found else None

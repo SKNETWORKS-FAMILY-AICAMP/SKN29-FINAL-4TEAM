@@ -1,1 +1,7 @@
-# 현재 AI 과업의 사용자 입력 프롬프트 템플릿
+[구조화 증상 JSON]
+{structured_symptom_json}
+
+[질문 대상 필드 JSON]
+{target_fields_json}
+
+질문 대상 필드의 순서와 집합을 유지하여 각 필드에 대한 question_text를 작성하십시오.

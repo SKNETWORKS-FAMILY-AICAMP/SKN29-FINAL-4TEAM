@@ -9,7 +9,10 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from uuid import UUID
 
 from ..integrations.embedding.embedding_client import BgeM3EmbeddingClient
-from ..integrations.llm import GuidanceLLMClient
+from ..integrations.llm import (
+    GuidanceLLMClient,
+    LLMConfigurationError,
+)
 from ..integrations.backend import BackendContextFailureKind
 from ..integrations.vector_store.vector_store import PgVectorStore
 from ..retrieval.search.vector_search import VectorSearchService
@@ -36,6 +39,10 @@ from .stages.safety_check_stage import execute_safety_check_stage
 from .stages.structuring_stage import execute_structuring_stage
 from ..common.timeout import CancellationToken
 from ..schemas import TraceContext
+from ..structuring.llm_contracts import (
+    FollowUpWordingLLMClient,
+    SymptomStructuringLLMClient,
+)
 
 if TYPE_CHECKING:
     from ..integrations.mcp.context_service import (
@@ -46,6 +53,7 @@ if TYPE_CHECKING:
 
 _AUTO_SEARCH_SERVICE = object()
 _AUTO_MCP_CONTEXT_SERVICE = object()
+_AUTO_NATURAL_LANGUAGE_CLIENT = object()
 _SEARCH_SERVICE_LOCK = Lock()
 _SEARCH_SERVICE_CACHE_KEY: tuple[str, ...] | None = None
 _SEARCH_SERVICE_CACHE: VectorSearchService | None = None
@@ -156,6 +164,12 @@ class PipelineRouter:
         self,
         search_service: VectorSearchService | None | object = _AUTO_SEARCH_SERVICE,
         llm_client: GuidanceLLMClient | None = None,
+        symptom_llm_client: SymptomStructuringLLMClient | None | object = (
+            _AUTO_NATURAL_LANGUAGE_CLIENT
+        ),
+        followup_llm_client: FollowUpWordingLLMClient | None | object = (
+            _AUTO_NATURAL_LANGUAGE_CLIENT
+        ),
         mcp_context_service: McpBackendContextService | None | object = (
             _AUTO_MCP_CONTEXT_SERVICE
         ),
@@ -178,12 +192,42 @@ class PipelineRouter:
         else:
             self.search_service = search_service
         self.llm_client = llm_client
+        self.symptom_llm_client = self._resolve_natural_language_client(
+            symptom_llm_client,
+            task_name="symptom_structuring",
+        )
+        self.followup_llm_client = self._resolve_natural_language_client(
+            followup_llm_client,
+            task_name="followup_question",
+        )
         self.mcp_context_service = mcp_context_service
         self.reliability_runtime = ReliabilityRuntime()
 
     @staticmethod
     def _configured_search_service() -> VectorSearchService | None:
         return _configured_search_service()
+
+    @staticmethod
+    def _resolve_natural_language_client(configured, *, task_name: str):
+        if configured is not _AUTO_NATURAL_LANGUAGE_CLIENT:
+            return configured
+        if not os.getenv("OPENAI_API_KEY", "").strip():
+            return None
+        try:
+            from ..integrations.llm.natural_language_client import (
+                OpenAIResponsesFollowUpWordingClient,
+                OpenAIResponsesSymptomStructuringClient,
+            )
+
+            client_class = (
+                OpenAIResponsesSymptomStructuringClient
+                if task_name == "symptom_structuring"
+                else OpenAIResponsesFollowUpWordingClient
+            )
+            return client_class.from_environment()
+        except LLMConfigurationError:
+            # 구조화·질문 표현은 기존 결정적 구현으로 안전하게 복귀한다.
+            return None
 
     def run_pipeline(
         self,
@@ -344,12 +388,16 @@ class PipelineRouter:
                 runtime_search_service,
                 retrieval_configuration_error=retrieval_configuration_error,
                 llm_client=self.llm_client,
+                symptom_llm_client=self.symptom_llm_client,
+                followup_llm_client=self.followup_llm_client,
             )
         elif selected_runtime == "multi_agent":
             pipeline = MultiAgentPipeline(
                 runtime_search_service,
                 retrieval_configuration_error=retrieval_configuration_error,
                 llm_client=self.llm_client,
+                symptom_llm_client=self.symptom_llm_client,
+                followup_llm_client=self.followup_llm_client,
             )
         if retrieval_transport == "mcp":
             try:

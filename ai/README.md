@@ -166,6 +166,39 @@ Backend 상태 변경, 방문 필요 여부의 자동 확정은 수행하지 않
 연동 완료로 표시하지 않는다. Agent Runtime Routing·Handoff와 실제 Provider는
 별도 Gate다.
 
+## 증상 구조화·Follow-up LLM Runtime
+
+`OPENAI_API_KEY`가 설정되면 `PipelineRouter`가 두 전용
+Responses API Client를 구성한다. 증상 구조화는
+`symptom_structuring/v1`, 질문 표현은 `followup_question/v1`의 ACTIVE
+Prompt와 `ai/configs/model_profiles.yaml`의 해당 Task Profile을 사용한다.
+
+증상 LLM의 권한은 기존 `StructuredSymptom` DTO 생성으로 제한한다. 허용된
+`symptom_type`·출수 종류, 확인된 오류 코드, 선택 증상 및 이전 문진 답변을
+검증한 뒤에만 결과를 채택한다. Timeout, Provider 오류, invalid JSON, Schema
+위반, 미지원 값은 기존 `SymptomNormalizer` 기반 결과로 복귀한다. Safety는
+이후 기존 Rule/A2A 단계에서 별도로 판정하며 LLM 출력으로 변경하지 않는다.
+
+Follow-up은 `MissingFieldChecker`가 결정한 target field의 집합·순서와 기존
+question ID·선택지를 유지하고 질문 문구만 LLM 후보로 교체한다. 빈 문구,
+target field 변경·중복, Schema 위반, Provider 실패 시 기존 고정 질문을 그대로
+사용한다. `DuplicateQuestionGuard`와 Evidence Applicability 질문 경계도 유지한다.
+
+다음 Span은 고객 원문·Prompt·연락처를 Attribute에 기록하지 않고 모델,
+Prompt Version, 검증 결과와 fallback 여부만 기록한다.
+
+```text
+waterbridge.symptom_structuring.llm
+waterbridge.symptom_structuring.validate
+waterbridge.symptom_structuring.fallback
+waterbridge.followup.generate
+waterbridge.followup.validate
+waterbridge.followup.fallback
+```
+
+외부 Provider가 없는 Unit/PR CI에서는 Client를 주입하지 않거나 Fake Client를
+사용하며 기존 Rule·고정 질문 fallback을 결정적으로 검증한다.
+
 ## 고객 안내 LLM Runtime
 
 `mode=local`의 일반·주의 증상에서 공식 Evidence가 발견된 경우에만 OpenAI

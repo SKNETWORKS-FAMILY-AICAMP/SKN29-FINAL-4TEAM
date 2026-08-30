@@ -4,6 +4,10 @@ from __future__ import annotations
 
 from ...common.timeout import CancellationToken
 from ...integrations.llm import GuidanceLLMClient
+from ...structuring.llm_contracts import (
+    FollowUpWordingLLMClient,
+    SymptomStructuringLLMClient,
+)
 from ...retrieval import (
     EvidenceApplicabilityGate,
     RetrievalConfigurationError,
@@ -31,11 +35,15 @@ class MultiAgentPipeline:
         *,
         retrieval_configuration_error: RetrievalConfigurationError | None = None,
         llm_client: GuidanceLLMClient | None = None,
+        symptom_llm_client: SymptomStructuringLLMClient | None = None,
+        followup_llm_client: FollowUpWordingLLMClient | None = None,
         max_hops: int = 8,
     ) -> None:
         self.search_service = search_service
         self.retrieval_configuration_error = retrieval_configuration_error
         self.llm_client = llm_client
+        self.symptom_llm_client = symptom_llm_client
+        self.followup_llm_client = followup_llm_client
         self.max_hops = max_hops
 
     def run(
@@ -47,7 +55,11 @@ class MultiAgentPipeline:
         token = cancellation_token or CancellationToken()
         token.raise_if_cancelled()
         shared = MultiAgentSharedState(context=ctx, max_hops=self.max_hops)
-        symptom_agent = SymptomAnalysisAgent(token)
+        symptom_agent = SymptomAnalysisAgent(
+            token,
+            symptom_llm_client=self.symptom_llm_client,
+            followup_llm_client=self.followup_llm_client,
+        )
         evidence_agent = EvidenceAnalysisAgent(
             self.search_service,
             token,

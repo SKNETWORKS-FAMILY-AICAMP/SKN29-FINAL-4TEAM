@@ -22,7 +22,7 @@ def configure_llm_usage_logging() -> None:
         LOGGER.addHandler(handler)
 
 
-def log_llm_usage(**fields: Any) -> None:
+def log_llm_usage(*, event: str = "llm_guidance_completed", **fields: Any) -> None:
     allowed = {
         "correlation_id",
         "ai_request_id",
@@ -34,6 +34,13 @@ def log_llm_usage(**fields: Any) -> None:
         "latency_ms",
         "retry_count",
     }
-    payload = {"event": "llm_guidance_completed"}
+    allowed_events = {
+        "llm_guidance_completed",
+        "llm_symptom_structuring_completed",
+        "llm_followup_wording_completed",
+    }
+    if event not in allowed_events:
+        raise ValueError("허용되지 않은 LLM usage event입니다.")
+    payload = {"event": event}
     payload.update({key: value for key, value in fields.items() if key in allowed})
     LOGGER.info(json.dumps(payload, ensure_ascii=False, default=str, sort_keys=True))

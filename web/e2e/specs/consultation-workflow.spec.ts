@@ -34,22 +34,18 @@ const EXPECTED_CUSTOMER_PHONE_MASKED = "010-****-5678";
 const EXPECTED_QUESTIONNAIRE = [
   {
     questionCode: "followup-occurrence-time",
-    questionText: "증상은 언제부터 시작됐나요?",
     answer: "오늘",
   },
   {
     questionCode: "followup-target-water-type",
-    questionText: "어떤 출수에서 증상이 발생하나요?",
     answer: "정수",
   },
   {
     questionCode: "followup-occurrence-condition",
-    questionText: "증상은 언제 또는 어떤 조건에서 발생하나요?",
     answer: "출수 버튼을 누를 때",
   },
   {
     questionCode: "followup-actions-taken",
-    questionText: "이미 확인하거나 조치해 본 내용이 있나요?",
     answer: "필터 상태 확인",
   },
 ] as const;
@@ -160,8 +156,12 @@ async function expectInitialDetailContract(
   );
   if (recordMissingFieldFailures) {
     expect.soft(
-      questionnaire,
-      "상담 상세 API의 문진 질문·답변 4건이 예상값과 일치해야 합니다.",
+      questionnaire.every((item) => item.questionText.trim().length > 0),
+      "상담 상세 API의 문진 질문 문구는 비어 있지 않아야 합니다.",
+    ).toBe(true);
+    expect.soft(
+      questionnaire.map(({ questionCode, answer }) => ({ questionCode, answer })),
+      "상담 상세 API의 문진 질문 코드·답변 4건이 예상값과 일치해야 합니다.",
     ).toEqual(EXPECTED_QUESTIONNAIRE);
   }
 
@@ -224,10 +224,12 @@ async function expectInitialDetailPresentation(
   const questionnaireSection = detailPanel
     .getByRole("heading", { name: "고객 증상과 답변", exact: true })
     .locator("..");
+  const renderedQuestions = questionnaireSection.locator("dt");
+  await expect(renderedQuestions).toHaveCount(EXPECTED_QUESTIONNAIRE.length);
+  for (let index = 0; index < EXPECTED_QUESTIONNAIRE.length; index += 1) {
+    await expect(renderedQuestions.nth(index)).not.toHaveText("");
+  }
   for (const item of EXPECTED_QUESTIONNAIRE) {
-    await expect(
-      questionnaireSection.getByText(item.questionText, { exact: true }),
-    ).toBeVisible();
     await expect(
       questionnaireSection.getByText(item.answer, { exact: true }),
     ).toBeVisible();
