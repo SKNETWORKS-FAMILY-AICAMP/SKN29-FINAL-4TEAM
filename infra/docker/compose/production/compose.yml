@@ -13,6 +13,8 @@ services:
     read_only: true
     tmpfs:
       - /tmp:size=32m,mode=1777
+    volumes:
+      - admin_static:/usr/share/nginx/html/static:ro
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -58,6 +60,7 @@ services:
       - /tmp:size=64m,mode=1777
     volumes:
       - "${RDS_CA_HOST_PATH:?RDS_CA_HOST_PATH is required}:/run/secrets/rds-ca.pem:ro"
+      - admin_static:/workspace/backend/staticfiles:ro
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -169,6 +172,8 @@ networks:
     driver: bridge
 
 volumes:
+  admin_static:
+    name: "waterbridge-admin-static-${RELEASE_SHA:?RELEASE_SHA is required}"
   ai_model_cache:
     name: waterbridge-ai-model-cache
   tempo_work:

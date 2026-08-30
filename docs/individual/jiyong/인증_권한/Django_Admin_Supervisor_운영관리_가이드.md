@@ -3,8 +3,8 @@
 - 작성일: 2026-08-28
 - 담당: 최지용(Backend·DB)
 - 관련 WBS: T-017B, T-017C, T-018의 P1 운영 범위
-- 현재 단계: 로컬 구현·작성자 검증 완료, `jiyong` 브랜치 게시본
-- 배포 단계: `main` 병합 후 김은진 작업자가 AWS 보호 환경값을 주입하고 검증
+- 현재 단계: Supervisor Runtime·RDS 적용 완료, 공개 `/admin/` Edge 연결 병합 대기
+- 배포 단계: `main` 병합·릴리스 후 실제 도메인 `/admin/` E2E와 독립 QA
 
 ## 1. 결론
 
@@ -162,7 +162,11 @@ Manager 또는 동일한 보호 환경에서 주입한다. 실제 값은 문서�
 6. `/admin/login/` 200, Supervisor 로그인 성공, 다른 계정 403을 확인한다.
 7. 합성 고객·구독·상담 표적 작업 후 감사 이력과 기존 JWT 폐기를 확인한다.
 
-배포 Docker·CI·Secrets Manager 설정은 이번 로컬 작업에서 수정하지 않았다.
+공개 경로는 Web Edge가 `/admin`을 `/admin/`로 정규화하고 `/admin/` 요청을 Backend
+Django Admin으로 전달한다. `/static/`은 Backend 이미지의 `collectstatic` 결과를
+릴리스 SHA별 공유 볼륨으로 제공해 이전 릴리스 자산 혼입을 막는다. HTTPS 원본
+Scheme과 Secure Session·CSRF Cookie를 유지하며 기존 `/login`·`/api/`·SPA 경로는
+변경하지 않는다. Secret·계정·RDS 변경은 이 연결 작업 범위가 아니다.
 
 ## 7. 구현 파일
 
@@ -184,14 +188,13 @@ Manager 또는 동일한 보호 환경에서 주입한다. 실제 값은 문서�
 | Backend CI 동일 3 Shard | 1,657 passed, 45 skipped | Domain 609·Platform 599·API/Integration 449 통과 |
 | Supervisor 실제 PostgreSQL 복제 DB | 27 passed, 0 failed | 계정·고객·구독·상담·취소·감사 기능과 원본 DB 불변 확인 |
 | PostgreSQL 취소 표적 | 32 passed | 실제 PostgreSQL에서 역할·원자성·동시 Row-lock 통과 |
+| 공개 Admin Edge | 배포 자산 26 passed, Docker E2E PASS | `/admin` 308, Backend Proxy, 정적 CSS 200, 기존 SPA 200 |
 | `git diff --check` | PASS | 공백·Patch 형식 오류 없음 |
 
-45개 Skip은 전체 Shard에서 별도 환경을 요구하는 PostgreSQL Constraint 또는 외부
-AI Socket 항목이다. 취소 API의 PostgreSQL 전용 2개 Row-lock 테스트는 별도 일회성
-pgvector/PostgreSQL에서 실제 실행해 통과했다. 이 작성자 검증은 실제 AWS RDS
-적용·독립 QA·PM 완료 판정을 대신하지 않는다.
+45개 Skip은 별도 환경을 요구하는 PostgreSQL Constraint 또는 외부 AI Socket
+항목이다. PostgreSQL 전용 2개 Row-lock 테스트는 별도 pgvector/PostgreSQL에서
+통과했다. 작성자 검증은 실제 AWS RDS 적용·독립 QA·PM 판정을 대신하지 않는다.
 
 ## 9. 브랜치 게시 이후 남은 외부 Gate
 
-`main` 병합, AWS 보호값·Backend 배포, 운영 RDS Supervisor Bootstrap,
-실제 도메인 `/admin/` E2E, 김은진 독립 QA와 PM 판정은 별도 Gate다.
+공개 Edge 변경의 `main` 병합·Backend/Web 재배포, 실제 도메인 `/admin/` 로그인과 CSS·JS E2E, 김은진 독립 QA 및 윤승혁(PM) 판정은 별도 Gate다.

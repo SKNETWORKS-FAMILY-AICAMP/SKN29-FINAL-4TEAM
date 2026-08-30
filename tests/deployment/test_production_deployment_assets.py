@@ -223,6 +223,17 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         dockerfile = (ROOT / "web/Dockerfile").read_text(encoding="utf-8")
         dockerignore = (ROOT / "web/.dockerignore").read_text(encoding="utf-8")
         nginx = (ROOT / "web/nginx.conf").read_text(encoding="utf-8")
+        compose = COMPOSE.read_text(encoding="utf-8")
+        deploy = DEPLOY.read_text(encoding="utf-8")
+        runtime_example = (
+            ROOT / "infra/docker/compose/production/runtime.env.example"
+        ).read_text(encoding="utf-8")
+        base_settings = (ROOT / "backend/config/settings/base.py").read_text(
+            encoding="utf-8"
+        )
+        production_settings = (
+            ROOT / "backend/config/settings/production.py"
+        ).read_text(encoding="utf-8")
         workflow = WORKFLOW.read_text(encoding="utf-8")
         web_source = "\n".join(
             path.read_text(encoding="utf-8")
@@ -244,6 +255,45 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("proxy_temp_path /tmp/proxy_temp;", nginx)
         self.assertIn("proxy_pass http://backend:8000", nginx)
         self.assertIn("try_files $uri $uri/ /index.html;", nginx)
+        self.assertIn("location = /admin {", nginx)
+        self.assertIn("return 308 /admin/;", nginx)
+        self.assertIn("location ^~ /admin/ {", nginx)
+        self.assertIn("location ^~ /static/ {", nginx)
+        self.assertIn('add_header Cache-Control "no-store" always;', nginx)
+        self.assertIn(
+            'add_header Cache-Control "public, max-age=300, must-revalidate";',
+            nginx,
+        )
+        static_location = nginx.split("location ^~ /static/ {", 1)[1].split(
+            "\n    }", 1
+        )[0]
+        self.assertNotIn("immutable", static_location)
+        self.assertLess(
+            nginx.index("location ^~ /admin/ {"),
+            nginx.index("location / {"),
+        )
+        self.assertIn(
+            "admin_static:/usr/share/nginx/html/static:ro", compose
+        )
+        self.assertIn(
+            "admin_static:/workspace/backend/staticfiles:ro", compose
+        )
+        self.assertIn(
+            'name: "waterbridge-admin-static-${RELEASE_SHA:', compose
+        )
+        self.assertIn("printf '\\nRELEASE_SHA=%s\\n' \"$release_sha\"", deploy)
+        self.assertIn(
+            "RELEASE_SHA=0000000000000000000000000000000000000000",
+            runtime_example,
+        )
+        self.assertIn('STATIC_URL = "/static/"', base_settings)
+        self.assertIn('STATIC_ROOT = BASE_DIR / "staticfiles"', base_settings)
+        self.assertIn(
+            'SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")',
+            production_settings,
+        )
+        self.assertIn("SESSION_COOKIE_SECURE = True", production_settings)
+        self.assertIn("CSRF_COOKIE_SECURE = True", production_settings)
         self.assertNotIn("localhost", nginx)
 
     def test_ai_image_is_non_root_and_uses_linux_lock(self) -> None:

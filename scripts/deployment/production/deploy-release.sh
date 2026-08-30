@@ -157,7 +157,8 @@ grep -Eq '^[[:space:]]*POSTGRES_SSLMODE=verify-full[[:space:]]*$' "$backend_env_
 }
 
 {
-  printf '\nAWS_REGION=%s\n' "$aws_region"
+  printf '\nRELEASE_SHA=%s\n' "$release_sha"
+  printf 'AWS_REGION=%s\n' "$aws_region"
   printf 'TEMPO_S3_BUCKET=%s\n' "$storage_bucket"
   printf 'BACKEND_RUNTIME_ENV_FILE=%s\n' "$backend_env_file"
   printf 'AI_RUNTIME_ENV_FILE=%s\n' "$ai_env_file"

@@ -17,6 +17,13 @@ from .base import *  # noqa: F403
 
 DEBUG = False
 
+# TLS terminates at the host proxy and the Web edge forwards the original
+# scheme. Django must see that scheme so Admin CSRF and secure cookies remain
+# fail-closed on the public HTTPS boundary.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 require_environment_variables(  # noqa: F405
     "DJANGO_SECRET_KEY",
     "DJANGO_TIME_ZONE",
