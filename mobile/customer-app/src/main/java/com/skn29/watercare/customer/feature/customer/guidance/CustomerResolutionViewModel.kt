@@ -50,6 +50,9 @@ class CustomerResolutionViewModel(
 
     private var lastActionCode: String? = null
 
+    private var lastUnresolvedComment:
+        String? = null
+
     fun consumeAuthExpired() {
         _authExpired.value = false
     }
@@ -66,12 +69,66 @@ class CustomerResolutionViewModel(
                 .CUSTOMER_REPORTED_UNRESOLVED
         )
 
+    fun reportUnresolved(
+        comment: String,
+    ) {
+        val normalized =
+            comment
+                .trim()
+                .take(1000)
+
+        if (normalized.isBlank()) {
+            _state.value =
+                CustomerResolutionUiState
+                    .Error(
+                        message =
+                            "\uC544\uC9C1 \uB0A8\uC544 \uC788\uB294 " +
+                                "\uBB38\uC81C\uB97C \uC785\uB825\uD574 " +
+                                "\uC8FC\uC138\uC694.",
+                        retryable = false,
+                        actionCode =
+                            InquiryActionLabels
+                                .CUSTOMER_REPORTED_UNRESOLVED,
+                    )
+
+            return
+        }
+
+        lastUnresolvedComment =
+            normalized
+
+        execute(
+            actionCode =
+                InquiryActionLabels
+                    .CUSTOMER_REPORTED_UNRESOLVED,
+            unresolvedComment =
+                normalized,
+        )
+    }
+
     fun retryLastAction() {
-        lastActionCode?.let(::execute)
+        val actionCode =
+            lastActionCode
+                ?: return
+
+        execute(
+            actionCode = actionCode,
+            unresolvedComment =
+                if (
+                    actionCode ==
+                    InquiryActionLabels
+                        .CUSTOMER_REPORTED_UNRESOLVED
+                ) {
+                    lastUnresolvedComment
+                } else {
+                    null
+                },
+        )
     }
 
     private fun execute(
         actionCode: String,
+        unresolvedComment: String? = null,
     ) {
         if (
             _state.value is
@@ -134,6 +191,7 @@ class CustomerResolutionViewModel(
                                     inquiryId,
                                     latest.stateVersion,
                                     "STILL_UNRESOLVED",
+                                    unresolvedComment,
                                 )
                         }
 
@@ -142,6 +200,15 @@ class CustomerResolutionViewModel(
                             _workflowSnapshot.value =
                                 result.value
                                     .toWorkflowUiSnapshot()
+
+                            if (
+                                actionCode ==
+                                InquiryActionLabels
+                                    .CUSTOMER_REPORTED_UNRESOLVED
+                            ) {
+                                lastUnresolvedComment =
+                                    null
+                            }
 
                             _state.value =
                                 CustomerResolutionUiState

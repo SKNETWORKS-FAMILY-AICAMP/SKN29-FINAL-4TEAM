@@ -33,73 +33,86 @@ class CareHistoryViewModel(
     val state: StateFlow<CareHistoryUiState> =
         _state.asStateFlow()
 
+    private var loadInProgress = false
+
     init {
         load()
     }
 
     fun load() {
-        viewModelScope.launch {
-            _state.value = _state.value.copy(
-                loadingSubscriptions = true,
-                loadingHistory = false,
-                errorKind = null,
-                errorMessage = null,
-                authExpired = false,
-            )
+        if (loadInProgress) {
+            return
+        }
 
-            when (
-                val result =
-                    subscriptionRepository.list(
-                        page = 1,
-                        size = 100,
-                    )
-            ) {
-                is ApiResult.Success -> {
-                    val eligible =
-                        result.value.items
-                            .filter(
-                                ::isEligibleSubscription
+        loadInProgress = true
+
+        viewModelScope.launch {
+            try {
+                _state.value = _state.value.copy(
+                    loadingSubscriptions = true,
+                    loadingHistory = false,
+                    errorKind = null,
+                    errorMessage = null,
+                    authExpired = false,
+                )
+
+                when (
+                    val result =
+                        subscriptionRepository.list(
+                            page = 1,
+                            size = 100,
+                        )
+                ) {
+                    is ApiResult.Success -> {
+                        val eligible =
+                            result.value.items
+                                .filter(
+                                    ::isEligibleSubscription
+                                )
+
+                        val selected =
+                            _state.value
+                                .selectedSubscriptionId
+                                ?.takeIf { id ->
+                                    eligible.any {
+                                        it.subscriptionId ==
+                                            id
+                                    }
+                                }
+                                ?: eligible.firstOrNull()
+                                    ?.subscriptionId
+
+                        _state.value =
+                            _state.value.copy(
+                                loadingSubscriptions = false,
+                                subscriptions = eligible,
+                                selectedSubscriptionId =
+                                    selected,
+                                items = if (
+                                    selected == null
+                                ) {
+                                    emptyList()
+                                } else {
+                                    _state.value.items
+                                },
+                                detail = null,
                             )
 
-                    val selected =
-                        _state.value
-                            .selectedSubscriptionId
-                            ?.takeIf { id ->
-                                eligible.any {
-                                    it.subscriptionId ==
-                                        id
-                                }
-                            }
-                            ?: eligible.firstOrNull()
-                                ?.subscriptionId
+                        if (selected != null) {
+                            loadHistoryInternal(
+                                subscriptionId = selected,
+                                preserveNotice = false,
+                            )
+                        }
+                    }
 
-                    _state.value =
-                        _state.value.copy(
-                            loadingSubscriptions = false,
-                            subscriptions = eligible,
-                            selectedSubscriptionId =
-                                selected,
-                            items = if (
-                                selected == null
-                            ) {
-                                emptyList()
-                            } else {
-                                _state.value.items
-                            },
-                            detail = null,
-                        )
-
-                    if (selected != null) {
-                        loadHistoryInternal(
-                            subscriptionId = selected,
-                            preserveNotice = false,
-                        )
+                    is ApiResult.Failure -> {
+                        applyFailure(result)
                     }
                 }
 
-                is ApiResult.Failure -> {
-                    applyFailure(result)
-                }
+            } finally {
+                loadInProgress = false
             }
         }
     }

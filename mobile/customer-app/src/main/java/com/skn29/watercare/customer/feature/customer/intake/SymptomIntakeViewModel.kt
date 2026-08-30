@@ -125,7 +125,6 @@ class SymptomIntakeViewModel(
         viewModelScope.launch {
             when (val result = repository.submitIntake(request)) {
                 is ApiResult.Success -> {
-                    savedStateHandle.clearDraft()
                     _state.value = _state.value.clearFailure().copy(
                         isSubmitting = false,
                         completed = result.value,
