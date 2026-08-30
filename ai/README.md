@@ -173,11 +173,15 @@ Responses API Client를 구성한다. 증상 구조화는
 `symptom_structuring/v1`, 질문 표현은 `followup_question/v1`의 ACTIVE
 Prompt와 `ai/configs/model_profiles.yaml`의 해당 Task Profile을 사용한다.
 
-증상 LLM의 권한은 기존 `StructuredSymptom` DTO 생성으로 제한한다. 허용된
-`symptom_type`·출수 종류, 확인된 오류 코드, 선택 증상 및 이전 문진 답변을
-검증한 뒤에만 결과를 채택한다. Timeout, Provider 오류, invalid JSON, Schema
-위반, 미지원 값은 기존 `SymptomNormalizer` 기반 결과로 복귀한다. Safety는
-이후 기존 Rule/A2A 단계에서 별도로 판정하며 LLM 출력으로 변경하지 않는다.
+증상 LLM의 권한은 기존 `StructuredSymptom` DTO 생성으로 제한한다. Provider
+전용 응답에는 필드 값과 별도로 source·evidence quote를 포함한 Evidence Claim을
+요구한다. Runtime은 Claim이 실제 고객 입력·선택 증상·해당 이전 답변에 존재하는지
+검증하고, 근거 없는 필드나 목록 항목만 Rule 결과 또는 빈 값으로 되돌린다. 따라서
+근거 없는 값이 `MissingFieldChecker`를 우회하지 못한다. Timeout, Provider 오류,
+invalid JSON, Schema 위반, 미지원 값은 기존 `SymptomNormalizer` 기반 결과로
+복귀한다. Safety는 이후 메인 Runtime의 기존 Local `RiskClassifier` 단계에서
+별도로 판정하며 LLM 출력으로 변경하지 않는다. A2A Safety Client는 E08
+장애 격리 실험 범위이며 메인 상담 Runtime 경로라고 주장하지 않는다.
 
 Follow-up은 `MissingFieldChecker`가 결정한 target field의 집합·순서와 기존
 question ID·선택지를 유지하고 질문 문구만 LLM 후보로 교체한다. 빈 문구,
@@ -194,6 +198,15 @@ waterbridge.symptom_structuring.fallback
 waterbridge.followup.generate
 waterbridge.followup.validate
 waterbridge.followup.fallback
+```
+
+OTel 설정 여부와 별개로 Provider·검증·구성 fallback은 고객 원문이나 Provider
+오류 본문을 제외한 구조화 Warning으로 기록한다.
+
+```text
+llm_symptom_structuring_fallback
+llm_followup_wording_fallback
+llm_client_configuration_fallback
 ```
 
 외부 Provider가 없는 Unit/PR CI에서는 Client를 주입하지 않거나 Fake Client를

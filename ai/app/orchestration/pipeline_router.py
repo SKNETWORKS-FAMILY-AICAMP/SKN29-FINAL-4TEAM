@@ -55,6 +55,8 @@ _AUTO_SEARCH_SERVICE = object()
 _AUTO_MCP_CONTEXT_SERVICE = object()
 _AUTO_NATURAL_LANGUAGE_CLIENT = object()
 _SEARCH_SERVICE_LOCK = Lock()
+_LLM_CONFIGURATION_LOG_LOCK = Lock()
+_LLM_CONFIGURATION_LOGGED: set[tuple[str, str]] = set()
 _SEARCH_SERVICE_CACHE_KEY: tuple[str, ...] | None = None
 _SEARCH_SERVICE_CACHE: VectorSearchService | None = None
 
@@ -73,6 +75,23 @@ def _create_mcp_evidence_search_service():
     )
 
     return McpEvidenceSearchService()
+
+
+def _log_llm_configuration_fallback_once(task_name: str, reason: str) -> None:
+    key = (task_name, reason)
+    with _LLM_CONFIGURATION_LOG_LOCK:
+        if key in _LLM_CONFIGURATION_LOGGED:
+            return
+        _LLM_CONFIGURATION_LOGGED.add(key)
+
+    from ..integrations.llm.token_usage import log_llm_fallback
+
+    log_llm_fallback(
+        event="llm_client_configuration_fallback",
+        task=task_name,
+        reason=reason,
+        validation_result="FALLBACK",
+    )
 
 
 def _configured_search_service() -> VectorSearchService | None:
@@ -212,6 +231,10 @@ class PipelineRouter:
         if configured is not _AUTO_NATURAL_LANGUAGE_CLIENT:
             return configured
         if not os.getenv("OPENAI_API_KEY", "").strip():
+            _log_llm_configuration_fallback_once(
+                task_name,
+                "OPENAI_API_KEY_MISSING",
+            )
             return None
         try:
             from ..integrations.llm.natural_language_client import (
@@ -227,6 +250,10 @@ class PipelineRouter:
             return client_class.from_environment()
         except LLMConfigurationError:
             # 구조화·질문 표현은 기존 결정적 구현으로 안전하게 복귀한다.
+            _log_llm_configuration_fallback_once(
+                task_name,
+                "CLIENT_CONFIGURATION_INVALID",
+            )
             return None
 
     def run_pipeline(

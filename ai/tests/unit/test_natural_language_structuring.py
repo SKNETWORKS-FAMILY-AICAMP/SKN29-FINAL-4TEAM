@@ -11,6 +11,7 @@ import pytest
 
 import ai.app.structuring.followup_question_generator as followup_module
 import ai.app.structuring.symptom_structurer as structurer_module
+import ai.app.orchestration.pipeline_router as router_module
 from ai.app.integrations.llm import (
     LLMOutputValidationError,
     LLMProviderConnectionError,
@@ -26,6 +27,7 @@ from ai.app.schemas import MissingField, StructuredSymptom, TraceContext
 from ai.app.structuring import (
     DuplicateQuestionGuard,
     FollowUpQuestionGenerator,
+    MissingFieldChecker,
     SymptomStructurer,
 )
 from ai.app.structuring.llm_contracts import (
@@ -33,6 +35,8 @@ from ai.app.structuring.llm_contracts import (
     FollowUpWordingLLMResponse,
     FollowUpWordingResult,
     FollowUpWordingRequest,
+    SymptomEvidenceClaim,
+    SymptomStructuringResult,
     SymptomStructuringLLMResponse,
     SymptomStructuringRequest,
 )
@@ -46,9 +50,15 @@ class EmptySearchService:
 class FakeSymptomClient:
     prompt_version = "symptom_structuring/v1"
 
-    def __init__(self, output: StructuredSymptom | None = None, error=None) -> None:
+    def __init__(
+        self,
+        output: StructuredSymptom | None = None,
+        error=None,
+        evidence_claims: list[SymptomEvidenceClaim] | None = None,
+    ) -> None:
         self.output = output or StructuredSymptom(symptom_type="기타 증상")
         self.error = error
+        self.evidence_claims = tuple(evidence_claims or [])
         self.requests: list[SymptomStructuringRequest] = []
 
     def structure_symptom(self, request, *, timeout_seconds):
@@ -61,6 +71,7 @@ class FakeSymptomClient:
             prompt_version=self.prompt_version,
             usage=LLMUsage(input_tokens=10, output_tokens=5, total_tokens=15),
             latency_ms=12.5,
+            evidence_claims=self.evidence_claims,
         )
 
 
@@ -147,17 +158,173 @@ def _noise_symptom(**updates) -> StructuredSymptom:
     return StructuredSymptom(**values)
 
 
+def _evidence_claim(
+    field_name: str,
+    value: str,
+    evidence_quote: str,
+    source: str = "RAW_SYMPTOM",
+) -> SymptomEvidenceClaim:
+    return SymptomEvidenceClaim(
+        field_name=field_name,
+        value=value,
+        source=source,
+        evidence_quote=evidence_quote,
+    )
+
+
 def test_llm_structures_complex_customer_language() -> None:
-    client = FakeSymptomClient(_noise_symptom())
+    condition = "온수 버튼을 누르고 10초쯤 지나면"
+    raw_text = f"{condition} 안쪽에서 진동하며 덜덜거려요. 어제부터입니다."
+    candidate = _noise_symptom(occurrence_condition=condition)
+    client = FakeSymptomClient(
+        candidate,
+        evidence_claims=[
+            _evidence_claim("symptom_type", "소음 이상", "NOISE", "SELECTED_SYMPTOM"),
+            _evidence_claim("occurrence_time", "어제부터", "어제부터"),
+            _evidence_claim("target_water_type", "온수", "온수"),
+            _evidence_claim("occurrence_condition", condition, condition),
+            _evidence_claim("accompanying_symptoms", "진동", "진동"),
+        ],
+    )
     result = SymptomStructurer(llm_client=client).structure(
-        "온수 버튼을 누르고 10초쯤 지나면 안쪽에서 덜덜거려요. 어제부터입니다.",
+        raw_text,
         ["NOISE"],
         trace_context=_trace_context(),
         model_code="WPU-JAC104",
     )
 
-    assert result == _noise_symptom(accompanying_symptoms=["NOISE", "진동"])
+    assert result == candidate.model_copy(
+        update={"accompanying_symptoms": ["NOISE", "진동"]}
+    )
     assert client.requests[0].selected_symptoms == ("NOISE",)
+
+
+def test_hallucinated_fields_without_provenance_are_removed_and_questioned() -> None:
+    candidate = StructuredSymptom(
+        symptom_type="물맛/냄새 이상",
+        occurrence_time="어제부터",
+        target_water_type="정수",
+        occurrence_condition="출수할 때",
+        accompanying_symptoms=["이상한 냄새"],
+        actions_taken=["필터 확인"],
+    )
+    result = SymptomStructurer(
+        llm_client=FakeSymptomClient(candidate)
+    ).structure("물이 이상해요.")
+
+    assert result.symptom_type == "기타 증상"
+    assert result.occurrence_time is None
+    assert result.target_water_type is None
+    assert result.occurrence_condition is None
+    assert result.accompanying_symptoms == []
+    assert result.actions_taken == []
+    assert {
+        item.field_name for item in MissingFieldChecker().check(result)
+    } == {
+        "occurrence_time",
+        "target_water_type",
+        "occurrence_condition",
+        "actions_taken",
+    }
+
+
+def test_only_fields_with_valid_provenance_survive_partial_fallback() -> None:
+    candidate = StructuredSymptom(
+        symptom_type="소음 이상",
+        occurrence_time="어제부터",
+        target_water_type="정수",
+        occurrence_condition="출수 버튼을 누를 때",
+        actions_taken=["필터 확인"],
+    )
+    result = SymptomStructurer(
+        llm_client=FakeSymptomClient(
+            candidate,
+            evidence_claims=[
+                _evidence_claim("symptom_type", "소음 이상", "소음"),
+                _evidence_claim("occurrence_time", "어제부터", "어제부터"),
+                _evidence_claim("target_water_type", "정수", "정수"),
+                _evidence_claim(
+                    "occurrence_condition",
+                    "출수 버튼을 누를 때",
+                    "없는 문장",
+                ),
+                _evidence_claim("actions_taken", "필터 확인", "없는 조치"),
+            ],
+        )
+    ).structure("정수에서 소음이 어제부터 납니다.")
+
+    assert result.symptom_type == "소음 이상"
+    assert result.occurrence_time == "어제부터"
+    assert result.target_water_type == "정수"
+    assert result.occurrence_condition is None
+    assert result.actions_taken == []
+
+
+def test_previous_answer_evidence_must_match_question_target_field() -> None:
+    candidate = StructuredSymptom(
+        symptom_type="기타 증상",
+        occurrence_time="오늘 아침부터",
+    )
+    result = SymptomStructurer(
+        llm_client=FakeSymptomClient(
+            candidate,
+            evidence_claims=[
+                _evidence_claim(
+                    "occurrence_time",
+                    "오늘 아침부터",
+                    "오늘 아침부터",
+                    "PREVIOUS_ANSWER",
+                )
+            ],
+        )
+    ).structure(
+        "상태가 이상합니다.",
+        previous_answers=[
+            {
+                "question_id": "followup-actions-taken",
+                "answer_text": "오늘 아침부터",
+            }
+        ],
+    )
+
+    assert result.occurrence_time is None
+    assert result.actions_taken == ["오늘 아침부터"]
+
+
+def test_water_type_claim_must_match_evidence_meaning() -> None:
+    result = SymptomStructurer(
+        llm_client=FakeSymptomClient(
+            StructuredSymptom(
+                symptom_type="기타 증상",
+                target_water_type="냉수",
+            ),
+            evidence_claims=[
+                _evidence_claim("target_water_type", "냉수", "정수"),
+            ],
+        )
+    ).structure("정수에서 문제가 납니다.")
+
+    assert result.target_water_type == "정수"
+
+
+def test_list_fields_keep_only_items_with_item_level_evidence() -> None:
+    result = SymptomStructurer(
+        llm_client=FakeSymptomClient(
+            StructuredSymptom(
+                symptom_type="소음 이상",
+                accompanying_symptoms=["진동", "누수"],
+                actions_taken=["필터를 확인", "밸브를 확인"],
+            ),
+            evidence_claims=[
+                _evidence_claim("symptom_type", "소음 이상", "소음"),
+                _evidence_claim("accompanying_symptoms", "진동", "진동"),
+                _evidence_claim("actions_taken", "필터를 확인", "필터를 확인"),
+            ],
+        )
+    ).structure("필터를 확인했고 진동과 소음이 있어요.")
+
+    assert result.accompanying_symptoms == ["진동"]
+    assert result.actions_taken == ["필터를 확인"]
 
 
 def test_llm_result_merges_confirmed_answer_error_code_and_actions() -> None:
@@ -299,6 +466,13 @@ def test_duplicate_guard_still_owns_duplicate_decision_after_llm_wording() -> No
 
 def test_openai_symptom_adapter_uses_strict_schema_and_redacts_private_text() -> None:
     captured = {}
+    provider_result = SymptomStructuringResult(
+        structured_symptom=_noise_symptom(),
+        evidence_claims=[
+            _evidence_claim("symptom_type", "소음 이상", "소음"),
+            _evidence_claim("target_water_type", "온수", "온수"),
+        ],
+    )
 
     def handler(request: httpx.Request):
         captured["payload"] = json.loads(request.content)
@@ -313,7 +487,7 @@ def test_openai_symptom_adapter_uses_strict_schema_and_redacts_private_text() ->
                         "content": [
                             {
                                 "type": "output_text",
-                                "text": _noise_symptom().model_dump_json(),
+                                "text": provider_result.model_dump_json(),
                             }
                         ],
                     }
@@ -339,10 +513,16 @@ def test_openai_symptom_adapter_uses_strict_schema_and_redacts_private_text() ->
     schema = payload["text"]["format"]["schema"]
     user_prompt = payload["input"][1]["content"]
     assert payload["text"]["format"]["strict"] is True
-    assert schema["properties"]["symptom_type"]["enum"]
+    assert schema["$defs"]["StructuredSymptom"]["properties"]["symptom_type"][
+        "enum"
+    ]
+    assert schema["$defs"]["SymptomEvidenceClaim"]["properties"]["source"][
+        "enum"
+    ] == ["RAW_SYMPTOM", "SELECTED_SYMPTOM", "PREVIOUS_ANSWER"]
     assert "010-1234-5678" not in user_prompt
     assert "user@example.com" not in user_prompt
     assert response.output.symptom_type == "소음 이상"
+    assert response.evidence_claims == tuple(provider_result.evidence_claims)
 
 
 def test_openai_symptom_adapter_rejects_invalid_output_json() -> None:
@@ -373,6 +553,41 @@ def test_openai_symptom_adapter_rejects_invalid_output_json() -> None:
     with pytest.raises(LLMOutputValidationError):
         client.structure_symptom(
             SymptomStructuringRequest(raw_symptom="증상이 있습니다"),
+            timeout_seconds=1.0,
+        )
+
+
+def test_openai_symptom_adapter_requires_evidence_claim_contract() -> None:
+    client = OpenAIResponsesSymptomStructuringClient(
+        api_key="test-only-key",
+        prompt_version="symptom_structuring/v1",
+        model_name="gpt-4o-mini",
+        http_client=httpx.Client(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    json={
+                        "status": "completed",
+                        "output": [
+                            {
+                                "type": "message",
+                                "content": [
+                                    {
+                                        "type": "output_text",
+                                        "text": _noise_symptom().model_dump_json(),
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                )
+            )
+        ),
+    )
+
+    with pytest.raises(LLMOutputValidationError):
+        client.structure_symptom(
+            SymptomStructuringRequest(raw_symptom="온수에서 소음이 있습니다"),
             timeout_seconds=1.0,
         )
 
@@ -473,7 +688,21 @@ def test_structuring_and_followup_spans_contain_metadata_not_customer_text(
     trace_context = _trace_context()
 
     symptom = SymptomStructurer(
-        llm_client=FakeSymptomClient(_noise_symptom())
+        llm_client=FakeSymptomClient(
+            StructuredSymptom(
+                symptom_type="소음 이상",
+                target_water_type="온수",
+            ),
+            evidence_claims=[
+                _evidence_claim(
+                    "symptom_type",
+                    "소음 이상",
+                    "NOISE",
+                    "SELECTED_SYMPTOM",
+                ),
+                _evidence_claim("target_water_type", "온수", "온수"),
+            ],
+        )
     ).structure(
         private_text,
         ["NOISE"],
@@ -509,6 +738,7 @@ def test_structuring_and_followup_spans_contain_metadata_not_customer_text(
 
 def test_provider_failure_emits_fallback_spans_without_exception_or_payload(
     monkeypatch,
+    caplog,
 ) -> None:
     structuring_tracer = FakeTracer()
     followup_tracer = FakeTracer()
@@ -517,25 +747,32 @@ def test_provider_failure_emits_fallback_spans_without_exception_or_payload(
     private_text = "010-9876-5432 secret@example.com 냉수 문제"
     trace_context = _trace_context()
 
-    symptom = SymptomStructurer(
-        llm_client=FakeSymptomClient(
-            error=LLMProviderTimeoutError("private provider detail")
+    with caplog.at_level("WARNING", logger="watercare.ai.llm"):
+        symptom = SymptomStructurer(
+            llm_client=FakeSymptomClient(
+                error=LLMProviderTimeoutError("private provider detail")
+            )
+        ).structure(
+            private_text,
+            trace_context=trace_context,
+            model_code="WPU-JAC104",
         )
-    ).structure(
-        private_text,
-        trace_context=trace_context,
-        model_code="WPU-JAC104",
-    )
-    FollowUpQuestionGenerator(
-        llm_client=FakeFollowUpClient(
-            error=LLMProviderConnectionError("private connection detail")
+        FollowUpQuestionGenerator(
+            llm_client=FakeFollowUpClient(
+                error=LLMProviderConnectionError("private connection detail")
+            )
+        ).generate(
+            [
+                MissingField(
+                    field_name="occurrence_time",
+                    reason="필요",
+                    importance="high",
+                )
+            ],
+            symptom=symptom,
+            trace_context=trace_context,
+            model_code="WPU-JAC104",
         )
-    ).generate(
-        [MissingField(field_name="occurrence_time", reason="필요", importance="high")],
-        symptom=symptom,
-        trace_context=trace_context,
-        model_code="WPU-JAC104",
-    )
 
     assert [span.name for span in structuring_tracer.spans] == [
         "waterbridge.symptom_structuring.llm",
@@ -556,3 +793,37 @@ def test_provider_failure_emits_fallback_spans_without_exception_or_payload(
         "private connection detail",
     ):
         assert forbidden not in serialized
+        assert forbidden not in caplog.text
+    assert "llm_symptom_structuring_fallback" in caplog.text
+    assert "llm_followup_wording_fallback" in caplog.text
+    assert "PROVIDER_TIMEOUT" in caplog.text
+    assert "PROVIDER_CONNECTION_ERROR" in caplog.text
+
+
+def test_missing_provider_configuration_logs_once_per_task(monkeypatch, caplog) -> None:
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    router_module._LLM_CONFIGURATION_LOGGED.clear()
+
+    with caplog.at_level("WARNING", logger="watercare.ai.llm"):
+        PipelineRouter(search_service=None)
+        PipelineRouter(search_service=None)
+
+    records = [
+        json.loads(record.message)
+        for record in caplog.records
+        if "llm_client_configuration_fallback" in record.message
+    ]
+    assert records == [
+        {
+            "event": "llm_client_configuration_fallback",
+            "reason": "OPENAI_API_KEY_MISSING",
+            "task": "symptom_structuring",
+            "validation_result": "FALLBACK",
+        },
+        {
+            "event": "llm_client_configuration_fallback",
+            "reason": "OPENAI_API_KEY_MISSING",
+            "task": "followup_question",
+            "validation_result": "FALLBACK",
+        },
+    ]
