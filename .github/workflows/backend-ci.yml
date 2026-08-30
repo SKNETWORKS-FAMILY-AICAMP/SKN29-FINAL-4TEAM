@@ -70,6 +70,7 @@ jobs:
         run: >-
           python -B -m unittest
           tests.deployment.test_backend_ci_workflow -v
+          tests.deployment.test_three_model_readonly_nonprod_qa_assets
 
   backend-tests:
     name: Backend ${{ matrix.name }} shard

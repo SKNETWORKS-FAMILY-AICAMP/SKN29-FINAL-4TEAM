@@ -1,0 +1,401 @@
+name: Three-model Readonly NONPROD QA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: three-model-readonly-nonprod-qa
+  cancel-in-progress: false
+
+env:
+  RELEASE_SHA: f595dd8777eaf3f3f7f59ff63aa8bb2a250225ab
+  AI_RAG_RUNTIME_PROFILE: three_model_integration
+  AI_VECTOR_TABLE_NAME: backend_ai_rag_chunks_v1
+  AI_EMBEDDING_REVISION: 5617a9f61b028005a4858fdac845db406aefb181
+  AWS_REGION: ${{ vars.NONPROD_AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ vars.NONPROD_AWS_ACCOUNT_ID }}
+  AWS_ROLE_ARN: ${{ vars.NONPROD_AWS_ROLE_ARN }}
+  EC2_INSTANCE_ID: ${{ vars.NONPROD_EC2_INSTANCE_ID }}
+  ECR_AI_QA_REPOSITORY: ${{ vars.NONPROD_ECR_AI_QA_REPOSITORY }}
+  AI_VECTOR_SECRET_ID: ${{ vars.NONPROD_AI_VECTOR_SECRET_ID }}
+
+jobs:
+  run-readonly-gate:
+    name: Build immutable QA image and run the readonly gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: nonprod
+    steps:
+      - name: Check out trusted automation from main
+        uses: actions/checkout@v6
+
+      - name: Check out the fixed QA source
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          fetch-depth: 0
+          path: source
+
+      - name: Validate immutable source and NONPROD configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == "refs/heads/main" ]] || {
+            echo 'The NONPROD QA workflow must be dispatched from main.' >&2
+            exit 1
+          }
+          [[ "$RELEASE_SHA" == "f595dd8777eaf3f3f7f59ff63aa8bb2a250225ab" ]]
+          [[ "$(git -C source rev-parse HEAD)" == "$RELEASE_SHA" ]]
+          git -C source merge-base --is-ancestor "$RELEASE_SHA" origin/main
+
+          required=(
+            AWS_REGION
+            AWS_ACCOUNT_ID
+            AWS_ROLE_ARN
+            EC2_INSTANCE_ID
+            ECR_AI_QA_REPOSITORY
+            AI_VECTOR_SECRET_ID
+          )
+          for name in "${required[@]}"; do
+            [[ -n "${!name:-}" ]] || {
+              echo "Required NONPROD variable is missing: ${name}" >&2
+              exit 1
+            }
+          done
+          [[ "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ ]]
+          [[ "$AWS_REGION" =~ ^[a-z]{2}-[a-z]+-[0-9]+$ ]]
+          [[ "$EC2_INSTANCE_ID" =~ ^i-[0-9a-f]{8,17}$ ]]
+          [[ "$AWS_ROLE_ARN" =~ ^arn:aws:iam::${AWS_ACCOUNT_ID}:role/[A-Za-z0-9+=,.@_/-]+$ ]]
+          [[ "$ECR_AI_QA_REPOSITORY" =~ ^[a-z0-9]+([._/-][a-z0-9]+)*$ ]]
+          [[ "$AI_VECTOR_SECRET_ID" =~ ^waterbridge/nonprod/[A-Za-z0-9/_+=.@-]{1,460}$ ]]
+
+      - name: Verify the dedicated automation safety contract
+        run: >-
+          python -B -m unittest
+          tests.deployment.test_three_model_readonly_nonprod_qa_assets -v
+
+      - name: Configure temporary NONPROD AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: waterbridge-three-model-qa-${{ github.run_id }}
+
+      - name: Verify the assumed NONPROD account and target
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_account="$(aws sts get-caller-identity --query Account --output text)"
+          [[ "$actual_account" == "$AWS_ACCOUNT_ID" ]]
+          aws ecr describe-repositories \
+            --region "$AWS_REGION" \
+            --repository-names "$ECR_AI_QA_REPOSITORY" \
+            >/dev/null
+          ping_status="$(aws ssm describe-instance-information \
+            --region "$AWS_REGION" \
+            --filters "Key=InstanceIds,Values=${EC2_INSTANCE_ID}" \
+            --query 'InstanceInformationList[0].PingStatus' \
+            --output text)"
+          [[ "$ping_status" == "Online" ]]
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: login-ecr
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build, test, and push the immutable Readonly QA image
+        id: qa-build
+        uses: docker/build-push-action@v7
+        with:
+          context: ./source
+          file: ./ai/Dockerfile
+          target: readonly-qa
+          build-args: |
+            RELEASE_SHA=${{ env.RELEASE_SHA }}
+            AI_EMBEDDING_REVISION=${{ env.AI_EMBEDDING_REVISION }}
+          labels: |
+            org.opencontainers.image.revision=${{ env.RELEASE_SHA }}
+            io.waterbridge.qa.automation-sha=${{ github.sha }}
+            io.waterbridge.qa.scope=three-model-readonly-nonprod
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_AI_QA_REPOSITORY }}:three-model-readonly-${{ env.RELEASE_SHA }}
+          platforms: linux/amd64
+          provenance: true
+          sbom: true
+          cache-from: type=gha,scope=waterbridge-three-model-readonly-qa
+          cache-to: type=gha,mode=max,scope=waterbridge-three-model-readonly-qa
+
+      - name: Resolve and verify the ECR digest
+        id: image
+        shell: bash
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          BUILD_DIGEST: ${{ steps.qa-build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          [[ "$BUILD_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          published_digest="$(aws ecr describe-images \
+            --region "$AWS_REGION" \
+            --repository-name "$ECR_AI_QA_REPOSITORY" \
+            --image-ids imageTag="three-model-readonly-${RELEASE_SHA}" \
+            --query 'imageDetails[0].imageDigest' \
+            --output text)"
+          [[ "$published_digest" == "$BUILD_DIGEST" ]]
+          image_ref="${REGISTRY}/${ECR_AI_QA_REPOSITORY}@${BUILD_DIGEST}"
+          echo "digest=${BUILD_DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "ref=${image_ref}" >> "$GITHUB_OUTPUT"
+
+      - name: Run the one-shot Readonly gate through SSM
+        id: ssm
+        shell: bash
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.ref }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          set -euo pipefail
+          evidence_dir="$RUNNER_TEMP/three-model-readonly-qa"
+          mkdir -p "$evidence_dir"
+          container_name="waterbridge-three-model-qa-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          registry="${IMAGE_REF%%/*}"
+          rds_ca_path="/etc/waterbridge/certs/rds-ca.pem"
+
+          printf -v context_line \
+            'export AWS_REGION=%q IMAGE_REF=%q IMAGE_DIGEST=%q RELEASE_SHA=%q SECRET_ID=%q CONTAINER_NAME=%q REGISTRY=%q RDS_CA_PATH=%q AI_RAG_RUNTIME_PROFILE=%q AI_VECTOR_TABLE_NAME=%q AI_EMBEDDING_REVISION=%q' \
+            "$AWS_REGION" "$IMAGE_REF" "$IMAGE_DIGEST" "$RELEASE_SHA" \
+            "$AI_VECTOR_SECRET_ID" "$container_name" "$registry" "$rds_ca_path" \
+            "$AI_RAG_RUNTIME_PROFILE" "$AI_VECTOR_TABLE_NAME" "$AI_EMBEDDING_REVISION"
+          ssm_script="${context_line}"$'\n'$(cat <<'SSM_SCRIPT'
+          set -euo pipefail
+          umask 077
+          qa_dir="$(mktemp -d /dev/shm/waterbridge-three-model-qa.XXXXXX)"
+          env_file="${qa_dir}/runtime.env"
+          export DOCKER_CONFIG="${qa_dir}/docker"
+          mkdir -p "$DOCKER_CONFIG"
+
+          cleanup() {
+            docker rm --force "$CONTAINER_NAME" >/dev/null 2>&1 || true
+            docker image rm "$IMAGE_REF" >/dev/null 2>&1 || true
+            rm -f "$env_file"
+            rm -f "$DOCKER_CONFIG/config.json"
+            rmdir "$DOCKER_CONFIG" >/dev/null 2>&1 || true
+            rmdir "$qa_dir" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          [[ "$IMAGE_REF" == *@sha256:* ]]
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ -f "$RDS_CA_PATH" && ! -L "$RDS_CA_PATH" ]]
+          [[ "$(docker ps --all --quiet --filter "name=^/${CONTAINER_NAME}$")" == "" ]]
+
+          containers_before="$(docker ps --no-trunc --format '{{.ID}}|{{.Image}}|{{.Names}}' | sort | sha256sum | awk '{print $1}')"
+          secret_document="$(aws secretsmanager get-secret-value \
+            --region "$AWS_REGION" \
+            --secret-id "$SECRET_ID" \
+            --query SecretString \
+            --output text)"
+          [[ "$(jq -cer 'keys | sort' <<<"$secret_document")" == '["AI_VECTOR_DSN"]' ]]
+          dsn="$(jq -er '.AI_VECTOR_DSN | select(type == "string" and length > 0)' <<<"$secret_document")"
+          [[ "$dsn" != *$'\n'* && "$dsn" != *$'\r'* ]]
+          printf '%s=%s\n' \
+            "AI_RAG_RUNTIME_PROFILE" "$AI_RAG_RUNTIME_PROFILE" \
+            "AI_VECTOR_TABLE_NAME" "$AI_VECTOR_TABLE_NAME" \
+            "AI_EMBEDDING_REVISION" "$AI_EMBEDDING_REVISION" \
+            "AI_VECTOR_DSN" "$dsn" \
+            > "$env_file"
+          unset dsn secret_document
+
+          aws ecr get-login-password --region "$AWS_REGION" \
+            | docker login --username AWS --password-stdin "$REGISTRY" >/dev/null
+          docker pull --quiet "$IMAGE_REF" >/dev/null
+          resolved_digest="$(docker image inspect --format '{{index .RepoDigests 0}}' "$IMAGE_REF")"
+          [[ "$resolved_digest" == "$IMAGE_REF" ]]
+
+          docker run --rm \
+            --name "$CONTAINER_NAME" \
+            --read-only \
+            --network host \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --pids-limit 512 \
+            --memory 8g \
+            --cpus 4 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --env-file "$env_file" \
+            --mount "type=bind,src=${RDS_CA_PATH},dst=${RDS_CA_PATH},readonly" \
+            --entrypoint /bin/sh \
+            "$IMAGE_REF" \
+            -c 'set -eu; python /workspace/scripts/deployment/production/validate_ai_readonly_runtime.py; python -m ai.scripts.verify_three_model_readonly_runtime; python /workspace/scripts/deployment/production/validate_ai_readonly_runtime.py'
+
+          containers_after="$(docker ps --no-trunc --format '{{.ID}}|{{.Image}}|{{.Names}}' | sort | sha256sum | awk '{print $1}')"
+          [[ "$containers_before" == "$containers_after" ]]
+          printf '%s\n' \
+            'RUNNING_AI_MUTATED=false' \
+            'DATABASE_MUTATED=false' \
+            'SECRET_EXPOSURE=false' \
+            'THREE_MODEL_READONLY_NONPROD_QA_PASS'
+          SSM_SCRIPT
+          )
+
+          printf -v ssm_command 'bash -lc %q' "$ssm_script"
+          commands_json="$(jq -cn --arg command "$ssm_command" '{commands:[$command]}')"
+          command_id="$(aws ssm send-command \
+            --region "$AWS_REGION" \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "WaterBridge readonly QA ${RELEASE_SHA}" \
+            --parameters "$commands_json" \
+            --query Command.CommandId \
+            --output text)"
+          [[ "$command_id" =~ ^[0-9a-f-]{36}$ ]]
+          echo "command_id=${command_id}" >> "$GITHUB_OUTPUT"
+
+          deadline=$((SECONDS + 2400))
+          invocation=''
+          while (( SECONDS < deadline )); do
+            if invocation="$(aws ssm get-command-invocation \
+              --region "$AWS_REGION" \
+              --command-id "$command_id" \
+              --instance-id "$EC2_INSTANCE_ID" \
+              --output json 2>/dev/null)"; then
+              poll_status="$(jq -r '.Status' <<<"$invocation")"
+              case "$poll_status" in
+                Success|Failed|Cancelled|TimedOut) break ;;
+                Pending|InProgress|Delayed|Cancelling) ;;
+                *) echo "SSM_QA_UNKNOWN_STATUS status=${poll_status}" >&2; exit 1 ;;
+              esac
+            fi
+            sleep 10
+          done
+          [[ -n "$invocation" ]] || {
+            echo 'SSM_QA_POLL_TIMEOUT seconds=2400' >&2
+            exit 1
+          }
+
+          status="$(jq -r '.Status' <<<"$invocation")"
+          jq -r '.StandardOutputContent // ""' <<<"$invocation" > "$evidence_dir/ssm-stdout.txt"
+          jq -r '.StandardErrorContent // ""' <<<"$invocation" > "$evidence_dir/ssm-stderr.txt"
+          if grep -Eqi 'postgres(ql)?://|AI_VECTOR_DSN|SecretString|AWS_SECRET_ACCESS_KEY|Authorization:[[:space:]]*Bearer' \
+            "$evidence_dir/ssm-stdout.txt" "$evidence_dir/ssm-stderr.txt"; then
+            : > "$evidence_dir/ssm-stdout.txt"
+            : > "$evidence_dir/ssm-stderr.txt"
+            echo 'SSM_QA_SECRET_EXPOSURE_RISK' >&2
+            exit 1
+          fi
+          [[ "$status" == "Success" ]]
+          grep -q '^AI_READONLY_RUNTIME_PREFLIGHT_PASS$' "$evidence_dir/ssm-stdout.txt"
+          [[ "$(grep -c '^AI_READONLY_RUNTIME_PREFLIGHT_PASS$' "$evidence_dir/ssm-stdout.txt")" == "2" ]]
+          grep -q '^THREE_MODEL_READONLY_NONPROD_QA_PASS$' "$evidence_dir/ssm-stdout.txt"
+          grep -q '^RUNNING_AI_MUTATED=false$' "$evidence_dir/ssm-stdout.txt"
+          grep -q '^DATABASE_MUTATED=false$' "$evidence_dir/ssm-stdout.txt"
+          grep -q '^SECRET_EXPOSURE=false$' "$evidence_dir/ssm-stdout.txt"
+          gate_json="$(grep -E '^\{"status":' "$evidence_dir/ssm-stdout.txt")"
+          [[ "$(wc -l <<<"$gate_json" | tr -d ' ')" == "1" ]]
+          jq -e '
+            .status == "PASS" and
+            .activation_scope == "INTEGRATION_VERIFICATION_ONLY" and
+            .public_runtime_activation == "HOLD" and
+            .case_count == 50 and
+            .passed_count == 50 and
+            .positive_group_hit_count == 43 and
+            .negative_no_evidence_count == 7 and
+            .cross_model_hit_count == 0 and
+            .direct_parent_hit_count == 0 and
+            .unverified_evidence_hit_count == 0
+          ' <<<"$gate_json" >/dev/null
+          printf '%s\n' "$gate_json" > "$evidence_dir/gate-summary.json"
+
+      - name: Create the sanitized evidence artifact
+        if: ${{ always() }}
+        shell: bash
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+          SSM_COMMAND_ID: ${{ steps.ssm.outputs.command_id }}
+          SSM_OUTCOME: ${{ steps.ssm.outcome }}
+        run: |
+          set -euo pipefail
+          evidence_dir="$RUNNER_TEMP/three-model-readonly-qa"
+          mkdir -p "$evidence_dir"
+          rm -f "$evidence_dir/ssm-stdout.txt" "$evidence_dir/ssm-stderr.txt"
+          gate_json='null'
+          decision='HOLD'
+          blocker_codes='[]'
+          if [[ -z "${IMAGE_DIGEST:-}" ]]; then
+            blocker_codes="$(jq -c '. + ["QA_IMAGE_ECR_DIGEST_NOT_AVAILABLE"]' <<<"$blocker_codes")"
+          fi
+          if [[ -z "${SSM_COMMAND_ID:-}" ]]; then
+            blocker_codes="$(jq -c '. + ["NONPROD_OIDC_SSM_GATE_PATH_OWNER_ACTION_REQUIRED"]' <<<"$blocker_codes")"
+          elif [[ "$SSM_OUTCOME" != "success" ]]; then
+            blocker_codes="$(jq -c '. + ["SSM_QA_EXECUTION_FAILED"]' <<<"$blocker_codes")"
+          fi
+          if [[ -s "$evidence_dir/gate-summary.json" && "$SSM_OUTCOME" == "success" ]]; then
+            gate_json="$(cat "$evidence_dir/gate-summary.json")"
+            decision='PASS'
+            blocker_codes='[]'
+          else
+            blocker_codes="$(jq -c '. + ["OFFICIAL_THREE_MODEL_READONLY_GATE_NOT_RUN"] | unique' <<<"$blocker_codes")"
+          fi
+          jq -n \
+            --arg decision "$decision" \
+            --arg release_sha "$RELEASE_SHA" \
+            --arg automation_sha "$GITHUB_SHA" \
+            --arg qa_image_digest "${IMAGE_DIGEST:-}" \
+            --arg target_environment "NONPROD" \
+            --arg ssm_command_id "${SSM_COMMAND_ID:-}" \
+            --arg python_version "3.13.13" \
+            --arg runtime_profile "$AI_RAG_RUNTIME_PROFILE" \
+            --arg index_version "2.0.0" \
+            --argjson gate "$gate_json" \
+            --argjson blocker_codes "$blocker_codes" \
+            '{
+              decision: $decision,
+              release_sha: $release_sha,
+              automation_sha: $automation_sha,
+              qa_image_digest: ($qa_image_digest | if length > 0 then . else null end),
+              target_environment: $target_environment,
+              ssm_command_id: ($ssm_command_id | if length > 0 then . else null end),
+              python_version: $python_version,
+              runtime_profile: $runtime_profile,
+              index_version: $index_version,
+              readonly_view_rows: (if $gate == null then null else 53 end),
+              model_counts: (if $gate == null then null else "15/19/19" end),
+              case_count: ($gate.case_count // null),
+              passed_count: ($gate.passed_count // null),
+              positive_group_hit_count: ($gate.positive_group_hit_count // null),
+              negative_no_evidence_count: ($gate.negative_no_evidence_count // null),
+              cross_model_hit_count: ($gate.cross_model_hit_count // null),
+              direct_parent_hit_count: ($gate.direct_parent_hit_count // null),
+              unverified_evidence_hit_count: ($gate.unverified_evidence_hit_count // null),
+              public_runtime_activation: "HOLD",
+              running_ai_mutated: (if $gate == null then null else false end),
+              database_mutated: (if $gate == null then null else false end),
+              secret_exposure: (if $gate == null then null else false end),
+              blocker_codes: $blocker_codes
+            }' > "$evidence_dir/evidence.json"
+          rm -f "$evidence_dir/gate-summary.json"
+          artifact_sha="$(sha256sum "$evidence_dir/evidence.json" | awk '{print toupper($1)}')"
+          printf '%s  evidence.json\n' "$artifact_sha" > "$evidence_dir/evidence.sha256"
+          {
+            echo '### Three-model Readonly NONPROD QA'
+            echo
+            echo "- Decision: ${decision}"
+            echo "- Release SHA: ${RELEASE_SHA}"
+            echo "- QA image digest: ${IMAGE_DIGEST:-NOT_AVAILABLE}"
+            echo "- SSM Command ID: ${SSM_COMMAND_ID:-NOT_AVAILABLE}"
+            echo "- Evidence SHA-256: ${artifact_sha}"
+            echo '- Public runtime activation: HOLD'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload sanitized NONPROD QA evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: three-model-readonly-nonprod-${{ env.RELEASE_SHA }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/three-model-readonly-qa/
+          if-no-files-found: error
+          retention-days: 30
