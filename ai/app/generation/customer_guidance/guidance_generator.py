@@ -16,7 +16,7 @@ from ...integrations.llm import (
 )
 from ...integrations.llm.token_usage import log_llm_usage
 from ...schemas import ModelMetadata, UsageGuidance
-from ...validation.safety import GuidanceMessageGuard, UsageGuidanceValidator
+from ...validation.safety import UsageGuidanceValidator
 from .models import GuidanceGenerationRequest
 from .prompt_identity import PROMPT_VERSION
 
@@ -130,10 +130,6 @@ class CustomerGuidanceGenerator:
                 retryable=False,
             )
         try:
-            GuidanceMessageGuard().validate_grounding(
-                candidate.message,
-                grounding_texts=request.evidence_summaries,
-            )
             accepted_guidance = UsageGuidanceValidator().validate(
                 ctx.safety_assessment,
                 candidate,
@@ -141,7 +137,7 @@ class CustomerGuidanceGenerator:
             )
         except ValueError as exc:
             raise GuidanceGenerationExecutionError(
-                "LLM Guidance가 최종 안전·근거 Gate를 통과하지 못했습니다.",
+                "LLM Guidance가 최종 안전 Gate를 통과하지 못했습니다.",
                 retry_count=retry_count,
                 retryable=False,
             ) from exc

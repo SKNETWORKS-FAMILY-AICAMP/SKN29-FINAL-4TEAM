@@ -342,8 +342,10 @@ def test_openai_adapter_sends_guidance_only_strict_schema():
     assert captured["payload"]["max_output_tokens"] == 500
     assert captured["payload"]["text"]["format"]["strict"] is True
     assert set(output_schema["properties"]) == {"message", "next_actions"}
-    assert output_schema["properties"]["message"]["enum"] == (
-        request.evidence_summaries
+    assert "enum" not in output_schema["properties"]["message"]
+    assert (
+        "evidence_summaries"
+        in output_schema["properties"]["message"]["description"]
     )
     assert output_schema["properties"]["next_actions"]["items"]["enum"] == (
         request.allowed_next_actions
@@ -632,7 +634,7 @@ def test_exact_official_directive_message_is_allowed_without_rewriting():
     assert result.usage_guidance.message == official_message
 
 
-def test_rewritten_official_directive_message_fails_closed():
+def test_grounded_rewrite_of_official_directive_is_allowed():
     class DirectiveEvidenceSearchService:
         def search(self, *args, **kwargs):
             chunk = EvidenceSearchService().search(*args, **kwargs)[0]
@@ -642,16 +644,42 @@ def test_rewritten_official_directive_message_fails_closed():
                 )
             ]
 
-    with pytest.raises(GuidanceGenerationExecutionError):
-        run_pipeline(
-            search_service=DirectiveEvidenceSearchService(),
-            llm_client=SequenceLLMClient(
-                llm_response(
-                    message="원수 상태를 반드시 확인해 주세요.",
-                    actions=accepted_actions(),
+    result = run_pipeline(
+        search_service=DirectiveEvidenceSearchService(),
+        llm_client=SequenceLLMClient(
+            llm_response(
+                message="먼저 원수 상태를 확인해 주세요.",
+                actions=accepted_actions(),
+            )
+        ),
+    ).to_analysis_result()
+
+    assert result.usage_guidance.message == "먼저 원수 상태를 확인해 주세요."
+
+
+def test_official_do_not_drink_guidance_is_not_rejected_by_word_only_guard():
+    class DoNotDrinkEvidenceSearchService:
+        def search(self, *args, **kwargs):
+            chunk = EvidenceSearchService().search(*args, **kwargs)[0]
+            return [
+                chunk.model_copy(
+                    update={
+                        "content": "점검 문구가 표시되면 출수된 물은 음용하지 않습니다."
+                    }
                 )
-            ),
-        )
+            ]
+
+    result = run_pipeline(
+        search_service=DoNotDrinkEvidenceSearchService(),
+        llm_client=SequenceLLMClient(
+            llm_response(
+                message="점검 문구가 표시되면 해당 물은 음용하지 마세요.",
+                actions=accepted_actions(),
+            )
+        ),
+    ).to_analysis_result()
+
+    assert "음용하지" in result.usage_guidance.message
 
 
 def test_provider_request_redacts_pii_and_excludes_raw_occurrence_condition():

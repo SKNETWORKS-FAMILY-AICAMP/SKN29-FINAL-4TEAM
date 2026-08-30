@@ -45,7 +45,7 @@ start "WaterBridge Backend" cmd /k "cd /d ""%CD%"" && backend\.venv\Scripts\pyth
 timeout /t 2 /nobreak >nul
 
 echo [3/5] AI starting...
-start "WaterBridge AI" cmd /k "cd /d ""%CD%"" && ai\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001"
+start "WaterBridge AI" cmd /k "cd /d ""%CD%"" && ai\.venv\Scripts\python.exe -m uvicorn ai.app.main:app --host 127.0.0.1 --port 8001 --env-file backend\.env"
 
 timeout /t 2 /nobreak >nul
 

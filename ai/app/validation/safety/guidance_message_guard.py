@@ -1,10 +1,8 @@
-"""LLM 고객 안내 문구의 안전 의미와 공식 근거 범위를 보수적으로 검증한다."""
+"""LLM 고객 안내 문구가 결정적 Safety 판단을 뒤집지 않는지 검증한다."""
 
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
-
 from ...schemas import UsageGuidanceStatus
 
 
@@ -16,8 +14,11 @@ class GuidanceMessageGuard:
         r"뒷면.{0,8}열|직접\s*수리|피복|내부.{0,8}(?:열|점검|확인))"
     )
     _UNVERIFIED_SAFETY_CLAIM_PATTERN = re.compile(
-        r"(?:세균|미생물|유해\s*물질|수질\s*(?:검사|안전)|"
-        r"마셔도|음용|인체에|무해|완전히\s*안전|안심)"
+        r"(?:마셔도.{0,8}(?:됩니다|돼요|괜찮)|"
+        r"음용\s*(?:가능|해도|하여도)|"
+        r"수질.{0,8}(?:안전|문제\s*없)|"
+        r"인체에.{0,8}(?:무해|안전)|"
+        r"완전히\s*안전|안심하고.{0,8}(?:마셔|사용))"
     )
     _INTERNAL_METADATA_PATTERN = re.compile(
         r"\b(?:chunk_id|document_id|evidence_id|similarity_score|"
@@ -28,7 +29,7 @@ class GuidanceMessageGuard:
         re.compile(
             r"(?:모든|전체).{0,16}(?:정상|계속\s*사용|사용\s*(?:가능|해도))"
         ),
-        re.compile(r"(?:제한|중지).{0,12}(?:필요\s*없|하지\s*않아도)"),
+        re.compile(r"(?:제한|중지|확인|점검|조치).{0,12}(?:필요\s*없|하지\s*않아도|생략)"),
         re.compile(r"정상적으로.{0,12}계속.{0,12}사용"),
     )
     def validate_safety_semantics(
@@ -49,20 +50,3 @@ class GuidanceMessageGuard:
             for pattern in self._PARTIAL_STOP_CONFLICT_PATTERNS
         ):
             raise ValueError("LLM 안내 문구가 PARTIAL_STOP 상태와 충돌합니다.")
-
-    def validate_grounding(
-        self,
-        message: str,
-        *,
-        grounding_texts: Iterable[str],
-    ) -> None:
-        """승인 Evidence 한 항목과 완전히 같은 추출형 문구만 허용한다."""
-
-        normalized_message = " ".join(message.split())
-        approved_messages = {
-            " ".join(text.split())
-            for text in grounding_texts
-            if text and text.strip()
-        }
-        if normalized_message not in approved_messages:
-            raise ValueError("LLM 안내 문구가 승인 Evidence 문장과 일치하지 않습니다.")

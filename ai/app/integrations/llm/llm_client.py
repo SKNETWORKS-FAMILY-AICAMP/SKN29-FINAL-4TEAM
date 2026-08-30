@@ -261,12 +261,13 @@ class OpenAIResponsesLLMClient:
 
     @staticmethod
     def _guidance_schema(request: GuidanceGenerationRequest) -> dict[str, object]:
-        """Constrain provider output to exact approved Evidence and actions."""
+        """Keep free-form grounded wording while constraining executable actions."""
 
         schema = GuidanceGenerationResult.model_json_schema()
         properties = schema["properties"]
-        properties["message"]["enum"] = list(
-            dict.fromkeys(request.evidence_summaries)
+        properties["message"]["description"] = (
+            "공식 evidence_summaries의 사실, 조건, 수치, 경고 범위를 벗어나지 않는 "
+            "고객 친화적 안내 문구"
         )
         properties["next_actions"]["items"]["enum"] = list(
             dict.fromkeys(request.allowed_next_actions)
