@@ -61,5 +61,8 @@ jobs:
       - name: Run Web unit tests
         run: npm run test
 
+      - name: Type-check Web Playwright E2E
+        run: npm run typecheck:e2e
+
       - name: Build Web production bundle
         run: npm run build

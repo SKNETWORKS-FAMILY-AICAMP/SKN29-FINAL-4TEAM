@@ -70,12 +70,21 @@ async function readDashboardTechnicianId(response: Response): Promise<string> {
   ) {
     throw new Error("Dashboard 기사 목록 응답이 공통 API 구조와 다릅니다.");
   }
+  if (payload.data.technicians.length === 0) {
+    throw new Error(
+      "E2E_BOOTSTRAP_BLOCKED: Dashboard 기사가 비어 있습니다. seed_consultant_dashboard 실행 결과를 확인해 주세요.",
+    );
+  }
   const technician = payload.data.technicians.find(
     (candidate) =>
-      isRecord(candidate) && typeof candidate.user_id === "string",
+      isRecord(candidate) &&
+      typeof candidate.user_id === "string" &&
+      candidate.user_id.trim().length > 0,
   );
   if (!isRecord(technician) || typeof technician.user_id !== "string") {
-    throw new Error("Dashboard에 선택 가능한 합성 방문기사가 없습니다.");
+    throw new Error(
+      "E2E_BOOTSTRAP_BLOCKED: Dashboard 응답에 선택 가능한 합성 방문기사 ID가 없습니다.",
+    );
   }
   return technician.user_id;
 }
@@ -184,6 +193,9 @@ async function expectVisitDetailPresentation(
   detailPanel: Locator,
   expected: VisitDetailPresentation,
 ): Promise<void> {
+  await detailPanel
+    .getByRole("button", { name: "상담 3단계: 상담 진행" })
+    .click();
   const consultationAndVisitSection = detailPanel
     .getByRole("heading", { name: "방문 정보", exact: true })
     .locator("..");
@@ -248,7 +260,6 @@ test("별도 공식 Fixture로 Dashboard 합성 기사를 선택해 방문 일�
   testInfo,
 ) => {
   const consultationNote = `E2E 방문 상담 기록 ${fixture.runId}`;
-  const customerGuidance = `E2E 방문 안전 안내 ${fixture.runId}`;
   const confirmedSummary = `E2E 방문 필요 확정 ${fixture.runId}`;
   const preferredDate = futureLocalDate(7);
 
@@ -266,6 +277,9 @@ test("별도 공식 Fixture로 Dashboard 합성 기사를 선택해 방문 일�
 
   const firstDetailPanel = page.getByRole("dialog");
   await expect(firstDetailPanel).toBeVisible();
+  await firstDetailPanel
+    .getByRole("button", { name: "상담 3단계: 상담 진행" })
+    .click();
 
   const startResponse = page.waitForResponse((response) =>
     isApiResponse(
@@ -282,11 +296,15 @@ test("별도 공식 Fixture로 Dashboard 합성 기사를 선택해 방문 일�
   await firstDetailPanel
     .getByLabel("상담 기록", { exact: true })
     .fill(consultationNote);
+
   await firstDetailPanel
-    .getByLabel("고객 안내 내용", { exact: true })
-    .fill(customerGuidance);
+    .locator('[data-action-code="UPDATE_CONSULTATION_SUMMARY"]')
+    .click();
+  await expect(
+    firstDetailPanel.getByLabel("상담 내용 수정본", { exact: true }),
+  ).toBeEnabled();
   await firstDetailPanel
-    .getByLabel("상담 요약 수정본", { exact: true })
+    .getByLabel("상담 내용 수정본", { exact: true })
     .fill(confirmedSummary);
   await firstDetailPanel
     .getByLabel("방문 필요 여부")
@@ -294,9 +312,6 @@ test("별도 공식 Fixture로 Dashboard 합성 기사를 선택해 방문 일�
   await firstDetailPanel
     .getByLabel("제품 사용 상태")
     .selectOption("PARTIAL_STOP");
-  await firstDetailPanel
-    .getByRole("checkbox", { name: "상담 요약 검토·확정" })
-    .check();
 
   const saveResponse = page.waitForResponse((response) =>
     isApiResponse(

@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const MAX_FIXTURE_BYTES = 64 * 1024;
+const SUPPORT_DIR = dirname(fileURLToPath(import.meta.url));
+const WORKFLOW_ACTIONS_CONTRACT_PATH = resolve(
+  SUPPORT_DIR,
+  "../../../contracts/codes/workflow-actions.yaml",
+);
 const EXPECTED_KEYS = [
   "allowed_actions",
   "assigned_consultant",
@@ -18,8 +25,30 @@ const EXPECTED_KEYS = [
   "status",
 ] as const;
 
+function readWorkflowActionCodes(): ReadonlySet<string> {
+  let contents: string;
+  try {
+    contents = readFileSync(WORKFLOW_ACTIONS_CONTRACT_PATH, "utf8");
+  } catch {
+    throw new Error("공식 Workflow Action 코드 계약을 읽을 수 없습니다.");
+  }
+
+  const codes = new Set(
+    contents
+      .split(/\r?\n/)
+      .map((line) => /^\s{2}-\s+([A-Z][A-Z0-9_]*)\s*$/.exec(line)?.[1])
+      .filter((code): code is string => Boolean(code)),
+  );
+  if (!codes.has("START_CONSULTATION") || !codes.has("CANCEL_INQUIRY")) {
+    throw new Error("공식 Workflow Action 코드 계약이 예상 경계와 다릅니다.");
+  }
+  return codes;
+}
+
+const WORKFLOW_ACTION_CODES = readWorkflowActionCodes();
+
 export interface WebConsultationE2EFixture {
-  allowedActions: readonly ["START_CONSULTATION"];
+  allowedActions: readonly string[];
   assignedConsultant: "DEMO-CONSULTANT-001";
   consultationStatus: "ASSIGNED";
   created: boolean;
@@ -82,6 +111,34 @@ function requireLiteral<T extends string>(
   return expected;
 }
 
+function requireFixtureAllowedActions(value: unknown): readonly string[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(
+      "Backend Fixture의 allowed_actions가 상담 시작 경계와 다릅니다.",
+    );
+  }
+
+  const actions: string[] = [];
+  for (const action of value) {
+    if (
+      typeof action !== "string" ||
+      !WORKFLOW_ACTION_CODES.has(action) ||
+      actions.includes(action)
+    ) {
+      throw new Error(
+        "Backend Fixture의 allowed_actions에 알 수 없거나 중복된 행동이 있습니다.",
+      );
+    }
+    actions.push(action);
+  }
+  if (!actions.includes("START_CONSULTATION")) {
+    throw new Error(
+      "Backend Fixture의 allowed_actions가 상담 시작 경계와 다릅니다.",
+    );
+  }
+  return actions;
+}
+
 export function parseBackendFixture(
   raw: unknown,
   expectedRunId?: string,
@@ -119,18 +176,10 @@ export function parseBackendFixture(
   if (typeof raw.created !== "boolean") {
     throw new Error("Backend Fixture의 created 값이 올바르지 않습니다.");
   }
-  if (
-    !Array.isArray(raw.allowed_actions) ||
-    raw.allowed_actions.length !== 1 ||
-    raw.allowed_actions[0] !== "START_CONSULTATION"
-  ) {
-    throw new Error(
-      "Backend Fixture의 allowed_actions가 상담 시작 경계와 다릅니다.",
-    );
-  }
+  const allowedActions = requireFixtureAllowedActions(raw.allowed_actions);
 
   return {
-    allowedActions: ["START_CONSULTATION"],
+    allowedActions,
     assignedConsultant: requireLiteral(
       raw,
       "assigned_consultant",

@@ -10,6 +10,11 @@ import {
   toPublicFixtureJson,
   type WebConsultationE2EFixture,
 } from "./backendFixture.js";
+import {
+  parseBackendConcealedFixture,
+  readBackendConcealedFixture,
+  type WebConcealedE2EFixture,
+} from "./concealedFixture.js";
 
 const SUPPORT_DIR = dirname(fileURLToPath(import.meta.url));
 const WEB_ROOT = resolve(SUPPORT_DIR, "../..");
@@ -22,6 +27,10 @@ const RUNTIME_FIXTURE_PATH = resolve(
 const RUNTIME_VISIT_FIXTURE_PATH = resolve(
   WEB_ROOT,
   ".runtime/playwright/backend-visit-fixture.json",
+);
+const RUNTIME_CONCEALED_FIXTURE_PATH = resolve(
+  WEB_ROOT,
+  ".runtime/playwright/backend-concealed-fixture.json",
 );
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);
 
@@ -115,7 +124,10 @@ function assertLocalFixtureTarget(): void {
   if (suppliedWebBaseUrl) assertLoopbackUrl(suppliedWebBaseUrl, "Web");
 }
 
-function runBackendCommand(args: readonly string[]): string {
+function runBackendCommand(
+  args: readonly string[],
+  timeout = 30_000,
+): string {
   const result = spawnSync(
     backendPythonPath(),
     ["manage.py", ...args, "--settings=config.settings.local"],
@@ -124,14 +136,15 @@ function runBackendCommand(args: readonly string[]): string {
       encoding: "utf8",
       env: process.env,
       maxBuffer: 1024 * 1024,
-      timeout: 30_000,
+      timeout,
       windowsHide: true,
     },
   );
 
   if (result.status !== 0 || !result.stdout.trim()) {
+    const commandName = args[0] || "unknown";
     throw new Error(
-      "Backend 사전검증 또는 Fixture 생성에 실패했습니다. PostgreSQL 상태와 Demo Seed를 확인해 주세요.",
+      `Backend ${commandName} 명령이 실패했습니다. PostgreSQL 상태와 공식 Seed를 확인해 주세요.`,
     );
   }
   return result.stdout;
@@ -208,6 +221,41 @@ function generateFixture(runId: string): WebConsultationE2EFixture {
   return parseBackendFixture(parsed, runId);
 }
 
+function seedConsultantDashboard(): void {
+  runBackendCommand(["seed_consultant_dashboard"], 120_000);
+}
+
+function applySyntheticConsultantPassword(username: string): void {
+  if (process.env.E2E_CONSULTANT_PASSWORD === undefined) return;
+  runBackendCommand([
+    "set_synthetic_consultant_password",
+    "--username",
+    username,
+    "--password-env",
+    "E2E_CONSULTANT_PASSWORD",
+    "--json",
+  ]);
+}
+
+function generateConcealedFixture(runId: string): WebConcealedE2EFixture {
+  const stdout = runBackendCommand([
+    "create_web_concealed_e2e_fixture",
+    "--run-id",
+    runId,
+    "--json",
+  ]);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stdout.trim());
+  } catch {
+    throw new Error(
+      "Backend Concealed Fixture 명령이 공개 JSON만 반환하지 않았습니다.",
+    );
+  }
+  return parseBackendConcealedFixture(parsed, runId);
+}
+
 function assertSafeReplay(
   first: WebConsultationE2EFixture,
   replay: WebConsultationE2EFixture,
@@ -220,6 +268,21 @@ function assertSafeReplay(
     replay.stateVersion !== first.stateVersion
   ) {
     throw new Error("동일한 미소비 run_id가 같은 Fixture를 반환하지 않았습니다.");
+  }
+}
+
+function assertSafeConcealedReplay(
+  first: WebConcealedE2EFixture,
+  replay: WebConcealedE2EFixture,
+): void {
+  if (
+    replay.created ||
+    replay.inquiryId !== first.inquiryId ||
+    replay.runId !== first.runId
+  ) {
+    throw new Error(
+      "동일한 미소비 run_id가 같은 Concealed Fixture를 반환하지 않았습니다.",
+    );
   }
 }
 
@@ -238,6 +301,23 @@ function assertDistinctVisitFixture(
   }
 }
 
+function assertDistinctConcealedFixture(
+  primary: WebConsultationE2EFixture,
+  visit: WebConsultationE2EFixture,
+  concealed: WebConcealedE2EFixture,
+): void {
+  if (
+    concealed.runId === primary.runId ||
+    concealed.runId === visit.runId ||
+    concealed.inquiryId === primary.inquiryId ||
+    concealed.inquiryId === visit.inquiryId
+  ) {
+    throw new Error(
+      "권한 경계 E2E에는 상담·방문 흐름과 다른 공식 Fixture가 필요합니다.",
+    );
+  }
+}
+
 function writeRuntimeFixture(
   fixturePath: string,
   fixture: WebConsultationE2EFixture,
@@ -250,33 +330,63 @@ function writeRuntimeFixture(
   );
 }
 
+function writeRuntimeConcealedFixture(
+  fixture: WebConcealedE2EFixture,
+): void {
+  mkdirSync(dirname(RUNTIME_CONCEALED_FIXTURE_PATH), { recursive: true });
+  writeFileSync(
+    RUNTIME_CONCEALED_FIXTURE_PATH,
+    `${JSON.stringify({ inquiry_id: fixture.inquiryId }, null, 2)}\n`,
+    { encoding: "utf8", mode: 0o600 },
+  );
+}
+
 export default async function globalSetup(): Promise<void> {
   await assertBackendHealth();
+  assertLocalFixtureTarget();
   const suppliedFixturePath = process.env.E2E_FIXTURE_JSON_PATH?.trim();
   const suppliedVisitFixturePath =
     process.env.E2E_VISIT_FIXTURE_JSON_PATH?.trim();
+  const suppliedConcealedFixturePath =
+    process.env.E2E_CONCEALED_FIXTURE_JSON_PATH?.trim();
   let fixture: WebConsultationE2EFixture;
-  let visitFixture: WebConsultationE2EFixture | undefined;
+  let visitFixture: WebConsultationE2EFixture;
+  let concealedFixture: WebConcealedE2EFixture;
 
-  if (Boolean(suppliedFixturePath) !== Boolean(suppliedVisitFixturePath)) {
+  const suppliedFixtureCount = [
+    suppliedFixturePath,
+    suppliedVisitFixturePath,
+    suppliedConcealedFixturePath,
+  ].filter(Boolean).length;
+  if (suppliedFixtureCount !== 0 && suppliedFixtureCount !== 3) {
     throw new Error(
-      "외부 Fixture를 사용할 때는 E2E_FIXTURE_JSON_PATH와 E2E_VISIT_FIXTURE_JSON_PATH를 함께 제공해야 합니다.",
+      "외부 Fixture를 사용할 때는 상담·방문·권한 경계 Fixture 경로 3개를 함께 제공해야 합니다.",
     );
   }
 
-  if (suppliedFixturePath && suppliedVisitFixturePath) {
+  if (
+    suppliedFixturePath &&
+    suppliedVisitFixturePath &&
+    suppliedConcealedFixturePath
+  ) {
     fixture = readBackendFixture(resolve(suppliedFixturePath));
     visitFixture = readBackendFixture(resolve(suppliedVisitFixturePath));
+    concealedFixture = readBackendConcealedFixture(
+      resolve(suppliedConcealedFixturePath),
+    );
     assertDistinctVisitFixture(fixture, visitFixture);
+    assertDistinctConcealedFixture(fixture, visitFixture, concealedFixture);
   } else {
-    assertLocalFixtureTarget();
     assertMigrationGate();
+    seedConsultantDashboard();
     const runId = process.env.E2E_RUN_ID?.trim() || createRunId();
     const visitRunId =
       process.env.E2E_VISIT_RUN_ID?.trim() || createRunId();
-    if (visitRunId === runId) {
+    const concealedRunId =
+      process.env.E2E_CONCEALED_RUN_ID?.trim() || createRunId();
+    if (new Set([runId, visitRunId, concealedRunId]).size !== 3) {
       throw new Error(
-        "E2E_VISIT_RUN_ID는 상담 완료 흐름의 E2E_RUN_ID와 달라야 합니다.",
+        "상담·방문·권한 경계 E2E run_id는 서로 달라야 합니다.",
       );
     }
     fixture = generateFixture(runId);
@@ -285,16 +395,20 @@ export default async function globalSetup(): Promise<void> {
     visitFixture = generateFixture(visitRunId);
     const visitReplay = generateFixture(visitRunId);
     assertSafeReplay(visitFixture, visitReplay);
+    concealedFixture = generateConcealedFixture(concealedRunId);
+    const concealedReplay = generateConcealedFixture(concealedRunId);
+    assertSafeConcealedReplay(concealedFixture, concealedReplay);
     assertDistinctVisitFixture(fixture, visitFixture);
+    assertDistinctConcealedFixture(fixture, visitFixture, concealedFixture);
+    applySyntheticConsultantPassword(fixture.assignedConsultant);
   }
 
   writeRuntimeFixture(RUNTIME_FIXTURE_PATH, fixture);
   process.env.E2E_FIXTURE_JSON_PATH = RUNTIME_FIXTURE_PATH;
-
-  if (visitFixture) {
-    writeRuntimeFixture(RUNTIME_VISIT_FIXTURE_PATH, visitFixture);
-    process.env.E2E_VISIT_FIXTURE_JSON_PATH = RUNTIME_VISIT_FIXTURE_PATH;
-  } else {
-    delete process.env.E2E_VISIT_FIXTURE_JSON_PATH;
-  }
+  writeRuntimeFixture(RUNTIME_VISIT_FIXTURE_PATH, visitFixture);
+  process.env.E2E_VISIT_FIXTURE_JSON_PATH = RUNTIME_VISIT_FIXTURE_PATH;
+  writeRuntimeConcealedFixture(concealedFixture);
+  process.env.E2E_CONCEALED_FIXTURE_JSON_PATH =
+    RUNTIME_CONCEALED_FIXTURE_PATH;
+  process.env.E2E_UNASSIGNED_INQUIRY_ID = concealedFixture.inquiryId;
 }

@@ -205,28 +205,21 @@ async function expectInitialDetailPresentation(
   detailPanel: Locator,
   expected: InitialDetailPresentation,
 ): Promise<void> {
-  const customerSection = detailPanel
-    .getByRole("heading", {
+  await expect(
+    detailPanel.getByRole("heading", {
       name: EXPECTED_CUSTOMER_DISPLAY_NAME,
       exact: true,
-    })
-    .locator("..");
-  await expect(
-    customerSection.getByText(EXPECTED_CUSTOMER_DISPLAY_NAME, { exact: true }),
+    }),
   ).toBeVisible();
   await expect(
-    customerSection.getByText(EXPECTED_CUSTOMER_PHONE_MASKED, { exact: true }),
+    detailPanel.getByText(EXPECTED_CUSTOMER_PHONE_MASKED, { exact: true }),
   ).toBeVisible();
 
   const productSection = detailPanel
     .getByRole("heading", { name: "제품·관리 정보", exact: true })
     .locator("..");
-  await expect(
-    detailPanel.getByText(expected.productModelName, { exact: true }),
-  ).toBeVisible();
-  await expect(
-    productSection.getByText(expected.productModel, { exact: true }),
-  ).toBeVisible();
+  await expect(productSection).toContainText(expected.productModel);
+  await expect(productSection).toContainText(expected.productModelName);
 
   const questionnaireSection = detailPanel
     .getByRole("heading", { name: "고객 증상과 답변", exact: true })
@@ -239,6 +232,12 @@ async function expectInitialDetailPresentation(
       questionnaireSection.getByText(item.answer, { exact: true }),
     ).toBeVisible();
   }
+
+  await detailPanel
+    .getByRole("button", {
+      name: "상담 2단계: AI 상담 · 이전 상담 기록 확인",
+    })
+    .click();
 
   const guidanceSection = detailPanel
     .getByRole("heading", { name: "고객에게 안내할 내용", exact: true })
@@ -509,7 +508,7 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     );
   }
   const consultationNote = `E2E 상담 기록 ${fixture.runId}`;
-  const customerGuidance = `E2E 고객 안내 ${fixture.runId}`;
+  const customerGuidance = consultationNote;
   const confirmedSummary = `E2E 확정 요약 ${fixture.runId}`;
   await loginToConsultantFixture(page, fixture);
   const fixtureCard = page.getByTestId(
@@ -530,6 +529,9 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     listFirstDetailPanel,
     initialDetailPresentation,
   );
+  await listFirstDetailPanel
+    .getByRole("button", { name: "상담 3단계: 상담 진행" })
+    .click();
   await expect(
     listFirstDetailPanel.locator('[data-action-code="START_CONSULTATION"]'),
   ).toBeVisible();
@@ -565,6 +567,9 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     fixture,
     false,
   );
+  await firstDetailPanel
+    .getByRole("button", { name: "상담 3단계: 상담 진행" })
+    .click();
   await expect(
     firstDetailPanel.locator('[data-action-code="START_CONSULTATION"]'),
   ).toBeVisible();
@@ -637,11 +642,15 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   await firstDetailPanel
     .getByLabel("상담 기록", { exact: true })
     .fill(consultationNote);
+
   await firstDetailPanel
-    .getByLabel("고객 안내 내용", { exact: true })
-    .fill(customerGuidance);
+    .locator('[data-action-code="UPDATE_CONSULTATION_SUMMARY"]')
+    .click();
+  await expect(
+    firstDetailPanel.getByLabel("상담 내용 수정본", { exact: true }),
+  ).toBeEnabled();
   await firstDetailPanel
-    .getByLabel("상담 요약 수정본", { exact: true })
+    .getByLabel("상담 내용 수정본", { exact: true })
     .fill(confirmedSummary);
   await firstDetailPanel
     .getByLabel("방문 필요 여부")
@@ -649,9 +658,6 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   await firstDetailPanel
     .getByLabel("제품 사용 상태")
     .selectOption("NORMAL");
-  await firstDetailPanel
-    .getByRole("checkbox", { name: "상담 요약 검토·확정" })
-    .check();
 
   const concurrentSave = await authenticatedBrowserRequest(page, {
     method: "PATCH",
@@ -719,9 +725,6 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     firstDetailPanel.getByTestId("consultation-field-consultationNote"),
   ).toHaveValue(consultationNote);
   await expect(
-    firstDetailPanel.getByTestId("consultation-field-customerGuidance"),
-  ).toHaveValue(customerGuidance);
-  await expect(
     firstDetailPanel.getByTestId("consultation-field-summaryRevision"),
   ).toHaveValue(confirmedSummary);
   await expect(
@@ -730,11 +733,6 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   await expect(
     firstDetailPanel.getByLabel("제품 사용 상태"),
   ).toHaveValue("NORMAL");
-  await expect(
-    firstDetailPanel.getByRole("checkbox", {
-      name: "상담 요약 검토·확정",
-    }),
-  ).toBeChecked();
   page.off("request", countUpdateRequest);
 
   const saveResponse = page.waitForResponse(
@@ -779,16 +777,30 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     firstDetailPanel.getByTestId("consultation-current-status"),
   ).toHaveAttribute("data-workflow-status", "COMPLETION_PENDING");
   await expect(page).toHaveURL((url) => url.pathname === "/consultant/dashboard");
+  await firstDetailPanel
+    .getByRole("button", {
+      name: "상담 2단계: AI 상담 · 이전 상담 기록 확인",
+    })
+    .click();
+  await firstDetailPanel
+    .getByRole("button", { name: "상세 보기" })
+    .click();
+  const completedHistoryDialog = page.getByRole("dialog", {
+    name: "이전 상담 기록·처리 이력",
+  });
+  await expect(completedHistoryDialog).toBeVisible();
   await expect(
-    firstDetailPanel.getByTestId("consultation-detail-note"),
-  ).toHaveText(
-    consultationNote,
-  );
+    completedHistoryDialog.getByTestId("consultation-detail-note"),
+  ).toHaveText(consultationNote);
   await expect(
-    firstDetailPanel.getByTestId("consultation-detail-customer-guidance"),
+    completedHistoryDialog.getByTestId(
+      "consultation-detail-customer-guidance",
+    ),
   ).toHaveText(customerGuidance);
   await expect(
-    firstDetailPanel.getByTestId("consultation-detail-confirmed-summary"),
+    completedHistoryDialog.getByTestId(
+      "consultation-detail-confirmed-summary",
+    ),
   ).toHaveText(confirmedSummary);
 
   await page.reload();
@@ -808,19 +820,40 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
     customerGuidance,
     confirmedSummary,
   });
+  await recoveredFirstDetailPanel
+    .getByRole("button", { name: "상담 3단계: 상담 진행" })
+    .click();
   await expect(
-    recoveredFirstDetailPanel.getByTestId("consultation-current-status"),
-  ).toHaveAttribute("data-workflow-status", "COMPLETION_PENDING");
+    recoveredFirstDetailPanel.getByText("최종 완료 대기", { exact: true }),
+  ).toBeVisible();
   await expect(
-    recoveredFirstDetailPanel.getByTestId("consultation-detail-note"),
+    recoveredFirstDetailPanel.getByText(
+      "현재 진행할 상담 작업이 없습니다.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await recoveredFirstDetailPanel
+    .getByRole("button", {
+      name: "상담 2단계: AI 상담 · 이전 상담 기록 확인",
+    })
+    .click();
+  await recoveredFirstDetailPanel
+    .getByRole("button", { name: "상세 보기" })
+    .click();
+  const recoveredHistoryDialog = page.getByRole("dialog", {
+    name: "이전 상담 기록·처리 이력",
+  });
+  await expect(recoveredHistoryDialog).toBeVisible();
+  await expect(
+    recoveredHistoryDialog.getByTestId("consultation-detail-note"),
   ).toHaveText(consultationNote);
   await expect(
-    recoveredFirstDetailPanel.getByTestId(
+    recoveredHistoryDialog.getByTestId(
       "consultation-detail-customer-guidance",
     ),
   ).toHaveText(customerGuidance);
   await expect(
-    recoveredFirstDetailPanel.getByTestId(
+    recoveredHistoryDialog.getByTestId(
       "consultation-detail-confirmed-summary",
     ),
   ).toHaveText(confirmedSummary);

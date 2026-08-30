@@ -1,0 +1,15 @@
+
+> watercare-web-vite@0.0.0 test:e2e
+> playwright test e2e/specs/consultation-workflow.spec.ts e2e/specs/technician-selection.spec.ts --project=chromium
+
+[WebServer] (node:6212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:12368) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › e2e\specs\consultation-workflow.spec.ts:492:1 › Backend Fixture로 상담 처리와 404·409 경계를 검증한다 (27.6s)
+  ok 2 [chromium] › e2e\specs\technician-selection.spec.ts:258:1 › 별도 공식 Fixture로 Dashboard 합성 기사를 선택해 방문 일정에 저장한다 (19.9s)
+
+  2 passed (2.0m)

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { parseBackendFixture } from "../../e2e/support/backendFixture";
+import {
+  parseBackendFixture,
+  toPublicFixtureJson,
+} from "../../e2e/support/backendFixture";
 
 const readyFixture = {
   allowed_actions: ["START_CONSULTATION"],
@@ -28,6 +31,22 @@ describe("Backend Playwright Fixture loader", () => {
     expect(fixture.fixtureReadiness).toBe("READY");
   });
 
+  it("상담 시작과 현재 유효한 추가 행동을 순서대로 보존한다", () => {
+    const fixture = parseBackendFixture({
+      ...readyFixture,
+      allowed_actions: ["START_CONSULTATION", "CANCEL_INQUIRY"],
+    });
+
+    expect(fixture.allowedActions).toEqual([
+      "START_CONSULTATION",
+      "CANCEL_INQUIRY",
+    ]);
+    expect(toPublicFixtureJson(fixture).allowed_actions).toEqual([
+      "START_CONSULTATION",
+      "CANCEL_INQUIRY",
+    ]);
+  });
+
   it("준비되지 않은 Fixture를 거부한다", () => {
     expect(() =>
       parseBackendFixture({
@@ -46,12 +65,30 @@ describe("Backend Playwright Fixture loader", () => {
     ).toThrow("비밀정보 또는 개인정보");
   });
 
-  it("상담 시작 외의 허용 행동이 포함된 Fixture를 거부한다", () => {
+  it("공식 계약에 없는 행동이 포함된 Fixture를 거부한다", () => {
     expect(() =>
       parseBackendFixture({
         ...readyFixture,
-        allowed_actions: ["START_CONSULTATION", "FINALIZE_INQUIRY"],
+        allowed_actions: ["UNKNOWN_ACTION"],
+      }),
+    ).toThrow("알 수 없거나 중복된 행동");
+  });
+
+  it("상담 시작 행동이 없는 Fixture를 거부한다", () => {
+    expect(() =>
+      parseBackendFixture({
+        ...readyFixture,
+        allowed_actions: ["CANCEL_INQUIRY"],
       }),
     ).toThrow("상담 시작 경계");
+  });
+
+  it("공개 필드 Key가 빠진 Fixture를 거부한다", () => {
+    const driftedFixture: Record<string, unknown> = { ...readyFixture };
+    delete driftedFixture.inquiry_code;
+
+    expect(() => parseBackendFixture(driftedFixture)).toThrow(
+      "공개 필드 계약이 변경",
+    );
   });
 });
