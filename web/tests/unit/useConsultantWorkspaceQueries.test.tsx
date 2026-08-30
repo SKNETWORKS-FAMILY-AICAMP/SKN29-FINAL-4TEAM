@@ -38,6 +38,7 @@ const DETAIL: ConsultantInquiryDetailViewModel = {
     isSynthetic: true,
     displayName: "합성 고객 001",
     phoneMasked: "010-****-0001",
+    phoneDisplay: "010-****-0001",
   },
   productAndCare: null,
   symptomAndQuestionnaire: {

@@ -279,6 +279,7 @@ describe("상담사 실제 API 전환 Repository", () => {
         display_name: "합성 고객 001",
         phone: "010-****-0001",
         phone_masked: "010-****-0001",
+        contact_phone: "010-1111-0001",
       },
       product_and_care: {
         product_model: "SYN-WP-01",
@@ -367,6 +368,7 @@ describe("상담사 실제 API 전환 Repository", () => {
       recentCareDate: "2026-08-01",
     });
     expect(result.data.customer.phoneMasked).toBe("010-****-0001");
+    expect(result.data.customer.phoneDisplay).toBe("010-1111-0001");
     expect(result.data.symptomAndQuestionnaire.answers[0]).toMatchObject({
       questionCode: "SYN-Q-01",
       questionText: "누수가 계속 발생하나요?",
@@ -398,6 +400,12 @@ describe("상담사 실제 API 전환 Repository", () => {
       consultationNote: "고객 상태 확인",
       customerGuidance: "정상 사용 안내",
     });
+
+    dto.customer.contact_phone = null;
+    const fallbackResult = await repository.getInquiryDetail(
+      dto.inquiry.inquiry_id,
+    );
+    expect(fallbackResult.data.customer.phoneDisplay).toBe("010-****-0001");
   });
 
   it("비배정·미존재 문의를 같은 404로 처리하고 고객용 API를 우회 호출하지 않는다", async () => {

@@ -21,6 +21,7 @@ function createDetail(
       isSynthetic: true,
       displayName: "합성고객 01",
       phoneMasked: "010-****-0101",
+      phoneDisplay: "010-****-0101",
     },
     productAndCare: {
       productModel: "SYN-WP-01",
@@ -68,6 +69,24 @@ function createDetail(
 }
 
 describe("Remote 상담사 문의 상세", () => {
+  it("Backend가 허용한 담당 고객 연락처를 상세 화면에 우선 표시한다", () => {
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          customer: {
+            isSynthetic: true,
+            displayName: "합성고객 01",
+            phoneMasked: "010-****-0101",
+            phoneDisplay: "010-1111-0101",
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText("010-1111-0101")).toBeInTheDocument();
+    expect(screen.queryByText("010-****-0101")).not.toBeInTheDocument();
+  });
+
   it("첫 진입에서 고객·문의·제품 확인 단계를 보여준다", () => {
     render(<RemoteConsultantInquiryDetail inquiry={createDetail()} />);
 

@@ -307,6 +307,7 @@ export function createMockConsultantWorkspaceDataRepository(
           display_name: inquiry.customerDisplayName,
           phone: inquiry.customerPhone,
           phone_masked: maskCustomerPhone(inquiry.customerPhone),
+          contact_phone: null,
         },
         product_and_care: {
           product_model: inquiry.manualModel,

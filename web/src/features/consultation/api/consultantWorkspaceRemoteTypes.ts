@@ -194,6 +194,7 @@ export interface ConsultantInquiryDetailDto {
     display_name: string;
     phone: string;
     phone_masked: string;
+    contact_phone: string | null;
   };
   product_and_care: ConsultantProductAndCareDto | null;
   symptom_and_questionnaire: ConsultantSymptomAndQuestionnaireDto;

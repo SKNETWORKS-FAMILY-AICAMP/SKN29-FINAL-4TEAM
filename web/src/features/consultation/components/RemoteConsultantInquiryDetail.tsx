@@ -391,7 +391,7 @@ export default function RemoteConsultantInquiryDetail({
         <dl className="remote-inquiry-detail__overview-meta">
           <div>
             <dt className="consultant-visually-hidden">연락처</dt>
-            <dd>{inquiry.customer.phoneMasked}</dd>
+            <dd>{inquiry.customer.phoneDisplay}</dd>
           </div>
           <div>
             <dt className="consultant-visually-hidden">제품</dt>

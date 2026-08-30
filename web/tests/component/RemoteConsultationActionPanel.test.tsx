@@ -77,6 +77,7 @@ function createDetail(
       isSynthetic: true,
       displayName: "합성고객 01",
       phoneMasked: "010-****-0101",
+      phoneDisplay: "010-****-0101",
     },
     productAndCare: null,
     symptomAndQuestionnaire: {

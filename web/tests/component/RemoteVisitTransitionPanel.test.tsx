@@ -42,6 +42,7 @@ function createInquiry(
       isSynthetic: true,
       displayName: "합성 고객",
       phoneMasked: "010-****-0101",
+      phoneDisplay: "010-****-0101",
     },
     productAndCare: {
       productModel: "SYN-PRODUCT-01",

@@ -70,7 +70,12 @@ export interface ConsultantInquiryDetailViewModel {
   priority: ConsultantPriorityDto;
   receivedAt: string;
   updatedAt: string;
-  customer: { isSynthetic: true; displayName: string; phoneMasked: string };
+  customer: {
+    isSynthetic: true;
+    displayName: string;
+    phoneMasked: string;
+    phoneDisplay: string;
+  };
   productAndCare: {
     productModel: string;
     productModelName: string;
@@ -265,6 +270,7 @@ export function mapConsultantInquiryDetail(
       isSynthetic: customer.is_synthetic,
       displayName: customer.display_name,
       phoneMasked: customer.phone_masked,
+      phoneDisplay: customer.contact_phone ?? customer.phone_masked,
     },
     productAndCare: dto.product_and_care
       ? {
