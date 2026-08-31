@@ -213,6 +213,46 @@ class ReleaseImageMaintenanceTests(unittest.TestCase):
         self.run_maintenance(fake, protected=[retained], required=[retained], known=[old, retained])
         self.assertEqual(fake.removed, [])
 
+    def test_containerd_digest_reference_in_repo_tags_is_eligible(self):
+        # Shape observed on EC2: RepoTags AND RepoDigests contain repo@sha256.
+        old = ref("ai", 10)
+        fake = FakeDocker([image(10, [old], [old])])
+        output = self.run_maintenance(fake, known=[old])
+        self.assertIn("candidates=1 apply=true", output)
+        self.assertEqual(fake.removed, [digest(10)])
+
+    def test_containerd_snapshot_shape_keeps_six_apps_and_selects_95(self):
+        refs = [ref(("web", "backend", "ai")[n % 3], n) for n in range(1, 102)]
+        records = [image(n, [reference], [reference]) for n, reference in enumerate(refs, 1)]
+        tempo = f"grafana/tempo@{digest(200)}"
+        records.append(image(200, [tempo], [tempo]))
+        records.extend(image(n, tags=[f"qa-tool:{n}"]) for n in range(201, 205))
+        fake = FakeDocker(records, containers=[digest(n) for n in (1, 2, 3, 200)])
+        incoming = [ref(service, n) for service, n in zip(REPOS, (301, 302, 303))]
+        output = self.run_maintenance(
+            fake, protected=refs[:6] + incoming, required=refs[:6], known=refs + incoming,
+        )
+        self.assertIn("candidates=95 apply=true", output)
+        self.assertEqual(set(fake.removed), {digest(n) for n in range(7, 102)})
+        self.assertTrue(all(digest(n) in fake.images for n in (1, 2, 3, 4, 5, 6, 200)))
+
+    def test_digest_alias_must_be_recorded_and_belong_to_same_image(self):
+        old, unknown, other_image = ref("web", 10), ref("web", 11), ref("web", 12)
+        for alias in (unknown, other_image, old + "extra", old.upper()):
+            with self.subTest(alias=alias):
+                fake = FakeDocker([image(10, [old], [alias])])
+                self.run_maintenance(fake, known=[old, other_image])
+                self.assertEqual(fake.removed, [])
+
+    def test_mixed_digest_and_commit_tags_still_protect_retained_releases(self):
+        old = ref("web", 10)
+        aliases = [old, f"{REPOS['web']}:{10:040x}"]
+        for protected in ([], [old]):
+            with self.subTest(protected=protected):
+                fake = FakeDocker([image(10, [old], aliases)])
+                self.run_maintenance(fake, known=[old], protected=protected, required=protected)
+                self.assertEqual(fake.removed, [] if protected else [digest(10)])
+
     def test_unknown_digest_alias_in_same_repository_is_also_protected(self):
         old, unrecorded = ref("web", 10), ref("web", 11)
         fake = FakeDocker([image(1, [old, unrecorded])])
