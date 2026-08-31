@@ -26,7 +26,7 @@ describe("ConsultantQueueSidebar", () => {
     const menu = screen.getByRole("tablist", { name: "상담사 메뉴" });
     const tabs = within(menu).getAllByRole("tab");
 
-    expect(tabs).toHaveLength(6);
+    expect(tabs).toHaveLength(7);
     expect(tabs.map((tab) => tab.textContent)).toEqual([
       "업무 대시보드",
       "전체 문의16",
@@ -34,10 +34,11 @@ describe("ConsultantQueueSidebar", () => {
       "처리 완료된 문의8",
       "전화 문의 등록",
       "공지사항",
+      "직원 연락처",
     ]);
-    expect(menu.querySelectorAll("svg")).toHaveLength(6);
+    expect(menu.querySelectorAll("svg")).toHaveLength(7);
     expect(container.querySelectorAll(".consultant-work-tab__icon")).toHaveLength(
-      6,
+      7,
     );
     expect(
       tabs.filter((tab) => tab.getAttribute("aria-selected") === "true"),
@@ -74,6 +75,27 @@ describe("ConsultantQueueSidebar", () => {
       "href",
       ROUTE_PATHS.consultantNotices,
     );
+    expect(screen.getByRole("tab", { name: "직원 연락처" })).toHaveAttribute(
+      "href",
+      ROUTE_PATHS.consultantContacts,
+    );
+  });
+
+  it("직원 연락처 화면에서는 연락처 메뉴만 선택된다", () => {
+    render(
+      <MemoryRouter>
+        <ConsultantQueueSidebar
+          activeBucket={null}
+          bucketCounts={BUCKET_COUNTS}
+          contactsActive
+        />
+      </MemoryRouter>,
+    );
+    const selectedTabs = screen.getAllByRole("tab").filter(
+      (tab) => tab.getAttribute("aria-selected") === "true",
+    );
+    expect(selectedTabs).toHaveLength(1);
+    expect(selectedTabs[0]).toHaveAccessibleName("직원 연락처");
   });
 
   it("전체 문의는 Bucket 합계 대신 전달받은 문의 목록 total을 표시한다", () => {

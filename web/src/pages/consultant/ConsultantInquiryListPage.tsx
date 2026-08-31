@@ -7,6 +7,11 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import ConsultantCompletionNotice from "../../features/consultation/components/ConsultantCompletionNotice";
+import {
+  CONSULTANT_COMPLETED_LIST_PATH,
+  createConsultantCompletionState,
+} from "../../features/consultation/model/consultantCompletionNavigation";
 import { appEnv } from "../../app/config/env";
 import { useAuth } from "../../app/providers/authContext";
 import { ApiClientError } from "../../common/api/apiError";
@@ -14,6 +19,7 @@ import Pagination from "../../common/components/data-display/Pagination";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
+import FormSelect from "../../common/components/form/FormSelect";
 import {
   toInquiryId,
   type InquiryId,
@@ -561,6 +567,11 @@ export default function ConsultantInquiryListPage() {
           role="tabpanel"
           aria-label={getBucketLabel(activeBucket)}
         >
+          <ConsultantCompletionNotice
+            navigationState={location.state}
+            onOpenInquiry={openInquiry}
+            onDismiss={() => navigate(`${location.pathname}${location.search}`, { replace: true, state: null })}
+          />
           {activeBucket === "ALL" && (
             <UnassignedConsultationQueue
               dataRepository={
@@ -679,26 +690,20 @@ export default function ConsultantInquiryListPage() {
                   <label className="consultant-category-filters__sort">
                     <span>정렬</span>
                     <div>
-                      <select
+                      <FormSelect
                         aria-label="문의 정렬"
                         value={filters.sort}
-                        onChange={(event) =>
+                        onChange={(value) =>
                           setFilters({
                             ...filters,
-                            sort: event.target.value as CounselorSort,
+                            sort: value as CounselorSort,
                           })
                         }
-                      >
-                        <option value="UPDATED_DESC">최신순</option>
-                        <option value="UPDATED_ASC">오래된순</option>
-                      </select>
-                      <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="m7 9.5 5 5 5-5" />
-                      </svg>
+                        options={[
+                          { value: "UPDATED_DESC", label: "최신순" },
+                          { value: "UPDATED_ASC", label: "오래된순" },
+                        ]}
+                      />
                     </div>
                   </label>
                 </div>
@@ -859,6 +864,15 @@ export default function ConsultantInquiryListPage() {
                   if (getCounselorWorkBucket(status) === "COMPLETED") {
                     changeBucket("COMPLETED");
                   }
+                }}
+                onSummaryConfirmed={(status) => {
+                  setActiveBucket("COMPLETED");
+                  setActiveRiskSection("all");
+                  setSelectedInquiryId(null);
+                  setSearchDraft(null);
+                  navigate(CONSULTANT_COMPLETED_LIST_PATH, {
+                    state: createConsultantCompletionState("CONSULTATION_CONFIRMED", selectedInquiryId, status),
+                  });
                 }}
               />
             ) : null}

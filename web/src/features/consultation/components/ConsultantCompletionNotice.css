@@ -1,0 +1,51 @@
+.consultant-completion-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 12px;
+  padding: 14px 18px;
+  border: 1px solid #cbd1d8;
+  border-radius: 12px;
+  background: #f8f8f6;
+  color: #354052;
+}
+
+/* Keep feedback outside the fixed three-row search/list grid. */
+.consultant-queue-panel > .consultant-completion-notice {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.consultant-completion-notice > div {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.consultant-completion-notice p {
+  margin: 6px 0 0;
+  color: #59636f;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.consultant-completion-notice > button {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #354052;
+  font: inherit;
+  cursor: pointer;
+}
+
+.consultant-completion-notice > button:first-of-type {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.consultant-completion-notice > button:hover,
+.consultant-completion-notice > button:focus-visible {
+  background: #e9ecf0;
+}

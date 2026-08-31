@@ -115,9 +115,8 @@ describe("ConsultantInquiryListPage", () => {
       "is-active",
     );
     expect(screen.getByRole("searchbox", { name: "문의 검색" })).toBeVisible();
-    expect(screen.getByRole("combobox", { name: "문의 정렬" })).toHaveValue(
-      "UPDATED_DESC",
-    );
+    expect(screen.getByRole("combobox", { name: "문의 정렬" }))
+      .toHaveTextContent("최신순");
     expect(screen.getByText("테스트 상담원")).toBeVisible();
     expect(screen.queryByText("2026-001-256")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "로그아웃" })).toBeVisible();
@@ -185,9 +184,10 @@ describe("ConsultantInquiryListPage", () => {
       }),
     ).toBeVisible();
 
-    await user.selectOptions(sort, "UPDATED_ASC");
-    expect(sort).toHaveValue("UPDATED_ASC");
-    expect(screen.getByRole("option", { name: "오래된순" })).toBeInTheDocument();
+    await user.click(sort);
+    await user.click(screen.getByRole("option", { name: "오래된순" }));
+    expect(sort).toHaveTextContent("오래된순");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
   it("전체 문의의 위험도별 총합은 90건이며 페이지를 이동해도 유지된다", async () => {

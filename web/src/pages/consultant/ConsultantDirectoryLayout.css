@@ -1,0 +1,93 @@
+/* Notice and contact directories share the inquiry list's full-height surface. */
+@media (min-width: 901px) {
+  html body #root
+    .simple-consultant-app.consultant-queue-app.consultant-directory-app
+    .consultant-queue-main {
+    grid-template-rows: 64px minmax(0, 1fr) !important;
+  }
+
+  html body #root
+    .simple-consultant-app.consultant-queue-app.consultant-directory-app
+    #consultant-queue-sidebar {
+    grid-row: 1 / 3 !important;
+  }
+}
+
+html body #root
+  .simple-consultant-app.consultant-queue-app.consultant-directory-app
+  .consultant-directory-panel {
+  min-width: 0;
+  min-height: 0;
+  grid-column: 2;
+  grid-row: 2;
+  align-self: stretch;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: var(--consultant-refresh-surface-radius, 9px) !important;
+  background: var(--consultant-refresh-surface, #f1f1f1) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html body #root
+  .simple-consultant-app.consultant-queue-app.consultant-directory-app
+  .consultant-directory-panel
+  > .common-pagination {
+  margin-top: auto;
+  padding: 12px 18px !important;
+  border-top: 1px solid var(--consultant-refresh-navy, #3f4858) !important;
+  background: var(--consultant-refresh-surface, #f1f1f1) !important;
+  color: #333 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+html body #root
+  .simple-consultant-app.consultant-queue-app.consultant-directory-app
+  .common-pagination__summary {
+  color: #555 !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #555 !important;
+}
+
+html body #root
+  .simple-consultant-app.consultant-queue-app.consultant-directory-app
+  .common-pagination__actions
+  :is(button, span) {
+  min-width: 38px !important;
+  height: 34px !important;
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  color: #222 !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+html body #root
+  .simple-consultant-app.consultant-queue-app.consultant-directory-app
+  .common-pagination__actions
+  button:hover:not(:disabled) {
+  border-color: var(--consultant-refresh-navy, #3f4858) !important;
+  background: var(--consultant-refresh-surface-hover, #e9e9e9) !important;
+}
+
+html body #root
+  .simple-consultant-app.consultant-queue-app.consultant-directory-app
+  .common-pagination__actions
+  span[aria-current="page"] {
+  border-color: var(--consultant-refresh-navy, #3f4858) !important;
+  background: var(--consultant-refresh-navy, #3f4858) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+@media (max-width: 900px) {
+  html body #root
+    .simple-consultant-app.consultant-queue-app.consultant-directory-app
+    .consultant-directory-panel {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+  }
+}

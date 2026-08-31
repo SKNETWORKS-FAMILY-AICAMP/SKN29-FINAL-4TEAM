@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -48,7 +48,7 @@ function createQueue(
           : [],
       },
     ],
-    pageInfo: { page: 1, size: 3, total: 1 },
+    pageInfo: { page: 1, size: 20, total: 1 },
   };
 }
 
@@ -100,7 +100,7 @@ function createWriteRepository(
 }
 
 describe("미배정 상담 대기 목록", () => {
-  it("상세 조회 없이 미배정 요약과 허용된 상담 가져오기 버튼을 표시한다", async () => {
+  it("미배정 목록은 한글 긴급도·문의 내용·대기 시간과 허용된 상담 시작만 표시한다", async () => {
     const dataRepository = createDataRepository();
 
     render(
@@ -112,9 +112,11 @@ describe("미배정 상담 대기 목록", () => {
     );
 
     expect(await screen.findByText("정수기에서 물이 새요")).toBeVisible();
-    expect(screen.getByText(/WPUJAC104DWH/)).toHaveTextContent(
-      "WPUJAC104DWH · 초소형 직수 냉온 정수기",
-    );
+    expect(screen.queryByText(/WPUJAC104DWH/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/초소형 직수 냉온 정수기/)).not.toBeInTheDocument();
+    expect(screen.queryByText("합성고객 01")).not.toBeInTheDocument();
+    expect(screen.queryByText("URGENT")).not.toBeInTheDocument();
+    expect(screen.getByText("긴급")).toBeVisible();
     expect(screen.queryByText("SYN-INQ-0101")).not.toBeInTheDocument();
     expect(screen.getByText("15분 대기")).toBeVisible();
     expect(screen.queryByText("UNASSIGNED")).not.toBeInTheDocument();
@@ -125,9 +127,71 @@ describe("미배정 상담 대기 목록", () => {
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+        name: "정수기에서 물이 새요 상담 시작",
       }),
     ).toBeVisible();
+    expect(dataRepository.getInquiryDetail).not.toHaveBeenCalled();
+    expect(dataRepository.listUnassignedConsultations).toHaveBeenCalledWith({
+      page: 1,
+      size: 20,
+      sort: "WAITING_DESC",
+    });
+    expect(screen.getByRole("navigation", { name: "미배정 상담 페이지" }))
+      .toHaveTextContent("총 1건 · 1/1페이지");
+    expect(screen.getByRole("button", { name: "미배정 이전 페이지" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "미배정 다음 페이지" })).toBeDisabled();
+  });
+
+  it("네 건을 한 페이지에 보여주며 페이지 조작부는 스크롤 본문 밖에 둔다", async () => {
+    const queue = createQueue();
+    const inquiries = Array.from({ length: 4 }, (_, index) => ({
+      ...queue.items[0],
+      inquiryId: `waiting-inquiry-${index}`,
+      symptomSummary: `접수된 문의 ${index + 1}`,
+    }));
+    render(
+      <UnassignedConsultationQueue
+        dataRepository={createDataRepository({
+          ...queue,
+          items: inquiries,
+          pageInfo: { page: 1, size: 20, total: 4 },
+        })}
+        writeRepository={createWriteRepository()}
+        onClaimed={vi.fn()}
+      />,
+    );
+
+    expect(await screen.findAllByRole("button", { name: /문의 미리보기$/ }))
+      .toHaveLength(4);
+    const pagination = screen.getByRole("navigation", { name: "미배정 상담 페이지" });
+    const section = screen.getByRole("region", { name: "미배정 상담 대기 목록" });
+    expect(pagination.parentElement).toBe(section);
+    expect(pagination.previousElementSibling)
+      .toHaveClass("unassigned-consultation-queue__content");
+    expect(pagination).toHaveTextContent("총 4건 · 1/1페이지");
+    expect(screen.getByRole("button", { name: "미배정 다음 페이지" })).toBeDisabled();
+  });
+
+  it("목록을 누르면 기존 문의 미리보기를 열고 영문 긴급도는 노출하지 않는다", async () => {
+    const user = userEvent.setup();
+    const dataRepository = createDataRepository();
+    render(
+      <UnassignedConsultationQueue
+        dataRepository={dataRepository}
+        writeRepository={createWriteRepository()}
+        onClaimed={vi.fn()}
+      />,
+    );
+
+    await user.click(await screen.findByRole("button", {
+      name: "정수기에서 물이 새요 문의 미리보기",
+    }));
+
+    const preview = within(screen.getByRole("dialog"));
+    expect(preview.getByRole("heading", { name: "정수기에서 물이 새요" })).toBeVisible();
+    expect(preview.getByText("긴급")).toBeVisible();
+    expect(preview.queryByText("URGENT")).not.toBeInTheDocument();
+    expect(preview.getByRole("button", { name: "상담 시작" })).toBeEnabled();
     expect(dataRepository.getInquiryDetail).not.toHaveBeenCalled();
   });
 
@@ -147,7 +211,7 @@ describe("미배정 상담 대기 목록", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+        name: "정수기에서 물이 새요 상담 시작",
       }),
     );
 
@@ -193,7 +257,7 @@ describe("미배정 상담 대기 목록", () => {
     );
 
     const button = await screen.findByRole("button", {
-      name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+      name: "정수기에서 물이 새요 상담 시작",
     });
     fireEvent.click(button);
     fireEvent.click(button);
@@ -226,7 +290,7 @@ describe("미배정 상담 대기 목록", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+        name: "정수기에서 물이 새요 상담 시작",
       }),
     );
 
@@ -269,7 +333,7 @@ describe("미배정 상담 대기 목록", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+        name: "정수기에서 물이 새요 상담 시작",
       }),
     );
 
@@ -320,7 +384,7 @@ describe("미배정 상담 대기 목록", () => {
 
       await user.click(
         await screen.findByRole("button", {
-          name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+          name: "정수기에서 물이 새요 상담 시작",
         }),
       );
 
@@ -376,7 +440,7 @@ describe("미배정 상담 대기 목록", () => {
 
       await user.click(
         await screen.findByRole("button", {
-          name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+          name: "정수기에서 물이 새요 상담 시작",
         }),
       );
 
@@ -460,7 +524,7 @@ describe("미배정 상담 대기 목록", () => {
 
       expect(
         await screen.findByTestId(`unassigned-consultation-${INQUIRY_ID}`),
-      ).toHaveTextContent(productModel);
+      ).not.toHaveTextContent(productModel);
       expect(screen.getByText("현재 배정할 수 없음")).toBeVisible();
       expect(
         screen.queryByRole("button", { name: /상담 시작/ }),
@@ -482,7 +546,7 @@ describe("미배정 상담 대기 목록", () => {
     );
 
     const button = await screen.findByRole("button", {
-      name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+      name: "정수기에서 물이 새요 상담 시작",
     });
     expect(button).toBeEnabled();
     await user.click(button);
@@ -541,7 +605,7 @@ describe("미배정 상담 대기 목록", () => {
     );
     await user.click(
       await screen.findByRole("button", {
-        name: "합성고객 01 정수기에서 물이 새요 상담 시작",
+        name: "정수기에서 물이 새요 상담 시작",
       }),
     );
 

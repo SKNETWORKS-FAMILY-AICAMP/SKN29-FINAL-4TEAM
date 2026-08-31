@@ -58,10 +58,8 @@ describe("ConsultationActionPanel", () => {
 
     const note = screen.getByRole("textbox", { name: /상담 기록/ });
     await user.type(note, "고객 사용 상태를 추가로 확인했습니다.");
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: /Mock 응답 테스트/ }),
-      "CONFLICT",
-    );
+    await user.click(screen.getByRole("combobox", { name: /Mock 응답 테스트/ }));
+    await user.click(screen.getByRole("option", { name: "409 상태 충돌" }));
     await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
 
     const alert = await screen.findByRole("alert");
@@ -83,10 +81,8 @@ describe("ConsultationActionPanel", () => {
 
     const note = screen.getByRole("textbox", { name: /상담 기록/ });
     await user.type(note, "재시도 전 작성한 상담 기록");
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: /Mock 응답 테스트/ }),
-      "DUPLICATE_EVENT",
-    );
+    await user.click(screen.getByRole("combobox", { name: /Mock 응답 테스트/ }));
+    await user.click(screen.getByRole("option", { name: "409 멱등 키 재사용 충돌" }));
     await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
 
     const alert = await screen.findByRole("alert");

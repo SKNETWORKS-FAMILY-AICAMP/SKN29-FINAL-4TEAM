@@ -192,6 +192,17 @@
   line-height: 1.5;
 }
 
+.remote-inquiry-detail .v6-action-panel textarea:disabled {
+  background: #f0f1f2;
+  color: #59616d;
+  opacity: 1;
+  cursor: default;
+}
+
+.remote-inquiry-detail .v6-action-panel .v6-action-form-section {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 640px) {
   .remote-inquiry-detail__history-launcher {
     align-items: stretch;

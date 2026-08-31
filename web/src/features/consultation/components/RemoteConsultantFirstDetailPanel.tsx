@@ -15,6 +15,7 @@ interface RemoteConsultantFirstDetailPanelProps {
   onClose: () => void;
   onRefreshWorkspace: () => void;
   onStatusChange?: (status: CounselorStatus) => void;
+  onSummaryConfirmed?: (status: CounselorStatus) => void;
   repository?: ConsultantWorkspaceDataRepository;
   returnTo: string;
 }
@@ -33,6 +34,7 @@ export default function RemoteConsultantFirstDetailPanel({
   onClose,
   onRefreshWorkspace,
   onStatusChange,
+  onSummaryConfirmed,
   repository,
   returnTo,
 }: RemoteConsultantFirstDetailPanelProps) {
@@ -133,6 +135,7 @@ export default function RemoteConsultantFirstDetailPanel({
         onOpenVisit={openVisit}
         onRefresh={refreshDetailAndWorkspace}
         onStatusChange={onStatusChange}
+        onSummaryConfirmed={onSummaryConfirmed}
       />
     );
   };

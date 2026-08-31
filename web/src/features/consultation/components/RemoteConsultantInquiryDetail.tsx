@@ -25,6 +25,7 @@ interface RemoteConsultantInquiryDetailProps {
   onOpenVisit?: (entryAction?: "VISIT_REVIEW_REQUIRED" | "VISIT_NEEDED") => void;
   onRefresh?: () => void;
   onStatusChange?: (status: CounselorStatus) => void;
+  onSummaryConfirmed?: (status: CounselorStatus) => void;
 }
 
 const CONTRACT_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -33,16 +34,6 @@ interface RecentCareDatePresentation {
   dateTime: string | null;
   label: string;
 }
-
-const VISIT_SCHEDULE_STATUS_LABELS: Readonly<Record<string, string>> = {
-  ASSIGNING: "기사 배정 중",
-  SCHEDULING: "일정 조율 중",
-  CONFIRMED: "방문 일정 확정",
-  IN_PROGRESS: "방문 진행 중",
-  COMPLETED: "방문 완료",
-  FOLLOW_UP_REQUIRED: "추가 방문 필요",
-  CANCELLED: "방문 취소",
-};
 
 const CONSULTATION_RESULT_LABELS: Readonly<Record<string, string>> = {
   PENDING: "상담 결과 검토 중",
@@ -301,6 +292,7 @@ export default function RemoteConsultantInquiryDetail({
   onOpenVisit,
   onRefresh,
   onStatusChange,
+  onSummaryConfirmed,
 }: RemoteConsultantInquiryDetailProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const historyTriggerRef = useRef<HTMLButtonElement>(null);
@@ -320,18 +312,6 @@ export default function RemoteConsultantInquiryDetail({
         ]
       : null) ||
     "안내 상태 미제공";
-  const isVisitRequired =
-    inquiry.consultation?.resultCode === "VISIT_REQUIRED";
-  const visitPreferredDate = getRecentCareDatePresentation(
-    inquiry.visit?.schedule.preferredDate ?? null,
-    "희망일 미정",
-    "희망일 확인 필요",
-  );
-  const visitConfirmedDate = getRecentCareDatePresentation(
-    inquiry.visit?.schedule.confirmedDate ?? null,
-    "확정일 미정",
-    "확정일 확인 필요",
-  );
   const normalizedRisk = normalizeCounselorRisk(inquiry.riskLevel);
   const statusLabel = STATUS_LABELS[
     normalizeCounselorStatus(inquiry.workflow.status)
@@ -566,80 +546,13 @@ export default function RemoteConsultantInquiryDetail({
             description: "",
             content: (
               <div className="consultation-stepper__step-stack">
-                {(isVisitRequired || inquiry.visit) && (
-                  <section
-                    className="remote-inquiry-detail__section"
-                    data-e2e-sensitive="true"
-                  >
-                    <h2>방문 정보</h2>
-                    <dl className="inquiry-v13-remote-summary">
-                      <div>
-                        <dt>방문 필요 여부</dt>
-                        <dd>
-                          {isVisitRequired ? "방문 필요" : "방문 검토 중"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt>방문 등록 상태</dt>
-                        <dd>
-                          {inquiry.visit
-                            ? "방문 정보 등록됨"
-                            : "방문 정보 등록 대기"}
-                        </dd>
-                      </div>
-                      {inquiry.visit && (
-                        <>
-                          <div>
-                            <dt>일정 상태</dt>
-                            <dd>
-                              {VISIT_SCHEDULE_STATUS_LABELS[
-                                inquiry.visit.schedule.scheduleStatus
-                              ] ?? "방문 일정 확인 필요"}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt>희망 방문일</dt>
-                            <dd>
-                              {visitPreferredDate.dateTime ? (
-                                <time dateTime={visitPreferredDate.dateTime}>
-                                  {visitPreferredDate.label}
-                                </time>
-                              ) : (
-                                visitPreferredDate.label
-                              )}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt>확정 방문일</dt>
-                            <dd>
-                              {visitConfirmedDate.dateTime ? (
-                                <time dateTime={visitConfirmedDate.dateTime}>
-                                  {visitConfirmedDate.label}
-                                </time>
-                              ) : (
-                                visitConfirmedDate.label
-                              )}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt>담당 기사</dt>
-                            <dd>
-                              {inquiry.visit.technician?.displayName ??
-                                "기사 미배정"}
-                            </dd>
-                          </div>
-                        </>
-                      )}
-                    </dl>
-                  </section>
-                )}
-
                 {showActionPanel && onOpenVisit && onRefresh ? (
                   <RemoteConsultationActionPanel
                     inquiry={inquiry}
                     onOpenVisit={onOpenVisit}
                     onRefresh={onRefresh}
                     onStatusChange={onStatusChange}
+                    onSummaryConfirmed={onSummaryConfirmed}
                   />
                 ) : (
                   <div className="consultation-stepper__empty-action">

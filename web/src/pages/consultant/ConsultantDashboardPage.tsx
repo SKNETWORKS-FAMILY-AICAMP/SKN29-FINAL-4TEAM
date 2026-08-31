@@ -5,6 +5,10 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  CONSULTANT_COMPLETED_LIST_PATH,
+  createConsultantCompletionState,
+} from "../../features/consultation/model/consultantCompletionNavigation";
 
 import { appEnv } from "../../app/config/env";
 import { useAuth } from "../../app/providers/authContext";
@@ -18,6 +22,7 @@ import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
+import FormSelect from "../../common/components/form/FormSelect";
 import {
   toInquiryId,
   type InquiryId,
@@ -248,8 +253,6 @@ export default function ConsultantDashboardPage() {
   const [riskSectionStatusFilters, setRiskSectionStatusFilters] = useState(
     INITIAL_RISK_SECTION_STATUS_FILTERS,
   );
-  const [openRiskStatusFilter, setOpenRiskStatusFilter] =
-    useState<ConsultantRiskLevelDto | null>(null);
   const [activeRiskSection, setActiveRiskSection] =
     useState<ConsultantRiskLevelDto>("danger");
   const [workFocus, setWorkFocus] = useState<WorkFocus>("NEW");
@@ -496,30 +499,6 @@ export default function ConsultantDashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (!openRiskStatusFilter) return;
-
-    const closeFilter = (event: PointerEvent) => {
-      if (
-        event.target instanceof Element &&
-        event.target.closest(".consultant-risk-section__filter")
-      ) {
-        return;
-      }
-      setOpenRiskStatusFilter(null);
-    };
-    const closeFilterOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpenRiskStatusFilter(null);
-    };
-
-    document.addEventListener("pointerdown", closeFilter);
-    window.addEventListener("keydown", closeFilterOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeFilter);
-      window.removeEventListener("keydown", closeFilterOnEscape);
-    };
-  }, [openRiskStatusFilter]);
-
-  useEffect(() => {
     if (!selectedInquiryId) return;
 
     document.body.classList.add("consultant-detail-open");
@@ -570,7 +549,6 @@ export default function ConsultantDashboardPage() {
     : null;
   const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
     setActiveRiskSection(riskLevel);
-    setOpenRiskStatusFilter(null);
     setSelectedInquiryId(null);
   };
 
@@ -582,7 +560,6 @@ export default function ConsultantDashboardPage() {
     }
     setWorkFocus(focus);
     setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
-    setOpenRiskStatusFilter(null);
     setSelectedInquiryId(null);
     if (filters.page !== 1) setFilters({ ...filters, page: 1 });
   };
@@ -933,6 +910,15 @@ export default function ConsultantDashboardPage() {
             <header>
               <h2>직원 연락처</h2>
               <div className="counselor-dashboard-contact-tools">
+                <button
+                  type="button"
+                  aria-label="직원 연락처 전체 보기"
+                  className="counselor-dashboard-contacts-all"
+                  onClick={() => navigate(ROUTE_PATHS.consultantContacts)}
+                >
+                  전체 보기
+                  <span aria-hidden="true">›</span>
+                </button>
                 <label>
                   <svg
                     aria-hidden="true"
@@ -1276,77 +1262,25 @@ export default function ConsultantDashboardPage() {
                             {inquiries.length}
                           </span>
                           <div className="consultant-risk-section__filter">
-                            <button
-                              type="button"
-                              className="consultant-risk-section__filter-trigger"
+                            <FormSelect
+                              id={`consultant-risk-filter-${section.id}`}
                               aria-label={`${section.label} 상태 필터`}
-                              aria-haspopup="listbox"
-                              aria-expanded={openRiskStatusFilter === section.id}
-                              aria-controls={`consultant-risk-filter-${section.id}`}
-                              onClick={() =>
-                                setOpenRiskStatusFilter((current) =>
-                                  current === section.id ? null : section.id,
-                                )
-                              }
-                            >
-                              <span>
-                                {statusFilter === "ALL"
-                                  ? "전체 상태"
-                                  : STATUS_LABELS[statusFilter]}
-                              </span>
-                              <svg
-                                viewBox="0 0 16 16"
-                                aria-hidden="true"
-                                focusable="false"
-                              >
-                                <path d="m4 6 4 4 4-4" />
-                              </svg>
-                            </button>
-
-                            {openRiskStatusFilter === section.id && (
-                              <div
-                                id={`consultant-risk-filter-${section.id}`}
-                                className="consultant-risk-section__filter-menu"
-                                role="listbox"
-                                aria-label={`${section.label} 상태 선택`}
-                              >
-                                {(["ALL", ...availableStatuses] as const).map(
-                                  (status) => {
-                                    const isSelected = statusFilter === status;
-                                    return (
-                                      <button
-                                        key={status}
-                                        type="button"
-                                        role="option"
-                                        aria-selected={isSelected}
-                                        onClick={() => {
-                                          setRiskSectionStatusFilters(
-                                            (current) => ({
-                                              ...current,
-                                              [section.id]: status,
-                                            }),
-                                          );
-                                          setOpenRiskStatusFilter(null);
-                                          setSelectedInquiryId(null);
-                                        }}
-                                      >
-                                        <span
-                                          className="consultant-risk-section__filter-check"
-                                          aria-hidden="true"
-                                        >
-                                          {isSelected ? "✓" : ""}
-                                        </span>
-                                        <span>
-                                          {status === "ALL"
-                                            ? "전체 상태"
-                                            : STATUS_LABELS[status]}
-                                        </span>
-                                      </button>
-                                    );
-                                  },
-                                )}
-                              </div>
-                            )}
+                              value={statusFilter}
+                              options={[
+                                { value: "ALL", label: "전체 상태" },
+                                ...availableStatuses.map((status) => ({ value: status, label: STATUS_LABELS[status] })),
+                                ...(statusFilter !== "ALL" && !availableStatuses.includes(statusFilter)
+                                  ? [{ value: statusFilter, label: STATUS_LABELS[statusFilter], disabled: true }]
+                                  : []),
+                              ]}
+                              onChange={(value) => {
+                                setRiskSectionStatusFilters((current) => ({
+                                  ...current,
+                                  [section.id]: value as RiskSectionStatusFilter,
+                                }));
+                                setSelectedInquiryId(null);
+                              }}
+                            />
                           </div>
                         </div>
                       </header>
@@ -1529,6 +1463,9 @@ export default function ConsultantDashboardPage() {
                     navigate("/consultant/inquiries?bucket=COMPLETED");
                   }
                 }}
+                onSummaryConfirmed={(status) => navigate(CONSULTANT_COMPLETED_LIST_PATH, {
+                  state: createConsultantCompletionState("CONSULTATION_CONFIRMED", selectedInquiryId, status),
+                })}
               />
             ) : null}
           </section>

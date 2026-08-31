@@ -1,5 +1,9 @@
 # Water Bridge Web
 
+## 로컬에서 배포용 디자인 확인
+
+`web` 폴더에서 `npm.cmd run dev:design -- --host 127.0.0.1 --port 5174 --strictPort`를 실행하고 `http://127.0.0.1:5174/consultant/dashboard`로 접속합니다. 배포용 화면에 격리된 샘플 API 응답을 공급하며, 실제 계정·Backend·RDS 연결과 저장은 필요하지 않습니다. 자세한 사용 범위는 [로컬 디자인 미리보기 안내](./docs/local-design-preview.md)를 확인하세요.
+
 상담사·운영 담당자가 사용하는 React 19, Vite, TypeScript 기반 웹입니다. 현재 상담사 `CONS-01 → CONS-02 → CONS-03` 흐름은 합성 Mock 데이터로 실행됩니다.
 
 ## 처음 보는 사람용 3줄 안내

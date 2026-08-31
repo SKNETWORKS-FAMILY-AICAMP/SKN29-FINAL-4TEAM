@@ -102,6 +102,26 @@ function createDetail(
   };
 }
 
+function createStoredDetail(stateVersion = 4): ConsultantInquiryDetailViewModel {
+  return {
+    ...createDetail(stateVersion),
+    consultation: {
+      consultationId: "30000000-0000-4000-8000-000000000301",
+      resultCode: "PENDING",
+      summary: {
+        aiDraftSummary: null,
+        editedSummary: "이전 서버 요약",
+        confirmedSummary: null,
+        confirmedAt: null,
+      },
+      consultationNote: "화면의 상담 기록",
+      customerGuidance: "화면의 상담 기록",
+      additionalCheck: "화면의 상담 기록",
+      usageGuidanceStatus: "PENDING_CONSULTATION",
+    },
+  };
+}
+
 describe("Remote 상담 처리 Panel", () => {
   beforeEach(() => {
     hookMocks.error = null;
@@ -110,24 +130,28 @@ describe("Remote 상담 처리 Panel", () => {
     hookMocks.success = null;
   });
 
-  it("요약 확정 입력을 제공하고 동일 문의 재조회에도 작성 내용을 유지한다", async () => {
+  it("상담 기록은 수정 버튼으로 열고 저장하면 다시 잠기며 확정 시 실제 상태를 전달한다", async () => {
     const user = userEvent.setup();
     const onRefresh = vi.fn();
+    const onSummaryConfirmed = vi.fn();
+    hookMocks.execute.mockResolvedValue({ ok: true, result: { status: "CONSULTATION_IN_PROGRESS", stateVersion: 6 } });
     const { rerender } = render(
       <RemoteConsultationActionPanel
         inquiry={createDetail()}
         onOpenVisit={vi.fn()}
         onRefresh={onRefresh}
+        onSummaryConfirmed={onSummaryConfirmed}
       />,
     );
 
-    await user.type(screen.getByLabelText("상담 기록"), "고객 상태 확인");
-    expect(screen.getByLabelText("상담 내용 수정본")).toBeDisabled();
+    expect(screen.getByLabelText("상담 기록")).toBeDisabled();
+    await user.type(screen.getByLabelText("상담 기록"), "비활성 입력");
+    expect(screen.getByLabelText("상담 기록")).toHaveValue("");
+    expect(screen.queryByLabelText("상담 내용 수정본")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
-    await user.type(
-      screen.getByLabelText("상담 내용 수정본"),
-      "필터 체결 안내 완료",
-    );
+    expect(screen.getByLabelText("상담 기록")).toBeEnabled();
+    await user.type(screen.getByLabelText("상담 기록"), "고객 상태 확인");
+    expect(screen.getByRole("button", { name: "상담 내용 확정" })).toBeDisabled();
 
     expect(screen.queryByLabelText("고객 안내 내용")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("추가 확인사항")).not.toBeInTheDocument();
@@ -141,15 +165,24 @@ describe("Remote 상담 처리 Panel", () => {
         inquiry={createDetail(5)}
         onOpenVisit={vi.fn()}
         onRefresh={onRefresh}
+        onSummaryConfirmed={onSummaryConfirmed}
       />,
     );
 
     expect(screen.getByLabelText("상담 기록")).toHaveValue("고객 상태 확인");
-    expect(screen.getByLabelText("상담 내용 수정본")).toHaveValue(
-      "필터 체결 안내 완료",
-    );
+    expect(screen.getByLabelText("상담 기록")).toBeEnabled();
     expect(screen.queryByText("상담 요약 확인")).not.toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
+    expect(screen.getByLabelText("상담 기록")).toBeDisabled();
+    expect(onSummaryConfirmed).not.toHaveBeenCalled();
+    expect(hookMocks.execute).toHaveBeenLastCalledWith(expect.objectContaining({
+      action: expect.objectContaining({ code: "UPDATE_CONSULTATION_SUMMARY" }),
+      values: expect.objectContaining({
+        consultationNote: "고객 상태 확인", summaryRevision: "고객 상태 확인",
+        customerGuidance: "고객 상태 확인", additionalCheck: "고객 상태 확인",
+      }),
+    }));
     await user.click(screen.getByRole("button", { name: "상담 내용 확정" }));
 
     expect(hookMocks.execute).toHaveBeenCalledWith(
@@ -159,12 +192,13 @@ describe("Remote 상담 처리 Panel", () => {
           consultationNote: "고객 상태 확인",
           customerGuidance: "고객 상태 확인",
           additionalCheck: "고객 상태 확인",
-          summaryRevision: "필터 체결 안내 완료",
+          summaryRevision: "고객 상태 확인",
           summaryConfirmed: true,
         }),
       }),
     );
-    expect(onRefresh).toHaveBeenCalledTimes(1);
+    expect(onRefresh).toHaveBeenCalledTimes(2);
+    expect(onSummaryConfirmed).toHaveBeenCalledWith("CONSULTATION_IN_PROGRESS");
   });
 
   it("409 충돌 재조회에도 작성 중인 상담 기록을 유지한다", async () => {
@@ -186,8 +220,8 @@ describe("Remote 상담 처리 Panel", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText("상담 기록"), "충돌 전 작성 기록");
     await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.type(screen.getByLabelText("상담 기록"), "충돌 전 작성 기록");
     await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
 
     expect(onRefresh).toHaveBeenCalledTimes(1);
@@ -200,6 +234,139 @@ describe("Remote 상담 처리 Panel", () => {
       />,
     );
     expect(screen.getByLabelText("상담 기록")).toHaveValue("충돌 전 작성 기록");
+    expect(screen.getByLabelText("상담 기록")).toBeEnabled();
+  });
+
+  it("서버 요약과 다른 세 원문을 보존하고 무타이핑 저장 후 재마운트 없이 확정한다", async () => {
+    const user = userEvent.setup();
+    const inquiry = createStoredDetail();
+    inquiry.consultation!.customerGuidance = "기존 고객 안내 원문";
+    inquiry.consultation!.additionalCheck = "기존 추가 확인 원문";
+    const expectedRecord = [
+      "상담 기록", "화면의 상담 기록", "", "고객 안내 내용", "기존 고객 안내 원문",
+      "", "추가 확인사항", "기존 추가 확인 원문",
+    ].join("\n");
+    const onSummaryConfirmed = vi.fn();
+    hookMocks.execute
+      .mockResolvedValueOnce({ ok: true, result: { status: "CONSULTATION_IN_PROGRESS", stateVersion: 5 } })
+      .mockResolvedValueOnce({ ok: true, result: { status: "CONSULTATION_IN_PROGRESS", stateVersion: 6 } });
+    render(<RemoteConsultationActionPanel inquiry={inquiry} onOpenVisit={vi.fn()} onRefresh={vi.fn()} onSummaryConfirmed={onSummaryConfirmed} />);
+    const confirm = screen.getByRole("button", { name: "상담 내용 확정" });
+    const record = screen.getByLabelText("상담 기록");
+
+    expect(record).toHaveValue(expectedRecord);
+    expect(confirm).toBeDisabled();
+    expect(confirm).toHaveAccessibleDescription(/현재 상담 기록을 저장/);
+    await user.click(confirm);
+    expect(hookMocks.execute).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
+
+    expect(hookMocks.execute).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      action: expect.objectContaining({ code: "UPDATE_CONSULTATION_SUMMARY" }),
+      values: expect.objectContaining({
+        consultationNote: expectedRecord, customerGuidance: expectedRecord,
+        additionalCheck: expectedRecord, summaryRevision: expectedRecord,
+      }),
+    }));
+    expect(record).toBeDisabled();
+    expect(confirm).toBeEnabled();
+    expect(screen.queryByText(/현재 상담 기록을 저장해 주세요/)).not.toBeInTheDocument();
+    expect(onSummaryConfirmed).not.toHaveBeenCalled();
+    await user.click(confirm);
+    expect(onSummaryConfirmed).toHaveBeenCalledExactlyOnceWith("CONSULTATION_IN_PROGRESS");
+  });
+
+  it.each([
+    ["저장 실패", { ok: false, error: { kind: "NETWORK_ERROR", message: "네트워크 오류" } }],
+    ["저장 취소", { ok: false, cancelled: true }],
+  ])("%s 시 수정 원문과 저장 필요 상태를 유지하고 이동하지 않는다", async (_name, outcome) => {
+    const user = userEvent.setup();
+    const onSummaryConfirmed = vi.fn();
+    const onRefresh = vi.fn();
+    hookMocks.execute.mockResolvedValue(outcome);
+    render(<RemoteConsultationActionPanel inquiry={createStoredDetail()} onOpenVisit={vi.fn()} onRefresh={onRefresh} onSummaryConfirmed={onSummaryConfirmed} />);
+
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
+    expect(screen.getByLabelText("상담 기록")).toHaveValue("화면의 상담 기록");
+    expect(screen.getByLabelText("상담 기록")).toBeEnabled();
+    expect(screen.getByText(/현재 상담 기록을 저장해 주세요/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "상담 내용 확정" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "상담 내용 확정" }));
+    expect(hookMocks.execute).toHaveBeenCalledTimes(1);
+    expect(onSummaryConfirmed).not.toHaveBeenCalled();
+    expect(onRefresh).not.toHaveBeenCalled();
+  });
+
+  it("AI 초안만 있으면 서버 저장 전에는 확정할 수 없다", async () => {
+    const user = userEvent.setup();
+    const inquiry = createStoredDetail();
+    inquiry.consultation!.consultationNote = "";
+    inquiry.consultation!.customerGuidance = "";
+    inquiry.consultation!.additionalCheck = "";
+    inquiry.consultation!.summary.editedSummary = null;
+    inquiry.consultation!.summary.aiDraftSummary = "AI가 생성한 초안";
+    hookMocks.execute.mockResolvedValue({ ok: true, result: { status: "CONSULTATION_IN_PROGRESS", stateVersion: 5 } });
+    render(<RemoteConsultationActionPanel inquiry={inquiry} onOpenVisit={vi.fn()} onRefresh={vi.fn()} />);
+
+    expect(screen.getByLabelText("상담 기록")).toHaveValue("AI가 생성한 초안");
+    expect(screen.getByRole("button", { name: "상담 내용 확정" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
+    expect(hookMocks.execute).toHaveBeenCalledWith(expect.objectContaining({ values: expect.objectContaining({ summaryRevision: "AI가 생성한 초안" }) }));
+    expect(screen.getByRole("button", { name: "상담 내용 확정" })).toBeEnabled();
+  });
+
+  it("서버의 현재 수정 요약이 기록과 같으면 과거 확정본보다 우선해 바로 확정할 수 있다", () => {
+    const inquiry = createStoredDetail();
+    inquiry.consultation!.summary.editedSummary = "화면의 상담 기록";
+    inquiry.consultation!.summary.confirmedSummary = "과거 확정본";
+    render(<RemoteConsultationActionPanel inquiry={inquiry} onOpenVisit={vi.fn()} onRefresh={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "상담 내용 확정" })).toBeEnabled();
+    expect(screen.queryByText(/현재 상담 기록을 저장해 주세요/)).not.toBeInTheDocument();
+  });
+
+  it("저장 후 더 최신 서버 요약이 달라지면 이전 저장 성공만으로 확정하지 않는다", async () => {
+    const user = userEvent.setup();
+    hookMocks.execute.mockResolvedValue({ ok: true, result: { status: "CONSULTATION_IN_PROGRESS", stateVersion: 5 } });
+    const { rerender } = render(<RemoteConsultationActionPanel inquiry={createStoredDetail()} onOpenVisit={vi.fn()} onRefresh={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
+    expect(screen.getByRole("button", { name: "상담 내용 확정" })).toBeEnabled();
+
+    const refreshed = createStoredDetail(6);
+    refreshed.consultation!.summary.editedSummary = "다른 상담사가 이후 저장한 요약";
+    rerender(<RemoteConsultationActionPanel inquiry={refreshed} onOpenVisit={vi.fn()} onRefresh={vi.fn()} />);
+    expect(screen.getByLabelText("상담 기록")).toHaveValue("화면의 상담 기록");
+    expect(screen.getByRole("button", { name: "상담 내용 확정" })).toBeDisabled();
+    expect(screen.getByText(/현재 상담 기록을 저장해 주세요/)).toBeInTheDocument();
+  });
+
+  it.each(["VISIT_REVIEW_REQUIRED", "VISIT_NEEDED"])("숨긴 %s만 남아도 빈 화면 대신 안내한다", (code) => {
+    const inquiry = createDetail();
+    inquiry.workflow.allowedActions = [{
+      code, label: "방문 검토", operationId: "visitReview", style: "PRIMARY",
+      requiresConfirmation: false, confirmationMessage: null,
+    }];
+    render(<RemoteConsultationActionPanel inquiry={inquiry} onOpenVisit={vi.fn()} onRefresh={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: /방문/ })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("상담 기록")).not.toBeInTheDocument();
+    expect(screen.getByText("현재 진행할 상담 작업이 없습니다.")).toBeInTheDocument();
+  });
+
+  it("저장 폼 없는 상담 시작은 요약 저장 가드에 영향받지 않는다", async () => {
+    const user = userEvent.setup();
+    const inquiry = createDetail();
+    inquiry.workflow.allowedActions = [{
+      code: "START_CONSULTATION", label: "상담 시작", operationId: "startConsultation", style: "PRIMARY",
+      requiresConfirmation: false, confirmationMessage: null,
+    }];
+    render(<RemoteConsultationActionPanel inquiry={inquiry} onOpenVisit={vi.fn()} onRefresh={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "상담 시작" })).toBeEnabled();
+    expect(screen.queryByText(/현재 상담 기록을 저장해 주세요/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "상담 시작" }));
+    expect(hookMocks.execute).toHaveBeenCalledWith(expect.objectContaining({ action: expect.objectContaining({ code: "START_CONSULTATION" }) }));
   });
 
   it("브라우저 재진입 시 서버 상담 기록으로 완료 Form을 복구한다", () => {
@@ -239,12 +406,10 @@ describe("Remote 상담 처리 Panel", () => {
         "저장된 추가 확인",
       ].join("\n"),
     );
-    expect(screen.getByLabelText("상담 내용 수정본")).toHaveValue(
-      "확정 상담 요약",
-    );
-    expect(screen.getByLabelText("상담 내용 수정본")).toBeDisabled();
-    expect(screen.getByLabelText("방문 필요 여부")).toHaveValue("NOT_REQUIRED");
-    expect(screen.getByLabelText("제품 사용 상태")).toHaveValue("NORMAL");
+    expect(screen.queryByLabelText("상담 내용 수정본")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("상담 기록")).toBeDisabled();
+    expect(screen.getByLabelText("방문 필요 여부")).toHaveTextContent("방문 불필요");
+    expect(screen.getByLabelText("제품 사용 상태")).toHaveTextContent("정상 사용 가능");
     expect(screen.queryByLabelText("상담 결과")).not.toBeInTheDocument();
   });
 
@@ -329,8 +494,12 @@ describe("Remote 상담 처리 Panel", () => {
     );
 
     expect(screen.queryByLabelText("상담 결과")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.clear(screen.getByLabelText("상담 기록"));
     await user.type(screen.getByLabelText("상담 기록"), "고객 상태 확인");
-    await user.selectOptions(screen.getByLabelText("방문 필요 여부"), "NOT_REQUIRED");
+    await user.click(screen.getByLabelText("방문 필요 여부"));
+    await user.click(screen.getByRole("option", { name: "방문 불필요" }));
+    await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
     await user.click(screen.getByRole("button", { name: "상담 처리 완료" }));
 
     expect(hookMocks.execute).toHaveBeenCalledWith(
@@ -414,8 +583,8 @@ describe("Remote 상담 처리 Panel", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText("상담 기록"), "필터 상태 확인");
     await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.type(screen.getByLabelText("상담 기록"), "필터 상태 확인");
     await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
 
     expect(confirmPrompt).not.toHaveBeenCalled();

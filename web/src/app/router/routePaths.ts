@@ -7,6 +7,7 @@ export const ROUTE_PATHS = {
   adminInsights: "/admin/insights",
   consultantDashboard: "/consultant/dashboard",
   consultantNotices: "/consultant/notices",
+  consultantContacts: "/consultant/contacts",
   consultantInquiryList: "/consultant/inquiries",
   consultantPhoneInquiryCreate: "/consultant/phone-inquiries/new",
   consultantInquiryDetail: "/consultant/inquiries/:inquiryId",

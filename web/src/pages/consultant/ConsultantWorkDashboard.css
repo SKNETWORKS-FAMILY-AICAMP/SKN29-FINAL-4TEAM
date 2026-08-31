@@ -368,6 +368,33 @@ html body
   gap: 7px;
 }
 
+html body #root .consultant-dashboard-app
+  .counselor-dashboard-info__panel--contacts
+  .counselor-dashboard-contact-tools .counselor-dashboard-contacts-all {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 4px;
+  min-height: 32px;
+  padding: 5px 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--consultant-refresh-navy, #3f4858) !important;
+  -webkit-text-fill-color: currentColor !important;
+  box-shadow: none !important;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+html body #root .consultant-dashboard-app
+  .counselor-dashboard-contact-tools .counselor-dashboard-contacts-all:focus-visible {
+  outline: 2px solid var(--consultant-refresh-navy, #3f4858);
+  outline-offset: 3px;
+}
+
 .counselor-dashboard-contact-tools label {
   display: flex;
   width: 198px;

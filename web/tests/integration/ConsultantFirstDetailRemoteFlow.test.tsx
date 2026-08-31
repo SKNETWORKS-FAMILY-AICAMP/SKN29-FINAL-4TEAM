@@ -599,7 +599,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     renderPage("list");
     await user.click(
       await screen.findByRole("button", {
-        name: "합성 고객 02 미배정 누수 상담 상담 시작",
+        name: "미배정 누수 상담 상담 시작",
       }),
     );
 
@@ -683,8 +683,10 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     let currentActions: readonly WorkflowAction[] = [startAction];
     let savedNote: string | null = null;
     let savedGuidance: string | null = null;
+    let savedAdditionalCheck: string | null = null;
     let savedSummary: string | null = null;
     let confirmedSummary: string | null = null;
+    let savedResultCode: NonNullable<ConsultantInquiryDetailViewModel["consultation"]>["resultCode"] = "PENDING";
 
     const unassignedItem = {
       inquiryId: CLAIM_INQUIRY_ID,
@@ -729,9 +731,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
         ? null
         : {
             consultationId: "consultation-wpujac104dwh",
-            resultCode: currentStatus === "COMPLETION_PENDING"
-              ? "COMPLETED_NO_VISIT"
-              : "PENDING",
+            resultCode: savedResultCode,
             summary: {
               aiDraftSummary: null,
               editedSummary: savedSummary,
@@ -741,7 +741,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
                 : null,
             },
             consultationNote: savedNote,
-            additionalCheck: null,
+            additionalCheck: savedAdditionalCheck,
             customerGuidance: savedGuidance,
             usageGuidanceStatus: "NORMAL",
           },
@@ -798,7 +798,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       correlationId: `corr-detail-${currentStateVersion}`,
       data: inquiryId === CLAIM_INQUIRY_ID ? currentDetail() : DETAIL,
     }));
-    remoteMocks.requestApi.mockImplementation(async (path) => {
+    remoteMocks.requestApi.mockImplementation(async (path, options) => {
       if (path.endsWith("/claim-consultation")) {
         claimed = true;
         currentStateVersion = 4;
@@ -816,9 +816,11 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
         currentStateVersion = 6;
         currentStatus = "CONSULTATION_IN_PROGRESS";
         currentActions = [saveAction, confirmAction];
-        savedNote = "고객과 출수 상태를 확인했습니다.";
-        savedGuidance = "필터 상태를 확인하고 정상 사용을 안내했습니다.";
-        savedSummary = "출수량 저하 상담 요약";
+        savedNote = options.body.consultation_note;
+        savedGuidance = options.body.customer_guidance;
+        savedAdditionalCheck = options.body.additional_check;
+        savedSummary = options.body.summary;
+        savedResultCode = options.body.result_code;
         return transitionResponse();
       }
       if (path.endsWith("/consultation-summary/confirm")) {
@@ -841,7 +843,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     renderPage("list");
     await user.click(
       await screen.findByRole("button", {
-        name: `${unassignedItem.customerDisplayNameMasked} ${unassignedItem.symptomSummary} 상담 시작`,
+        name: `${unassignedItem.symptomSummary} 상담 시작`,
       }),
     );
 
@@ -863,19 +865,26 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     await user.click(
       await screen.findByRole("button", { name: "상담 시작" }),
     );
-    await user.type(
-      await screen.findByLabelText("상담 기록"),
-      "고객과 출수 상태를 확인하고 필터 상태 및 정상 사용 방법을 안내했습니다.",
-    );
+    expect(await screen.findByLabelText("상담 기록")).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
     await user.type(
-      screen.getByLabelText("상담 내용 수정본"),
-      "출수량 저하 상담 요약",
+      screen.getByLabelText("상담 기록"),
+      "고객과 출수 상태를 확인하고 필터 상태 및 정상 사용 방법을 안내했습니다.",
     );
-    await user.selectOptions(screen.getByLabelText("방문 필요 여부"), "NOT_REQUIRED");
+    await user.click(screen.getByRole("combobox", { name: "방문 필요 여부" }));
+    await user.click(screen.getByRole("option", { name: "방문 불필요" }));
 
     await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
     await user.click(await screen.findByRole("button", { name: "상담 내용 확정" }));
+    expect(await screen.findByRole("region", { name: "문의 처리 결과" })).toHaveTextContent("상담 진행 중");
+    expect(screen.getByRole("region", { name: "문의 처리 결과" }).parentElement).toBe(
+      screen.getByRole("tabpanel", { name: "처리 완료된 문의" }),
+    );
+    expect(screen.getByLabelText("현재 경로")).toHaveTextContent("/consultant/inquiries?bucket=COMPLETED");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(currentStatus).toBe("CONSULTATION_IN_PROGRESS");
+    await user.click(screen.getByRole("button", { name: "해당 문의 확인" }));
+    await user.click(await screen.findByRole("button", { name: "상담 3단계: 상담 진행" }));
     await user.click(await screen.findByRole("button", { name: "상담 완료" }));
 
     await waitFor(() =>
