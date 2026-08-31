@@ -473,7 +473,7 @@
     {
       "path": "schemas/config/representativeCase.schema.json",
       "size_bytes": 3533,
-      "sha256": "1FBECE355989B682559B1AE8F6FE2695ACE808485E17A9139D26679FAC8E7610"
+      "sha256": "0031E71E7CE725A44805886B99DAAE011D9916DCA22FF0DDAEDD06028323FB03"
     },
     {
       "path": "schemas/config/serviceContractMapping.schema.json",
@@ -903,6 +903,11 @@
       "sha256": "E5B528E2857652F7F1087A79CF728B5613AEE4C21AB273379B6D52CC3328F9CF"
     },
     {
+      "path": "tools/tests/test_schema_validation.py",
+      "size_bytes": 6004,
+      "sha256": "77D4A8793CC961C2A51F9C807506B7EB6370706570E539FB8F24FB0D286A2E82"
+    },
+    {
       "path": "tools/tests/test_service_contract_mapping.py",
       "size_bytes": 16169,
       "sha256": "143CE5B0BE89B30FFFD5B24D767EBA9347A6F0267A55B20A4843E53C8B9F244A"
@@ -954,8 +959,8 @@
     },
     {
       "path": "tools/watercare/validation.py",
-      "size_bytes": 75975,
-      "sha256": "4CA5EB50C6528197F44BCF25D62B64D93C28E6F937A568DBF05905B2850AC00D"
+      "size_bytes": 75421,
+      "sha256": "C9EC4EC5B868AF9B7FB0D8146B0E8CF1CDED82E25DA767B8EEBBBF1EDCC0E869"
     }
   ],
   "config_files": [
@@ -1356,10 +1361,10 @@
     "canonical_drift_files": 0
   },
   "toolchain": {
-    "python_files": 53,
-    "python_lines": 13002,
+    "python_files": 54,
+    "python_lines": 13121,
     "max_wrapper_lines": 10,
-    "max_module_lines": 1939
+    "max_module_lines": 1936
   },
   "rag_policy": {
     "mvp_indexed_model": "WPUJAC104DWH",
