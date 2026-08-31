@@ -135,7 +135,12 @@ class BackendCIWorkflowTests(unittest.TestCase):
         self.assertIn("branches:\n      - main", text)
         self.assertNotIn('      - "data/**"', text)
         self.assertIn("name: Verify Backend baseline", text)
-        self.assertIn("tests.deployment.test_backend_ci_workflow -v", text)
+        self.assertIn("python -B -m unittest -v", text)
+        self.assertIn("tests.deployment.test_backend_ci_workflow", text)
+        self.assertIn(
+            "tests.deployment.test_three_model_readonly_nonprod_qa_assets",
+            text,
+        )
         self.assertIn("if: ${{ always() }}", text)
         self.assertIn('[[ "$SHARD_RESULT" == "success" ]]', text)
         self.assertIn('[[ "$SHARD_RESULT" == "skipped" ]]', text)

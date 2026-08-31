@@ -44,11 +44,25 @@ COPY --chown=waterbridge:waterbridge .gitattributes /workspace/.gitattributes
 COPY --chown=waterbridge:waterbridge ai/ /workspace/ai/
 COPY --chown=waterbridge:waterbridge contracts/ /workspace/contracts/
 COPY --chown=waterbridge:waterbridge data/ /workspace/data/
+COPY --chown=waterbridge:waterbridge scripts/deployment/production/validate_ai_readonly_runtime.py /workspace/scripts/deployment/production/validate_ai_readonly_runtime.py
 RUN chown --recursive waterbridge:waterbridge /workspace
 
 USER waterbridge
 
 RUN python -m pytest ai/tests/unit -q -p no:cacheprovider
+
+FROM qa AS readonly-qa
+
+ARG AI_EMBEDDING_REVISION=5617a9f61b028005a4858fdac845db406aefb181
+ENV AI_EMBEDDING_REVISION=${AI_EMBEDDING_REVISION} \
+    HF_HOME=/home/waterbridge/.cache/huggingface \
+    SENTENCE_TRANSFORMERS_HOME=/home/waterbridge/.cache/sentence-transformers \
+    HF_HUB_DISABLE_TELEMETRY=1
+
+RUN python -c "import os,re; revision=os.environ['AI_EMBEDDING_REVISION']; assert re.fullmatch(r'[0-9a-f]{40}', revision); from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-m3', device='cpu', revision=revision)"
+
+ENV HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1
 
 FROM dependencies AS runtime
 

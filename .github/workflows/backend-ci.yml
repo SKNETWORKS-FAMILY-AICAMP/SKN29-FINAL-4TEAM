@@ -68,8 +68,9 @@ jobs:
 
       - name: Verify Backend shard ownership and workflow policy
         run: >-
-          python -B -m unittest
-          tests.deployment.test_backend_ci_workflow -v
+          python -B -m unittest -v
+          tests.deployment.test_backend_ci_workflow
+          tests.deployment.test_three_model_readonly_nonprod_qa_assets
 
   backend-tests:
     name: Backend ${{ matrix.name }} shard

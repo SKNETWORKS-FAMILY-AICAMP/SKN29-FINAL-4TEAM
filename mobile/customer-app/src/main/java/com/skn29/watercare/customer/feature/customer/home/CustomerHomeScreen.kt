@@ -49,6 +49,9 @@ import com.skn29.watercare.core.ui.components.ReferenceGlassPanel
 import com.skn29.watercare.customer.BuildConfig
 import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
+import com.skn29.watercare.customer.feature.shared.CustomerInitialLoadingState
+import com.skn29.watercare.customer.feature.shared.CustomerEmptyState
+import com.skn29.watercare.customer.feature.shared.CustomerErrorState
 import kotlinx.coroutines.delay
 
 @Composable
@@ -98,6 +101,11 @@ fun CustomerHomeScreen(
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // 화면 최초 진입은 ViewModel init에서 이미 load()를 수행한다.
+    // 이후 다른 화면에서 홈으로 돌아오는 ON_RESUME에서만
+    // 다시 조회해 서버 최신 상태를 반영한다.
+    // 최초 진입에서도 다시 load하면 같은 API가 연속 호출될 수 있으므로
+    // hasResumedOnce로 중복 조회를 막는다.
     var hasResumedOnce by
         rememberSaveable {
             mutableStateOf(false)
@@ -351,60 +359,43 @@ fun CustomerHomeContent(
                 !emptySubscription
 
         if (initialLoading) {
-            // Visible loading UI intentionally hidden.
+            // 최초 홈 데이터가 아직 없을 때는 빈 화면 대신
+            // 명시적인 로딩 상태를 보여준다.
+            CustomerInitialLoadingState(
+                message =
+                    "정수기와 문의 상태를 확인하고 있어요.",
+            )
         }
 
         if (emptySubscription) {
-            Column(
+            // Empty는 장애가 아니라
+            // 정상 응답이지만 구독 정수기가 없는 상태이다.
+            // Error 표현을 쓰지 않고 다음에 할 수 있는 행동을 안내한다.
+            CustomerEmptyState(
+                title =
+                    "등록된 정수기가 없어요",
+                message =
+                    "구독 중인 정수기가 연결되면 홈에서 정수기 관리와 문의 기능을 이용할 수 있어요.",
+                actionLabel =
+                    "다시 확인",
+                onAction = onRetry,
+            )
+
+            ReferenceGlassButton(
+                text = "로그아웃",
+                palette = palette,
+                onClick = onLogout,
+                enabled =
+                    !state.loggingOut,
                 modifier =
                     Modifier.fillMaxWidth(),
-                verticalArrangement =
-                    Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = "등록된 정수기가 없어요",
-                    style =
-                        MaterialTheme
-                            .typography
-                            .titleLarge,
-                    fontWeight =
-                        FontWeight.SemiBold,
-                )
-
-                Text(
-                    text =
-                        "구독 중인 정수기가 연결되면 홈에서 정수기 관리와 문의 기능을 이용할 수 있어요.",
-                    style =
-                        MaterialTheme
-                            .typography
-                            .bodyMedium,
-                    color = palette.textMuted,
-                )
-
-                ReferenceGlassButton(
-                    text = "다시 확인",
-                    palette = palette,
-                    onClick = onRetry,
-                    enabled =
-                        !state.loggingOut,
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                )
-
-                ReferenceGlassButton(
-                    text = "로그아웃",
-                    palette = palette,
-                    onClick = onLogout,
-                    enabled =
-                        !state.loggingOut,
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                )
-            }
+            )
         }
 
         if (blockingError) {
-            ErrorCard(
+            // 초기 조회 실패는 보여줄 기존 데이터가 없으므로
+            // 전체 상태를 Error UI로 명확히 안내한다.
+            CustomerErrorState(
                 message =
                     customerHomeErrorMessage(
                         requireNotNull(
@@ -416,48 +407,27 @@ fun CustomerHomeContent(
         }
 
         if (missingHome) {
-            Column(
-                modifier =
-                    Modifier.fillMaxWidth(),
-                verticalArrangement =
-                    Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = "정수기 정보를 확인할 수 없어요",
-                    style =
-                        MaterialTheme
-                            .typography
-                            .titleLarge,
-                    fontWeight =
-                        FontWeight.SemiBold,
-                )
-
-                Text(
-                    text = "잠시 후 다시 확인해 주세요.",
-                    style =
-                        MaterialTheme
-                            .typography
-                            .bodyMedium,
-                    color = palette.textMuted,
-                )
-
-                ReferenceGlassButton(
-                    text = "다시 확인",
-                    palette = palette,
-                    onClick = onRetry,
-                    enabled =
-                        !state.loggingOut,
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                )
-            }
+            // error message도 없고 home data도 없는 비정상 상태.
+            // 빈 화면을 남기지 않고 사용자가 복구할 수 있게 한다.
+            CustomerErrorState(
+                title =
+                    "정수기 정보를 확인할 수 없어요",
+                message =
+                    "잠시 후 다시 확인해 주세요.",
+                retryLabel =
+                    "다시 확인",
+                onRetry = onRetry,
+            )
         }
 
         if (
             state.loading &&
             state.home != null
         ) {
-            // Visible loading UI intentionally hidden.
+            // 기존 홈 데이터가 있는 새로고침은 화면을
+            // 로딩 화면으로 덮지 않는다.
+            // PullToRefreshBox의 indicator만 보여
+            // 사용자가 보던 정보를 유지한다.
         }
 
         if (
@@ -465,7 +435,9 @@ fun CustomerHomeContent(
             !state.loading &&
             state.home != null
         ) {
-            // Visible loading UI intentionally hidden.
+            // 제품 변경 중에도 기존 홈을 유지한다.
+            // 선택 결과가 도착한 뒤 화면 데이터만 교체해
+            // 깜빡임을 줄인다.
         }
 
         if (
@@ -653,13 +625,16 @@ fun CustomerHomeContent(
                     confirmButton = {
                         TextButton(
                             onClick = {
+                                // 이 AlertDialog는 cancelAvailable이 true일 때만
+                                // 화면에 생성된다.
+                                // cancelAvailable은 active inquiry가 존재해야 true가 되므로
+                                // 여기서 nullable 검사를 다시 하면 항상 true인 중복 조건이 된다.
+                                // requireNotNull로 이 화면의 선행 조건을 코드에 명시한다.
                                 val snapshot =
-                                    remoteInquiryForSelectedProduct
+                                    requireNotNull(
+                                        remoteInquiryForSelectedProduct
+                                    )
 
-                                if (
-                                    snapshot != null &&
-                                    cancelAvailable
-                                ) {
                                     showCancelDialog.value =
                                         false
 
@@ -724,7 +699,6 @@ fun CustomerHomeContent(
                                             else -> Unit
                                         }
                                     }
-                                }
                             },
                             modifier =
                                 Modifier.testTag(
