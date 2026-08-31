@@ -141,7 +141,7 @@ class CustomerGuidanceGenerator:
             )
         except ValueError as exc:
             raise GuidanceGenerationExecutionError(
-                "LLM Guidance가 최종 안전·근거 Gate를 통과하지 못했습니다.",
+                "LLM Guidance가 최종 안전 Gate를 통과하지 못했습니다.",
                 retry_count=retry_count,
                 retryable=False,
             ) from exc
@@ -183,18 +183,29 @@ class CustomerGuidanceGenerator:
             values = [
                 symptom_type,
                 target_water_type,
+                symptom.occurrence_time,
+                symptom.occurrence_condition,
                 symptom.error_code,
                 (
                     ctx.evidence_applicability.provider_label
                     if ctx.evidence_applicability is not None
                     else None
                 ),
+                *symptom.accompanying_symptoms,
+                *symptom.actions_taken,
             ]
-        symptom_summary = " | ".join(
-            CustomerGuidanceGenerator._redact_provider_text(value)
-            for value in values
-            if value
-        )
+        sanitized_values: list[str] = []
+        seen_values: set[str] = set()
+        for value in values:
+            if not value:
+                continue
+            sanitized = CustomerGuidanceGenerator._redact_provider_text(value)
+            normalized = " ".join(sanitized.split()).casefold()
+            if not sanitized or normalized in seen_values:
+                continue
+            seen_values.add(normalized)
+            sanitized_values.append(sanitized)
+        symptom_summary = " | ".join(sanitized_values)
         if not symptom_summary:
             symptom_summary = "기타 증상"
         sanitized_model_code = CustomerGuidanceGenerator._redact_provider_text(

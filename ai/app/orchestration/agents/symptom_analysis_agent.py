@@ -3,6 +3,10 @@
 from __future__ import annotations
 
 from ...common.timeout import CancellationToken, get_stage_timeout_policy
+from ...structuring.llm_contracts import (
+    FollowUpWordingLLMClient,
+    SymptomStructuringLLMClient,
+)
 from ...schemas import AiStage, RiskLevel
 from ..pipeline_context import PipelineContext
 from ..stages import (
@@ -11,6 +15,7 @@ from ..stages import (
     execute_structuring_stage,
 )
 from .contracts import SymptomAgentOutput
+from ..clarification_policy import should_wait_for_customer_input
 
 
 class SymptomAnalysisAgent:
@@ -18,17 +23,36 @@ class SymptomAnalysisAgent:
 
     allowed_tools = (
         "SymptomStructurer",
+        "SymptomStructuringLLM",
         "SafetyRule",
         "MissingFieldChecker",
         "DuplicateQuestionGuard",
+        "FollowUpWordingLLM",
     )
 
-    def __init__(self, cancellation_token: CancellationToken) -> None:
+    def __init__(
+        self,
+        cancellation_token: CancellationToken,
+        *,
+        symptom_llm_client: SymptomStructuringLLMClient | None = None,
+        followup_llm_client: FollowUpWordingLLMClient | None = None,
+    ) -> None:
         self.cancellation_token = cancellation_token
         self.timeout_policy = get_stage_timeout_policy()
+        self.symptom_llm_client = symptom_llm_client
+        self.followup_llm_client = followup_llm_client
 
     def run(self, ctx: PipelineContext) -> SymptomAgentOutput:
-        self._run_stage(AiStage.STRUCTURING, execute_structuring_stage, ctx)
+        structuring_timeout = self.timeout_policy.for_stage(AiStage.STRUCTURING.value)
+        self._run_stage(
+            AiStage.STRUCTURING,
+            lambda current: execute_structuring_stage(
+                current,
+                self.symptom_llm_client,
+                timeout_seconds=min(4.0, structuring_timeout),
+            ),
+            ctx,
+        )
         self._run_stage(AiStage.SAFETY_CHECK, execute_safety_check_stage, ctx)
         if ctx.safety_assessment is None:
             raise RuntimeError("질문 생성 전에 안전 평가가 필요합니다.")
@@ -38,7 +62,16 @@ class SymptomAnalysisAgent:
         else:
             self._run_stage(
                 AiStage.CHECKING_MISSING_FIELDS,
-                execute_missing_fields_stage,
+                lambda current: execute_missing_fields_stage(
+                    current,
+                    self.followup_llm_client,
+                    timeout_seconds=min(
+                        4.0,
+                        self.timeout_policy.for_stage(
+                            AiStage.CHECKING_MISSING_FIELDS.value
+                        ),
+                    ),
+                ),
                 ctx,
             )
         return self._output(ctx)
@@ -66,5 +99,5 @@ class SymptomAnalysisAgent:
             safety_assessment=ctx.safety_assessment,
             missing_fields=list(ctx.missing_fields),
             followup_questions=list(ctx.followup_questions),
-            clarification_needed=bool(ctx.followup_questions),
+            clarification_needed=should_wait_for_customer_input(ctx),
         )

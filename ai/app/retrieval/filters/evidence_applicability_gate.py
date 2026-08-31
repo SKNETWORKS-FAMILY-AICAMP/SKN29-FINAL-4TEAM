@@ -49,6 +49,12 @@ class EvidenceApplicabilityGate:
     QUESTION_ID = "followup-taste-odor-applicability"
     TARGET_FIELD = "taste_odor_applicability"
     _TASTE_OR_ODOR_SYMPTOM = "물맛/냄새 이상"
+    SUPPORTED_CONDITIONS = frozenset({
+        EvidenceApplicability.ABSENCE_WITHIN_10_DAYS,
+        EvidenceApplicability.ABSENCE_OVER_10_DAYS,
+        EvidenceApplicability.LONG_UNUSED,
+        EvidenceApplicability.UNSUITABLE_INSTALLATION,
+    })
     _ANSWER_OPTIONS = {
         "10일 이내 부재 후": EvidenceApplicability.ABSENCE_WITHIN_10_DAYS,
         "10일 이상 부재 후": EvidenceApplicability.ABSENCE_OVER_10_DAYS,
@@ -90,8 +96,12 @@ class EvidenceApplicabilityGate:
             return True
         return (
             symptom_type == self._TASTE_OR_ODOR_SYMPTOM
-            and self.classify(previous_answers) is None
+            and self.classify(previous_answers) not in self.SUPPORTED_CONDITIONS
         )
+
+    @classmethod
+    def required_missing_fields(cls, *, symptom_type, missing_field_names):
+        return cls._REQUIRED_FIELDS_BY_SYMPTOM_TYPE.get(symptom_type or "", frozenset()).intersection(missing_field_names)
 
     def followup_question(
         self,
@@ -165,6 +175,11 @@ class EvidenceApplicabilityGate:
         candidates = list(chunks)
         if symptom_type != self._TASTE_OR_ODOR_SYMPTOM:
             return candidates
-        if applicability == EvidenceApplicability.ABSENCE_WITHIN_10_DAYS:
+        if applicability in {
+            EvidenceApplicability.ABSENCE_WITHIN_10_DAYS,
+            EvidenceApplicability.ABSENCE_OVER_10_DAYS,
+            EvidenceApplicability.LONG_UNUSED,
+            EvidenceApplicability.UNSUITABLE_INSTALLATION,
+        }:
             return candidates
         return []

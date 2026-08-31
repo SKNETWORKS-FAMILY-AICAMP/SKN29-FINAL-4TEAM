@@ -252,8 +252,8 @@ def test_omitted_view_record_type_is_not_a_general_filter_bypass(recovery, field
 
 @pytest.mark.parametrize("runtime", ["single_rag", "multi_agent"])
 @pytest.mark.parametrize("answer,expected_calls", [("10일 이내 부재 후", 1),
-                                                  ("10일 이상 부재 후", 0)])
-def test_v2_taste_path_keeps_the_existing_applicability_boundary(
+                                                  ("10일 이상 부재 후", 1)])
+def test_v2_taste_path_accepts_only_the_matching_verified_condition(
     recovery, runtime, answer, expected_calls,
 ):
     recovery.store.chunks = [recovery.chunks[TASTE_ID]]
@@ -267,6 +267,9 @@ def test_v2_taste_path_keeps_the_existing_applicability_boundary(
     if expected_calls:
         assert response.status.value == "SUCCEEDED"
         assert [item.chunk_id for item in response.evidence_references] == [TASTE_ID]
+        summary = response.evidence_references[0].summary
+        assert ("1L" in summary) == (answer == "10일 이내 부재 후")
+        assert ("점검을 요구" in summary) == (answer == "10일 이상 부재 후")
     else:
         assert response.fallback_reason_code.value == "NO_EVIDENCE"
         assert response.evidence_references == []

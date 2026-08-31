@@ -1,0 +1,646 @@
+{
+  "artifact_payload_sha256": "df34182ce918de097c2c85b60f57bcda7e7e383cec05cdf82da96677b78fb864",
+  "base_main_sha": "2305189a1fd62f6fe40bd55c6d2c1fc310a6a783",
+  "candidate_ai_file_count": 60,
+  "candidate_ai_files": [
+    {
+      "candidate_sha256": "e68a95f8b36af5854f6c3d4d8921ae9cf8c685ca087e1c5b8ce0657833065cbe",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/generation/customer_guidance/guidance_generator.py"
+    },
+    {
+      "candidate_sha256": "701f77a12d8a22330028638e78e9f4f17523d608095e8f454a5580f660791c08",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/integrations/llm/llm_client.py"
+    },
+    {
+      "candidate_sha256": "93e9262ddab6384e81ed548aaaa6856d6295f80ed6e24e8b32754c3618ce523c",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/integrations/llm/natural_language_client.py"
+    },
+    {
+      "candidate_sha256": "12f766b41017efca1610292ddb7aa0029e41da2d289512863af31dba3410cbcc",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/integrations/llm/token_usage.py"
+    },
+    {
+      "candidate_sha256": "f817fd2e35248c5614a13e38014d88d28bf3843d4f84ac86510f27a8aa0339cc",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/orchestration/agents/evidence_analysis_agent.py"
+    },
+    {
+      "candidate_sha256": "e87e07585cabc2c33e7fc4581f0c1ef200d83674dbaf99930875aad3394add38",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/orchestration/agents/symptom_analysis_agent.py"
+    },
+    {
+      "candidate_sha256": "f147ea74635cf0623e25e496842bb2df7d2e2d6b0b00ca9dc03caf47820054d1",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/orchestration/clarification_policy.py"
+    },
+    {
+      "candidate_sha256": "9c5c6e2fb80e50ebd68599c8ef93064ed1ea3129b70bcb79a985f83f9c269006",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/orchestration/pipeline_context.py"
+    },
+    {
+      "candidate_sha256": "c3b56c245fd3f9bba97fa662eb77ba7e30fbe3fe9a8f564f2a6c201134b40d9d",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/app/orchestration/pipeline_result.py"
+    },
+    {
+      "candidate_sha256": "69295db6d27d0cd12c4fc42ae345f1e443040854a0b04f03d0d01bdacf41fb6c",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/orchestration/pipeline_router.py"
+    },
+    {
+      "candidate_sha256": "e0b7a42950a03c70a751b292efcd6cb8e1b4c641a648ee00ee01f8f6aeff6ee9",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/orchestration/pipelines/multi_agent_pipeline.py"
+    },
+    {
+      "candidate_sha256": "1a96b8a4cc8157e8e19fc529433459132f3a8a609c2f29d8223ab107cb20e951",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/orchestration/pipelines/single_rag_pipeline.py"
+    },
+    {
+      "candidate_sha256": "df1db7a5cc052be71f1132d0c726bafc307e098f4e9cc9887fa27f7eabd16ff1",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/orchestration/stages/missing_fields_stage.py"
+    },
+    {
+      "candidate_sha256": "54ee3fe53f3af7e6d9b0fd94be0d81a4c74e033cfa4654b81cef8dbe0c1e368b",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/app/orchestration/stages/questionnaire_pending_stage.py"
+    },
+    {
+      "candidate_sha256": "772b997daac8ba7e00862904179753d4b9a74c6be6f043b6407fee9ed66eb686",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/orchestration/stages/retrieval_stage.py"
+    },
+    {
+      "candidate_sha256": "3db7ea9f1c385cbf6396794c64e32c3e8d1304f343b9c5be5fbae53ac22d50c8",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/orchestration/stages/safety_check_stage.py"
+    },
+    {
+      "candidate_sha256": "c3074d148f1b0e947e48fc0eaadd5c4e076598ce2437bbe58382d786f631601e",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/orchestration/stages/structuring_stage.py"
+    },
+    {
+      "candidate_sha256": "c2f4ab03f718786d39a8a36a7547d76a94df0ab51fd2ce083b6fee408a5583c9",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/retrieval/__init__.py"
+    },
+    {
+      "candidate_sha256": "703cde01584624449b79365b1ceeb2f8c784b2db23536a658bef3f64421e6344",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/retrieval/filters/__init__.py"
+    },
+    {
+      "candidate_sha256": "e95f0f0fe49c4900e592878561a37327040a144c9ed2de27713b2f18abcd8421",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/app/retrieval/filters/canonical_topics.py"
+    },
+    {
+      "candidate_sha256": "4a95ad26afd57fa6b1a6c7b2c565e807e9d150bd454959cbbf5c82428fee6b32",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/retrieval/filters/evidence_applicability_gate.py"
+    },
+    {
+      "candidate_sha256": "ca800ff0e49735ba98bcbed1a509b76a9fbc31c82ea375b079772bca1356ba6c",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/retrieval/filters/evidence_topic_filter.py"
+    },
+    {
+      "candidate_sha256": "f1f8bcbf5235c66805e86b3e3750b6ca5dbe4e2c5634cfcd6142f58653dd1663",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/retrieval/filters/scenario_evidence_selector.py"
+    },
+    {
+      "candidate_sha256": "0cee598147cccd39a1fb5fbbbdc5773084df6ed3c43d32b96d3b9da06f74f253",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/retrieval/query/context_builder.py"
+    },
+    {
+      "candidate_sha256": "0d601e2c20d610dd00eb67ae7f4b7fe6ebe2a5d1bb0d07a99534f36c09c16102",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/safety/risk_classifier.py"
+    },
+    {
+      "candidate_sha256": "3f6413df9ab83e09785b54aa7236b001b47b679e2facb82d82691b57105b3859",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/app/safety/signal_detector.py"
+    },
+    {
+      "candidate_sha256": "d309d366ab1262d314cd6b36329a6cdd638154196e879b75b226617795582e80",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/app/structuring/duplicate_question_guard.py"
+    },
+    {
+      "candidate_sha256": "c6687e5458de6fe48f3ef77dc4b111d2bfe7f9931438d9dc3cd459f80febe347",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/structuring/followup_question_generator.py"
+    },
+    {
+      "candidate_sha256": "414f4152ba3ba964b3fd6cb80b3b601414c9aa63bad3f14ef33621445efbf975",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/app/structuring/followup_wording_guard.py"
+    },
+    {
+      "candidate_sha256": "e9ae97151379e4f91a8ab2a621a691f392709b9aff66c2ac32fbd3d681e06965",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/structuring/llm_contracts.py"
+    },
+    {
+      "candidate_sha256": "f446952498b41b127d9b0db3d4685656f7d6494751d13ec75005803fc2258e00",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/app/structuring/missing_field_checker.py"
+    },
+    {
+      "candidate_sha256": "0ef71e0f97d1a79c675a32f53b9850b5bd6af84065af6952057c56c43d41823f",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/structuring/symptom_normalizer.py"
+    },
+    {
+      "candidate_sha256": "f49fa0c24408977559c5f5ce601a169121824fe9cad9a28f24aff239e9da932d",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/structuring/symptom_structurer.py"
+    },
+    {
+      "candidate_sha256": "de67ae62ffe033dcd0a0df5c831afe730ebfaf88744e24f367b9d453e72ac2d4",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/app/validation/safety/guidance_message_guard.py"
+    },
+    {
+      "candidate_sha256": "012f0ef0eb1add440101042767ad39928de4bc7e98bbe5c96e13f575f510d145",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/configs/canonical_evidence_topics_3model.json"
+    },
+    {
+      "candidate_sha256": "9ba942070e0e0955f3b03dbeec74812b9d68422a32cac85c41f834a49ff8f5c6",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/configs/model_profiles.yaml"
+    },
+    {
+      "candidate_sha256": "a63fb20ec6c0911f48101fca3cc2a997d7dfc01ab43a922080c79d034f99465e",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/evaluation/readonly_environment.py"
+    },
+    {
+      "candidate_sha256": "95d979e5174a93fa3fd81d9884d68bdef35f202fe7420ea024ff13c76ce392f2",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/evaluation/release_evidence.py"
+    },
+    {
+      "candidate_sha256": "45be38486529c88359c59907f017748c9ac54b8a37a165955403c7cb079042e9",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/evaluation/runners/reference_scenario_runner.py"
+    },
+    {
+      "candidate_sha256": "4143c4f96192ede6b903ed6d83512b6a59ecf06f2e67725fa660800b531f05cd",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/prompts/customer_guidance/v3/system.txt"
+    },
+    {
+      "candidate_sha256": "6f0cdacee6a331963fb4a56c3f60cbc9f6ed4ff356a04f96d32fa27feed5b86f",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/prompts/followup_question/v1/system.txt"
+    },
+    {
+      "candidate_sha256": "319f5f75039b2d63cc465d2b3e08652eae0bbe5ba0017d282a4d71fadc215378",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/prompts/followup_question/v1/user_template.txt"
+    },
+    {
+      "candidate_sha256": "924fe6e723b118bc95c94a4bf234a9e01b1bc91cd9d8c06d81abd4386143162a",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/prompts/prompt_registry.yaml"
+    },
+    {
+      "candidate_sha256": "52973aba0ab3fae525626dad4fc0bb310076a6f7bf49c54d3660b1489a950237",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/prompts/symptom_structuring/v1/system.txt"
+    },
+    {
+      "candidate_sha256": "6be806a389f0c8b213846e95c4729f0d49c8fb2e3a593b34e23c2a25dd199e06",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/prompts/symptom_structuring/v1/user_template.txt"
+    },
+    {
+      "candidate_sha256": "4f518b642263e95e655402aa1a86dfa289a56ef5f3883030535351dba5e70d5a",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/scripts/evaluate_reference_scenarios.py"
+    },
+    {
+      "candidate_sha256": "6e48198685de0b56ddc724aa34195102e010eeb0f970eb520052342f597812eb",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/scripts/verify_three_model_readonly_runtime.py"
+    },
+    {
+      "candidate_sha256": "cf5b5ab5b062f287701762ad6fd512c8a35d4d39463d6eb3cec1bbae0eccca9b",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/tests/unit/harness/test_mcp_pipeline_context_integration.py"
+    },
+    {
+      "candidate_sha256": "fb0137fd4e2208783c081922daa6c8d53175c7d2bff6773afacda9953882f1cf",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/tests/unit/test_backend_integration_fixtures.py"
+    },
+    {
+      "candidate_sha256": "b27bc6c777ecffbf1d87732e1af7a3e2e5af532d0d3c9e4e5c75573d2f39146d",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/tests/unit/test_jac104_v2_recovery.py"
+    },
+    {
+      "candidate_sha256": "466b024b2d5571f094e0714ddeb4e4e9fb05b51078ad822f53405aa7b7a0806c",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/tests/unit/test_llm_guidance.py"
+    },
+    {
+      "candidate_sha256": "b6576da60d35b5f1ad89a6684d2bc6dfc2148b68ea786a77425042ee052d1d19",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/tests/unit/test_multi_agent_pipeline.py"
+    },
+    {
+      "candidate_sha256": "3d876943bb38e9bbc06104e4f5fe7c41387fa9f023df1a9d6e975b3e717bc71c",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/tests/unit/test_natural_language_structuring.py"
+    },
+    {
+      "candidate_sha256": "2dc3dee730666d1633886d50ce8e90f648aff4ff0155a8bb3659712ed82844de",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/tests/unit/test_pipeline.py"
+    },
+    {
+      "candidate_sha256": "79f8f613a67dc48e543e814d360a1894ad1dbf7aeeb5c415f12e89f9cc21d8df",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/tests/unit/test_release_evaluation.py"
+    },
+    {
+      "candidate_sha256": "63a988856fc5784c47670cfdfae099c9287feb11bd4da25e43391d72d9e0e8b6",
+      "origin": "SELECTED_RENEW",
+      "path": "ai/tests/unit/test_retrieval.py"
+    },
+    {
+      "candidate_sha256": "bfd64b1d2e19bffe6682d6e49efc310724e029935fb7d23ff68d5d528fb0bed8",
+      "origin": "SELECTED_RENEW_WITH_FIXES",
+      "path": "ai/tests/unit/test_runtime_flow_regressions_20260831.py"
+    },
+    {
+      "candidate_sha256": "25905a90cf57eec74980aec729954d3e61432c85af881913e769867b088aedc1",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/tests/unit/test_scenario_evidence_selection.py"
+    },
+    {
+      "candidate_sha256": "13794c5f20c25482c5f489e183a400b2159a99651bbc138329ea415d52a67439",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/tests/unit/test_selective_http_safety.py"
+    },
+    {
+      "candidate_sha256": "26a16ed162fee0796e4359c4b1ac7e072eaf8c784cdd0d1d94cf24b1e2d1e074",
+      "origin": "ADDITIONAL_FIX_OR_VERIFICATION",
+      "path": "ai/tests/unit/test_selective_runtime_safety.py"
+    }
+  ],
+  "candidate_ai_files_sha256": "dfec422555401a7a8079a9823369b0acdd7612acf1a76231dc56d87c8e095224",
+  "candidate_branch": "codex/ai-main-selective-20260831",
+  "candidate_head_is_base_not_final_sha": true,
+  "excluded": [
+    "backend/**",
+    "contracts/**",
+    "data/**",
+    "mobile/**",
+    "web/**",
+    "infra/**",
+    ".github/**",
+    "ai/app/integrations/mcp/**",
+    "ai/app/common/timeout/**",
+    "ai/configs/retry_policy.yaml",
+    "ai/app/bootstrap.py",
+    "ai/app/retrieval/runtime_profile.py",
+    "ai/app/retrieval/filters/scope_filter.py",
+    "ai/app/retrieval/verification/index_readiness.py",
+    "ai/experiment_results/**",
+    "ai/scripts/experiments/**"
+  ],
+  "excluded_commits": [
+    {
+      "reason": "Keep mandatory input before retrieval and the existing 30-second total deadline.",
+      "sha": "a55d2d6b4f0e8997e9df982f4d36112650373108"
+    },
+    {
+      "reason": "Do not adopt questionnaire redesign, shared HTTP lifetime changes or longer timeout without release evidence.",
+      "sha": "a297be331782f179a288462e7094b5f544795602"
+    },
+    {
+      "reason": "CAUTION CONFIRMED/PRE_SEND HumanReview removal conflicts with the PM publication policy; Backend remains latest main.",
+      "sha": "f8d090ae780a1bcba5d2b2b0b547df6a31700ae5"
+    }
+  ],
+  "file_hash_normalization": "UTF8_LF",
+  "latest_renew_observed_sha": "f8d090ae780a1bcba5d2b2b0b547df6a31700ae5",
+  "ledger_implementation": "HOLD_PENDING_PM_CONTRACT_APPROVAL",
+  "public_runtime_activation": "HOLD",
+  "selected_file_count": 42,
+  "selected_files": [
+    {
+      "additional_changes": false,
+      "candidate_sha256": "e68a95f8b36af5854f6c3d4d8921ae9cf8c685ca087e1c5b8ce0657833065cbe",
+      "main_sha256": "d6c94d86b952c3c5ae4e158472819438195bdcdfa0bf80ace5de9d7026d11767",
+      "path": "ai/app/generation/customer_guidance/guidance_generator.py",
+      "selected_source_sha256": "e68a95f8b36af5854f6c3d4d8921ae9cf8c685ca087e1c5b8ce0657833065cbe"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "701f77a12d8a22330028638e78e9f4f17523d608095e8f454a5580f660791c08",
+      "main_sha256": "be85e5ea2510f431d9f5ca38d67e34e5a6186aae7b20511b08ab0f8669caf2da",
+      "path": "ai/app/integrations/llm/llm_client.py",
+      "selected_source_sha256": "6910cfc261ea6616c6e521a7eef8315260d71fe838b8c020fbe9644c7deece1e"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "93e9262ddab6384e81ed548aaaa6856d6295f80ed6e24e8b32754c3618ce523c",
+      "main_sha256": null,
+      "path": "ai/app/integrations/llm/natural_language_client.py",
+      "selected_source_sha256": "93e9262ddab6384e81ed548aaaa6856d6295f80ed6e24e8b32754c3618ce523c"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "12f766b41017efca1610292ddb7aa0029e41da2d289512863af31dba3410cbcc",
+      "main_sha256": "9413178749d301ed258362b2ab01d0cf7660e789d3af2f39b8a85154df4532ca",
+      "path": "ai/app/integrations/llm/token_usage.py",
+      "selected_source_sha256": "12f766b41017efca1610292ddb7aa0029e41da2d289512863af31dba3410cbcc"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "f817fd2e35248c5614a13e38014d88d28bf3843d4f84ac86510f27a8aa0339cc",
+      "main_sha256": "fccb82920d4e500efcd1f3dd574bc525a4377cdea67e4e1aa6097defdbf769f3",
+      "path": "ai/app/orchestration/agents/evidence_analysis_agent.py",
+      "selected_source_sha256": "f817fd2e35248c5614a13e38014d88d28bf3843d4f84ac86510f27a8aa0339cc"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "e87e07585cabc2c33e7fc4581f0c1ef200d83674dbaf99930875aad3394add38",
+      "main_sha256": "1ac9508c1dfe6e717a89a21527d83af1ad8f726967228fd9f4d0739f38eb7886",
+      "path": "ai/app/orchestration/agents/symptom_analysis_agent.py",
+      "selected_source_sha256": "e87e07585cabc2c33e7fc4581f0c1ef200d83674dbaf99930875aad3394add38"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "f147ea74635cf0623e25e496842bb2df7d2e2d6b0b00ca9dc03caf47820054d1",
+      "main_sha256": null,
+      "path": "ai/app/orchestration/clarification_policy.py",
+      "selected_source_sha256": "62943b68e74f6fd824231ebe451561c5b2bc6c6aa131bd375615fc4e3c7b4e74"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "9c5c6e2fb80e50ebd68599c8ef93064ed1ea3129b70bcb79a985f83f9c269006",
+      "main_sha256": "fa42be5b14406b9830aca9cef9b6c509b66ac4c5a1cd46619d536fcb9a70a936",
+      "path": "ai/app/orchestration/pipeline_context.py",
+      "selected_source_sha256": "2aed924ef571134585da491e45a92af2ff25b125a524800bb1c8efcd3cb2656a"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "69295db6d27d0cd12c4fc42ae345f1e443040854a0b04f03d0d01bdacf41fb6c",
+      "main_sha256": "c1cfa8c157e8b1b4aecbff485a24501880561220b318115ad7946f0ad405c703",
+      "path": "ai/app/orchestration/pipeline_router.py",
+      "selected_source_sha256": "69295db6d27d0cd12c4fc42ae345f1e443040854a0b04f03d0d01bdacf41fb6c"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "e0b7a42950a03c70a751b292efcd6cb8e1b4c641a648ee00ee01f8f6aeff6ee9",
+      "main_sha256": "c0601e9c2fe76a8aa733f2cfcfa77e4f7f065318bef0b2805826e3b466a5200b",
+      "path": "ai/app/orchestration/pipelines/multi_agent_pipeline.py",
+      "selected_source_sha256": "e0b7a42950a03c70a751b292efcd6cb8e1b4c641a648ee00ee01f8f6aeff6ee9"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "1a96b8a4cc8157e8e19fc529433459132f3a8a609c2f29d8223ab107cb20e951",
+      "main_sha256": "a4814328a3cff7cfeb7d1053e9eb2bc6ed26f207fbc9323121dc10b47163b158",
+      "path": "ai/app/orchestration/pipelines/single_rag_pipeline.py",
+      "selected_source_sha256": "1a96b8a4cc8157e8e19fc529433459132f3a8a609c2f29d8223ab107cb20e951"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "df1db7a5cc052be71f1132d0c726bafc307e098f4e9cc9887fa27f7eabd16ff1",
+      "main_sha256": "0927cd01040c07d532c9b46e382860c085d94daf4f26c2574865916ac69b4b3d",
+      "path": "ai/app/orchestration/stages/missing_fields_stage.py",
+      "selected_source_sha256": "c061ea86a5c58c2625dbfdfa64d83868d3531cb51ed38d4659a87471d96a71f3"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "772b997daac8ba7e00862904179753d4b9a74c6be6f043b6407fee9ed66eb686",
+      "main_sha256": "67f432c4e17677f48350a2951dbb69575ea806de459f76a7bae48aefd4e55856",
+      "path": "ai/app/orchestration/stages/retrieval_stage.py",
+      "selected_source_sha256": "4c006f9feb98b32efd7b41ce5fcb304a3a0c5a4074dd1cf4329aac1472f5a003"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "3db7ea9f1c385cbf6396794c64e32c3e8d1304f343b9c5be5fbae53ac22d50c8",
+      "main_sha256": "60c7f49161bb15ee9bf96f3ed029745913912b7fb87c42a74c561b1f775eafff",
+      "path": "ai/app/orchestration/stages/safety_check_stage.py",
+      "selected_source_sha256": "b89f62c238324ecdaf3efcb2dc3da26e9037cf5e01aeb50123e8a5f3ef1d6d2a"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "c3074d148f1b0e947e48fc0eaadd5c4e076598ce2437bbe58382d786f631601e",
+      "main_sha256": "3582ce759eb6184cbaee62fe7dcf143e30ded6e8396ad71d4a052097485dc5eb",
+      "path": "ai/app/orchestration/stages/structuring_stage.py",
+      "selected_source_sha256": "8271e604de8859c6545db29cb2fb11c7d4a423f446492d00499fe9ebcb1c5dcb"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "c2f4ab03f718786d39a8a36a7547d76a94df0ab51fd2ce083b6fee408a5583c9",
+      "main_sha256": "6356bf943043a0f249270a605b1cd2a6a7fed87164e5be73b6801d688e61dee9",
+      "path": "ai/app/retrieval/__init__.py",
+      "selected_source_sha256": "c2f4ab03f718786d39a8a36a7547d76a94df0ab51fd2ce083b6fee408a5583c9"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "703cde01584624449b79365b1ceeb2f8c784b2db23536a658bef3f64421e6344",
+      "main_sha256": "e3d122ba45347ad9511584a1a77b097ec2f79b568b47104e09208677f93a2a1b",
+      "path": "ai/app/retrieval/filters/__init__.py",
+      "selected_source_sha256": "703cde01584624449b79365b1ceeb2f8c784b2db23536a658bef3f64421e6344"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "4a95ad26afd57fa6b1a6c7b2c565e807e9d150bd454959cbbf5c82428fee6b32",
+      "main_sha256": "5e86e2daad47aca422ad7568154cd81500b2ad990c5a4fdf791820bac969c4cc",
+      "path": "ai/app/retrieval/filters/evidence_applicability_gate.py",
+      "selected_source_sha256": "68dc104469bf8ad4dac758370d534ee8a49dce27fa3fc84d6060f9ce102d1827"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "ca800ff0e49735ba98bcbed1a509b76a9fbc31c82ea375b079772bca1356ba6c",
+      "main_sha256": "4f53b94c474132479ba1c26d41c6385f2e29b81eea53fb30b6f2011e7afe8c1d",
+      "path": "ai/app/retrieval/filters/evidence_topic_filter.py",
+      "selected_source_sha256": "e708d4fb4636b943d8b009b40bce5b70d2578d2281cd6e939515f75809ded360"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "f1f8bcbf5235c66805e86b3e3750b6ca5dbe4e2c5634cfcd6142f58653dd1663",
+      "main_sha256": null,
+      "path": "ai/app/retrieval/filters/scenario_evidence_selector.py",
+      "selected_source_sha256": "e05817b8517462d08d9e4a8f95555c5ecad25a5791ca19bb2ca75f7da38889a2"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "0cee598147cccd39a1fb5fbbbdc5773084df6ed3c43d32b96d3b9da06f74f253",
+      "main_sha256": null,
+      "path": "ai/app/retrieval/query/context_builder.py",
+      "selected_source_sha256": "0cee598147cccd39a1fb5fbbbdc5773084df6ed3c43d32b96d3b9da06f74f253"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "0d601e2c20d610dd00eb67ae7f4b7fe6ebe2a5d1bb0d07a99534f36c09c16102",
+      "main_sha256": "a2853abd393f074911a7a70a8978c29aab8d19e2a85d2c214c833a662236e7ed",
+      "path": "ai/app/safety/risk_classifier.py",
+      "selected_source_sha256": "b19bcad3548dcc2765a313576a15e8d841dc173e72547f09138f05ef54e49d6d"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "c6687e5458de6fe48f3ef77dc4b111d2bfe7f9931438d9dc3cd459f80febe347",
+      "main_sha256": "cbe5d37b8fb2d78bed5f50d14f07dbf2a832e19146116b953ec4cc786300872d",
+      "path": "ai/app/structuring/followup_question_generator.py",
+      "selected_source_sha256": "af0ca0e72736292154c39bde12609116e8517dab8945b027a8d12cd22cb74528"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "e9ae97151379e4f91a8ab2a621a691f392709b9aff66c2ac32fbd3d681e06965",
+      "main_sha256": null,
+      "path": "ai/app/structuring/llm_contracts.py",
+      "selected_source_sha256": "1610d58fe39efe098f24a40a8b345baa9c6e6993c20db9cca93f41a92bd0e31d"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "f446952498b41b127d9b0db3d4685656f7d6494751d13ec75005803fc2258e00",
+      "main_sha256": "e7fa4b61fa3ddf62577e279ebeb822b4d313598e66a388eed77c07b6c14a0895",
+      "path": "ai/app/structuring/missing_field_checker.py",
+      "selected_source_sha256": "f446952498b41b127d9b0db3d4685656f7d6494751d13ec75005803fc2258e00"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "0ef71e0f97d1a79c675a32f53b9850b5bd6af84065af6952057c56c43d41823f",
+      "main_sha256": "b7328cad737da1f4692a55ef0ed62bbc9b95a9da9bda8bd824536e02991546af",
+      "path": "ai/app/structuring/symptom_normalizer.py",
+      "selected_source_sha256": "794e804a45d72ade00606d523279d77c812d47e8380fb49c3ce4a9c243b074be"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "f49fa0c24408977559c5f5ce601a169121824fe9cad9a28f24aff239e9da932d",
+      "main_sha256": "0fdb9f8bf9cfe3803b309d6c501cc629f976838c995c70654241581ccc9a7d38",
+      "path": "ai/app/structuring/symptom_structurer.py",
+      "selected_source_sha256": "00d58f3cce0eac81efb89f509f62f1d05268231723343fb1ecf73bf6b3c0c9ff"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "de67ae62ffe033dcd0a0df5c831afe730ebfaf88744e24f367b9d453e72ac2d4",
+      "main_sha256": "e72949c284a956a3e5f04798b4ab7b62664ca69d3199bf2b282d81bf29cbb4f8",
+      "path": "ai/app/validation/safety/guidance_message_guard.py",
+      "selected_source_sha256": "ee896e6478229a5e31c005451b3242407f573d722aaed18eba1cc9b62b785a68"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "9ba942070e0e0955f3b03dbeec74812b9d68422a32cac85c41f834a49ff8f5c6",
+      "main_sha256": "b9974aa8025208588e99ce2b7689f146f5e6a36e9eaa92437a9969fa1fc19c9b",
+      "path": "ai/configs/model_profiles.yaml",
+      "selected_source_sha256": "9ba942070e0e0955f3b03dbeec74812b9d68422a32cac85c41f834a49ff8f5c6"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "4143c4f96192ede6b903ed6d83512b6a59ecf06f2e67725fa660800b531f05cd",
+      "main_sha256": "e691e688a963715629b0776559ee6945ab5178ad46e73247801b3f03f82d0bc4",
+      "path": "ai/prompts/customer_guidance/v3/system.txt",
+      "selected_source_sha256": "d26fa9fa21c3630eb6b5d153c2ea96fbc5b1363f0823cde1a38fbf5cfb2e456c"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "6f0cdacee6a331963fb4a56c3f60cbc9f6ed4ff356a04f96d32fa27feed5b86f",
+      "main_sha256": "b79206503be4755053ccbec782691e3e20eee7ecc56b073d48c066bea986584f",
+      "path": "ai/prompts/followup_question/v1/system.txt",
+      "selected_source_sha256": "6f0cdacee6a331963fb4a56c3f60cbc9f6ed4ff356a04f96d32fa27feed5b86f"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "319f5f75039b2d63cc465d2b3e08652eae0bbe5ba0017d282a4d71fadc215378",
+      "main_sha256": "d4bda49334ec7457d5c89801e479a325fc94e46008b8b21c306af1dd55fd1c5c",
+      "path": "ai/prompts/followup_question/v1/user_template.txt",
+      "selected_source_sha256": "319f5f75039b2d63cc465d2b3e08652eae0bbe5ba0017d282a4d71fadc215378"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "924fe6e723b118bc95c94a4bf234a9e01b1bc91cd9d8c06d81abd4386143162a",
+      "main_sha256": "b31707c2a9e8ef1ef8c5c69ce881f40d110b16d0550da9ef193410f1621b9754",
+      "path": "ai/prompts/prompt_registry.yaml",
+      "selected_source_sha256": "924fe6e723b118bc95c94a4bf234a9e01b1bc91cd9d8c06d81abd4386143162a"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "52973aba0ab3fae525626dad4fc0bb310076a6f7bf49c54d3660b1489a950237",
+      "main_sha256": "6755b1aee3ddf4dec7cf60758103e31a5df38b1c51a86305e6c4e618d72668b5",
+      "path": "ai/prompts/symptom_structuring/v1/system.txt",
+      "selected_source_sha256": "52973aba0ab3fae525626dad4fc0bb310076a6f7bf49c54d3660b1489a950237"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "6be806a389f0c8b213846e95c4729f0d49c8fb2e3a593b34e23c2a25dd199e06",
+      "main_sha256": "8e58e83dab0d468917ebc88bc553be9c42d135eb7a1581a10d96d2be1f024319",
+      "path": "ai/prompts/symptom_structuring/v1/user_template.txt",
+      "selected_source_sha256": "6be806a389f0c8b213846e95c4729f0d49c8fb2e3a593b34e23c2a25dd199e06"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "fb0137fd4e2208783c081922daa6c8d53175c7d2bff6773afacda9953882f1cf",
+      "main_sha256": "a72d084b612e697baaef2bfcd5fa200e538b0e66401cd5061f79d6b504dba7c6",
+      "path": "ai/tests/unit/test_backend_integration_fixtures.py",
+      "selected_source_sha256": "fb0137fd4e2208783c081922daa6c8d53175c7d2bff6773afacda9953882f1cf"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "466b024b2d5571f094e0714ddeb4e4e9fb05b51078ad822f53405aa7b7a0806c",
+      "main_sha256": "489f80b3f4b2b447a08f1c21c9b5a8b417c3bdaecfe6f3b7ba9e2465df546825",
+      "path": "ai/tests/unit/test_llm_guidance.py",
+      "selected_source_sha256": "4d67adad11eee9d3806e267fb39cb0c8fd5e698810a00603db5f1392a7824fa9"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "b6576da60d35b5f1ad89a6684d2bc6dfc2148b68ea786a77425042ee052d1d19",
+      "main_sha256": "84e32b3eeffa73f1b1ea9b380b575256cc6af909404caf453e5773a18832f51d",
+      "path": "ai/tests/unit/test_multi_agent_pipeline.py",
+      "selected_source_sha256": "fae8461c20ed8f79cd0c20e2b7a70c36b8e90904f60e0c42d70f1c56804da4e3"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "3d876943bb38e9bbc06104e4f5fe7c41387fa9f023df1a9d6e975b3e717bc71c",
+      "main_sha256": null,
+      "path": "ai/tests/unit/test_natural_language_structuring.py",
+      "selected_source_sha256": "3d876943bb38e9bbc06104e4f5fe7c41387fa9f023df1a9d6e975b3e717bc71c"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "2dc3dee730666d1633886d50ce8e90f648aff4ff0155a8bb3659712ed82844de",
+      "main_sha256": "caae0fefda9749fafd3a2f1d8dca94343e0576caa4798e1f3b4730ea034ea7fe",
+      "path": "ai/tests/unit/test_pipeline.py",
+      "selected_source_sha256": "2dc3dee730666d1633886d50ce8e90f648aff4ff0155a8bb3659712ed82844de"
+    },
+    {
+      "additional_changes": false,
+      "candidate_sha256": "63a988856fc5784c47670cfdfae099c9287feb11bd4da25e43391d72d9e0e8b6",
+      "main_sha256": "4de1d11a2601fee272aef913b5d28a442f490e882d4df8a4a95779f17028df63",
+      "path": "ai/tests/unit/test_retrieval.py",
+      "selected_source_sha256": "63a988856fc5784c47670cfdfae099c9287feb11bd4da25e43391d72d9e0e8b6"
+    },
+    {
+      "additional_changes": true,
+      "candidate_sha256": "bfd64b1d2e19bffe6682d6e49efc310724e029935fb7d23ff68d5d528fb0bed8",
+      "main_sha256": null,
+      "path": "ai/tests/unit/test_runtime_flow_regressions_20260831.py",
+      "selected_source_sha256": "e025deabdfefb5638b7f4599e8941309a2b147e4e32eea2c2b25fcc52f392d1f"
+    }
+  ],
+  "selected_source_sha": "e411be3dd39f2a6b8b7defb219cdd8aaf572d68e",
+  "selection": "AI runtime / structuring / followup / guidance only; patches below source are applied separately",
+  "status": "LOCAL_UNCOMMITTED_CANDIDATE"
+}

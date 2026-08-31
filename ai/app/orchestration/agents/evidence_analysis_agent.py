@@ -8,6 +8,7 @@ from ...schemas import AiStage
 from ..pipeline_context import PipelineContext
 from ..stages import execute_retrieval_stage
 from .contracts import EvidenceAgentOutput
+from ..clarification_policy import should_wait_for_customer_input
 
 
 class EvidenceAnalysisAgent:
@@ -46,6 +47,6 @@ class EvidenceAnalysisAgent:
             evidence_references=list(ctx.evidence_references),
             evidence_sufficient=evidence_sufficient,
             request_more_information=(
-                not evidence_sufficient and bool(ctx.followup_questions)
+                not evidence_sufficient and should_wait_for_customer_input(ctx)
             ),
         )

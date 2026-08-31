@@ -30,7 +30,7 @@ INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b601"
 CORRELATION_ID = "018f2f9b-7c30-7981-b541-1a987c88b602"
 COMPLETE_SYMPTOM = "어제부터 냉수 버튼을 누르면 물이 졸졸 나옵니다. 전원을 껐다 켰어요."
 EVIDENCE_SUMMARY = "냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다."
-TASTE_EVIDENCE_SUMMARY = "장기 부재·미사용 조건에 따른 물맛·냄새 공식 근거"
+TASTE_EVIDENCE_SUMMARY = "단기(10일 이내) : 냉수, 정수, 온수를 1L씩 각각 1회 이상 출수하여 버린 후 사용해 주세요."
 
 
 class EmptySearchService:
@@ -60,6 +60,7 @@ class EvidenceSearchService:
                 official_url="https://example.invalid/official-manual",
                 verification_status="official_verified",
                 allowed_use=True,
+                topic_code="symptom_low_flow",
             )
         ]
 
@@ -302,7 +303,7 @@ def test_multi_agent_evidence_path_matches_single_rag_public_contract():
 
 
 def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence():
-    raw_symptom = "정수기 상태가 이상합니다."
+    raw_symptom = "출수 온도가 이상합니다."
     result = _run_multi_agent(
         search_service=EmptySearchService(),
         raw_symptom=raw_symptom,
@@ -319,7 +320,7 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
     assert response.safety_assessment.risk_level == RiskLevel.CAUTION
     assert response.safety_assessment.requires_consultation is True
-    assert HandoffReason.MORE_INFORMATION_REQUIRED in {
+    assert HandoffReason.CUSTOMER_INPUT_PENDING in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }
     assert result.routing_disposition == (
@@ -356,10 +357,10 @@ def test_multi_agent_earthy_taste_waits_for_context_before_evidence_handoff():
     }
 
 
-def test_multi_agent_earthy_taste_non_applicable_context_becomes_no_evidence():
+def test_multi_agent_earthy_taste_non_applicable_context_stops_before_search():
     llm = FakeGuidanceLLMClient()
     result = _run_multi_agent(
-        search_service=TasteEvidenceSearchService(),
+        search_service=UnexpectedSearchService(),
         raw_symptom="물에서 흙맛이 나는 것 같아요",
         previous_answers=[
             {"question_id": "followup-occurrence-time", "answer_text": "오늘부터"},
@@ -375,11 +376,14 @@ def test_multi_agent_earthy_taste_non_applicable_context_becomes_no_evidence():
     response = result.to_analysis_result()
 
     assert llm.calls == 0
-    assert result.context.retrieval_outcome == RetrievalOutcome.NO_MATCH
+    assert result.context.retrieval_outcome == RetrievalOutcome.NOT_RUN
     assert response.status.value == "FALLBACK"
-    assert response.failure_stage.value == "RETRIEVING"
+    assert response.failure_stage.value == "CHECKING_MISSING_FIELDS"
+    assert response.fallback_reason_code.value == "UNSPECIFIED_FALLBACK"
+    assert response.followup_questions == []
+    assert response.safety_assessment.requires_consultation is True
     assert response.evidence_references == []
-    assert HandoffReason.NO_EVIDENCE in {
+    assert HandoffReason.NO_EVIDENCE not in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }
 
@@ -410,7 +414,7 @@ def test_multi_agent_earthy_taste_within_ten_days_uses_applicable_evidence():
     assert response.failure_stage is None
     assert str(response.correlation_id) == CORRELATION_ID
     assert len(response.evidence_references) == 1
-    assert llm.requests[0].symptom_summary.endswith("10일 이내 부재 후")
+    assert "10일 이내 부재 후" in llm.requests[0].symptom_summary
     assert HandoffReason.EVIDENCE_READY in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }

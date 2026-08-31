@@ -65,6 +65,7 @@ class EvidenceSearchService:
                 official_url="https://example.invalid/official-manual",
                 verification_status="official_verified",
                 allowed_use=True,
+                topic_code="symptom_cold_temperature",
             )
         ]
 
@@ -117,7 +118,7 @@ def test_single_rag_pipeline_execution():
     analysis_res = result.to_analysis_result()
 
     # Stage 1: 구조화 확인
-    assert analysis_res.structured_symptom.symptom_type == "누수"
+    assert analysis_res.structured_symptom.symptom_type == "제품 누수"
 
     # Stage 2: 명시적 위험 감지 확인
     assert analysis_res.safety_assessment.risk_level == RiskLevel.DANGER

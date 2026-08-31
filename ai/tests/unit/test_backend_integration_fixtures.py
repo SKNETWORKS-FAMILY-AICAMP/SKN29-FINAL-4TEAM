@@ -40,6 +40,7 @@ class EvidenceSearchService:
                 official_url="https://example.invalid/official-manual",
                 verification_status="official_verified",
                 allowed_use=True,
+                topic_code="symptom_cold_temperature",
             )
         ]
 

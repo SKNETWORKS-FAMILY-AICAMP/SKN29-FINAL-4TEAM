@@ -127,6 +127,7 @@ def _chunk(model_code="WPUIAC425SNW"):
             "D" if model_code == "WPUJAC104DWH" else model_code[3:9]
         ),
         content="냉수 상태를 확인하는 공식 안내입니다.",
+        topic_code="symptom_cold_temperature",
         similarity_score=0.91,
         official_url="https://example.invalid/manual",
         verification_status="official_verified",
@@ -370,7 +371,10 @@ def test_mcp_multi_agent_combined_path_uses_backend_context_and_mcp_evidence(
     )
 
     search_service = _SearchService(
-        [_chunk("WPUJAC104DWH")]
+        [_chunk("WPUJAC104DWH").model_copy(update={
+            "topic_code": "symptom_low_flow",
+            "content": "출수량이 적을 때 원수 공급과 필터 상태를 확인합니다.",
+        })]
     )
 
     llm = _LLM()

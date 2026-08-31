@@ -9,10 +9,16 @@ from ...structuring import (
     FollowUpQuestionGenerator,
     MissingFieldChecker,
 )
+from ...structuring.llm_contracts import FollowUpWordingLLMClient
 from ..pipeline_context import PipelineContext
 
 
-def execute_missing_fields_stage(ctx: PipelineContext) -> None:
+def execute_missing_fields_stage(
+    ctx: PipelineContext,
+    llm_client: FollowUpWordingLLMClient | None = None,
+    *,
+    timeout_seconds: float = 4.0,
+) -> None:
     """구조화 결과에서 누락된 값만 질문으로 변환한다."""
     started_at = time.perf_counter()
     if ctx.structured_symptom is None:
@@ -29,7 +35,7 @@ def execute_missing_fields_stage(ctx: PipelineContext) -> None:
     ctx.missing_fields = MissingFieldChecker().check(ctx.structured_symptom)
     if (
         ctx.structured_symptom.symptom_type == "물맛/냄새 이상"
-        and applicability is None
+        and applicability not in applicability_gate.SUPPORTED_CONDITIONS
     ):
         ctx.missing_fields = [
             item
@@ -46,7 +52,16 @@ def execute_missing_fields_stage(ctx: PipelineContext) -> None:
                 importance="medium",
             )
         )
-    generated = FollowUpQuestionGenerator().generate(ctx.missing_fields)
+    generated = FollowUpQuestionGenerator(llm_client=llm_client).generate(
+        ctx.missing_fields,
+        symptom=ctx.structured_symptom,
+        raw_symptom=ctx.raw_symptom,
+        selected_symptoms=ctx.selected_symptoms,
+        previous_answers=ctx.previous_answers,
+        trace_context=ctx.trace_context,
+        model_code=ctx.model_code,
+        timeout_seconds=timeout_seconds,
+    )
     ctx.followup_questions = DuplicateQuestionGuard().filter(
         generated,
         ctx.previous_answers,

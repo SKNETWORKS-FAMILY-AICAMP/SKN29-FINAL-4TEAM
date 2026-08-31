@@ -7,4 +7,4 @@
 [이전 문진 답변]
 {previous_answers}
 
-위 내용을 기반으로 증상 유형과 특이사항을 구조화해 주세요.
+위 세 입력을 병합해 증상을 구조화하십시오. 명확한 고객 원문 의미, 같은 필드의 이전 문진 답변, 선택 대표 증상 hint 순으로 해석하십시오. 확인되지 않은 값은 null 또는 빈 목록으로 남기십시오. 채운 값마다 실제 source와 입력에 존재하는 evidence_quote를 함께 반환하십시오. safety_signals의 true 값마다 RAW_SYMPTOM 또는 PREVIOUS_ANSWER에 실제 존재하는 evidence_quote도 evidence 목록에 함께 반환하십시오.

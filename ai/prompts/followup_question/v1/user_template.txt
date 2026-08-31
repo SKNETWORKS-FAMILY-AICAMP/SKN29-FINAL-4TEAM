@@ -1,1 +1,19 @@
-# 현재 AI 과업의 사용자 입력 프롬프트 템플릿
+[고객 원문]
+{raw_symptom}
+
+[선택 증상 JSON]
+{selected_symptoms_json}
+
+[검증된 구조화 증상 JSON]
+{structured_symptom_json}
+
+[이전 문진 답변 JSON]
+{previous_answers_json}
+
+[질문 대상 필드 JSON]
+{target_fields_json}
+
+[누락 필드 목적 JSON]
+{missing_field_contexts_json}
+
+고객 원문, 선택 증상, 검증된 구조화 결과, 이전 답변과 누락 필드 목적을 함께 반영하십시오. 질문 대상 필드의 순서와 집합을 유지하여 각 필드에 대한 question_text, 맥락형 options, allow_free_text를 작성하십시오. target_field는 절대 변경하지 마십시오.
