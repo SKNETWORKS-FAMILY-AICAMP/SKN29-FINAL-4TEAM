@@ -88,7 +88,9 @@ ai_handoff_nginx_prepare_script="${payload_dir}/scripts/deployment/production/pr
 worker_preflight_script="${payload_dir}/scripts/deployment/production/validate_p1_auth_email_worker_runtime.py"
 worker_runner_source="${payload_dir}/scripts/deployment/production/run_p1_auth_email_worker.sh"
 worker_unit_source="${payload_dir}/infra/systemd/${worker_service}"
+image_maintenance_script="${payload_dir}/scripts/deployment/production/maintain_release_images.py"
 for required_asset in \
+  "$image_maintenance_script" \
   "$secret_sync_script" \
   "$ai_handoff_env_prepare_script" \
   "$ai_handoff_nginx_prepare_script" \
@@ -197,6 +199,10 @@ for image_key in WEB_IMAGE BACKEND_IMAGE AI_IMAGE; do
     exit 1
   fi
 done
+
+# Reclaim only proven obsolete images, under the existing deployment lock.
+# Fail before installing the rollback trap or touching the running services.
+python3 "$image_maintenance_script" --release-dir "$payload_dir" --phase before-pull --apply
 
 docker_config_dir=""
 previous_target=""
@@ -426,6 +432,9 @@ rm -rf -- "$docker_config_dir"
 docker_config_dir=""
 unset DOCKER_CONFIG
 trap - ERR
+if ! python3 "$image_maintenance_script" --release-dir "$payload_dir" --phase after-success --apply; then
+  echo "RELEASE_IMAGE_CLEANUP_WARNING: runtime passed; maintenance needs attention" >&2
+fi
 printf 'DEPLOYMENT_RUNTIME_PASS\n'
 printf 'release_sha=%s\n' "$release_sha"
 printf 'p1_auth_email_worker=SYSTEMD_ACTIVE_PROCESS_1\n'

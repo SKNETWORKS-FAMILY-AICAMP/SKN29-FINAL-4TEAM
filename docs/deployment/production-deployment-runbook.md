@@ -78,6 +78,50 @@ Deployment is serialized with both GitHub concurrency and a host `flock`. A
 failure returns to the previous release when available; first-release failure
 stops only the new containers and preserves named volumes.
 
+### Local image retention and disk headroom
+
+`maintain_release_images.py` is included in the checksummed release bundle and
+runs under the deployment shell's inherited `deploy.lock` (fd 9). It does not
+source runtime env files or resolve Compose configuration containing secrets.
+
+- Before `compose pull`, retain every image referenced by any existing container
+  (including stopped containers), `current`, `previous`, and the incoming release.
+  Resolve protected digests to local image IDs as well, so shared aliases cannot
+  accidentally remove rollback images. Missing or invalid current/previous
+  manifests or images stop the deployment before any removal or service change.
+- Only remove local application images whose digest references are all recorded
+  in valid historical release manifests for the incoming release's exact ECR
+  `waterbridge/web`, `waterbridge/backend`, and `waterbridge/ai` repositories.
+  Unknown aliases, mutable tags, dangling images, other accounts/repositories,
+  Tempo and database/QA tools are not cleanup targets.
+- Removal uses `docker image rm --no-prune` without force. Docker conflicts are
+  reported, not overridden. No containers, volumes, model cache, Trace data,
+  build cache, release directories or ECR objects are deleted.
+- After cleanup, require at least **10 GiB available** on the host root,
+  release directory, Docker data root, and default `/var/lib/containerd` store
+  when present. This is a conservative minimum, not a prediction of arbitrary
+  future image sizes: review it if images grow. A non-default containerd store
+  requires a reviewed path check before using this policy. Insufficient space
+  stops before `compose pull` and before installing the runtime rollback trap.
+- After host Health/Trace/worker checks succeed and `current`/`previous` are
+  updated, run cleanup again. Maintenance errors at this point are warnings,
+  not a reason to roll back a healthy runtime. This occurs before the separate
+  external HTTPS Smoke; its rollback target remains protected.
+- On deployment failure, do not run post-success cleanup. Existing rollback
+  behavior remains in place. The next attempt can remove recorded failed-release
+  images only when no container or retained release still references them.
+
+Evidence markers are `RELEASE_IMAGE_CLEANUP_PLAN`,
+`RELEASE_IMAGE_CLEANUP_RESULT`, `DEPLOYMENT_DISK_SPACE`, and
+`RELEASE_IMAGE_MAINTENANCE_FAILED`. Counts do not promise a reclaimed byte count:
+layers may be shared. Verify available bytes after cleanup. Operators must not
+substitute a broad prune command or remove named volumes to pass this gate.
+
+The containerd store retains compressed and extracted image layers separately
+from Docker's data root; see [Docker storage documentation](https://docs.docker.com/engine/storage/containerd/).
+Image deletion behavior and conflict protection follow
+[Docker image rm](https://docs.docker.com/reference/cli/docker/image/rm/).
+
 Tempo 3 uses `live_store` rather than the removed 2.x `ingester` section. In
 monolithic `target=all` mode it flushes blocks to object storage without Kafka.
 See the official [Tempo 3 upgrade notes](https://grafana.com/docs/tempo/latest/set-up-for-tracing/setup-tempo/upgrade/)

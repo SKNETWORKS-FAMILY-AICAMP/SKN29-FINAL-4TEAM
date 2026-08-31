@@ -322,6 +322,7 @@ jobs:
         run: >-
           python -B -m unittest
           tests.deployment.test_production_deployment_assets
+          tests.deployment.test_release_image_maintenance
           tests.deployment.test_backend_email_auth_secret_sync
           tests.deployment.test_github_oidc_trust
           tests.deployment.test_backend_ci_workflow
@@ -659,6 +660,7 @@ jobs:
           cp infra/systemd/waterbridge-p1-auth-email-worker.service \
             "$release_root/infra/systemd/"
           cp scripts/deployment/production/deploy-release.sh \
+            scripts/deployment/production/maintain_release_images.py \
             scripts/deployment/production/rollback-release.sh \
             scripts/deployment/production/manage-ai-handoff-canary.sh \
             scripts/deployment/production/prepare_ai_handoff_nginx.py \
