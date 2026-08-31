@@ -34,6 +34,7 @@ BACKEND_TEST_SHARDS = {
             "tests/unit/inquiries",
             "tests/unit/products",
             "tests/unit/questionnaires",
+            "tests/unit/reference_cases",
             "tests/unit/subscriptions",
             "tests/unit/visits",
             "tests/unit/workflow",
