@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import os
 from pathlib import Path
 from typing import Any
@@ -16,6 +16,7 @@ from .runtime import RetrievalConfigurationError
 
 RUNTIME_PROFILE_ENV = "AI_RAG_RUNTIME_PROFILE"
 DEFAULT_RUNTIME_PROFILE = "mvp"
+JAC104_V2_RECOVERY_PROFILE = "jac104_v2_recovery"
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 RETRIEVAL_POLICY_PATH = REPOSITORY_ROOT / "ai/configs/retrieval_policy.yaml"
 
@@ -92,6 +93,17 @@ _PROFILES = {
         activation_scope="INTEGRATION_VERIFICATION_ONLY",
     ),
 }
+
+# Reuse the complete v2 index identity, not a fabricated 15-row Manifest.
+# This opt-in recovery scope does not approve IAC425/IAC606 for public use.
+# Deployment still requires Data/QA verification and release approval.
+_PROFILES[JAC104_V2_RECOVERY_PROFILE] = replace(
+    _PROFILES["three_model_integration"],
+    name=JAC104_V2_RECOVERY_PROFILE,
+    policy_profile=None,
+    approved_model_codes=_PROFILES["mvp"].approved_model_codes,
+    activation_scope="JAC104_ONLY_RECOVERY",
+)
 
 
 def resolve_rag_runtime_profile(value: str | None = None) -> RagRuntimeProfile:
@@ -208,6 +220,7 @@ def validate_runtime_manifest(
 
 __all__ = [
     "DEFAULT_RUNTIME_PROFILE",
+    "JAC104_V2_RECOVERY_PROFILE",
     "RUNTIME_PROFILE_ENV",
     "RagRuntimeProfile",
     "RuntimeRetrievalPolicy",
