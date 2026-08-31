@@ -55,6 +55,9 @@ def execute_missing_fields_stage(
     generated = FollowUpQuestionGenerator(llm_client=llm_client).generate(
         ctx.missing_fields,
         symptom=ctx.structured_symptom,
+        raw_symptom=ctx.raw_symptom,
+        selected_symptoms=ctx.selected_symptoms,
+        previous_answers=ctx.previous_answers,
         trace_context=ctx.trace_context,
         model_code=ctx.model_code,
         timeout_seconds=timeout_seconds,

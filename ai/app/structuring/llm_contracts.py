@@ -142,9 +142,20 @@ class FollowUpWordingResult(BaseModel):
 
 
 @dataclass(frozen=True, slots=True)
+class MissingFieldContext:
+    target_field: str
+    reason: str
+    importance: Literal["high", "medium", "low"]
+
+
+@dataclass(frozen=True, slots=True)
 class FollowUpWordingRequest:
     structured_symptom: StructuredSymptom
     target_fields: tuple[str, ...]
+    raw_symptom: str = ""
+    selected_symptoms: tuple[str, ...] = ()
+    previous_answers: tuple[dict[str, str], ...] = ()
+    missing_field_contexts: tuple[MissingFieldContext, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

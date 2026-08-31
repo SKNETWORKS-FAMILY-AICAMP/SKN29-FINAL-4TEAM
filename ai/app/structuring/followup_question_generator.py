@@ -10,6 +10,7 @@ from .llm_contracts import (
     FollowUpWording,
     FollowUpWordingLLMClient,
     FollowUpWordingRequest,
+    MissingFieldContext,
 )
 from ..schemas import FollowUpQuestion, MissingField, StructuredSymptom, TraceContext
 
@@ -71,6 +72,9 @@ class FollowUpQuestionGenerator:
         missing_fields: list[MissingField],
         *,
         symptom: StructuredSymptom | None = None,
+        raw_symptom: str = "",
+        selected_symptoms: list[str] | None = None,
+        previous_answers: list[dict[str, str]] | None = None,
         trace_context: TraceContext | None = None,
         model_code: str = "",
         timeout_seconds: float = 4.0,
@@ -113,6 +117,25 @@ class FollowUpQuestionGenerator:
                     FollowUpWordingRequest(
                         structured_symptom=symptom,
                         target_fields=target_fields,
+                        raw_symptom=raw_symptom,
+                        selected_symptoms=tuple(selected_symptoms or ()),
+                        previous_answers=tuple(
+                            {
+                                "question_id": str(answer.get("question_id", "")),
+                                "answer_text": str(answer.get("answer_text", "")),
+                            }
+                            for answer in (previous_answers or ())
+                            if isinstance(answer, dict)
+                        ),
+                        missing_field_contexts=tuple(
+                            MissingFieldContext(
+                                target_field=missing.field_name,
+                                reason=missing.reason,
+                                importance=missing.importance,
+                            )
+                            for missing in missing_fields
+                            if missing.field_name in target_fields
+                        ),
                     ),
                     timeout_seconds=timeout_seconds,
                 )

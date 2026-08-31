@@ -35,6 +35,7 @@ from ai.app.structuring.llm_contracts import (
     FollowUpWordingLLMResponse,
     FollowUpWordingResult,
     FollowUpWordingRequest,
+    MissingFieldContext,
     SymptomEvidenceClaim,
     SymptomStructuringResult,
     SymptomStructuringLLMResponse,
@@ -420,6 +421,45 @@ def test_context_aware_followup_preserves_deterministic_contract() -> None:
     assert generated.options == fixed.options
 
 
+def test_followup_request_contains_full_runtime_context() -> None:
+    client = FakeFollowUpClient()
+    missing = MissingField(
+        field_name="occurrence_condition",
+        reason="소음이 발생하는 동작이나 조건을 확인해야 합니다.",
+        importance="high",
+    )
+
+    FollowUpQuestionGenerator(llm_client=client).generate(
+        [missing],
+        symptom=StructuredSymptom(symptom_type="소음 이상"),
+        raw_symptom="출수 후에 웅웅거리는 소리가 납니다.",
+        selected_symptoms=["NOISE"],
+        previous_answers=[
+            {
+                "question_id": "followup-occurrence-time",
+                "answer_text": "어제부터",
+            }
+        ],
+    )
+
+    request = client.requests[0]
+    assert request.raw_symptom == "출수 후에 웅웅거리는 소리가 납니다."
+    assert request.selected_symptoms == ("NOISE",)
+    assert request.previous_answers == (
+        {
+            "question_id": "followup-occurrence-time",
+            "answer_text": "어제부터",
+        },
+    )
+    assert request.missing_field_contexts == (
+        MissingFieldContext(
+            target_field="occurrence_condition",
+            reason=missing.reason,
+            importance="high",
+        ),
+    )
+
+
 @pytest.mark.parametrize(
     "wordings",
     [
@@ -641,14 +681,116 @@ def test_openai_followup_schema_constrains_target_fields() -> None:
         FollowUpWordingRequest(
             structured_symptom=_noise_symptom(occurrence_time=None),
             target_fields=("occurrence_time",),
+            raw_symptom=(
+                "010-1234-5678 user@example.com으로 연락했고 "
+                "아침에만 온수 소음이 납니다."
+            ),
+            selected_symptoms=("NOISE",),
+            previous_answers=(
+                {
+                    "question_id": "followup-occurrence-condition",
+                    "answer_text": "https://private.example 에서 확인 후 어제부터",
+                },
+            ),
+            missing_field_contexts=(
+                MissingFieldContext(
+                    target_field="occurrence_time",
+                    reason="소음 시작 시점 확인",
+                    importance="high",
+                ),
+            ),
         ),
         timeout_seconds=1.0,
     )
 
     schema = captured["payload"]["text"]["format"]["schema"]
     target_schema = schema["$defs"]["FollowUpWording"]["properties"]["target_field"]
+    user_prompt = captured["payload"]["input"][1]["content"]
     assert target_schema["enum"] == ["occurrence_time"]
     assert response.output.questions[0].target_field == "occurrence_time"
+    assert "010-1234-5678" not in user_prompt
+    assert "user@example.com" not in user_prompt
+    assert "https://private.example" not in user_prompt
+    assert user_prompt.count("[REDACTED]") == 3
+    assert "아침에만 온수 소음이 납니다" in user_prompt
+    assert "어제부터" in user_prompt
+    assert "NOISE" in user_prompt
+    assert "소음 시작 시점 확인" in user_prompt
+    assert '"importance": "high"' in user_prompt
+
+
+def test_followup_provider_payload_preserves_raw_context_difference() -> None:
+    captured_prompts = []
+
+    def handler(request: httpx.Request):
+        payload = json.loads(request.content)
+        captured_prompts.append(payload["input"][1]["content"])
+        return httpx.Response(
+            200,
+            json={
+                "status": "completed",
+                "output": [
+                    {
+                        "type": "message",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": json.dumps(
+                                    {
+                                        "questions": [
+                                            {
+                                                "target_field": "occurrence_condition",
+                                                "question_text": "온수 증상은 어떤 조건에서 발생하나요?",
+                                                "options": [
+                                                    "첫 출수에서만 발생",
+                                                    "아침 첫 사용 때 주로 발생",
+                                                ],
+                                                "allow_free_text": True,
+                                            }
+                                        ]
+                                    },
+                                    ensure_ascii=False,
+                                ),
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
+
+    client = OpenAIResponsesFollowUpWordingClient(
+        api_key="test-only-key",
+        prompt_version="followup_question/v1",
+        model_name="gpt-4o-mini",
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    common = {
+        "structured_symptom": StructuredSymptom(
+            symptom_type="온도 이상",
+            target_water_type="온수",
+        ),
+        "target_fields": ("occurrence_condition",),
+        "missing_field_contexts": (
+            MissingFieldContext(
+                target_field="occurrence_condition",
+                reason="온도 이상이 지속되는 조건을 확인해야 합니다.",
+                importance="medium",
+            ),
+        ),
+    }
+
+    for raw_symptom in (
+        "온수가 첫 잔만 미지근하고 두 번째부터 뜨거워요",
+        "아침에만 온수가 미지근해요",
+    ):
+        client.generate_followup_wording(
+            FollowUpWordingRequest(raw_symptom=raw_symptom, **common),
+            timeout_seconds=1.0,
+        )
+
+    assert captured_prompts[0] != captured_prompts[1]
+    assert "첫 잔만 미지근" in captured_prompts[0]
+    assert "아침에만" in captured_prompts[1]
 
 
 def test_task_clients_follow_active_prompt_and_model_profiles(monkeypatch) -> None:
@@ -676,11 +818,23 @@ def test_pipeline_router_injects_both_natural_language_clients() -> None:
         ai_request_id="ai-req-natural-pipeline",
         state_version=1,
         raw_symptom="상태가 이상합니다",
+        selected_symptoms=["NOISE"],
+        previous_answers=[
+            {
+                "question_id": "followup-occurrence-time",
+                "answer_text": "답변하지 않음",
+            }
+        ],
     )
 
     assert len(symptom_client.requests) == 1
     assert len(followup_client.requests) == 1
     assert result.context.followup_questions
+    followup_request = followup_client.requests[0]
+    assert followup_request.raw_symptom == "상태가 이상합니다"
+    assert followup_request.selected_symptoms == ("NOISE",)
+    assert followup_request.previous_answers[0]["answer_text"] == "답변하지 않음"
+    assert followup_request.missing_field_contexts
 
 
 def test_structuring_and_followup_spans_contain_metadata_not_customer_text(

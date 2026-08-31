@@ -178,6 +178,33 @@ class OpenAIResponsesFollowUpWordingClient(_TaskConfiguredResponsesClient):
         if not request.target_fields:
             raise LLMOutputValidationError("Follow-up target field가 비어 있습니다.")
         system_prompt, user_template = self._prompts()
+        selected_symptoms = [
+            _redact_customer_text(str(value), limit=100)
+            for value in request.selected_symptoms
+            if str(value).strip()
+        ]
+        previous_answers = [
+            {
+                "question_id": str(item.get("question_id", ""))[:100],
+                "answer_text": _redact_customer_text(
+                    str(item.get("answer_text", "")),
+                    limit=500,
+                ),
+            }
+            for item in request.previous_answers
+            if isinstance(item, dict)
+            and str(item.get("question_id", "")).strip()
+            and str(item.get("answer_text", "")).strip()
+        ]
+        missing_field_contexts = [
+            {
+                "target_field": item.target_field[:100],
+                "reason": _redact_customer_text(item.reason, limit=500),
+                "importance": item.importance,
+            }
+            for item in request.missing_field_contexts
+            if item.target_field in request.target_fields
+        ]
         symptom_json = _redact_customer_text(
             json.dumps(
                 request.structured_symptom.model_dump(mode="json"),
@@ -187,7 +214,22 @@ class OpenAIResponsesFollowUpWordingClient(_TaskConfiguredResponsesClient):
             limit=4000,
         )
         user_prompt = user_template.format(
+            raw_symptom=_redact_customer_text(request.raw_symptom, limit=2000),
+            selected_symptoms_json=json.dumps(
+                selected_symptoms,
+                ensure_ascii=False,
+            ),
             structured_symptom_json=symptom_json,
+            previous_answers_json=json.dumps(
+                previous_answers,
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
+            missing_field_contexts_json=json.dumps(
+                missing_field_contexts,
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
             target_fields_json=json.dumps(
                 list(request.target_fields),
                 ensure_ascii=False,
