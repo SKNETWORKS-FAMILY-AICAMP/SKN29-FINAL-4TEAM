@@ -230,6 +230,8 @@ describe("Remote 상담사 문의 상세", () => {
         name: "상담 3단계: 상담 진행",
       }),
     );
+    expect(screen.getByLabelText("상담 기록")).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
     await user.type(screen.getByLabelText("상담 기록"), "필터 상태 확인");
     await user.click(
       screen.getByRole("button", {
@@ -459,7 +461,7 @@ describe("Remote 상담사 문의 상세", () => {
     expect(screen.getByRole("button", { name: "상세 보기" })).toHaveFocus();
   });
 
-  it("방문 필요 결과와 최신 방문 일정·기사 정보를 함께 표시한다", async () => {
+  it("방문 결과가 있어도 상담 진행 단계에 별도 방문 정보 카드를 표시하지 않는다", async () => {
     const user = userEvent.setup();
     render(
       <RemoteConsultantInquiryDetail
@@ -505,14 +507,11 @@ describe("Remote 상담사 문의 상세", () => {
       }),
     );
 
-    expect(screen.getByText("방문 필요")).toBeInTheDocument();
-    expect(screen.getByText("방문 정보 등록됨")).toBeInTheDocument();
-    expect(screen.getByText("방문 일정 확정")).toBeInTheDocument();
-    expect(screen.getByText("합성 기사 01")).toBeInTheDocument();
-    expect(screen.getByText("2026. 8. 26.")).toHaveAttribute(
-      "datetime",
-      "2026-08-26",
-    );
+    expect(screen.queryByRole("heading", { name: "방문 정보" })).not.toBeInTheDocument();
+    expect(screen.queryByText("방문 정보 등록됨")).not.toBeInTheDocument();
+    expect(screen.queryByText("방문 일정 확정")).not.toBeInTheDocument();
+    expect(screen.queryByText("합성 기사 01")).not.toBeInTheDocument();
+    expect(screen.getByText("현재 진행할 상담 작업이 없습니다.")).toBeInTheDocument();
   });
 
   it("Section 오류는 다른 상세 정보와 함께 부분 오류로 표시한다", () => {

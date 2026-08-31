@@ -8,19 +8,10 @@ import EmptyState from "../../common/components/feedback/EmptyState";
 import ErrorState from "../../common/components/feedback/ErrorState";
 import ForbiddenState from "../../common/components/feedback/ForbiddenState";
 import LoadingState from "../../common/components/feedback/LoadingState";
-import type {
-  ConsultantInquiryListQuery,
-  ConsultantInquiryStatusDto,
-} from "../../features/consultation/api/consultantWorkspaceRemoteTypes";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
 import ConsultantHeaderBrand from "../../features/consultation/components/ConsultantHeaderBrand";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
-import { useConsultantInquiryListQuery } from "../../features/consultation/hooks/useConsultantWorkspaceQueries";
-import type { CounselorWorkBucket } from "../../features/consultation/model/consultantWorkspaceTypes";
-import {
-  consultantWorkspaceDataRepository,
-  createMockConsultantInquiryListViewModel,
-} from "../../features/consultation/repositories/consultantWorkspaceDataRepository";
+import { useConsultantSidebarSummary } from "../../features/consultation/hooks/useConsultantSidebarSummary";
 import {
   getConsultantNoticeDetail,
   getConsultantNoticePageData,
@@ -40,6 +31,7 @@ import "../../common/styles/water-glass-theme.css";
 import "./ConsultantOperationsTone.css";
 import "./ConsultantWorkDashboard.css";
 import "./ConsultantNoticePage.css";
+import "./ConsultantDirectoryLayout.css";
 
 type NoticeCategoryFilter = "ALL" | ConsultantNoticeCategoryCode;
 type NoticeFailureState =
@@ -73,34 +65,6 @@ const NOTICE_CATEGORY_FILTERS: readonly {
   })),
 ];
 
-const NOTICE_SIDEBAR_BUCKET_STATUSES: Record<
-  CounselorWorkBucket,
-  readonly ConsultantInquiryStatusDto[]
-> = {
-  NEW: ["CONSULTATION_REQUIRED", "REOPENED"],
-  IN_PROGRESS: [
-    "DRAFT",
-    "QUESTIONNAIRE_IN_PROGRESS",
-    "AI_GUIDANCE",
-    "CONSULTATION_IN_PROGRESS",
-    "VISIT_REVIEW_PENDING",
-    "VISIT_SCHEDULING",
-    "VISIT_SCHEDULED",
-    "COMPLETION_PENDING",
-    "REVISIT_REQUIRED",
-  ],
-  COMPLETED: ["RESOLVED", "CANCELLED"],
-};
-
-const NOTICE_SIDEBAR_QUERY: ConsultantInquiryListQuery = {
-  status: [
-    ...NOTICE_SIDEBAR_BUCKET_STATUSES.NEW,
-    ...NOTICE_SIDEBAR_BUCKET_STATUSES.IN_PROGRESS,
-    ...NOTICE_SIDEBAR_BUCKET_STATUSES.COMPLETED,
-  ],
-  page: 1,
-  size: 100,
-};
 const NOTICE_PAGE_SIZE = 5;
 
 function formatNoticeDate(value: string) {
@@ -126,14 +90,7 @@ function getNoticeFailureState(error: unknown): NoticeFailureState {
 export default function ConsultantNoticePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const sidebarQuery = useConsultantInquiryListQuery(NOTICE_SIDEBAR_QUERY);
-  const sidebarData = useMemo(
-    () =>
-      consultantWorkspaceDataRepository.dataSource === "MOCK"
-        ? createMockConsultantInquiryListViewModel(NOTICE_SIDEBAR_QUERY)
-        : sidebarQuery.data,
-    [sidebarQuery.data],
-  );
+  const sidebarSummary = useConsultantSidebarSummary();
   const [data, setData] = useState<ConsultantNoticePageData | null>(null);
   const [pageLoadState, setPageLoadState] =
     useState<NoticePageLoadState>("loading");
@@ -265,27 +222,6 @@ export default function ConsultantNoticePage() {
     const start = (currentNoticePage - 1) * NOTICE_PAGE_SIZE;
     return visibleNotices.slice(start, start + NOTICE_PAGE_SIZE);
   }, [currentNoticePage, visibleNotices]);
-  const bucketCounts = useMemo<
-    Readonly<Record<CounselorWorkBucket, number>> | undefined
-  >(
-    () =>
-      sidebarData
-        ? (Object.fromEntries(
-            Object.entries(NOTICE_SIDEBAR_BUCKET_STATUSES).map(
-              ([bucket, statuses]) => [
-                bucket,
-                statuses.reduce(
-                  (total, status) =>
-                    total + (sidebarData.statusCounts[status] ?? 0),
-                  0,
-                ),
-              ],
-            ),
-          ) as Record<CounselorWorkBucket, number>)
-        : undefined,
-    [sidebarData],
-  );
-
   const returnToNoticeList = () => {
     const nextSearchParams = new URLSearchParams(searchParams);
     nextSearchParams.delete("noticeId");
@@ -299,7 +235,7 @@ export default function ConsultantNoticePage() {
   };
 
   return (
-    <div className="simple-consultant-app consultant-queue-app consultant-notice-app">
+    <div className="simple-consultant-app consultant-queue-app consultant-notice-app consultant-directory-app">
       <main className="simple-consultant-main consultant-queue-main">
         <header className="simple-topbar consultant-main-header consultant-unified-header">
           <ConsultantHeaderBrand />
@@ -308,14 +244,13 @@ export default function ConsultantNoticePage() {
 
         <ConsultantQueueSidebar
           activeBucket={null}
-          bucketCounts={bucketCounts}
-          totalCount={sidebarData?.pageInfo.total}
+          {...sidebarSummary}
           noticeActive
         />
 
         <section
           id="consultant-notice-panel"
-          className={`consultant-notice-panel${isDetailRequested ? " is-detail" : ""}`}
+          className={`consultant-notice-panel consultant-directory-panel${isDetailRequested ? " is-detail" : ""}`}
           role="tabpanel"
           aria-labelledby="consultant-notice-title"
         >

@@ -1,0 +1,45 @@
+/* Let navigation grow with the seven destinations instead of clipping a row. */
+@media (min-width: 901px) {
+  html body #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar.consultant-sidebar
+    #consultant-sidebar-navigation {
+    grid-template-rows: repeat(7, 56px) !important;
+    align-content: safe center !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 900px) {
+  html body #root
+    .simple-consultant-app.consultant-queue-app
+    .consultant-queue-main:has(> #consultant-queue-sidebar) {
+    grid-template-rows: 64px auto minmax(560px, 1fr) !important;
+  }
+
+  html body #root
+    .simple-consultant-app.consultant-queue-app.consultant-dashboard-app
+    .consultant-queue-main:has(> #consultant-queue-sidebar) {
+    grid-template-rows: 64px auto 226px minmax(0, 1fr) !important;
+  }
+
+  html body #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar.consultant-sidebar {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  html body #root
+    .simple-consultant-app.consultant-queue-app
+    #consultant-queue-sidebar.consultant-sidebar
+    #consultant-sidebar-navigation {
+    height: auto !important;
+    min-height: 0 !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 155px), 1fr)) !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: 52px !important;
+    overflow: hidden !important;
+  }
+}

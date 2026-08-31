@@ -1,6 +1,6 @@
-import type { ChangeEvent } from "react";
 import { useState } from "react";
 
+import FormSelect from "../../../common/components/form/FormSelect";
 import { useConsultationForm } from "../hooks/useConsultationForm";
 import { useSaveConsultation } from "../hooks/useSaveConsultation";
 import type {
@@ -118,8 +118,8 @@ export default function ConsultationActionPanel({
     }
   };
 
-  const handleScenarioChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    setScenario(event.target.value as ConsultationMockScenario);
+  const handleScenarioChange = (value: string) => {
+    setScenario(value as ConsultationMockScenario);
   };
 
   const isConsultationForm = inquiry.status === "CONSULTATION_IN_PROGRESS";
@@ -263,40 +263,40 @@ export default function ConsultationActionPanel({
           <FieldError message={form.fieldErrors.summaryConfirmed} />
           <label className="v6-form-field">
             방문 필요 여부 <b>완료 시 필수</b>
-            <select
+            <FormSelect
               value={form.values.visitRequired}
               aria-invalid={Boolean(form.fieldErrors.visitRequired)}
-              onChange={(event) =>
+              onChange={(value) =>
                 form.updateField(
                   "visitRequired",
-                  event.target.value as typeof form.values.visitRequired,
+                  value as typeof form.values.visitRequired,
                 )
               }
-            >
-              <option value="UNDECIDED">선택해 주세요</option>
-              <option value="REQUIRED">방문 필요</option>
-              <option value="NOT_REQUIRED">방문 불필요</option>
-            </select>
+              options={[
+                { value: "UNDECIDED", label: "선택해 주세요" },
+                { value: "REQUIRED", label: "방문 필요" },
+                { value: "NOT_REQUIRED", label: "방문 불필요" },
+              ]}
+            />
             <FieldError message={form.fieldErrors.visitRequired} />
           </label>
           <label className="v6-form-field">
             처리 후 사용 안내
-            <select
+            <FormSelect
               value={form.values.usageStatus}
-              onChange={(event) =>
+              onChange={(value) =>
                 form.updateField(
                   "usageStatus",
-                  event.target.value as typeof form.values.usageStatus,
+                  value as typeof form.values.usageStatus,
                 )
               }
-            >
-              <option value="NORMAL">일반 사용 가능</option>
-              <option value="PARTIAL_STOP">일부 출수·기능 사용 중지</option>
-              <option value="TOTAL_STOP">제품 전체 사용 중지</option>
-              <option value="PENDING_CONSULTATION">
-                상담 확인 전 안내 보류
-              </option>
-            </select>
+              options={[
+                { value: "NORMAL", label: "일반 사용 가능" },
+                { value: "PARTIAL_STOP", label: "일부 출수·기능 사용 중지" },
+                { value: "TOTAL_STOP", label: "제품 전체 사용 중지" },
+                { value: "PENDING_CONSULTATION", label: "상담 확인 전 안내 보류" },
+              ]}
+            />
           </label>
         </form>
       )}
@@ -304,13 +304,7 @@ export default function ConsultationActionPanel({
       {save.allowedActions.length > 0 && (
         <label className="v6-form-field v6-mock-selector">
           Mock 응답 테스트
-          <select value={scenario} onChange={handleScenarioChange}>
-            {MOCK_SCENARIOS.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
+          <FormSelect value={scenario} onChange={handleScenarioChange} options={MOCK_SCENARIOS} />
           <small>실제 API가 연결되면 제거되는 개발용 선택 항목입니다.</small>
         </label>
       )}

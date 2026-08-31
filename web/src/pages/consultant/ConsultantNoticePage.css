@@ -426,3 +426,46 @@
     padding: 24px 20px 32px;
   }
 }
+
+html body #root
+  .consultant-notice-app.consultant-directory-app
+  .consultant-notice-list__item {
+  border: 1px solid #c8c8c8 !important;
+  border-radius: var(--consultant-refresh-surface-radius, 9px) !important;
+  background: #fafafa !important;
+  box-shadow: none !important;
+}
+
+html body #root
+  .consultant-notice-app.consultant-directory-app
+  .consultant-notice-list__item:hover {
+  border-color: var(--consultant-refresh-navy, #3f4858) !important;
+  background: #fff !important;
+}
+
+html body #root
+  .consultant-notice-app.consultant-directory-app
+  .consultant-notice-list__item:focus-visible {
+  outline: 2px solid var(--consultant-refresh-navy, #3f4858);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  html body #root
+    .consultant-notice-app.consultant-directory-app
+    .consultant-notice-list__item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .consultant-notice-list__main {
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .consultant-notice-list__main h2,
+  .consultant-notice-list__main p {
+    overflow-wrap: anywhere;
+  }
+}

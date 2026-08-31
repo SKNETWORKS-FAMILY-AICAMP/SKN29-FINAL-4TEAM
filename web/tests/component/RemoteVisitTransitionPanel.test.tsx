@@ -152,11 +152,9 @@ describe("Remote 방문기사 선택", () => {
     const repository = renderPanel();
     const technicianSelect = screen.getByLabelText("방문기사");
 
-    expect(
-      screen.getByRole("option", { name: "합성 기사 02 · 서울 합성 지사" }),
-    ).toHaveValue(ACTIVE_TECHNICIAN_ID);
-
-    await user.selectOptions(technicianSelect, ACTIVE_TECHNICIAN_ID);
+    await user.click(technicianSelect);
+    await user.click(screen.getByRole("option", { name: "합성 기사 02 · 서울 합성 지사" }));
+    expect(technicianSelect).toHaveValue(ACTIVE_TECHNICIAN_ID);
     fireEvent.change(screen.getByLabelText("고객 희망일"), {
       target: { value: "2026-08-25" },
     });
@@ -190,12 +188,13 @@ describe("Remote 방문기사 선택", () => {
     const saveButton = screen.getByRole("button", { name: "기사·일정 저장" });
 
     expect(technicianSelect).toHaveValue(ASSIGNED_TECHNICIAN_ID);
+    await user.click(technicianSelect);
     expect(
       screen.getByRole("option", { name: "현재 배정 기사 · 선택 목록 외" }),
-    ).toBeDisabled();
+    ).toHaveAttribute("aria-disabled", "true");
     expect(saveButton).toBeDisabled();
 
-    await user.selectOptions(technicianSelect, ACTIVE_TECHNICIAN_ID);
+    await user.click(screen.getByRole("option", { name: "합성 기사 02 · 서울 합성 지사" }));
     expect(technicianSelect).toHaveValue(ACTIVE_TECHNICIAN_ID);
   });
 

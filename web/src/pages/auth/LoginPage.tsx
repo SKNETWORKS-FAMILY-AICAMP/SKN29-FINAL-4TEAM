@@ -85,6 +85,9 @@ export default function LoginPage() {
               <input
                 name="username"
                 autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
                 required
@@ -96,6 +99,9 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 required

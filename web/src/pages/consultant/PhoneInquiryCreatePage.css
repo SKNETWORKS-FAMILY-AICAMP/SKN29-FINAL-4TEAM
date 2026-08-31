@@ -335,34 +335,31 @@ html body .phone-inquiry-entry-app :is(input, select, textarea):disabled {
   grid-column: 1 / -1;
 }
 
-.phone-inquiry-select-control {
-  position: relative;
-  display: block;
+html body #root .phone-inquiry-entry-app .phone-inquiry-combobox .phone-inquiry-candidate-panel {
+  padding: 4px;
+  border-radius: 12px !important;
+  background: #f8f8f6 !important;
 }
 
-html body .phone-inquiry-entry-app .phone-inquiry-select-control select {
-  padding-right: 42px;
-  appearance: none;
-  cursor: pointer;
+html body #root .phone-inquiry-entry-app .phone-inquiry-combobox .phone-inquiry-candidate-panel > button[role="option"] {
+  margin: 2px 0;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: #eeefec !important;
+  color: #30343c !important;
+  -webkit-text-fill-color: #30343c !important;
 }
 
-.phone-inquiry-select-control svg {
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  width: 18px;
-  height: 18px;
-  transform: translateY(-50%);
-  fill: none;
-  stroke: #3f4a5c;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
-  pointer-events: none;
+html body #root .phone-inquiry-entry-app .phone-inquiry-combobox .phone-inquiry-candidate-panel > button[role="option"]:is(:hover, .is-active) {
+  border-color: #3f495a !important;
+  background: #3f495a !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
 }
 
-.phone-inquiry-select-control:hover svg {
-  stroke: #202a39;
+html body #root .phone-inquiry-entry-app .phone-inquiry-combobox .phone-inquiry-candidate-panel > button[role="option"]:is(:hover, .is-active) :is(span, strong, b, small) {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
 }
 
 .phone-inquiry-priority {
