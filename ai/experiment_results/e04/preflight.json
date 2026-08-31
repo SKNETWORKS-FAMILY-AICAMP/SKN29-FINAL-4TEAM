@@ -1,7 +1,7 @@
 {
-  "status": "E04_V2_10MODEL_PREFLIGHT_READY",
+  "status": "E04_V2_13MODEL_PREFLIGHT_READY",
   "result_label": "DRAFT_DIAGNOSTIC",
-  "git_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f",
+  "git_sha": "970769f7650d82254c4ca98ab9c3e54e61d1e3fa",
   "prompt_version": "customer_guidance/v3",
   "runtime_baseline": {
     "provider": "openai",
@@ -46,6 +46,11 @@
         "gpt_5_4_nano",
         "gpt_5_4_mini",
         "gpt_5_4_full"
+      ],
+      "5.6": [
+        "gpt_5_6_luna",
+        "gpt_5_6_terra",
+        "gpt_5_6_sol"
       ]
     }
   },
@@ -229,11 +234,68 @@
       },
       "effective_model_id": "gpt-5.4-2026-03-05",
       "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_6_luna",
+      "family": "5.6",
+      "size": "luna",
+      "generation_axis": "5_6_tier_matrix",
+      "requested_model_id": "gpt-5.6-luna",
+      "fallback_alias": "gpt-5.6-luna",
+      "role": "GENERATION_5_6_LUNA",
+      "input_usd_per_1m": 0.2,
+      "cached_input_usd_per_1m": 0.02,
+      "output_usd_per_1m": 1.2,
+      "cache_write_multiplier": 1.25,
+      "inference_profile": {
+        "reasoning_effort": "none",
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-5.6-luna",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_6_terra",
+      "family": "5.6",
+      "size": "terra",
+      "generation_axis": "5_6_tier_matrix",
+      "requested_model_id": "gpt-5.6-terra",
+      "fallback_alias": "gpt-5.6-terra",
+      "role": "GENERATION_5_6_TERRA",
+      "input_usd_per_1m": 2.0,
+      "cached_input_usd_per_1m": 0.2,
+      "output_usd_per_1m": 12.0,
+      "cache_write_multiplier": 1.25,
+      "inference_profile": {
+        "reasoning_effort": "none",
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-5.6-terra",
+      "snapshot_fallback_used": false
+    },
+    {
+      "key": "gpt_5_6_sol",
+      "family": "5.6",
+      "size": "sol",
+      "generation_axis": "5_6_tier_matrix",
+      "requested_model_id": "gpt-5.6-sol",
+      "fallback_alias": "gpt-5.6",
+      "role": "GENERATION_5_6_SOL",
+      "input_usd_per_1m": 4.0,
+      "cached_input_usd_per_1m": 0.4,
+      "output_usd_per_1m": 20.0,
+      "cache_write_multiplier": 1.25,
+      "inference_profile": {
+        "reasoning_effort": "none",
+        "temperature": 0.0
+      },
+      "effective_model_id": "gpt-5.6-sol",
+      "snapshot_fallback_used": false
     }
   ],
-  "pricing_verified_date": "2026-08-27",
-  "pricing_basis": "OpenAI published standard text-token prices. Runner separately accounts for cached input tokens when usage exposes them.",
-  "dataset_path": ".runtime/e04_generation_v2/dataset.json",
+  "pricing_verified_date": "2026-08-31",
+  "pricing_basis": "OpenAI published standard text-token prices; GPT-5.6 models added to the preserved E04 39-case generation matrix.",
+  "dataset_path": "ai/experiment_results/e04/dataset.json",
   "live_smoke": {
     "gpt_4o_mini": {
       "status": "PASS",
@@ -454,14 +516,86 @@
         }
       ],
       "effective_model_id": "gpt-5.4-2026-03-05"
+    },
+    "gpt_5_6_luna": {
+      "status": "PASS",
+      "requested_model": "gpt-5.6-luna",
+      "returned_model": "gpt-5.6-luna",
+      "latency_ms": 3910.66,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 6339,
+        "output_tokens": 305,
+        "reasoning_tokens": 0,
+        "total_tokens": 6647
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5.6-luna",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5.6-luna"
+    },
+    "gpt_5_6_terra": {
+      "status": "PASS",
+      "requested_model": "gpt-5.6-terra",
+      "returned_model": "gpt-5.6-terra",
+      "latency_ms": 2224.53,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 6339,
+        "output_tokens": 305,
+        "reasoning_tokens": 0,
+        "total_tokens": 6647
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5.6-terra",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5.6-terra"
+    },
+    "gpt_5_6_sol": {
+      "status": "PASS",
+      "requested_model": "gpt-5.6-sol",
+      "returned_model": "gpt-5.6-sol",
+      "latency_ms": 3385.17,
+      "message_in_context": true,
+      "actions_allowed": true,
+      "usage": {
+        "input_tokens": 6342,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 6339,
+        "output_tokens": 305,
+        "reasoning_tokens": 0,
+        "total_tokens": 6647
+      },
+      "attempts": [
+        {
+          "model_id": "gpt-5.6-sol",
+          "status": "PASS"
+        }
+      ],
+      "effective_model_id": "gpt-5.6-sol"
     }
   },
   "input_hashes": {
     ".runtime/e03_embedding/results/summary.json": "6D0BB0973D9AD1ACF7C55EC555083BE5DCE36531581FB99D5970F8DFDF41C8AD",
     ".runtime/e03_embedding/results/case_results.jsonl": "9881A54D8C6789A194B7B276D7D790B3551618068EE7B501E30A156C8374BC8B",
     ".runtime/e02_v2/variants/parent_child_256.jsonl": "68186B514CBDE269EE886E6D758C01AFE18B8A66CA95ABCA2E74477AD3F161D9",
-    "ai/configs/model_profiles.yaml": "43AF8B0319AB7FEAD37F8EB68D3D3CB77D8D1B98B6EFD7064FCCFE945D1F4BDD"
+    "ai/configs/model_profiles.yaml": "43AF8B0319AB7FEAD37F8EB68D3D3CB77D8D1B98B6EFD7064FCCFE945D1F4BDD",
+    "ai/experiment_results/e04/dataset.json": "4B9ECA1E1709CE7D35C51144D3A3015D90539D0CF1A9C68FE2D9488EE862F7A0"
   },
   "warnings": [],
-  "errors": []
+  "errors": [],
+  "generation_contract_source_sha": "68666b88fcf33273906710f23a8d17f7f1faa07f",
+  "generation_contract_mode": "FROZEN_E04_EXACT_EVIDENCE_ENUM"
 }

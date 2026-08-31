@@ -1,12 +1,12 @@
 # E04-v2 — Generation Model Matrix
 
-- Git SHA: `68666b88fcf33273906710f23a8d17f7f1faa07f`
+- Git SHA: `970769f7650d82254c4ca98ab9c3e54e61d1e3fa`
 - Prompt: `customer_guidance/v3`
 - Result: `DRAFT_DIAGNOSTIC`
 - Retrieval fixed: `E03 GTE Top-5 / Parent-Child-256`
 - Answerable cases: `39`
 
-## 전체 10모델
+## 전체 13모델
 
 | Model | Family | Size | Relevant Acc. | Guard Accept | p50 ms | p95 ms | Cost USD |
 |---|---|---|---:|---:|---:|---:|---:|
@@ -20,6 +20,9 @@
 | gpt-5.4-nano-2026-03-17 | 5.4 | nano | 0.5385 | 0.9487 | 2637.065 | 3605.626 | 0.064656 |
 | gpt-5.4-mini-2026-03-17 | 5.4 | mini | 0.7436 | 0.9744 | 2298.141 | 7095.35 | 0.240034 |
 | gpt-5.4-2026-03-05 | 5.4 | full | 1.0000 | 0.9744 | 2575.266 | 3575.201 | 0.780690 |
+| gpt-5.6-luna | 5.6 | luna | 0.8718 | 1.0000 | 2718.049 | 4147.782 | 0.075225 |
+| gpt-5.6-terra | 5.6 | terra | 1.0000 | 1.0000 | 2467.602 | 4262.803 | 0.752320 |
+| gpt-5.6-sol | 5.6 | sol | 0.9487 | 1.0000 | 3285.078 | 5128.467 | 1.458460 |
 
 ## Mini 세대 비교
 
@@ -54,11 +57,19 @@
 | mini | gpt-5.4-mini-2026-03-17 | 0.7436 | 2298.141 | 0.240034 |
 | full | gpt-5.4-2026-03-05 | 1.0000 | 2575.266 | 0.780690 |
 
+## 5.6 세대 크기 비교
+
+| Size | Model | Relevant Acc. | p50 ms | Cost USD |
+|---|---|---:|---:|---:|
+| luna | gpt-5.6-luna | 0.8718 | 2718.049 | 0.075225 |
+| terra | gpt-5.6-terra | 1.0000 | 2467.602 | 0.752320 |
+| sol | gpt-5.6-sol | 0.9487 | 3285.078 | 1.458460 |
+
 ## 해석 가드레일
 
 - GPT-4o/4.1은 temperature=0을 사용한다.
 - 구형 GPT-5 계열은 temperature 파라미터를 지원하지 않아 reasoning=minimal을 사용한다.
-- GPT-5.4는 reasoning=none일 때 temperature를 지원하므로 reasoning=none + temperature=0을 사용한다.
+- GPT-5.4/5.6은 reasoning=none + temperature=0을 사용한다.
 - 따라서 세 세대의 decoding knob가 완전히 동일하지는 않으며, 각 API 세대에서 가능한 최소 reasoning/최저 randomness 프로필을 사용한 비교다.
 - strict enum string literal 호환성을 위해 E04 입력 evidence의 CR/LF/TAB 및 연속 공백은 단일 ASCII 공백으로 정규화한다.
 - 정규화는 모든 모델/모든 case에 동일하게 적용하며 원본 chunk text SHA-256을 dataset에 남긴다.
