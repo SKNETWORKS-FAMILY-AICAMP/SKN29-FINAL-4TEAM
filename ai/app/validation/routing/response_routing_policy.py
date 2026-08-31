@@ -62,22 +62,29 @@ class ResponseRoutingPolicy:
                 return response, ResponseRoutingDisposition.DANGER_HANDOFF
             return self._invalid_success_fallback(response)
 
-        if (
-            response.followup_questions
-            and not response.evidence_references
-        ):
+        if response.followup_questions:
+            # OPEN-18: clarification is Evidence-driven and may be requested
+            # even when candidate evidence has already been retrieved.
             if (
                 safety.risk_level == RiskLevel.CAUTION
                 and safety.requires_consultation
                 and guidance.guidance_status
                 == UsageGuidanceStatus.PENDING_CONSULTATION
-                and not response.evidence_references
             ):
                 return (
                     response,
                     ResponseRoutingDisposition.CUSTOMER_INPUT_PENDING,
                 )
             return self._invalid_success_fallback(response)
+
+        # OPEN-19: Runtime PRE_SEND HITL is removed. A validated non-danger
+        # result that explicitly requests consultation should remain a normal
+        # contract response and let Backend transition it to consultation.
+        if safety.requires_consultation:
+            return (
+                response,
+                ResponseRoutingDisposition.FAIL_CLOSED_CONSULTATION,
+            )
 
         if safety.risk_level == RiskLevel.CAUTION:
             if (
@@ -90,7 +97,7 @@ class ResponseRoutingPolicy:
             ):
                 return (
                     response,
-                    ResponseRoutingDisposition.PRE_SEND_HUMAN_REVIEW,
+                    ResponseRoutingDisposition.AUTO_GUIDANCE,
                 )
             return self._invalid_success_fallback(response)
 
@@ -99,7 +106,6 @@ class ResponseRoutingPolicy:
                 response.evidence_references
                 and not safety.requires_consultation
                 and not safety.matched_safety_rule_ids
-                and not response.missing_fields
                 and not response.followup_questions
                 and guidance.guidance_status == UsageGuidanceStatus.NORMAL
                 and self._accepted_evidence_matches(
@@ -139,7 +145,7 @@ class ResponseRoutingPolicy:
                     "priority": SafetyPriority.CONSULTATION_RECOMMENDED,
                     "requires_consultation": True,
                     "safety_reason": (
-                        "자동 안내 Routing 조건을 충족하지 못해 상담 검토가 필요합니다."
+                        "자동 안내 Routing 조건을 충족하지 못해 상담 연결이 필요합니다."
                     ),
                 }
             )
@@ -151,7 +157,7 @@ class ResponseRoutingPolicy:
         fallback = response.model_copy(
             update={
                 "status": AiExecutionStatus.FALLBACK,
-                "fallback_reason_code": FallbackReasonCode.OUTPUT_SCHEMA_INVALID,
+                "fallback_reason_code": FallbackReasonCode.UNSPECIFIED_FALLBACK,
                 "failure_stage": AiStage.VALIDATING,
                 "safety_assessment": safety,
                 "usage_guidance": guidance,
@@ -186,7 +192,7 @@ class ResponseRoutingPolicy:
     def _blocking_guidance() -> UsageGuidance:
         return UsageGuidance(
             guidance_status=UsageGuidanceStatus.PENDING_CONSULTATION,
-            message="자동 안내를 확정하지 못해 상담사 검토가 필요합니다.",
-            restricted_functions=["검토 전 자가조치 안내"],
+            message="자동 안내를 확정하지 못해 전문 상담 연결이 필요합니다.",
+            restricted_functions=["상담 전 자가조치 안내"],
             next_actions=["전문 상담 연결을 요청해 주세요."],
         )

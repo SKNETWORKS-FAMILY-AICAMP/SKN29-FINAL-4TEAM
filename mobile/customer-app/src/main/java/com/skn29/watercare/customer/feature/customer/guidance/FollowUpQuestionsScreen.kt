@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.customer.common.VmFactory
+import com.skn29.watercare.customer.feature.shared.CustomerErrorState
 import com.skn29.watercare.customer.feature.shared.CustomerInitialLoadingState
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 import kotlinx.coroutines.flow.collect
@@ -76,6 +77,11 @@ fun FollowUpQuestionsScreen(
         }
     }
 
+    var backendAdvancePollingExhausted by
+        remember(inquiryId) {
+            mutableStateOf(false)
+        }
+
     val awaitingBackendAdvance =
         state is FollowUpUiState.Empty &&
             state.snapshotOrNull()
@@ -89,9 +95,11 @@ fun FollowUpQuestionsScreen(
         awaitingBackendAdvance,
     ) {
         if (!awaitingBackendAdvance) {
+            backendAdvancePollingExhausted = false
             return@LaunchedEffect
         }
 
+        backendAdvancePollingExhausted = false
         repeat(12) {
             delay(2_500)
 
@@ -113,6 +121,15 @@ fun FollowUpQuestionsScreen(
 
             viewModel.refreshSilently()
         }
+
+        val current = viewModel.state.value
+        backendAdvancePollingExhausted =
+            current is FollowUpUiState.Empty &&
+                current.snapshot
+                    .statusCode
+                    .trim()
+                    .uppercase() ==
+                "QUESTIONNAIRE_IN_PROGRESS"
     }
 
     val cancelState by
@@ -243,16 +260,28 @@ fun FollowUpQuestionsScreen(
                     ?.uppercase() ==
                     "QUESTIONNAIRE_IN_PROGRESS"
             ) {
-                // 답변은 모두 저장됐지만 Backend가
-                // 다음 workflow 상태로 전환하는 중일 수 있다.
-                // 이 순간을 Empty로 보여주면
-                // "질문이 사라졌다"고 오해할 수 있어 처리 중으로 표시한다.
-                CustomerInitialLoadingState(
-                    title =
-                        "다음 단계를 준비하고 있어요",
-                    message =
-                        "답변을 확인했어요. 맞춤 안내를 준비하고 있어요.",
-                )
+                if (backendAdvancePollingExhausted) {
+                    CustomerErrorState(
+                        title =
+                            "처리가 예상보다 오래 걸리고 있어요",
+                        message =
+                            "문의 상태를 다시 확인해 주세요. "
+                                + "계속 지연되면 현재 문의를 취소하고 다시 시작할 수 있어요.",
+                        onRetry = {
+                            backendAdvancePollingExhausted = false
+                            viewModel.load()
+                        },
+                    )
+                } else {
+                    // 답변은 모두 저장됐지만 Backend가
+                    // 다음 workflow 상태로 전환하는 중일 수 있다.
+                    CustomerInitialLoadingState(
+                        title =
+                            "다음 단계를 준비하고 있어요",
+                        message =
+                            "답변을 확인했어요. 맞춤 안내를 준비하고 있어요.",
+                    )
+                }
             }
 
             if (!blockFollowUpInteraction) {

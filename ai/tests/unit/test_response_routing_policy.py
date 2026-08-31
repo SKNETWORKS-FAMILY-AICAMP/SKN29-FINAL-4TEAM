@@ -40,7 +40,7 @@ def test_existing_contract_fields_distinguish_four_terminal_routes():
     no_evidence, fallback_route = policy.apply(_response("no-evidence.json"))
 
     assert danger_route == ResponseRoutingDisposition.DANGER_HANDOFF
-    assert caution_route == ResponseRoutingDisposition.PRE_SEND_HUMAN_REVIEW
+    assert caution_route == ResponseRoutingDisposition.AUTO_GUIDANCE
     assert general_route == ResponseRoutingDisposition.AUTO_GUIDANCE
     assert fallback_route == ResponseRoutingDisposition.FAIL_CLOSED_CONSULTATION
     assert caution.status.value == "SUCCEEDED"
@@ -58,7 +58,7 @@ def test_invalid_general_success_is_downgraded_to_fail_closed():
 
     assert route == ResponseRoutingDisposition.FAIL_CLOSED_CONSULTATION
     assert normalized.status.value == "FALLBACK"
-    assert normalized.fallback_reason_code.value == "OUTPUT_SCHEMA_INVALID"
+    assert normalized.fallback_reason_code.value == "UNSPECIFIED_FALLBACK"
     assert normalized.failure_stage.value == "VALIDATING"
     assert normalized.safety_assessment.requires_consultation is True
     assert normalized.usage_guidance.guidance_status.value == (
@@ -77,8 +77,55 @@ def test_public_evidence_ids_must_match_harness_accepted_set():
 
     assert route == ResponseRoutingDisposition.FAIL_CLOSED_CONSULTATION
     assert normalized.status.value == "FALLBACK"
-    assert normalized.fallback_reason_code.value == "OUTPUT_SCHEMA_INVALID"
+    assert normalized.fallback_reason_code.value == "UNSPECIFIED_FALLBACK"
     assert normalized.evidence_references == []
+
+
+def test_general_missing_fields_do_not_block_auto_guidance_without_followup():
+    response = _response("general-guidance.json").model_copy(
+        update={
+            "missing_fields": [
+                {
+                    "field_name": "occurrence_time",
+                    "importance": "medium",
+                    "reason": "증상 시작 시점을 확인하면 도움이 됩니다.",
+                }
+            ],
+            "followup_questions": [],
+        }
+    )
+
+    normalized, route = ResponseRoutingPolicy().apply(response)
+
+    assert route == ResponseRoutingDisposition.AUTO_GUIDANCE
+    assert normalized.status.value == "SUCCEEDED"
+
+
+def test_caution_without_consultation_is_auto_guidance_not_pre_send_review():
+    response = _response("caution-pre-send-human-review.json")
+
+    normalized, route = ResponseRoutingPolicy().apply(response)
+
+    assert route == ResponseRoutingDisposition.AUTO_GUIDANCE
+    assert normalized.status.value == "SUCCEEDED"
+    assert normalized.safety_assessment.requires_consultation is False
+
+
+def test_explicit_consultation_request_is_not_relabelled_as_schema_failure():
+    response = _response("caution-pre-send-human-review.json")
+    response = response.model_copy(
+        update={
+            "safety_assessment": response.safety_assessment.model_copy(
+                update={"requires_consultation": True}
+            )
+        }
+    )
+
+    normalized, route = ResponseRoutingPolicy().apply(response)
+
+    assert route == ResponseRoutingDisposition.FAIL_CLOSED_CONSULTATION
+    assert normalized.status.value == "SUCCEEDED"
+    assert normalized.fallback_reason_code is None
 
 
 def test_hot_water_heater_rule_requires_exact_restrictions_and_actions():

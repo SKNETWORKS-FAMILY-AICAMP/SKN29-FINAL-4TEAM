@@ -208,6 +208,23 @@ def test_success_mapper_classifies_safe_and_no_evidence_results():
     assert no_evidence.is_no_evidence is True
 
 
+def test_success_mapper_allows_missing_fields_when_no_followup_is_needed():
+    request = request_payload()
+    response = success_payload(request)
+    response["missing_fields"] = [
+        {
+            "field_name": "occurrence_time",
+            "importance": "medium",
+            "reason": "증상이 시작된 시점을 확인하면 도움이 됩니다.",
+        }
+    ]
+    response["followup_questions"] = []
+
+    result = map_success_response(response, expected_request=request)
+
+    assert result.event_candidate == "SAFE_GUIDANCE_READY"
+
+
 def test_success_mapper_accepts_approved_hot_water_heater_partial_stop():
     request = request_payload()
     response = danger_payload(request)
@@ -292,14 +309,14 @@ def test_success_mapper_uses_reason_not_stage_for_product_validation_event():
     assert result.is_no_evidence is False
 
 
-def test_success_mapper_does_not_use_failure_stage_as_product_reason():
+def test_success_mapper_routes_output_schema_fallback_to_consultation():
     request = request_payload()
     response = success_payload(request)
     response.update(
         {
             "model_code": request["model_code"],
             "status": "FALLBACK",
-            "fallback_reason_code": "UNSPECIFIED_FALLBACK",
+            "fallback_reason_code": "OUTPUT_SCHEMA_INVALID",
             "failure_stage": "VALIDATING",
             "evidence_references": [],
         }
@@ -315,7 +332,7 @@ def test_success_mapper_does_not_use_failure_stage_as_product_reason():
         validator=ContractV4ResponseValidator(),
     )
 
-    assert result.event_candidate is None
+    assert result.event_candidate == "AI_CONSULTATION_REQUIRED"
     assert result.is_product_validation_failed is False
 
 

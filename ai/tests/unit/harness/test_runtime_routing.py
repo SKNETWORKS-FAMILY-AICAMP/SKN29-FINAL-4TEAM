@@ -201,8 +201,9 @@ def test_mixed_retrieving_fallback_uses_fail_closed_backend_authority():
         required_functions={"ice"},
     )
 
-    assert result.harness_runtime.harness.decision == HarnessDecision.HUMAN_REVIEW
+    assert result.harness_runtime.harness.decision == HarnessDecision.ESCALATE
     assert ctx.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
+    assert result.harness_runtime.human_review is None
     assert result.harness_runtime.handoff is not None
     assert result.harness_runtime.handoff.escalation_reason == "OUTPUT_SCHEMA_INVALID"
     assert (

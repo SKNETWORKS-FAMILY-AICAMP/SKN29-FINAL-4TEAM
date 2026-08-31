@@ -346,20 +346,15 @@ class ReliabilityRuntime:
         original_guidance = getattr(ctx, "usage_guidance", None)
 
         if harness.decision == HarnessDecision.HUMAN_REVIEW:
-            if original_guidance is None:
-                # route_runtime will fail closed instead of starting HITL. Set
-                # the same public fallback guidance before deriving the route
-                # so its failure-stage authority matches PipelineResult.
-                ctx.usage_guidance = self._safe_blocking_guidance(ctx)
-            routed = self.runner.route_runtime(
-                ctx=ctx,
-                product=product,
-                harness=harness,
-                guidance=original_guidance,
+            # Keep Harness/HITL primitives for E07 experiments, but the
+            # customer runtime no longer starts PRE_SEND human review.
+            harness = harness.model_copy(
+                update={
+                    "decision": HarnessDecision.ESCALATE,
+                    "should_retry": False,
+                    "should_escalate": True,
+                }
             )
-            if original_guidance is not None:
-                ctx.usage_guidance = self._safe_blocking_guidance(ctx)
-            return routed
 
         if harness.decision == HarnessDecision.ESCALATE:
             ctx.usage_guidance = self._safe_blocking_guidance(ctx)
@@ -398,8 +393,8 @@ class ReliabilityRuntime:
             )
         return UsageGuidance(
             guidance_status=UsageGuidanceStatus.PENDING_CONSULTATION,
-            message="자동 안내를 확정하지 못해 상담사 검토가 필요합니다.",
-            restricted_functions=["검토 전 자가조치 안내"],
+            message="자동 안내를 확정하지 못해 전문 상담 연결이 필요합니다.",
+            restricted_functions=["상담 전 자가조치 안내"],
             next_actions=["전문 상담 연결을 요청해 주세요."],
         )
 

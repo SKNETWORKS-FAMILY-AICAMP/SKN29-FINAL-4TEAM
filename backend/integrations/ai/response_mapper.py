@@ -164,13 +164,15 @@ def map_success_response(
         event_candidate = "DANGER_DETECTED"
     elif is_no_evidence:
         event_candidate = "NO_EVIDENCE"
-    elif status == "SUCCEEDED" and safety["requires_consultation"]:
+    elif safety["requires_consultation"]:
+        # Any contract-valid, non-danger result that explicitly requests
+        # consultation must leave QUESTIONNAIRE_IN_PROGRESS, including
+        # fail-closed FALLBACK envelopes such as OUTPUT_SCHEMA_INVALID.
         event_candidate = "AI_CONSULTATION_REQUIRED"
     elif (
         status == "SUCCEEDED"
         and evidence
         and not safety["requires_consultation"]
-        and not payload["missing_fields"]
         and not payload["followup_questions"]
     ):
         event_candidate = "SAFE_GUIDANCE_READY"
