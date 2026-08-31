@@ -41,6 +41,23 @@ WORKER_UNIT = (
 
 
 class ProductionDeploymentAssetTests(unittest.TestCase):
+    def test_release_image_maintenance_is_bundled_and_ordered_safely(self) -> None:
+        deploy = DEPLOY.read_text(encoding="utf-8")
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        pre = deploy.index('--phase before-pull --apply')
+        post = deploy.index('--phase after-success --apply')
+        self.assertIn("maintain_release_images.py", workflow)
+        self.assertIn("tests.deployment.test_release_image_maintenance", workflow)
+        self.assertLess(deploy.index('flock -n 9'), pre)
+        self.assertLess(pre, deploy.index('trap rollback ERR'))
+        self.assertLess(pre, deploy.index('compose pull'))
+        self.assertLess(pre, deploy.index('DEPLOYMENT_MUTATION_STARTED'))
+        self.assertLess(deploy.index('activate_worker_release "$payload_dir"'), post)
+        self.assertLess(deploy.index('mv -Tf "${base_dir}/current.next"'), post)
+        self.assertLess(deploy.rindex('trap - ERR'), post)
+        self.assertLess(post, deploy.index("printf 'DEPLOYMENT_RUNTIME_PASS"))
+        self.assertIn('if ! python3 "$image_maintenance_script"', deploy)
+
     def _rollback_health_command(self) -> re.Match[str]:
         text = ROLLBACK.read_text(encoding="utf-8")
         match = re.search(r"(?m)^curl\b.*?(?=\n\ncurrent_target=)", text, re.DOTALL)
