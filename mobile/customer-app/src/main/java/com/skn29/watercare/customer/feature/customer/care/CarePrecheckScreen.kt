@@ -25,10 +25,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
-import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
 import com.skn29.watercare.customer.common.VmFactory
+import com.skn29.watercare.customer.feature.shared.CustomerErrorState
+import com.skn29.watercare.customer.feature.shared.CustomerInitialLoadingState
+import com.skn29.watercare.customer.feature.shared.CustomerSubmittingState
 import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 
@@ -59,7 +61,9 @@ fun CarePrecheckScreen(
         viewModel.state
             .collectAsStateWithLifecycle()
 
-    // APP_WIDE_REFRESH_PRECHECK
+    // 사전 점검을 작성하다 다른 화면에 다녀온 경우
+    // Backend에 저장된 최신 session 상태를 다시 확인한다.
+    // 단, 저장/제출 중에 재조회하면 경쟁 상태가 될 수 있어 그 동안은 제외한다.
     var hasResumedOnce by
         remember(subscriptionId) {
             mutableStateOf(false)
@@ -117,7 +121,12 @@ fun CarePrecheckScreen(
             }
 
             if (state.loading) {
-                // Visible loading UI intentionally hidden.
+                CustomerInitialLoadingState(
+                    title =
+                        "사전 점검을 불러오고 있어요",
+                    message =
+                        "저장된 점검 내용과 현재 상태를 확인하고 있어요.",
+                )
                 return@WaterCareScreen
             }
 
@@ -128,7 +137,9 @@ fun CarePrecheckScreen(
             }
 
             state.error?.let {
-                ErrorCard(
+                CustomerErrorState(
+                    title =
+                        "사전 점검을 확인하지 못했어요",
                     message = it,
                     onRetry =
                         if (state.retryable) {
@@ -209,6 +220,22 @@ fun CarePrecheckScreen(
                         viewModel.selectLeak(true)
                     }
                 }
+            }
+
+            if (
+                state.saving ||
+                state.submitting
+            ) {
+                // 저장과 최종 제출은 서로 다른 작업이므로
+                // 현재 무슨 작업을 처리 중인지 문구를 달리 보여준다.
+                CustomerSubmittingState(
+                    message =
+                        if (state.submitting) {
+                            "사전 점검 결과를 제출하고 있어요."
+                        } else {
+                            "작성 중인 점검 내용을 임시 저장하고 있어요."
+                        },
+                )
             }
 
             if (session.statusCode != "SUBMITTED") {
