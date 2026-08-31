@@ -589,6 +589,46 @@ guards:
     error_code: AI_PROCESSING_TIMEOUT_PRECONDITION_FAILED
     message: AI 처리 시간 초과 전환 조건을 충족하지 못했습니다.
     expose_to_external_client: false
+- id: G-HUMAN-REVIEW-GUIDANCE-APPROVED
+  category: SAFETY_AND_EVIDENCE
+  description: 완료되지 않은 CAUTION 검토의 승인·수정 요청과 검증 Evidence가 유효하고, 원자적 반영 결과가 상담 불필요 승인 Guidance여야 한다.
+  conditions:
+  - human_review.status == PENDING
+  - decision_payload.decision in [APPROVE, MODIFY]
+  - decision_payload.effective_requires_consultation == false
+  - candidate_guidance.review_status_after_commit == APPROVED
+  - source_guidance.verified_evidence is not empty
+  failure:
+    http_status: 409
+    error_code: HUMAN_REVIEW_APPROVAL_PRECONDITION_FAILED
+    message: 검토 승인 안내 전환 조건을 충족하지 못했습니다.
+    expose_to_external_client: false
+- id: G-HUMAN-REVIEW-CONSULTATION-REQUIRED
+  category: SAFETY_AND_EVIDENCE
+  description: 완료되지 않은 CAUTION 검토의 승인·수정 요청과 검증 Evidence가 유효하고, 원자적 반영 결과가 상담 필요 승인 Guidance여야 한다.
+  conditions:
+  - human_review.status == PENDING
+  - decision_payload.decision in [APPROVE, MODIFY]
+  - decision_payload.effective_requires_consultation == true
+  - candidate_guidance.review_status_after_commit == APPROVED
+  - source_guidance.verified_evidence is not empty
+  failure:
+    http_status: 409
+    error_code: HUMAN_REVIEW_CONSULTATION_PRECONDITION_FAILED
+    message: 검토 후 상담 전환 조건을 충족하지 못했습니다.
+    expose_to_external_client: false
+- id: G-HUMAN-REVIEW-REJECTED
+  category: SAFETY_AND_EVIDENCE
+  description: 완료되지 않은 CAUTION 검토의 거절 요청이 유효하고, 원자적 반영 결과에서 공개 Guidance가 없어야 한다.
+  conditions:
+  - human_review.status == PENDING
+  - decision_payload.decision == REJECT
+  - candidate_guidance.after_commit is null
+  failure:
+    http_status: 409
+    error_code: HUMAN_REVIEW_REJECTION_PRECONDITION_FAILED
+    message: 검토 거절 전환 조건을 충족하지 못했습니다.
+    expose_to_external_client: false
 - id: G-SELF-RESOLUTION-ALLOWED
   category: COMPLETION
   description: 자가조치 단독 해결은 방문·상담 처리 없이 AI 안내 흐름에서만 허용한다.

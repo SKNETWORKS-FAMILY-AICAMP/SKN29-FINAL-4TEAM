@@ -15,7 +15,7 @@ from apps.subscriptions.models import CustomerSubscription
 OLD_TARGET = [("inquiries", "0012_alter_inquiry_options")]
 NEW_TARGET = [("inquiries", "0013_inquiry_priority_code")]
 LATEST_TARGET = [
-    ("inquiries", "0015_humanreview")
+    ("inquiries", "0016_humanreview_consultation_policy")
 ]
 
 

@@ -31,6 +31,7 @@ class HumanReviewRepository:
             )
             .prefetch_related(
                 "guidance__items",
+                "guidance__evidence_links",
                 "published_guidance__items",
             )
         )

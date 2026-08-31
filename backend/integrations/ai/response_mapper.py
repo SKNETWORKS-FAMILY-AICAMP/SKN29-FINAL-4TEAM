@@ -163,7 +163,9 @@ def map_success_response(
     elif (
         status == "SUCCEEDED"
         and evidence
+        and safety["risk_level"] == "general"
         and not safety["requires_consultation"]
+        and guidance["guidance_status"] == "NORMAL"
         and not payload["missing_fields"]
         and not payload["followup_questions"]
     ):

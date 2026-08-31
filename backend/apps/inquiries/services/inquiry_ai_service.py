@@ -545,7 +545,6 @@ class InquiryAIService:
             )
 
         assessment = cls._save_assessment(inquiry, run, result)
-        guidance = cls._save_guidance(inquiry, run, result)
         saved_questions = cls._save_followup_questions(inquiry, run, result)
         try:
             verified_evidence_ids = (
@@ -565,23 +564,40 @@ class InquiryAIService:
                 },
             )
             verified_evidence_ids = []
+
+        guidance: Guidance | None = None
         if verified_evidence_ids:
             try:
-                # Keep partial link writes out while preserving the already
-                # validated AI result as a reviewable draft.
+                # Guidance, evidence snapshots, and PRE_SEND HumanReview are
+                # one publication bundle. Any canonical-link failure rolls
+                # the whole bundle back so an unverified draft cannot enter
+                # either the customer read path or the review queue.
                 with transaction.atomic():
+                    candidate_guidance = cls._save_guidance(
+                        inquiry,
+                        run,
+                        result,
+                    )
                     cls._save_evidence_links(
                         inquiry=inquiry,
                         run=run,
-                        guidance=guidance,
+                        guidance=candidate_guidance,
                         references=result.payload["evidence_references"],
                         verified_evidence_ids=verified_evidence_ids,
                     )
+                    cls._create_human_review_if_required(
+                        guidance=candidate_guidance,
+                        run=run,
+                        inquiry=inquiry,
+                    )
+                    guidance = candidate_guidance
             except Exception as exc:
                 ai_trace_logger.warning(
-                    "evidence_link_persistence_failed",
+                    "verified_guidance_bundle_persistence_failed",
                     extra={
-                        "trace_stage": "EVIDENCE_LINK_PERSISTENCE_FAILED",
+                        "trace_stage": (
+                            "VERIFIED_GUIDANCE_BUNDLE_PERSISTENCE_FAILED"
+                        ),
                         "ai_run_id": str(run.public_id),
                         "inquiry_id": str(inquiry.public_id),
                         "correlation_id": str(run.correlation_id),
@@ -589,6 +605,7 @@ class InquiryAIService:
                     },
                 )
                 verified_evidence_ids = []
+                guidance = None
         cls._update_inquiry_projection(
             inquiry,
             result=result,
@@ -927,9 +944,6 @@ class InquiryAIService:
         ) + 1
         guidance_payload = result.payload["usage_guidance"]
         safety = result.payload["safety_assessment"]
-        evidence_sufficiency = (
-            "CANDIDATE" if result.payload["evidence_references"] else "NONE"
-        )
         guidance = Guidance(
             inquiry=inquiry,
             guidance_version=next_version,
@@ -937,7 +951,7 @@ class InquiryAIService:
             title="AI 사용 안내 초안",
             summary_text=guidance_payload["message"],
             safety_notice=safety["safety_reason"],
-            evidence_sufficiency_code=evidence_sufficiency,
+            evidence_sufficiency_code="VERIFIED",
             requires_consultation=safety["requires_consultation"],
             generated_by_ai_run=run,
         )
@@ -956,17 +970,29 @@ class InquiryAIService:
             )
             item.full_clean()
             item.save()
-        if guidance.review_status_code == GuidanceReviewPolicy.PENDING:
-            from apps.inquiries.services.human_review_service import (
-                HumanReviewService,
-            )
-
-            HumanReviewService.create_pending(
-                guidance=guidance,
-                ai_request_id=run.idempotency_key,
-                source_inquiry_state_version=inquiry.state_version,
-            )
         return guidance
+
+    @staticmethod
+    def _create_human_review_if_required(
+        *,
+        guidance: Guidance,
+        run: AIRun,
+        inquiry: Inquiry,
+    ) -> None:
+        """Queue PRE_SEND review only after verified links were persisted."""
+
+        if guidance.review_status_code != GuidanceReviewPolicy.PENDING:
+            return
+
+        from apps.inquiries.services.human_review_service import (
+            HumanReviewService,
+        )
+
+        HumanReviewService.create_pending(
+            guidance=guidance,
+            ai_request_id=run.idempotency_key,
+            source_inquiry_state_version=inquiry.state_version,
+        )
 
     @staticmethod
     def _save_followup_questions(
@@ -1052,6 +1078,8 @@ class InquiryAIService:
     ) -> tuple[str | None, str | None]:
         event = result.event_candidate
         if event is None:
+            if result.risk_level == "caution" and verified_evidence_ids:
+                return None, "HUMAN_REVIEW_REQUIRED"
             return None, "NO_STATE_EVENT_CANDIDATE"
         if event == "SAFE_GUIDANCE_READY" and not verified_evidence_ids:
             return None, "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
@@ -1063,9 +1091,11 @@ class InquiryAIService:
             "G-NO-USABLE-EVIDENCE": result.is_no_evidence,
             "G-SAFE-GUIDANCE-VALID": (
                 event == "SAFE_GUIDANCE_READY"
+                and result.risk_level == "general"
                 and not result.payload["safety_assessment"][
                     "requires_consultation"
                 ]
+                and result.usage_guidance_status == "NORMAL"
             ),
             "G-OFFICIAL-EVIDENCE-AVAILABLE": bool(verified_evidence_ids),
             "G-NO-DANGER-CONFLICT": result.risk_level != "danger",

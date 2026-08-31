@@ -176,3 +176,28 @@ class TransitionHistoryService:
                 TransitionHistory.ChangedByType.SYSTEM
             ),
         )
+
+    @staticmethod
+    def record_human_review_result(
+        *,
+        inquiry: Inquiry,
+        transition: Transition,
+        correlation_id: UUID,
+        idempotency_key: str,
+        review_public_id: UUID,
+        reason_code: str,
+    ) -> TransitionHistory:
+        """Record the Backend-derived effect of an audited human decision."""
+
+        return WorkflowRepository.create_transition_history(
+            inquiry=inquiry,
+            actor=None,
+            event_code=transition.event_code,
+            from_state=transition.inquiry_state_before,
+            to_state=transition.inquiry_state_after,
+            state_version=transition.state_version_after,
+            correlation_id=correlation_id,
+            idempotency_key=idempotency_key,
+            changed_by_type_code=TransitionHistory.ChangedByType.SYSTEM,
+            change_reason=f"{reason_code} | review={review_public_id}",
+        )

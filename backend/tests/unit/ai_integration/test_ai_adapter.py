@@ -78,6 +78,26 @@ def danger_payload(request: dict) -> dict:
     return payload
 
 
+def caution_payload(request: dict) -> dict:
+    example_path = (
+        DEFAULT_CONTRACT_ROOT
+        / "examples"
+        / "symptom-analysis"
+        / "caution-pre-send-human-review.json"
+    )
+    payload = json.loads(example_path.read_text(encoding="utf-8"))["response"]
+    for field in (
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "state_version",
+    ):
+        payload[field] = request[field]
+    if "model_code" in payload:
+        payload["model_code"] = request["model_code"]
+    return payload
+
+
 class ContractV4ResponseValidator:
     """Narrow validator used until the owner Contract 4.0 commit is merged."""
 
@@ -206,6 +226,18 @@ def test_success_mapper_classifies_safe_and_no_evidence_results():
     )
     assert no_evidence.event_candidate == "NO_EVIDENCE"
     assert no_evidence.is_no_evidence is True
+
+
+def test_success_mapper_never_maps_caution_to_safe_guidance_ready():
+    request = request_payload()
+
+    result = map_success_response(
+        caution_payload(request),
+        expected_request=request,
+    )
+
+    assert result.risk_level == "caution"
+    assert result.event_candidate is None
 
 
 def test_success_mapper_accepts_approved_hot_water_heater_partial_stop():

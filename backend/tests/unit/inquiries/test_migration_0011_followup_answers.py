@@ -13,7 +13,7 @@ NEW_TARGET = [
     ("inquiries", "0011_split_followup_question_metadata_and_answers")
 ]
 LATEST_TARGET = [
-    ("inquiries", "0015_humanreview")
+    ("inquiries", "0016_humanreview_consultation_policy")
 ]
 
 

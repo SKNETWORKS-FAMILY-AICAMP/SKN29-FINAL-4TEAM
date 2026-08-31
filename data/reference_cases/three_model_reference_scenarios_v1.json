@@ -1,0 +1,1334 @@
+{
+  "catalog_version": "three-model-reference-v1",
+  "catalog_status": "REFERENCE_ONLY",
+  "description": "세 모델의 일반·주의·위험 사용자 흐름을 모델별·등급별 5건씩 정리한 검토용 참조 사례 카탈로그입니다. 운영 Runtime이나 학습 데이터로 사용하지 않으며, 짧게 의역한 합성 발화와 공식 매뉴얼 페이지·검증된 Evidence Group의 연결만 제공합니다.",
+  "runtime_use": "REFERENCE_ONLY",
+  "training_use": "PROHIBITED",
+  "curation_status": "CANDIDATE",
+  "expected_records": 45,
+  "scenarios": [
+    {
+      "scenario_id": "REF-JAC104-G-001",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "general",
+      "title": "냉수 잠금으로 냉수 선택이 되지 않음",
+      "customer_utterance": "냉수 버튼을 눌러도 잠금 표시만 나오고 냉수가 선택되지 않아요.",
+      "topic_code": "symptom_cold_lock",
+      "context_facts": [
+        "냉수 잠금 표시가 켜짐",
+        "다른 출수 기능의 이상 징후는 없음"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [24],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "매뉴얼에 명시된 잠금 설정 확인으로 해결 가능한 일반 기능 문의입니다.",
+      "response_outline": [
+        "냉수 잠금 상태 확인",
+        "매뉴얼의 잠금 해제 순서 안내",
+        "해제 후 냉수 선택 재확인"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-G-002",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "general",
+      "title": "연속 다량 출수 뒤 냉수 온도 상승",
+      "customer_utterance": "냉수를 많이 연속으로 받은 뒤부터 전보다 덜 차갑게 느껴져요.",
+      "topic_code": "symptom_cold_temperature",
+      "context_facts": [
+        "연속 다량 출수 직후 발생",
+        "누수나 전기 이상은 없음"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [37],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "연속 사용 뒤 일시적으로 냉수 온도가 오를 수 있는 정상 조건입니다.",
+      "response_outline": [
+        "연속 출수에 따른 일시적 온도 변화 설명",
+        "잠시 기다린 뒤 다시 확인",
+        "충분히 기다린 뒤에도 지속되면 재상담 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-G-003",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "general",
+      "title": "작동 중 들리는 정상적인 윙 소리",
+      "customer_utterance": "정수기가 돌아갈 때 윙 하는 소리가 나는데 고장인가요?",
+      "topic_code": "symptom_noise",
+      "context_facts": [
+        "작동 중에만 윙 소리가 들림",
+        "타는 냄새·연기·누수는 없음"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [37],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-NOISE-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "매뉴얼이 정상 작동음으로 설명하는 조건이며 위험 동반 징후가 없습니다.",
+      "response_outline": [
+        "정상 작동음 가능성 설명",
+        "소리가 발생하는 조건 확인",
+        "소리가 과도하거나 위험 징후가 생기면 상담 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-G-004",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "general",
+      "title": "다른 수전 또는 순간온수 동시 사용 중 저유량",
+      "customer_utterance": "싱크대 물이나 온수를 같이 쓰면 정수기 물줄기가 약해져요.",
+      "topic_code": "symptom_low_flow",
+      "context_facts": [
+        "다른 수전 또는 순간온수와 동시 사용",
+        "단독 사용 전 확인 단계"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [38],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-LOW-FLOW-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "동시 사용과 순간 가열에 따른 정상적인 출수량 감소를 먼저 확인할 수 있습니다.",
+      "response_outline": [
+        "동시 사용을 잠시 중단",
+        "정수기만 단독으로 출수해 비교",
+        "단독 사용에서도 계속 약하면 상담 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-G-005",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "general",
+      "title": "최초 온수 초기화 중 미지근한 물 배수",
+      "customer_utterance": "처음 온수를 쓰는데 미지근한 물이 먼저 나오고 잠시 배수돼요.",
+      "topic_code": "symptom_initial_hot_water",
+      "context_facts": [
+        "최초 온수 사용 또는 초기화 과정",
+        "LCD 점검 문구와 연속 스팀은 없음"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [16],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "최초 온수 사용 시의 초기화·배수 절차로 설명되는 일반 동작입니다.",
+      "response_outline": [
+        "최초 온수 초기화 과정임을 설명",
+        "뜨거운 물 접촉에 주의하며 절차 완료 대기",
+        "초기화 뒤 온수 상태 재확인"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-C-001",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "caution",
+      "title": "정상 전원에서 2시간 뒤에도 냉수가 미지근함",
+      "customer_utterance": "전원은 정상인데 두 시간이 지나도 냉수가 계속 미지근해요.",
+      "topic_code": "symptom_cold_temperature",
+      "context_facts": [
+        "전원 상태 정상",
+        "2시간 이상 냉수 온도 이상 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [37],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "정상 조건 확인 후에도 냉수 이상이 장시간 지속되어 전문 검토가 필요합니다.",
+      "response_outline": [
+        "전원·냉수 잠금·통풍 상태 확인 결과 정리",
+        "냉수 기능 추가 사용 자제",
+        "상담사 점검 요청"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-C-002",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "caution",
+      "title": "밸브·필터·단수·호스 확인 뒤에도 무출수",
+      "customer_utterance": "밸브와 필터, 단수 여부, 호스까지 봤는데 물이 전혀 안 나와요.",
+      "topic_code": "symptom_no_water",
+      "context_facts": [
+        "기본 급수 조건 확인 완료",
+        "전체 출수가 되지 않음"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [37],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-NO-WATER-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "매뉴얼의 기본 원인 확인 뒤에도 무출수가 지속되어 상담이 필요합니다.",
+      "response_outline": [
+        "확인한 급수 조건 기록",
+        "추가 분해나 내부 점검 금지",
+        "상담사·기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-C-003",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "caution",
+      "title": "장기 부재 뒤 물맛과 냄새 이상",
+      "customer_utterance": "오랫동안 집을 비운 뒤 물에서 평소와 다른 맛과 냄새가 나요.",
+      "topic_code": "symptom_taste_odor",
+      "context_facts": [
+        "장기 미사용 후 발생",
+        "맛과 냄새가 함께 달라짐"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [38],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-TASTE-ODOR-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "장기 미사용 뒤 수질 관련 이상이 있어 안전한 사용 재개 여부를 검토해야 합니다.",
+      "response_outline": [
+        "미사용 기간과 대상 물 종류 확인",
+        "이상한 물의 음용 보류",
+        "매뉴얼 세척 절차와 상담 필요 여부 검토"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-C-004",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "caution",
+      "title": "온수 사용 중 스팀이 계속 분사됨",
+      "customer_utterance": "온수를 받을 때 스팀이 잠깐이 아니라 계속 나와요.",
+      "topic_code": "symptom_hot_steam",
+      "context_facts": [
+        "온수 출수 중 스팀 지속",
+        "화상 위험 확인 필요"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [38],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "지속되는 스팀은 정상 범위를 확인해야 하며 화상 예방과 상담 검토가 필요합니다.",
+      "response_outline": [
+        "온수 사용과 접근 일시 중단",
+        "스팀 지속 시간과 동시 수전 사용 여부 확인",
+        "상담사 점검 요청"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-C-005",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "caution",
+      "title": "두 번째 잔과 전원 재연결 뒤에도 온수가 미지근함",
+      "customer_utterance": "두 번째 잔도 받아 보고 전원도 다시 연결했는데 온수가 계속 미지근해요.",
+      "topic_code": "symptom_hot_water_temperature",
+      "context_facts": [
+        "두 번째 잔으로 온도 재확인 완료",
+        "전원 재연결 후에도 증상 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [39],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "매뉴얼의 재확인 절차 뒤에도 온도 이상이 지속되어 상담 검토가 필요합니다.",
+      "response_outline": [
+        "이미 수행한 확인 절차 기록",
+        "온수 기능 사용 보류",
+        "상담사·기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-D-001",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "danger",
+      "title": "제품 내부 또는 바닥으로 번지는 누수",
+      "customer_utterance": "제품 안쪽에서 물이 흐르고 바닥까지 물이 고였어요.",
+      "topic_code": "symptom_leak",
+      "context_facts": [
+        "제품 내부에서 물이 나옴",
+        "제품 주변 또는 바닥에 물 고임"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [5, 7, 38],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-LEAK-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "누수는 감전 위험으로 이어질 수 있어 즉시 전체 사용 중단과 긴급 연결이 필요합니다.",
+      "response_outline": [
+        "제품과 출수 기능 즉시 사용 중단",
+        "원수 밸브 잠금",
+        "젖은 손으로 전원부를 만지지 말고 긴급 상담 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-D-002",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "danger",
+      "title": "타는 냄새·연기·비정상 소리 발생",
+      "customer_utterance": "정수기에서 이상한 소리가 나더니 타는 냄새와 연기가 보여요.",
+      "topic_code": "symptom_electrical_fire",
+      "context_facts": [
+        "타는 냄새와 연기 발생",
+        "비정상 소리가 함께 발생"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [5, 7],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "감전·화재 위험 신호가 함께 나타나 즉시 사용 중단이 필요합니다.",
+      "response_outline": [
+        "제품 사용 즉시 중단",
+        "안전하게 가능한 경우에만 전원 차단",
+        "제품 접근을 제한하고 긴급 상담 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-D-003",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "danger",
+      "title": "손상된 전원 코드·젖은 플러그·헐거운 콘센트",
+      "customer_utterance": "전원 코드가 벗겨졌고 플러그가 젖었는데 콘센트도 헐거워요.",
+      "topic_code": "symptom_power_connection_damage",
+      "context_facts": [
+        "전원 코드 손상",
+        "플러그 젖음 또는 콘센트 접촉 불량"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [3],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "손상·수분·접촉 불량이 있는 전원부는 감전과 화재 위험이 큽니다.",
+      "response_outline": [
+        "제품과 전원부 직접 접촉 금지",
+        "제품 전체 사용 중단",
+        "전문 상담과 전기 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-D-004",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "danger",
+      "title": "냉매 누출 또는 냉매 배관 손상",
+      "customer_utterance": "제품을 옮기다가 관이 손상된 것 같고 냉매가 새는 듯한 냄새가 나요.",
+      "topic_code": "symptom_refrigerant_leak",
+      "context_facts": [
+        "냉매 배관 손상 의심",
+        "냉매 누출 가능성"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [4, 5],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "냉매 누출과 배관 손상은 화재·화상 위험을 포함해 즉시 전문 대응이 필요합니다.",
+      "response_outline": [
+        "제품과 전원 코드를 만지지 않기",
+        "불꽃을 피하고 충분히 환기",
+        "긴급 상담과 기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-JAC104-D-005",
+      "exact_model_code": "WPUJAC104DWH",
+      "model_family": "WPU-JAC104",
+      "risk_level": "danger",
+      "title": "LCD 순간온수 모듈 점검과 음용 금지",
+      "customer_utterance": "LCD에 순간온수 모듈을 점검하라는 문구가 뜨고 물을 마셔도 되는지 걱정돼요.",
+      "topic_code": "symptom_hot_water_safety",
+      "context_facts": [
+        "LCD 순간온수 모듈 점검 표시",
+        "출수물 음용 안전 확인 필요"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_policy": "MVP_SOURCE_REFERENCE",
+      "manual_page_refs": [39],
+      "evidence_group_ids": [
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "온수 모듈 점검 표시는 출수물 안전과 연결되므로 음용 중단과 긴급 점검이 필요합니다.",
+      "response_outline": [
+        "제품 전체 사용과 출수물 음용 중단",
+        "직접 분해·재가동 시도 금지",
+        "긴급 상담과 기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-G-001",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "general",
+      "title": "냉수 잠금으로 냉수 선택이 되지 않음",
+      "customer_utterance": "냉수 버튼을 누르면 알림음과 잠금 표시만 나오고 냉수가 안 골라져요.",
+      "topic_code": "symptom_cold_lock",
+      "context_facts": [
+        "냉수 버튼에서 잠금 표시 점멸",
+        "잠금 해제 전 상태"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [43],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-COLD-LOCK-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "매뉴얼의 냉수 잠금 해제 절차로 확인 가능한 일반 기능 문의입니다.",
+      "response_outline": [
+        "냉수 잠금 표시 확인",
+        "모델별 해제 절차 안내",
+        "해제 후 냉수 선택 재확인"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-G-002",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "general",
+      "title": "연속 다량 출수 뒤 냉수 온도 상승",
+      "customer_utterance": "냉수를 많이 뽑고 나니 다음 물이 평소보다 덜 차가워요.",
+      "topic_code": "symptom_cold_temperature",
+      "context_facts": [
+        "연속 다량 출수 직후 발생",
+        "시간 경과 전 확인 단계"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [43],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "연속 사용 뒤 냉각 대기 시간이 필요한 정상 조건입니다.",
+      "response_outline": [
+        "연속 사용 영향 설명",
+        "잠시 기다린 뒤 냉수 재확인",
+        "장시간 지속되면 상담 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-G-003",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "general",
+      "title": "제빙 중 물 흐름과 달그락 소리",
+      "customer_utterance": "얼음을 만들 때 물 흐르는 소리와 달그락거리는 소리가 들려요.",
+      "topic_code": "symptom_ice_making_noise",
+      "context_facts": [
+        "제빙 중에만 소리 발생",
+        "물 공급·순환 또는 얼음 낙하음"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [44],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-ICE-MAKING-NOISE-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "제빙수 공급·순환과 얼음 낙하 과정에서 발생할 수 있는 정상음입니다.",
+      "response_outline": [
+        "제빙 중 정상 작동음임을 설명",
+        "소리가 제빙 때만 나는지 확인",
+        "과도한 소음이나 위험 징후가 있으면 상담 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-G-004",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "general",
+      "title": "탈빙 중 공기 빠지는 소리",
+      "customer_utterance": "얼음이 떨어질 때 공기가 빠지는 것 같은 소리가 나요.",
+      "topic_code": "symptom_defrost_noise",
+      "context_facts": [
+        "탈빙 과정에서 소리 발생",
+        "냉매 순환과 얼음 낙하 시점"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [44],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-DEFROST-NOISE-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "탈빙을 위한 냉매 순환 과정의 정상 작동음으로 설명됩니다.",
+      "response_outline": [
+        "탈빙 과정의 정상음 가능성 설명",
+        "소리 발생 시점 확인",
+        "지속적 과음이나 다른 이상이 있으면 상담 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-G-005",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "general",
+      "title": "얼음물 정량 선택과 얼음물 버튼 사용",
+      "customer_utterance": "얼음물을 120, 250, 550밀리리터나 1리터로 받는 방법과 물 버튼의 차이가 궁금해요.",
+      "topic_code": "symptom_fixed_volume_ice_water",
+      "context_facts": [
+        "얼음물 지원 용량: 120/250/550ml/1L",
+        "[얼음물] 버튼 1회는 얼음과 선택한 냉수를 함께 출수",
+        "[물] 버튼은 일반 물 출수용이며 얼음물 동작과 구분"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [15],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "모델별 조작부와 정량 선택 방법을 묻는 일반 사용 문의입니다.",
+      "response_outline": [
+        "원하는 얼음물 용량을 선택한 뒤 [얼음물] 버튼을 1회 누르는 순서 안내",
+        "[물] 버튼은 일반 물 출수용이라는 차이 설명",
+        "출수 위치와 넘침 주의 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-C-001",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "caution",
+      "title": "2시간 뒤에도 냉수가 미지근함",
+      "customer_utterance": "전원과 잠금을 확인하고 두 시간 기다렸는데도 냉수가 미지근해요.",
+      "topic_code": "symptom_cold_temperature",
+      "context_facts": [
+        "기본 확인 절차 완료",
+        "2시간 이상 냉수 온도 이상 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [43],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "정상 조건을 확인한 뒤에도 냉수 이상이 지속되어 전문 점검이 필요합니다.",
+      "response_outline": [
+        "확인한 전원·잠금·통풍 상태 기록",
+        "냉수 기능 추가 사용 자제",
+        "상담사 점검 요청"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-C-002",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "caution",
+      "title": "밸브·단수·필터·호스 확인 뒤에도 무출수",
+      "customer_utterance": "밸브와 단수, 필터와 호스를 모두 확인했는데 물이 나오지 않아요.",
+      "topic_code": "symptom_no_water",
+      "context_facts": [
+        "기본 급수 조건 확인 완료",
+        "출수 불가 상태 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [44],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-NO-WATER-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "기본 원인을 배제한 뒤에도 무출수가 지속되어 상담이 필요합니다.",
+      "response_outline": [
+        "확인한 급수 조건 정리",
+        "내부 분해나 임의 조치 금지",
+        "상담사·기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-C-003",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "caution",
+      "title": "기본 조건을 확인한 뒤에도 얼음이 나오지 않음",
+      "customer_utterance": "얼음 기능과 밸브, 급수와 배수 상태를 봤는데도 얼음이 안 나와요.",
+      "topic_code": "symptom_no_ice",
+      "context_facts": [
+        "얼음 기능·급수·배수 확인 완료",
+        "무출빙 상태 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [45],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-NO-ICE-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "매뉴얼의 안전 확인 절차를 안내할 수 있지만 주의 등급이므로 공개 전 인간 검토가 필요하며 즉시 상담 연결은 필수가 아닙니다.",
+      "response_outline": [
+        "확인한 얼음 기능·밸브·호스 상태 기록",
+        "충분한 제빙 대기 시간 확인",
+        "인간 검토 후 안전 확인 절차 안내, 계속되면 서비스 상담 선택지 제시"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-C-004",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "caution",
+      "title": "5분 뒤에도 물속 미세 입자가 남음",
+      "customer_utterance": "물을 받아 5분 넘게 두고 컵도 흔들어 봤는데 작은 입자가 계속 보여요.",
+      "topic_code": "symptom_particles",
+      "context_facts": [
+        "5분 이상 정치 후에도 입자 관찰",
+        "컵을 흔든 뒤에도 입자 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [45],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-PARTICLES-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "기포 확인 절차 뒤에도 입자가 남아 수질 상태에 대한 검토가 필요합니다.",
+      "response_outline": [
+        "입자 확인 절차와 지속 시간 기록",
+        "해당 물의 음용 보류",
+        "상담사 점검 요청"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-C-005",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "caution",
+      "title": "온수 사용 중 스팀이 계속 분사됨",
+      "customer_utterance": "온수를 받을 때 스팀이 계속 뿜어져 나와요.",
+      "topic_code": "symptom_hot_steam",
+      "context_facts": [
+        "온수 출수 중 스팀 지속",
+        "공급 전압·동시 수전 조건 확인 필요"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [46],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-HOT-STEAM-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "스팀이 지속되면 정상 조건을 벗어날 수 있어 화상 예방과 상담이 필요합니다.",
+      "response_outline": [
+        "온수 사용과 접근 일시 중단",
+        "공급 전압·동시 수전 조건 확인",
+        "상담사 점검 요청"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-D-001",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "danger",
+      "title": "물받이 외부 누수와 반복 알림",
+      "customer_utterance": "물받이가 넘친 게 아닌데 제품 밑으로 물이 새고 버튼마다 알림이 반복돼요.",
+      "topic_code": "symptom_leak",
+      "context_facts": [
+        "물받이 외부로 누수",
+        "버튼 조작 때 반복 알림"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [5, 45],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-LEAK-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "제품 누수와 반복 알림은 감전 위험을 동반할 수 있어 즉시 중단이 필요합니다.",
+      "response_outline": [
+        "제품과 출수 기능 즉시 사용 중단",
+        "중간 밸브 또는 볼 밸브 잠금",
+        "전원부 접촉 금지와 긴급 상담 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-D-002",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "danger",
+      "title": "타는 냄새·연기·비정상 소리 발생",
+      "customer_utterance": "제품에서 이상한 소리와 타는 냄새가 나고 연기도 보여요.",
+      "topic_code": "symptom_electrical_fire",
+      "context_facts": [
+        "타는 냄새와 연기 발생",
+        "비정상 작동음 동반"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [5],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "감전·화재 위험 신호가 나타나 즉시 전체 사용 중단이 필요합니다.",
+      "response_outline": [
+        "제품 사용 즉시 중단",
+        "안전하게 가능한 경우에만 전원 차단",
+        "제품 접근 제한과 긴급 상담 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-D-003",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "danger",
+      "title": "손상·젖음·반려동물 훼손이 있는 전원 코드",
+      "customer_utterance": "전원 코드가 젖었고 반려동물이 물어서 겉이 손상됐어요.",
+      "topic_code": "symptom_power_connection_damage",
+      "context_facts": [
+        "전원 코드 표면 손상",
+        "수분 또는 반려동물 훼손"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [3, 5],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "손상되거나 젖은 전원 코드는 감전과 화재 위험이 있어 사용하면 안 됩니다.",
+      "response_outline": [
+        "전원 코드와 제품 직접 접촉 금지",
+        "제품 전체 사용 중단",
+        "전문 상담과 코드 교체 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-D-004",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "danger",
+      "title": "냉매 누출 또는 냉매 배관 손상",
+      "customer_utterance": "제품을 옮기다 냉매 관을 건드렸고 가스가 새는 것 같아요.",
+      "topic_code": "symptom_refrigerant_leak",
+      "context_facts": [
+        "냉매 배관 손상 의심",
+        "냉매 누출 가능성"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [4, 6],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "냉매 누출과 배관 손상은 화재·화상 위험으로 이어질 수 있어 긴급 대응이 필요합니다.",
+      "response_outline": [
+        "제품과 전원 코드를 만지지 않기",
+        "불꽃을 피하고 충분히 환기",
+        "긴급 상담과 기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC425-D-005",
+      "exact_model_code": "WPUIAC425SNW",
+      "model_family": "WPU-IAC425",
+      "risk_level": "danger",
+      "title": "세 버튼 점멸·빨간 LED와 온수 히터 이상",
+      "customer_utterance": "온수와 정수, 냉수 버튼이 모두 깜박이고 표시창이 빨갛게 켜졌어요.",
+      "topic_code": "symptom_hot_water_stopped",
+      "context_facts": [
+        "온수·정수·냉수 버튼 모두 점멸",
+        "LED 표시창 빨간색 점등"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [46],
+      "evidence_group_ids": [
+        "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "히터 고장 신호와 음용 제한 조건이므로 전체 사용 중단과 긴급 점검이 필요합니다.",
+      "response_outline": [
+        "제품 전체 사용과 출수물 음용 중단",
+        "재가동·분해 시도 금지",
+        "긴급 상담과 기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-G-001",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "general",
+      "title": "냉수 잠금으로 냉수 선택이 되지 않음",
+      "customer_utterance": "냉수 버튼을 누르면 알림음과 잠금 표시만 나오고 냉수가 안 돼요.",
+      "topic_code": "symptom_cold_lock",
+      "context_facts": [
+        "냉수 버튼에서 잠금 표시 점멸",
+        "잠금 해제 전 상태"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [40],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-COLD-LOCK-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "매뉴얼의 냉수 잠금 해제 절차로 확인 가능한 일반 기능 문의입니다.",
+      "response_outline": [
+        "냉수 잠금 표시 확인",
+        "모델별 해제 절차 안내",
+        "해제 후 냉수 선택 재확인"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-G-002",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "general",
+      "title": "연속 다량 출수 뒤 냉수 온도 상승",
+      "customer_utterance": "냉수를 여러 잔 연속으로 받고 나니 다음 물이 덜 차가워요.",
+      "topic_code": "symptom_cold_temperature",
+      "context_facts": [
+        "연속 다량 출수 직후 발생",
+        "충분한 냉각 대기 전 상태"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [40],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "연속 사용 뒤 냉각 대기 시간이 필요한 정상 조건입니다.",
+      "response_outline": [
+        "연속 사용 영향 설명",
+        "잠시 기다린 뒤 냉수 재확인",
+        "장시간 지속되면 상담 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-G-003",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "general",
+      "title": "제빙 중 물 흐름과 달그락 소리",
+      "customer_utterance": "얼음을 만들 때 물 흐르는 소리와 달그락 소리가 나요.",
+      "topic_code": "symptom_ice_making_noise",
+      "context_facts": [
+        "제빙 중에만 소리 발생",
+        "제빙수 공급·순환 또는 얼음 낙하음"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [41],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "제빙수 공급·순환과 얼음 낙하 과정에서 발생할 수 있는 정상음입니다.",
+      "response_outline": [
+        "제빙 중 정상 작동음임을 설명",
+        "소리가 제빙 때만 나는지 확인",
+        "과도한 소음이나 위험 징후가 있으면 상담 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-G-004",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "general",
+      "title": "제빙 우선 설정과 9g·11g 얼음 크기",
+      "customer_utterance": "제빙 우선 기능과 9그램, 11그램 얼음 크기를 어떻게 고르나요?",
+      "topic_code": "symptom_ice_mode_setting",
+      "context_facts": [
+        "제빙 우선 기능 설정 문의",
+        "9g·11g 얼음 크기 선택 문의"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [23],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "제빙 모드와 얼음 크기를 묻는 일반 설정 문의입니다.",
+      "response_outline": [
+        "제빙 우선 설정 위치 안내",
+        "얼음 크기 선택 방법 안내",
+        "설정 반영 상태 확인"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-G-005",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "general",
+      "title": "얼음물 정량 선택과 출수·출빙 버튼 사용",
+      "customer_utterance": "얼음물을 120, 240, 360, 480밀리리터로 받고 출수와 출빙 버튼을 쓰는 법이 궁금해요.",
+      "topic_code": "symptom_fixed_volume_ice_water",
+      "context_facts": [
+        "얼음물 지원 용량: 120/240/360/480ml",
+        "[얼음물] 선택 후 [출수/출빙] 버튼으로 동작"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [15],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "AI_GUIDANCE",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "AUTO_GUIDANCE_ELIGIBLE",
+      "expected_usage_guidance_status": "NORMAL",
+      "expected_reason": "모델별 정량과 출수·출빙 조작을 묻는 일반 사용 문의입니다.",
+      "response_outline": [
+        "원하는 얼음물 용량 선택",
+        "[얼음물] 선택 후 [출수/출빙] 버튼을 누르는 순서 안내",
+        "컵 위치와 넘침 주의 안내"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-C-001",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "caution",
+      "title": "2시간 뒤에도 냉수가 미지근함",
+      "customer_utterance": "전원과 잠금을 확인하고 두 시간 기다렸는데 냉수가 계속 미지근해요.",
+      "topic_code": "symptom_cold_temperature",
+      "context_facts": [
+        "기본 확인 절차 완료",
+        "2시간 이상 냉수 온도 이상 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [40],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "정상 조건을 확인한 뒤에도 냉수 이상이 지속되어 전문 점검이 필요합니다.",
+      "response_outline": [
+        "확인한 전원·잠금·통풍 상태 기록",
+        "냉수 기능 추가 사용 자제",
+        "상담사 점검 요청"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-C-002",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "caution",
+      "title": "밸브·단수·필터·호스 확인 뒤에도 무출수",
+      "customer_utterance": "밸브와 단수, 필터와 호스를 모두 확인했는데 물이 나오지 않아요.",
+      "topic_code": "symptom_no_water",
+      "context_facts": [
+        "기본 급수 조건 확인 완료",
+        "출수 불가 상태 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [41],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-NO-WATER-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "기본 원인을 배제한 뒤에도 무출수가 지속되어 상담이 필요합니다.",
+      "response_outline": [
+        "확인한 급수 조건 정리",
+        "내부 분해나 임의 조치 금지",
+        "상담사·기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-C-003",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "caution",
+      "title": "기본 조건을 확인한 뒤에도 얼음이 나오지 않음",
+      "customer_utterance": "얼음 기능과 밸브, 급수와 배수 상태를 봤는데도 얼음이 안 나와요.",
+      "topic_code": "symptom_no_ice",
+      "context_facts": [
+        "얼음 기능·급수·배수 확인 완료",
+        "무출빙 상태 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [42],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-NO-ICE-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": false,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "매뉴얼의 안전 확인 절차를 안내할 수 있지만 주의 등급이므로 공개 전 인간 검토가 필요하며 즉시 상담 연결은 필수가 아닙니다.",
+      "response_outline": [
+        "확인한 얼음 기능·밸브·호스 상태 기록",
+        "충분한 제빙 대기 시간 확인",
+        "인간 검토 후 안전 확인 절차 안내, 계속되면 서비스 상담 선택지 제시"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-C-004",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "caution",
+      "title": "5분 뒤에도 물속 미세 입자가 남음",
+      "customer_utterance": "물을 받아 5분 넘게 두고 컵도 흔들었는데 작은 입자가 계속 보여요.",
+      "topic_code": "symptom_particles",
+      "context_facts": [
+        "5분 이상 정치 후에도 입자 관찰",
+        "컵을 흔든 뒤에도 입자 지속"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [42],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-PARTICLES-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "기포 확인 절차 뒤에도 입자가 남아 수질 상태에 대한 검토가 필요합니다.",
+      "response_outline": [
+        "입자 확인 절차와 지속 시간 기록",
+        "해당 물의 음용 보류",
+        "상담사 점검 요청"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-C-005",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "caution",
+      "title": "온수 사용 중 스팀이 계속 분사됨",
+      "customer_utterance": "온수를 받을 때 스팀이 계속 뿜어져 나와요.",
+      "topic_code": "symptom_hot_steam",
+      "context_facts": [
+        "온수 출수 중 스팀 지속",
+        "공급 전압·동시 수전 조건 확인 필요"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [43],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-HOT-STEAM-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "HUMAN_REVIEW",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "HUMAN_APPROVAL_REQUIRED",
+      "expected_usage_guidance_status": "PARTIAL_STOP",
+      "expected_reason": "스팀이 지속되면 정상 조건을 벗어날 수 있어 화상 예방과 상담이 필요합니다.",
+      "response_outline": [
+        "온수 사용과 접근 일시 중단",
+        "공급 전압·동시 수전 조건 확인",
+        "상담사 점검 요청"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-D-001",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "danger",
+      "title": "물받이 외부 누수와 반복 알림",
+      "customer_utterance": "물받이가 넘친 게 아닌데 제품 밑으로 물이 새고 버튼마다 알림이 반복돼요.",
+      "topic_code": "symptom_leak",
+      "context_facts": [
+        "물받이 외부로 누수",
+        "버튼 조작 때 반복 알림"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [5, 42],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-LEAK-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "제품 누수와 반복 알림은 감전 위험을 동반할 수 있어 즉시 중단이 필요합니다.",
+      "response_outline": [
+        "제품과 출수 기능 즉시 사용 중단",
+        "중간 밸브 또는 볼 밸브 잠금",
+        "전원부 접촉 금지와 긴급 상담 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-D-002",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "danger",
+      "title": "타는 냄새·연기·비정상 소리 발생",
+      "customer_utterance": "제품에서 이상한 소리와 타는 냄새가 나고 연기도 보여요.",
+      "topic_code": "symptom_electrical_fire",
+      "context_facts": [
+        "타는 냄새와 연기 발생",
+        "비정상 작동음 동반"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [5],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "감전·화재 위험 신호가 나타나 즉시 전체 사용 중단이 필요합니다.",
+      "response_outline": [
+        "제품 사용 즉시 중단",
+        "안전하게 가능한 경우에만 전원 차단",
+        "제품 접근 제한과 긴급 상담 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-D-003",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "danger",
+      "title": "손상·젖음·반려동물 훼손이 있는 전원 코드",
+      "customer_utterance": "전원 코드가 젖었고 반려동물이 물어서 겉이 손상됐어요.",
+      "topic_code": "symptom_power_connection_damage",
+      "context_facts": [
+        "전원 코드 표면 손상",
+        "수분 또는 반려동물 훼손"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [3, 5],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "손상되거나 젖은 전원 코드는 감전과 화재 위험이 있어 사용하면 안 됩니다.",
+      "response_outline": [
+        "전원 코드와 제품 직접 접촉 금지",
+        "제품 전체 사용 중단",
+        "전문 상담과 코드 교체 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-D-004",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "danger",
+      "title": "냉매 누출 또는 냉매 배관 손상",
+      "customer_utterance": "제품을 옮기다 냉매 관을 건드렸고 가스가 새는 것 같아요.",
+      "topic_code": "symptom_refrigerant_leak",
+      "context_facts": [
+        "냉매 배관 손상 의심",
+        "냉매 누출 가능성"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [4, 6],
+      "evidence_group_ids": [],
+      "evidence_readiness": "SOURCE_PAGE_ONLY",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "냉매 누출과 배관 손상은 화재·화상 위험으로 이어질 수 있어 긴급 대응이 필요합니다.",
+      "response_outline": [
+        "제품과 전원 코드를 만지지 않기",
+        "불꽃을 피하고 충분히 환기",
+        "긴급 상담과 기사 점검 연결"
+      ]
+    },
+    {
+      "scenario_id": "REF-IAC606-D-005",
+      "exact_model_code": "WPUIAC606SNW",
+      "model_family": "WPU-IAC606",
+      "risk_level": "danger",
+      "title": "세 버튼 점멸·빨간 표시창과 온수 히터 이상",
+      "customer_utterance": "온수와 정수, 냉수 버튼이 모두 깜박이고 표시창이 빨갛게 켜졌어요.",
+      "topic_code": "symptom_hot_water_stopped",
+      "context_facts": [
+        "온수·정수·냉수 버튼 모두 점멸",
+        "표시창 빨간색 점등"
+      ],
+      "source_document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+      "source_policy": "EXPANSION_REFERENCE_ONLY",
+      "manual_page_refs": [43],
+      "evidence_group_ids": [
+        "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001"
+      ],
+      "evidence_readiness": "TOPIC_GROUP_SELECTION_PENDING",
+      "expected_route": "EMERGENCY_ESCALATION",
+      "expected_requires_consultation": true,
+      "expected_publication_gate": "SAFETY_ESCALATION_ONLY",
+      "expected_usage_guidance_status": "TOTAL_STOP",
+      "expected_reason": "히터 고장 신호와 음용 제한 조건이므로 전체 사용 중단과 긴급 점검이 필요합니다.",
+      "response_outline": [
+        "제품 전체 사용과 출수물 음용 중단",
+        "재가동·분해 시도 금지",
+        "긴급 상담과 기사 점검 연결"
+      ]
+    }
+  ]
+}
