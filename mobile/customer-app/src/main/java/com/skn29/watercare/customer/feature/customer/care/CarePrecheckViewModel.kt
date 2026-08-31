@@ -18,6 +18,7 @@ import kotlinx.serialization.json.jsonPrimitive
 
 data class CarePrecheckUiState(
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val session: CarePrecheckSessionDto? = null,
     val waterFlow: String? = null,
     val leak: Boolean? = null,
@@ -67,6 +68,106 @@ class CarePrecheckViewModel(
     }
 
     fun retry() = loadOrStart()
+
+    fun refresh() {
+        val current = _state.value
+
+        if (
+            current.loading ||
+            current.refreshing ||
+            current.saving ||
+            current.submitting
+        ) {
+            return
+        }
+
+        val sessionId =
+            current.session
+                ?.questionnaireSessionId
+                ?: savedStateHandle
+                    .get<String>(
+                        SESSION_ID_KEY
+                    )
+                    ?.takeIf(
+                        String::isNotBlank
+                    )
+
+        if (sessionId == null) {
+            loadOrStart()
+            return
+        }
+
+        // Pull-to-refresh에서는 작성 중인 답변과 폼을 유지한다.
+        // 전체 Loading 상태로 되돌아가지 않고 indicator만 표시한다.
+        _state.value =
+            current.copy(
+                refreshing = true,
+                error = null,
+                retryable = false,
+            )
+
+        viewModelScope.launch {
+            when (
+                val result =
+                    repository.get(
+                        sessionId
+                    )
+            ) {
+                is ApiResult.Success -> {
+                    val latest =
+                        result.value
+
+                    val latestFlow =
+                        latest.answers["WATER_FLOW"]
+                            ?.jsonPrimitive
+                            ?.contentOrNull
+
+                    val latestLeak =
+                        latest.answers["LEAK"]
+                            ?.jsonPrimitive
+                            ?.booleanOrNull
+
+                    val submitted =
+                        latest.statusCode ==
+                            "SUBMITTED"
+
+                    // Pull-to-refresh 중에는 아직 저장하지 않은
+                    // 고객 입력을 서버의 이전 값으로 덮어쓰지 않는다.
+                    //
+                    // 다만 Backend에서 이미 SUBMITTED로 확정된 경우에는
+                    // 서버 값을 최종 기준으로 다시 표시한다.
+                    _state.value =
+                        current.copy(
+                            loading = false,
+                            refreshing = false,
+                            session = latest,
+                            waterFlow =
+                                if (submitted) {
+                                    latestFlow
+                                } else {
+                                    current.waterFlow
+                                        ?: latestFlow
+                                },
+                            leak =
+                                if (submitted) {
+                                    latestLeak
+                                } else {
+                                    current.leak
+                                        ?: latestLeak
+                                },
+                            error = null,
+                            retryable = false,
+                            authExpired = false,
+                        )
+                }
+
+                is ApiResult.Failure ->
+                    applyFailure(
+                        result
+                    )
+            }
+        }
+    }
 
     fun save() {
         val current = _state.value
@@ -180,6 +281,7 @@ class CarePrecheckViewModel(
         _state.value =
             _state.value.copy(
                 loading = true,
+                refreshing = false,
                 error = null,
             )
 
@@ -222,6 +324,7 @@ class CarePrecheckViewModel(
         _state.value =
             CarePrecheckUiState(
                 loading = false,
+                refreshing = false,
                 session = session,
                 waterFlow =
                     flow ?: _state.value.waterFlow,
@@ -240,6 +343,7 @@ class CarePrecheckViewModel(
         _state.value =
             _state.value.copy(
                 loading = false,
+                refreshing = false,
                 saving = false,
                 submitting = false,
                 error =

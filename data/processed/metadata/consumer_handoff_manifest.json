@@ -2,7 +2,7 @@
   "status": "PASS",
   "dataset_version": "1.3.0",
   "generated_at": "2026-07-29T00:00:00+09:00",
-  "source_commit": "3c0e80cbee4552c5c3b86e876390f85318df3713",
+  "source_commit": "e198844fff8abb41f80b61105bd238ecdbd82967",
   "service_contracts_used": true,
   "contract_alignment": {
     "state_machine_version": "1.0.0",
@@ -542,42 +542,42 @@
           "role": "SUMMARY",
           "records": 1,
           "size_bytes": 8956,
-          "sha256": "607B276DAE4012460C1368E08E4614BBD1ABE2B17FB6711A49AC75F17A912319"
+          "sha256": "E358C6A45DC00AABFC40D6311ED3D6C41BF3D0E6250D1B66CFA3B325D33D3202"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 10420,
-          "sha256": "62532FBA0AF3D7C77C5D92743129742D8E7FA927B8EBC61F3D25BB70DFBFE1ED"
+          "sha256": "2BB887433A812EC9EDF4C6F2DC4927132C736AAEC6F2AD096859DCF05EACE058"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1340,
-          "sha256": "9C9A5D01BC7C3612290B581402070FC3CD7E344B89B4D14D9BD0BB0D7AB38524"
+          "sha256": "6B479E6C0B1E21DA9FFAF26C6F69E491EBACC0767964EADDBCA1F87391CE84EA"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1246,
-          "sha256": "4FA01B60C5C7E7865C29F9144BE1EC450AAD84211C7A20231F918FCE0C36D218"
+          "sha256": "E3FACB020FF78CB15474E784C6667813A21F55F6472512B8610B145ACBC0B291"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 2322,
-          "sha256": "0980E0763A0D13F96B6CD4FAF8DC0925B0D9D866CE7E23D9F60F4B3084FA6395"
+          "sha256": "79CEF0C50BF4951F677AFB765EC5058494CB3D1B9C84DE83CE539C9C2900F673"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1151,
-          "sha256": "0787A6F14FCA9723503B003470633F21D63400DCFD3378D1F50CE531E29EA8DE"
+          "sha256": "E9FF8C53C3CF44C80BD14951FC19EFD926AA28147E950FBA80D6ED58CE4EF8BB"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",

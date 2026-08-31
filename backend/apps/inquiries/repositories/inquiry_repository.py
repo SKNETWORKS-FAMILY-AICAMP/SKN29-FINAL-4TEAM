@@ -100,6 +100,22 @@ class InquiryRepository:
         )
 
     @staticmethod
+    def lock_for_human_review(*, inquiry_id: int) -> Inquiry | None:
+        """Lock the aggregate root before applying a review-derived event."""
+
+        return (
+            Inquiry.objects.select_for_update(of=("self",))
+            .select_related(
+                "subscription",
+                "subscription__customer",
+                "subscription__customer__user",
+                "subscription__product_model",
+            )
+            .filter(pk=inquiry_id)
+            .first()
+        )
+
+    @staticmethod
     def lock_cancellable_inquiry(
         *,
         inquiry_public_id: UUID,

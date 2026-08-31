@@ -341,7 +341,7 @@
     {
       "path": "processed/metadata/consumer_handoff_manifest.json",
       "size_bytes": 22291,
-      "sha256": "74975832B005FA0AB474FA0A1A5F05021C5170F0B77942C9BC927D888BDF7968"
+      "sha256": "F9519217FB11593A64E0514E5792A10EF44B18C3798225E3D0F099E118CD901C"
     },
     {
       "path": "processed/metadata/dataset_manifest.json",
@@ -574,6 +574,11 @@
       "path": "schemas/processed/sourceInventory.schema.json",
       "size_bytes": 2078,
       "sha256": "70BCB75FDB5FBC8D977A0B1A2BC49DCB2A77847EFA85CFAE12B192AF5BDBFB1D"
+    },
+    {
+      "path": "schemas/reference_cases/three_model_reference_scenarios_v1.schema.json",
+      "size_bytes": 6748,
+      "sha256": "41FC3E5260AC8C2244E6B1520401B19AC6D698E9B60578B0CE28FFF3E19E7929"
     },
     {
       "path": "schemas/synthetic/contractAlignmentRegistryItem.schema.json",
@@ -1057,7 +1062,7 @@
     {
       "path": "config/workflow/service_contract_mapping.json",
       "size_bytes": 5473,
-      "sha256": "7208FF1315E921C045EA4C46907EF175096AB2D64E9842FECA581D53DFC3418D"
+      "sha256": "283A84B2648C993DEAFFD0B270A69B611431B5D5853B41C79880C6470D7176C3"
     }
   ],
   "template_files": [
@@ -1096,7 +1101,7 @@
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
       "size_bytes": 2322,
-      "sha256": "0980E0763A0D13F96B6CD4FAF8DC0925B0D9D866CE7E23D9F60F4B3084FA6395"
+      "sha256": "79CEF0C50BF4951F677AFB765EC5058494CB3D1B9C84DE83CE539C9C2900F673"
     },
     {
       "path": "processed/validation/business/latest_representative_e2e_report.json",
@@ -1121,12 +1126,12 @@
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
       "size_bytes": 1340,
-      "sha256": "9C9A5D01BC7C3612290B581402070FC3CD7E344B89B4D14D9BD0BB0D7AB38524"
+      "sha256": "6B479E6C0B1E21DA9FFAF26C6F69E491EBACC0767964EADDBCA1F87391CE84EA"
     },
     {
       "path": "processed/validation/latest_qa_summary.json",
       "size_bytes": 8956,
-      "sha256": "607B276DAE4012460C1368E08E4614BBD1ABE2B17FB6711A49AC75F17A912319"
+      "sha256": "E358C6A45DC00AABFC40D6311ED3D6C41BF3D0E6250D1B66CFA3B325D33D3202"
     },
     {
       "path": "processed/validation/ocr_evidence/image_manifest.csv",
@@ -1146,7 +1151,7 @@
     {
       "path": "processed/validation/quality/latest_quality_report.json",
       "size_bytes": 1246,
-      "sha256": "4FA01B60C5C7E7865C29F9144BE1EC450AAD84211C7A20231F918FCE0C36D218"
+      "sha256": "E3FACB020FF78CB15474E784C6667813A21F55F6472512B8610B145ACBC0B291"
     },
     {
       "path": "processed/validation/rag_experiments/b1_chunking_240d0a1_20260812_01/case_results.jsonl",
@@ -1251,12 +1256,12 @@
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
       "size_bytes": 1151,
-      "sha256": "0787A6F14FCA9723503B003470633F21D63400DCFD3378D1F50CE531E29EA8DE"
+      "sha256": "E9FF8C53C3CF44C80BD14951FC19EFD926AA28147E950FBA80D6ED58CE4EF8BB"
     },
     {
       "path": "processed/validation/schema/latest_schema_report.json",
       "size_bytes": 10420,
-      "sha256": "62532FBA0AF3D7C77C5D92743129742D8E7FA927B8EBC61F3D25BB70DFBFE1ED"
+      "sha256": "2BB887433A812EC9EDF4C6F2DC4927132C736AAEC6F2AD096859DCF05EACE058"
     },
     {
       "path": "processed/validation/step3/latest_step3_report.json",

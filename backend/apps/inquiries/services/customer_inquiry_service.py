@@ -9,10 +9,13 @@ from rest_framework.exceptions import NotFound
 
 from apps.audit.models import AIRun
 from apps.consultations.models import Consultation
-from apps.inquiries.models import Inquiry
+from apps.inquiries.models import HumanReview, Inquiry
 from apps.inquiries.models.inquiry_qa import public_question_options
 from apps.inquiries.repositories.customer_inquiry_repository import (
     CustomerInquiryRepository,
+)
+from apps.inquiries.services.guidance_review_policy import (
+    GuidanceReviewPolicy,
 )
 from apps.inquiries.services.safety_rule_registry import (
     danger_assessment_is_valid,
@@ -48,7 +51,6 @@ class CustomerInquiryService:
             Inquiry.Status.RESOLVED,
         }
     )
-    PUBLIC_GUIDANCE_REVIEW_STATUSES = frozenset({"APPROVED", "CONFIRMED"})
     PUBLIC_CONSULTATION_RESULT_STATES = frozenset(
         {
             Inquiry.Status.VISIT_REVIEW_PENDING,
@@ -173,12 +175,6 @@ class CustomerInquiryService:
         guidance = next(iter(inquiry.customer_guidance_versions), None)
         if guidance is None:
             raise cls._guidance_not_ready(inquiry, allowed_actions)
-        if (
-            guidance.review_status_code
-            not in cls.PUBLIC_GUIDANCE_REVIEW_STATUSES
-        ):
-            raise cls._guidance_not_ready(inquiry, allowed_actions)
-
         ai_run = guidance.generated_by_ai_run
         payload = ai_run.validated_output_payload
         if not isinstance(payload, dict):
@@ -199,8 +195,13 @@ class CustomerInquiryService:
             raise cls._guidance_not_ready(inquiry, allowed_actions)
 
         risk_level = safety.get("risk_level")
-        requires_consultation = safety.get("requires_consultation")
+        ai_requires_consultation = safety.get("requires_consultation")
         usage_status = usage.get("guidance_status")
+        if not GuidanceReviewPolicy.is_customer_visible(
+            risk_level=risk_level,
+            review_status=guidance.review_status_code,
+        ):
+            raise cls._guidance_not_ready(inquiry, allowed_actions)
         # The approved Guidance row is the customer-facing source of truth.
         # A HumanReview MODIFY decision creates a new approved Guidance while
         # preserving the original AI payload for audit purposes. Reading the
@@ -218,7 +219,7 @@ class CustomerInquiryService:
         symptom_summary = inquiry.raw_text.strip()[:2000]
         if (
             risk_level not in set(inquiry.RiskLevel.values)
-            or not isinstance(requires_consultation, bool)
+            or not isinstance(ai_requires_consultation, bool)
             or usage_status not in set(inquiry.UsageGuidanceStatus.values)
             or not isinstance(usage_message, str)
             or not usage_message.strip()
@@ -229,12 +230,18 @@ class CustomerInquiryService:
             or not symptom_summary
         ):
             raise cls._guidance_not_ready(inquiry, allowed_actions)
-        if guidance.requires_consultation is not requires_consultation:
+        if not cls._effective_consultation_is_valid(
+            guidance=guidance,
+            ai_requires_consultation=ai_requires_consultation,
+            require_human_approval=(
+                risk_level == Inquiry.RiskLevel.CAUTION
+            ),
+        ):
             raise cls._guidance_not_ready(inquiry, allowed_actions)
         if is_no_evidence and (
             inquiry.requires_fallback is not True
             or inquiry.evidence_mode != Inquiry.EvidenceMode.NO_EVIDENCE
-            or requires_consultation is not True
+            or ai_requires_consultation is not True
             or usage_status
             != Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
         ):
@@ -261,12 +268,169 @@ class CustomerInquiryService:
             "escalation_conditions": [],
             "prohibited_actions": [],
             "next_action": safe_actions[0],
-            "requires_consultation": requires_consultation,
+            "requires_consultation": guidance.requires_consultation,
             # Public Evidence is outside this P0. Internal chunks, scores,
             # paths, prompts, and trace data must never cross this boundary.
             "evidence": [],
             "allowed_actions": allowed_actions,
         }
+
+    @staticmethod
+    def _effective_consultation_is_valid(
+        *,
+        guidance,
+        ai_requires_consultation: bool,
+        require_human_approval: bool,
+    ) -> bool:
+        if (
+            not require_human_approval
+            and guidance.requires_consultation is ai_requires_consultation
+        ):
+            return True
+
+        publications = list(
+            HumanReview.objects.filter(
+                published_guidance=guidance,
+            ).select_related("guidance")
+        )
+        if not publications:
+            return False
+
+        # An APPROVED string alone is not publication provenance. Every
+        # customer-visible CAUTION must retain at least one EvidenceLink and
+        # every link must carry a completed verification record.
+        evidence_links = list(
+            guidance.evidence_links.select_related("chunk").all()
+        )
+        verified_evidence_links = [
+            link
+            for link in evidence_links
+            if (
+                link.is_verified
+                and link.verified_by_id is not None
+                and link.verified_at is not None
+            )
+        ]
+        verified_evidence_fingerprints = {
+            (
+                str(link.chunk.public_id),
+                link.document_sha256_snapshot,
+            )
+            for link in verified_evidence_links
+        }
+        if (
+            guidance.evidence_sufficiency_code != "VERIFIED"
+            or not evidence_links
+            or len(verified_evidence_links) != len(evidence_links)
+        ):
+            return False
+
+        for review in publications:
+            if review.status_code not in {
+                HumanReview.Status.APPROVED,
+                HumanReview.Status.MODIFIED,
+                HumanReview.Status.RESUME_FAILED,
+            }:
+                continue
+            if review.decision_code not in {
+                HumanReview.Decision.APPROVE,
+                HumanReview.Decision.MODIFY,
+            }:
+                continue
+            if (
+                review.reviewer_id is None
+                or review.decided_at is None
+                or not review.decision_reason_code
+                or not review.decision_idempotency_key
+                or review.decision_correlation_id is None
+                or review.guidance.generated_by_ai_run_id
+                != guidance.generated_by_ai_run_id
+            ):
+                continue
+            if (
+                review.original_requires_consultation
+                is not ai_requires_consultation
+                or review.effective_requires_consultation
+                is not guidance.requires_consultation
+            ):
+                continue
+            if (
+                ai_requires_consultation
+                is guidance.requires_consultation
+            ):
+                if (
+                    review.consultation_disposition_code
+                    == HumanReview.ConsultationDisposition.PRESERVE
+                    and review.consultation_reason_code is None
+                    and not review.consultation_evidence_snapshot
+                ):
+                    return True
+                continue
+            if (
+                review.consultation_disposition_code
+                == HumanReview.ConsultationDisposition.REQUIRE
+                and not ai_requires_consultation
+                and guidance.requires_consultation
+                and review.consultation_reason_code
+                in {
+                    HumanReview.ConsultationChangeReason.CONSULTANT_SAFETY_ESCALATION,
+                    HumanReview.ConsultationChangeReason.PRODUCT_FUNCTION_UNCERTAIN,
+                    HumanReview.ConsultationChangeReason.CUSTOMER_CONTEXT_INCOMPLETE,
+                }
+                and not review.consultation_evidence_snapshot
+            ):
+                return True
+            if (
+                review.consultation_disposition_code
+                == HumanReview.ConsultationDisposition.RESOLVE_NON_SAFETY
+                and ai_requires_consultation
+                and not guidance.requires_consultation
+                and review.consultation_origin_code
+                == HumanReview.ConsultationOrigin.NON_SAFETY_RESOLVABLE
+                and review.consultation_origin_reason_code
+                in {
+                    HumanReview.ConsultationOriginReason.HARNESS_UNSUPPORTED_FUNCTION,
+                    HumanReview.ConsultationOriginReason.HARNESS_SCOPE_EXCEEDED,
+                }
+                and review.consultation_reason_code
+                in {
+                    HumanReview.ConsultationChangeReason.PRODUCT_CAPABILITY_VERIFIED,
+                    HumanReview.ConsultationChangeReason.HARNESS_SCOPE_VERIFIED,
+                }
+                and CustomerInquiryService._resolution_snapshot_matches_evidence(
+                    review.consultation_evidence_snapshot,
+                    verified_evidence_fingerprints=(
+                        verified_evidence_fingerprints
+                    ),
+                )
+            ):
+                return True
+        return False
+
+    @staticmethod
+    def _resolution_snapshot_matches_evidence(
+        snapshot: Any,
+        *,
+        verified_evidence_fingerprints: set[tuple[str, str]],
+    ) -> bool:
+        if not isinstance(snapshot, list) or not snapshot:
+            return False
+        snapshot_fingerprints: set[tuple[str, str]] = set()
+        for item in snapshot:
+            if not isinstance(item, dict):
+                return False
+            if not isinstance(item.get("evidence_link_id"), str):
+                return False
+            chunk_id = item.get("chunk_id")
+            if not isinstance(chunk_id, str):
+                return False
+            document_hash = item.get("document_sha256")
+            if not isinstance(document_hash, str) or not document_hash:
+                return False
+            snapshot_fingerprints.add((chunk_id, document_hash))
+        return snapshot_fingerprints.issubset(
+            verified_evidence_fingerprints
+        )
 
     @classmethod
     def consultation_result_for_customer(

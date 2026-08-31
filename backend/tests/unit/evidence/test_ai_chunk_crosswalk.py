@@ -31,7 +31,7 @@ from apps.evidence.models import (
     SourceDocument,
 )
 from apps.evidence.services import EvidenceReferenceVerifier
-from apps.inquiries.models import Guidance, Inquiry
+from apps.inquiries.models import Guidance, HumanReview, Inquiry
 from apps.inquiries.services.inquiry_ai_service import InquiryAIService
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
@@ -731,6 +731,69 @@ def test_default_verifier_persists_evidence_link_and_applies_safe_event():
     assert AIRetrievalHit.objects.filter(
         retrieval_run=retrieval_run,
     ).count() == 1
+    http_client.close()
+
+
+def test_verified_caution_creates_pending_review_without_safe_event():
+    mapping, inquiry = create_verified_mapping(sequence=122)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        request_payload = json.loads(request.content.decode("utf-8"))
+        example_path = (
+            DEFAULT_CONTRACT_ROOT
+            / "examples"
+            / "symptom-analysis"
+            / "caution-pre-send-human-review.json"
+        )
+        response = json.loads(example_path.read_text(encoding="utf-8"))[
+            "response"
+        ]
+        for field in (
+            "inquiry_id",
+            "correlation_id",
+            "ai_request_id",
+            "state_version",
+        ):
+            response[field] = request_payload[field]
+        if "model_code" in response:
+            response["model_code"] = request_payload["model_code"]
+        response["evidence_references"] = [evidence_reference(mapping)]
+        return httpx.Response(200, json=response)
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    client = AIClient(
+        base_url="http://ai.test",
+        mode="local",
+        http_client=http_client,
+    )
+
+    outcome = InquiryAIService.analyze_inquiry(
+        inquiry_public_id=inquiry.public_id,
+        correlation_id=uuid4(),
+        ai_request_id=uuid4(),
+        client=client,
+    )
+
+    assert outcome.event_candidate is None
+    assert outcome.event_applied is None
+    assert outcome.pending_reason == "HUMAN_REVIEW_REQUIRED"
+    assert outcome.saved_guidance is True
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert inquiry.evidence_mode == Inquiry.EvidenceMode.EXACT_MODEL
+    guidance = Guidance.objects.get(inquiry=inquiry)
+    assert guidance.review_status_code == "PENDING"
+    assert guidance.evidence_sufficiency_code == "VERIFIED"
+    assert guidance.requires_consultation is False
+    review = HumanReview.objects.get(inquiry=inquiry)
+    assert review.guidance == guidance
+    assert review.status_code == HumanReview.Status.PENDING
+    assert EvidenceLink.objects.filter(
+        inquiry=inquiry,
+        guidance=guidance,
+        is_verified=True,
+    ).count() == 1
+    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
 
