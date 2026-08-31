@@ -315,7 +315,7 @@ def test_action_result_empty_migration_rolls_back_and_reapplies(request):
     target_0009 = [("inquiries", "0009_guidanceitem")]
     target_0010 = [("inquiries", "0010_customeractionresult")]
     latest_target = [
-        ("inquiries", "0015_humanreview")
+        ("inquiries", "0016_humanreview_consultation_policy")
     ]
 
     request.addfinalizer(

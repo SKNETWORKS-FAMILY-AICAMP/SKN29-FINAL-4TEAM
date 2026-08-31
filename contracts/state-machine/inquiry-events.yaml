@@ -468,6 +468,51 @@ events:
   description: '공식 근거와 안전 검증을 통과한 고객 안내가 준비되어 Inquiry를 AI_GUIDANCE로 전환한다.
 
     '
+- code: HUMAN_REVIEW_GUIDANCE_APPROVED
+  category: SYSTEM_EVENT
+  scope: INQUIRY
+  actor_roles:
+  - SYSTEM
+  changes_inquiry_state: true
+  changes_visit_state: false
+  requires_idempotency_key: false
+  requires_state_version: true
+  external_action:
+    exposed: false
+    operation_id: null
+  description: '상담사가 검증 Evidence를 확인해 CAUTION Guidance를 승인하거나 수정했고 최종 상담 필요 값이 false이면 고객 안내 상태로 전환한다.
+
+    '
+- code: HUMAN_REVIEW_CONSULTATION_REQUIRED
+  category: SYSTEM_EVENT
+  scope: INQUIRY
+  actor_roles:
+  - SYSTEM
+  changes_inquiry_state: true
+  changes_visit_state: false
+  requires_idempotency_key: false
+  requires_state_version: true
+  external_action:
+    exposed: false
+    operation_id: null
+  description: '상담사가 Guidance를 승인하거나 수정했지만 최종 상담 필요 값이 true이면 승인된 안전 안내를 보존하고 상담 대기 건을 생성한다.
+
+    '
+- code: HUMAN_REVIEW_REJECTED
+  category: SYSTEM_EVENT
+  scope: INQUIRY
+  actor_roles:
+  - SYSTEM
+  changes_inquiry_state: true
+  changes_visit_state: false
+  requires_idempotency_key: false
+  requires_state_version: true
+  external_action:
+    exposed: false
+    operation_id: null
+  description: '상담사가 Guidance를 거절하면 고객 공개를 차단하고 상담 대기 건을 생성한다.
+
+    '
 - code: DANGER_DETECTED
   category: SYSTEM_EVENT
   scope: AI_RESULT

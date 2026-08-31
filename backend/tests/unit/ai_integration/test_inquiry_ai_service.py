@@ -20,6 +20,7 @@ from apps.evidence.models import EvidenceLink
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
+    HumanReview,
     Inquiry,
     InquiryQA,
     SymptomAssessment,
@@ -204,7 +205,7 @@ def cancel_inquiry(inquiry: Inquiry, *, key: str) -> None:
     )
 
 
-def test_safe_result_is_persisted_but_held_without_verified_evidence():
+def test_safe_result_is_audited_but_has_no_guidance_without_verified_evidence():
     inquiry = create_inquiry(1)
     client, http_client, calls = make_client()
 
@@ -215,13 +216,12 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     assert outcome.event_applied is None
     assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
     assert outcome.saved_assessment is True
-    assert outcome.saved_guidance is True
+    assert outcome.saved_guidance is False
     assert len(calls) == 1
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
-    guidance = Guidance.objects.get(inquiry=inquiry)
-    assert guidance.items.count() == 2
-    assert guidance.review_status_code == "CONFIRMED"
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
 
     inquiry.refresh_from_db()
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
@@ -234,11 +234,18 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     http_client.close()
 
 
-def test_evidence_verifier_failure_is_fail_closed_without_losing_ai_result():
+def test_evidence_verifier_failure_is_fail_closed_without_publication_bundle():
     inquiry = create_inquiry(101)
     client, http_client, _calls = make_client()
+    publication_state_seen_by_verifier = []
 
     def unavailable_verifier(_references, _inquiry):
+        publication_state_seen_by_verifier.append(
+            (
+                Guidance.objects.filter(inquiry=inquiry).exists(),
+                HumanReview.objects.filter(inquiry=inquiry).exists(),
+            )
+        )
         raise RuntimeError("synthetic verifier unavailable")
 
     outcome = analyze(
@@ -253,8 +260,10 @@ def test_evidence_verifier_failure_is_fail_closed_without_losing_ai_result():
     assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
     assert inquiry.evidence_ids == []
     assert inquiry.requires_fallback is True
+    assert publication_state_seen_by_verifier == [(False, False)]
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
-    assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
     assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
     http_client.close()
 
@@ -351,6 +360,8 @@ def test_injected_evidence_id_cannot_bypass_backend_mapping():
     assert inquiry.state_version == 2
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
     assert inquiry.evidence_ids == []
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
     assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 0
     http_client.close()
@@ -390,7 +401,7 @@ def test_no_evidence_result_routes_to_consultation_required():
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
     assert inquiry.requires_fallback is True
     assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
-    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
 
@@ -458,7 +469,7 @@ def test_product_runtime_hold_applies_product_validation_failed_once():
     )
     assert inquiry.requires_fallback is True
     assert inquiry.evidence_ids == []
-    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
 
     history = TransitionHistory.objects.get(inquiry=inquiry)
     assert history.event_code == "PRODUCT_VALIDATION_FAILED"
@@ -494,7 +505,7 @@ def test_product_runtime_hold_applies_product_validation_failed_once():
     assert len(calls) == 1
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
-    assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
     http_client.close()
 
@@ -583,7 +594,7 @@ def test_other_contract_v4_fallback_stays_fail_closed_without_state_event():
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
     assert inquiry.state_version == 2
     assert inquiry.requires_fallback is True
-    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
     assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
@@ -852,7 +863,7 @@ def test_duplicate_request_replays_without_second_http_call_or_rows():
     assert len(calls) == 1
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
-    assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
 
