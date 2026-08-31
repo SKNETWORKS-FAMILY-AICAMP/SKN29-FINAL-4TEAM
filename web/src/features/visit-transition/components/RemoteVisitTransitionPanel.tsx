@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { ApiClientError } from "../../../common/api/apiError";
 import { IdempotencyOperationTracker } from "../../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../../common/api/requestContext";
+import FormSelect from "../../../common/components/form/FormSelect";
 import type { ConsultantInquiryDetailViewModel, RemoteAllowedAction } from "../../consultation/model/consultantWorkspaceRemoteMapper";
 import type { ConsultantDashboardTechnician } from "../../notice/model/consultantNotice";
 import type { VisitTransitionValues } from "../model/visitTransitionTypes";
@@ -242,26 +243,26 @@ export default function RemoteVisitTransitionPanel({
       <label className="v6-form-field">고객 희망일<input type="date" value={values.preferredDate} onChange={(event) => update("preferredDate", event.target.value)} /></label>
       <div className="v6-form-field">
         <label htmlFor="remote-visit-technician">방문 기사</label>
-        <select
+        <FormSelect
           id="remote-visit-technician"
           aria-label="방문기사"
           data-testid="visit-technician-select"
           disabled={isSaving || !hasSelectableTechnicians}
           value={values.technicianId}
-          onChange={(event) => update("technicianId", event.target.value)}
-        >
-          <option value="">방문기사를 선택해 주세요.</option>
-          {hasAssignedTechnicianFallback && (
-            <option value={values.technicianId} disabled>
-              현재 배정 기사 · 선택 목록 외
-            </option>
-          )}
-          {technicians.map((technician) => (
-            <option key={technician.userId} value={technician.userId}>
-              {technician.name} · {technician.branch}
-            </option>
-          ))}
-        </select>
+          onChange={(value) => update("technicianId", value)}
+          options={[
+            { value: "", label: "방문기사를 선택해 주세요." },
+            ...(hasAssignedTechnicianFallback ? [{
+              value: values.technicianId,
+              label: "현재 배정 기사 · 선택 목록 외",
+              disabled: true,
+            }] : []),
+            ...technicians.map((technician) => ({
+              value: technician.userId,
+              label: `${technician.name} · ${technician.branch}`,
+            })),
+          ]}
+        />
         {technicianSourceStatus === "loading" && (
           <small role="status">방문기사 목록을 불러오고 있습니다.</small>
         )}

@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import { WORK_BUCKET_LABELS } from "../model/consultantWorkspaceModel";
 import type { CounselorWorkBucket } from "../model/consultantWorkspaceTypes";
+import "./ConsultantQueueSidebar.css";
 
 export type ConsultantInquiryBucket = CounselorWorkBucket | "ALL";
 
@@ -119,12 +120,29 @@ function NoticeIcon() {
   );
 }
 
+function ContactsIcon() {
+  return (
+    <svg
+      className="consultant-work-tab__icon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect x="5" y="3.5" width="15" height="17" rx="2" />
+      <path d="M3 7h4M3 12h4M3 17h4" />
+      <circle cx="12.5" cy="9" r="2" />
+      <path d="M9 16v-1a3.5 3.5 0 0 1 7 0v1" />
+    </svg>
+  );
+}
+
 interface ConsultantQueueSidebarProps {
   activeBucket: ConsultantInquiryBucket | null;
   bucketCounts?: Readonly<Record<CounselorWorkBucket, number>>;
   totalCount?: number;
   dashboardActive?: boolean;
   noticeActive?: boolean;
+  contactsActive?: boolean;
   phoneEntryActive?: boolean;
   onBucketChange?: (bucket: ConsultantInquiryBucket) => void;
 }
@@ -135,6 +153,7 @@ export default function ConsultantQueueSidebar({
   totalCount,
   dashboardActive = false,
   noticeActive = false,
+  contactsActive = false,
   phoneEntryActive = false,
   onBucketChange,
 }: ConsultantQueueSidebarProps) {
@@ -227,6 +246,7 @@ export default function ConsultantQueueSidebar({
             aria-selected={
               !dashboardActive &&
               !noticeActive &&
+              !contactsActive &&
               !phoneEntryActive &&
               activeBucket === bucket
             }
@@ -234,6 +254,7 @@ export default function ConsultantQueueSidebar({
             className={`consultant-work-tab consultant-work-tab--${bucket.toLowerCase()}${
               !dashboardActive &&
               !noticeActive &&
+              !contactsActive &&
               !phoneEntryActive &&
               activeBucket === bucket
                 ? " is-active"
@@ -285,6 +306,21 @@ export default function ConsultantQueueSidebar({
           <span>
             <NoticeIcon />
             <strong>공지사항</strong>
+          </span>
+        </Link>
+
+        <Link
+          to={ROUTE_PATHS.consultantContacts}
+          role="tab"
+          aria-selected={contactsActive}
+          aria-controls="consultant-contacts-panel"
+          className={`consultant-work-tab consultant-work-tab--contacts${
+            contactsActive ? " is-active" : ""
+          }`}
+        >
+          <span>
+            <ContactsIcon />
+            <strong>직원 연락처</strong>
           </span>
         </Link>
       </nav>

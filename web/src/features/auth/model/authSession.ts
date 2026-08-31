@@ -1,4 +1,5 @@
 import type { AuthenticatedUser } from "../../../app/providers/authContext";
+import { appEnv } from "../../../app/config/env";
 
 export interface AuthSession {
   accessToken: string;
@@ -8,7 +9,10 @@ export interface AuthSession {
   user: AuthenticatedUser;
 }
 
-const AUTH_SESSION_STORAGE_KEY = "waterbridge.auth.session.v1";
+// 같은 로컬 포트에서 실행 방식을 바꿔도 실제 로그인 세션을 덮어쓰지 않는다.
+const AUTH_SESSION_STORAGE_KEY = appEnv.isDesignPreview
+  ? "waterbridge.auth.preview.session.v1"
+  : "waterbridge.auth.session.v1";
 
 function isAuthSession(value: unknown): value is AuthSession {
   if (!value || typeof value !== "object") return false;

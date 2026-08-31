@@ -33,6 +33,10 @@ interface AuthProviderProps {
   initialUser?: AuthenticatedUser | null;
 }
 
+// 화면 데이터 소스와 미리보기 인증을 분리한다. 디자인 모드에서도 배포용
+// REMOTE 페이지를 사용하되 실제 계정/토큰은 필요하지 않다.
+const useSyntheticAuth = appEnv.useMockApi || appEnv.isDesignPreview;
+
 const MOCK_USERS: Record<AppRole, AuthenticatedUser> = {
   CUSTOMER: {
     id: "00000000-0000-4000-8000-000000000101",
@@ -42,7 +46,7 @@ const MOCK_USERS: Record<AppRole, AuthenticatedUser> = {
   },
   CONSULTANT: {
     id: "00000000-0000-4000-8000-000000000102",
-    displayName: "합성 상담사 001",
+    displayName: appEnv.isDesignPreview ? "미리보기 상담사" : "합성 상담사 001",
     roleCode: "CONSULTANT",
     isActive: true,
   },
@@ -61,7 +65,7 @@ const MOCK_USERS: Record<AppRole, AuthenticatedUser> = {
 };
 
 function getDefaultMockUser() {
-  if (!appEnv.useMockApi || !appEnv.mockAuthenticated) return null;
+  if (!useSyntheticAuth || !appEnv.mockAuthenticated) return null;
   return MOCK_USERS[appEnv.mockRole];
 }
 
@@ -80,7 +84,7 @@ function getInitialUser(
 ): AuthenticatedUser | null {
   if (initialUser !== undefined) return initialUser;
   const storedUser = authSessionStore.getSession()?.user;
-  if (appEnv.useMockApi && storedUser) {
+  if (useSyntheticAuth && storedUser) {
     return MOCK_USERS[storedUser.roleCode];
   }
   return storedUser ?? getDefaultMockUser();
@@ -91,7 +95,7 @@ function shouldHydrateStoredRemoteSession(
 ): boolean {
   return (
     initialUser === undefined &&
-    !appEnv.useMockApi &&
+    !useSyntheticAuth &&
     authSessionStore.getSession() !== null
   );
 }
@@ -117,7 +121,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   );
 
   useEffect(() => {
-    if (!appEnv.useMockApi) return;
+    if (!useSyntheticAuth) return;
 
     if (!user) {
       authSessionStore.clear();
@@ -141,10 +145,10 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
         const currentSession = authSessionStore.getSession();
         if (!currentSession) return null;
 
-        const refreshedSession = appEnv.useMockApi
+        const refreshedSession = useSyntheticAuth
           ? createMockSession(currentSession.user)
           : await refreshAuthSession(currentSession.refreshToken);
-        const nextSession = appEnv.useMockApi
+        const nextSession = useSyntheticAuth
           ? refreshedSession
           : { ...refreshedSession, user: currentSession.user };
         authSessionStore.setSession(nextSession);
@@ -161,7 +165,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   }, []);
 
   useEffect(() => {
-    if (appEnv.useMockApi || initialUser !== undefined) return;
+    if (useSyntheticAuth || initialUser !== undefined) return;
     if (!authSessionStore.getSession()) return;
 
     let isActive = true;
@@ -186,11 +190,11 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const signInAs = useCallback(async (role: AppRole) => {
     setIsLoading(true);
     try {
-      const session = appEnv.useMockApi
+      const session = useSyntheticAuth
         ? createMockSession(MOCK_USERS[role])
         : await loginWithDemoCode(DEMO_USER_CODES[role]);
       authSessionStore.setSession(session);
-      if (appEnv.useMockApi) {
+      if (useSyntheticAuth) {
         setUser(session.user);
       } else {
         try {
@@ -209,7 +213,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
 
   const signInWithPassword = useCallback(
     async (username: string, password: string) => {
-      if (appEnv.useMockApi) {
+      if (useSyntheticAuth) {
         throw new Error("ID/PW 로그인은 Backend 연결 모드에서만 사용할 수 있습니다.");
       }
       setIsLoading(true);
@@ -235,7 +239,7 @@ export function AuthProvider({ children, initialUser }: AuthProviderProps) {
   const signOut = useCallback(async () => {
     const refreshToken = authSessionStore.getSession()?.refreshToken;
     try {
-      if (!appEnv.useMockApi && refreshToken) {
+      if (!useSyntheticAuth && refreshToken) {
         await revokeRefreshToken(refreshToken);
       }
     } finally {

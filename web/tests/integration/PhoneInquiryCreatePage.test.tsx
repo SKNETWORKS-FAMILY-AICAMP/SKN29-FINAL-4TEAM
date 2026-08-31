@@ -50,7 +50,7 @@ function apiResponse(data: unknown, status = 200) {
 }
 
 function createSuccessfulFetchMock() {
-  return vi.fn(async (input: RequestInfo | URL) => {
+  return vi.fn<typeof fetch>(async (input) => {
     const url = String(input);
     if (url.endsWith("/consultant/customer-subscriptions/search")) {
       return apiResponse({ items: [CANDIDATE], returned_count: 1 });
@@ -185,31 +185,42 @@ describe("PhoneInquiryCreatePage", () => {
     expect(new Headers(searchOptions?.headers).get("X-Correlation-ID")).toBeTruthy();
   });
 
-  it("선택한 subscription_id와 계약 필드만 전송하고 생성 문의로 연결한다", async () => {
+  it("계약 필드만 전송한 뒤 완료 목록에서 서버의 상담 대기 상태를 안내한다", async () => {
     const fetchMock = createSuccessfulFetchMock();
     vi.stubGlobal("fetch", fetchMock);
     const user = userEvent.setup();
     renderPage();
     await searchAndSelectCandidate(user);
 
-    await user.selectOptions(screen.getByLabelText("대표 증상 *"), "LEAK");
+    await user.click(screen.getByRole("combobox", { name: "대표 증상 *" }));
+    await user.click(screen.getByRole("option", { name: "누수" }));
     await user.type(
       screen.getByLabelText(/문의 내용/),
       "전화로 접수한 누수 문의입니다.",
     );
     await user.click(screen.getByRole("button", { name: "전화 문의 등록" }));
 
-    const status = await screen.findByRole("status");
-    expect(status).toHaveTextContent("INQ-20260812-0001");
-    expect(screen.getByRole("link", { name: "문의 상세 보기" })).toHaveAttribute(
-      "href",
-      `/consultant/inquiries?inquiryId=${CREATED_INQUIRY_ID}`,
-    );
-    expect(screen.getByRole("button", { name: "새 문의 등록" })).toBeInTheDocument();
+    const result = await screen.findByRole("region", { name: "문의 처리 결과" });
+    expect(within(result).getByRole("status"))
+      .toHaveTextContent("전화 문의가 등록되었습니다.");
+    expect(result).toHaveTextContent("현재 문의 상태는 ‘상담 대기’입니다.");
+    expect(result)
+      .toHaveTextContent("실제 완료 처리 전에는 완료 목록에 표시되지 않습니다.");
+    expect(within(result).getByRole("button", { name: "해당 문의 확인" }))
+      .toBeEnabled();
+    expect(screen.getByRole("tab", { name: /처리 완료된 문의/ }))
+      .toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("button", { name: /INQ-20260812-0001.*상세 열기$/ }))
+      .not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "입력 초기화" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "전화 문의 등록" })).not.toBeInTheDocument();
 
-    const [, registerOptions] = fetchMock.mock.calls[1];
+    const registrationCalls = fetchMock.mock.calls.filter(([url]) =>
+      String(url).endsWith("/consultant/phone-inquiries"),
+    );
+    expect(registrationCalls).toHaveLength(1);
+    const [, registerOptions] = registrationCalls[0];
+    expect(registerOptions?.method).toBe("POST");
     expect(JSON.parse(String(registerOptions?.body))).toEqual({
       subscription_id: CANDIDATE.subscription_id,
       raw_text: "전화로 접수한 누수 문의입니다.",
@@ -219,7 +230,17 @@ describe("PhoneInquiryCreatePage", () => {
     const headers = new Headers(registerOptions?.headers);
     expect(headers.get("X-Correlation-ID")).toBeTruthy();
     expect(headers.get("Idempotency-Key")).toBeTruthy();
+    expect(fetchMock.mock.calls.some(([url]) =>
+      /\/(finalize|complete-consultation)(?:\?|$)/.test(String(url)),
+    )).toBe(false);
     expect(window.localStorage.getItem("waterbridge.phone-inquiry-records.v1")).toBeNull();
+    const storedValues = Array.from({ length: window.localStorage.length }, (_, index) => {
+      const key = window.localStorage.key(index);
+      return key ? window.localStorage.getItem(key) : "";
+    }).join("\n");
+    expect(storedValues).not.toContain("전화로 접수한 누수 문의입니다.");
+    expect(storedValues).not.toContain(CANDIDATE.customer_display_name);
+    expect(storedValues).not.toContain(CANDIDATE.phone_masked);
   });
 
   it("등록 404에서는 입력을 유지하고 무효가 된 고객 선택만 초기화한다", async () => {
@@ -236,7 +257,8 @@ describe("PhoneInquiryCreatePage", () => {
     renderPage();
     await searchAndSelectCandidate(user);
 
-    await user.selectOptions(screen.getByLabelText("대표 증상 *"), "LEAK");
+    await user.click(screen.getByRole("combobox", { name: "대표 증상 *" }));
+    await user.click(screen.getByRole("option", { name: "누수" }));
     await user.type(screen.getByLabelText(/문의 내용/), "선택 무효 확인용 문의");
     await user.click(screen.getByRole("button", { name: "전화 문의 등록" }));
 
@@ -248,24 +270,31 @@ describe("PhoneInquiryCreatePage", () => {
     expect(screen.getByRole("button", { name: "전화 문의 등록" })).toBeDisabled();
   });
 
-  it("등록 후 새 문의 등록을 누르면 고객 선택과 입력값을 초기화한다", async () => {
+  it("등록 성공 후 전화 문의 등록 메뉴로 돌아오면 새 고객·증상·내용을 입력할 수 있다", async () => {
     vi.stubGlobal("fetch", createSuccessfulFetchMock());
     const user = userEvent.setup();
     renderPage();
     await searchAndSelectCandidate(user);
 
-    await user.selectOptions(screen.getByLabelText("대표 증상 *"), "LEAK");
+    await user.click(screen.getByRole("combobox", { name: "대표 증상 *" }));
+    await user.click(screen.getByRole("option", { name: "누수" }));
     await user.type(
       screen.getByLabelText(/문의 내용/),
       "초기화 확인용 상담 기록",
     );
     await user.click(screen.getByRole("button", { name: "전화 문의 등록" }));
-    await user.click(await screen.findByRole("button", { name: "새 문의 등록" }));
+    expect(await screen.findByRole("region", { name: "문의 처리 결과" }))
+      .toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "전화 문의 등록" }));
 
     expect(screen.queryByRole("region", { name: "고객 정보" })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "고객명 또는 연락처 *" })).toHaveValue("");
-    expect(screen.getByLabelText("대표 증상 *")).toHaveValue("");
+    expect(screen.getByRole("combobox", { name: "대표 증상 *" })).toHaveValue("");
     expect(screen.getByLabelText(/문의 내용/)).toHaveValue("");
     expect(screen.getByRole("button", { name: "전화 문의 등록" })).toBeDisabled();
+    expect(screen.getByRole("tab", { name: "전화 문의 등록" }))
+      .toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("region", { name: "문의 처리 결과" }))
+      .not.toBeInTheDocument();
   });
 });

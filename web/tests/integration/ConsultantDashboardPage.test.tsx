@@ -73,6 +73,49 @@ describe("ConsultantDashboardPage", () => {
     clearRecentConsultantInquiryIds(CONSULTANT_USER.id);
   });
 
+  it("기존 위험도별 상태 필터도 공용 dropdown으로 선택·초기화하고 업무 집계는 유지한다", async () => {
+    const user = userEvent.setup();
+    renderPage("/consultant/dashboard?bucket=IN_PROGRESS");
+
+    // This retained queue is hidden on the redesigned dashboard. Exercise its
+    // filter directly so it cannot diverge if the existing view is reused.
+    const legacyQueue = document.getElementById("consultant-queue-panel")!;
+    const quickFilters = within(legacyQueue).getByLabelText("업무 빠른 필터");
+    fireEvent.click(within(quickFilters).getByText("처리 중인 문의", { selector: "button" }));
+    const filter = await screen.findByLabelText("긴급 문의 상태 필터");
+    const panel = document.getElementById("consultant-risk-panel-danger")!;
+    const originalRowCount = panel.querySelectorAll(".consultant-list-item").length;
+    const summaryBefore = screen.getByLabelText("업무 요약").textContent;
+
+    expect(originalRowCount).toBeGreaterThan(0);
+    expect(filter).toHaveAttribute("id", "consultant-risk-filter-danger");
+    expect(filter).toHaveAttribute("role", "combobox");
+    expect(filter).toHaveClass("wb-form-select__trigger");
+    fireEvent.click(filter);
+    const list = screen.getByRole("listbox", { name: "긴급 문의 상태 필터" });
+    expect(list).toHaveClass("wb-form-select__listbox");
+    expect(filter).toHaveAttribute("aria-controls", list.id);
+    const option = within(list).getAllByRole("option").find((item) => item.textContent !== "전체 상태")!;
+    const selectedLabel = option.textContent!;
+    await user.click(option);
+
+    expect(filter).toHaveTextContent(selectedLabel);
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    const selectedRows = Array.from(panel.querySelectorAll(".consultant-list-item"));
+    expect(selectedRows.length).toBeGreaterThan(0);
+    expect(selectedRows.length).toBeLessThanOrEqual(originalRowCount);
+    selectedRows.forEach((row) => expect(row).toHaveTextContent(selectedLabel));
+
+    fireEvent.click(filter);
+    await user.click(screen.getByRole("option", { name: "전체 상태" }));
+    expect(filter).toHaveValue("ALL");
+    expect(panel.querySelectorAll(".consultant-list-item")).toHaveLength(originalRowCount);
+    expect(screen.getByLabelText("업무 요약").textContent).toBe(summaryBefore);
+    fireEvent.click(filter);
+    fireEvent.keyDown(filter, { key: "Escape" });
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
   it("첫 화면은 개인 업무 요약과 네 가지 업무 카드를 함께 보여준다", () => {
     renderPage();
 

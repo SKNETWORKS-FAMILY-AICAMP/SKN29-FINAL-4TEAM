@@ -1,0 +1,405 @@
+.consultant-contacts-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.consultant-contacts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--consultant-refresh-navy, #3f4858);
+}
+
+.consultant-contacts-head h1 {
+  margin: 0;
+  color: #222;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.consultant-contacts-head > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.consultant-contacts-total {
+  padding: 5px 9px;
+  border-radius: 5px;
+  background: #e5e7e8;
+  color: #616570;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+html body #root .consultant-contacts-app :is(.consultant-contacts-refresh, .consultant-contacts-reset) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 4px;
+  border: 0 !important;
+  background: transparent !important;
+  color: #505b6c !important;
+  box-shadow: none !important;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.consultant-contacts-refresh svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.consultant-contacts-app button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.consultant-contacts-app button:focus-visible {
+  outline: 2px solid var(--consultant-refresh-navy, #3f4858);
+  outline-offset: 3px;
+}
+
+.consultant-contacts-toolbar {
+  display: grid;
+  gap: 14px;
+  padding: 16px 24px;
+}
+
+.consultant-contacts-filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.consultant-contacts-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html body #root .consultant-contacts-app .consultant-contacts-kinds button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #c8c8c8 !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #333 !important;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+html body #root .consultant-contacts-app .consultant-contacts-kinds button[aria-pressed="true"] {
+  border-color: var(--consultant-refresh-navy, #3f4858) !important;
+  background: var(--consultant-refresh-navy, #3f4858) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+.consultant-contacts-kinds button span {
+  min-width: 20px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgb(127 138 153 / 13%);
+  font-size: 12px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.consultant-contacts-kinds button:focus-visible,
+.consultant-contacts-search button:focus-visible {
+  outline: 2px solid var(--consultant-refresh-navy, #3f4858);
+  outline-offset: 2px;
+}
+
+.consultant-contacts-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+  align-items: end;
+  gap: 14px;
+}
+
+.consultant-contacts-search,
+.consultant-contacts-department {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.consultant-contacts-filters label {
+  color: #555;
+  font-size: 13px;
+}
+
+.consultant-contacts-search > div {
+  display: flex;
+  min-width: 0;
+  min-height: 46px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #c8c8c8;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.consultant-contacts-search > div:focus-within {
+  outline: 2px solid var(--consultant-refresh-navy-ring, rgb(63 72 88 / 12%));
+  border-color: var(--consultant-refresh-navy, #3f4858);
+}
+
+.consultant-contacts-search svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  fill: none;
+  stroke: #555;
+  stroke-width: 1.8;
+}
+
+html body #root .consultant-contacts-app .consultant-contacts-search input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  color: #222;
+  box-shadow: none !important;
+  font: inherit;
+  font-size: 14px;
+}
+
+html body #root .consultant-contacts-app .consultant-contacts-search button {
+  flex: 0 0 auto;
+  padding: 8px 3px;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--consultant-refresh-navy, #3f4858) !important;
+  box-shadow: none !important;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.consultant-contacts-content {
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  padding: 0 24px 16px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--consultant-refresh-navy, #3f4858) transparent;
+}
+
+.consultant-contacts-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #fafafa;
+  color: #333;
+  font-size: 14px;
+  text-align: left;
+}
+
+.consultant-contacts-table :is(th, td) {
+  padding: 11px 12px;
+  border-bottom: 1px solid #dedede;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
+}
+
+.consultant-contacts-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-block: 12px;
+  background: #e8e8e8;
+  color: #555;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.consultant-contacts-table thead th:first-child { width: 18%; }
+.consultant-contacts-table thead th:nth-child(2) { width: 17%; }
+.consultant-contacts-table thead th:nth-child(3) { width: 11%; }
+.consultant-contacts-table thead th:nth-child(4) { width: 23%; }
+
+.consultant-contacts-table tbody tr:hover {
+  background: #f2f4f5;
+}
+
+.consultant-contact-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.consultant-contact-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #e4e9ef;
+  color: #455369;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.consultant-contact-avatar--technician {
+  background: #e4ece8;
+  color: #426356;
+}
+
+.consultant-contacts-table tbody th strong {
+  display: block;
+  color: #222;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.consultant-contacts-table tbody th small {
+  display: inline-block;
+  margin-top: 3px;
+  color: #717681;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.consultant-contact-cell-label { display: none; }
+
+.consultant-contact-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.consultant-contact-value > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+html body #root .consultant-contacts-app .consultant-contact-value button {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 5px;
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: transparent !important;
+  color: #67758a !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+html body #root .consultant-contacts-app .consultant-contact-value button:hover {
+  background: #e4e9ef !important;
+  color: #3f4858 !important;
+}
+
+.consultant-contact-value svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.consultant-contacts-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+  padding: 12px 24px;
+  border-top: 1px solid var(--consultant-refresh-navy, #3f4858);
+  color: #555;
+  font-size: 14px;
+}
+
+.consultant-contacts-summary small,
+.consultant-contacts-copy-feedback {
+  color: #646f7d;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .consultant-contacts-head { padding: 18px; gap: 8px; }
+  .consultant-contacts-head > div { gap: 8px; }
+  .consultant-contacts-head h1 { font-size: 21px; }
+  .consultant-contacts-toolbar { padding: 14px 18px; }
+  .consultant-contacts-filter-head { align-items: stretch; flex-direction: column; gap: 4px; }
+  .consultant-contacts-reset { align-self: flex-end; }
+  .consultant-contacts-kinds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  html body #root .consultant-contacts-app .consultant-contacts-kinds button { justify-content: center; gap: 4px; padding-inline: 6px; font-size: 12px; white-space: nowrap; }
+  .consultant-contacts-filters { grid-template-columns: minmax(0, 1fr); }
+  .consultant-contacts-content { padding: 0 18px 18px; }
+
+  .consultant-contacts-table,
+  .consultant-contacts-table tbody { display: block; }
+
+  .consultant-contacts-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .consultant-contacts-table tbody {
+    display: grid;
+    gap: 10px;
+    background: var(--consultant-refresh-surface, #f1f1f1);
+  }
+
+  .consultant-contacts-table tr {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid #c8c8c8;
+    border-radius: 9px;
+    background: #fafafa;
+  }
+
+  .consultant-contacts-table :is(th, td) { padding: 0; border: 0; }
+  .consultant-contacts-table tbody th,
+  .consultant-contacts-table td:last-child { grid-column: 1 / -1; }
+  .consultant-contacts-table tbody th strong,
+  .consultant-contacts-table tbody th small { display: inline; }
+  .consultant-contacts-table tbody th small { margin-left: 10px; }
+  .consultant-contacts-table thead th { position: static; }
+  .consultant-contact-value { justify-content: space-between; }
+  .consultant-contact-cell-label { display: block; margin-bottom: 5px; color: #777; font-size: 12px; }
+}

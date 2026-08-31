@@ -1,0 +1,128 @@
+.wb-form-select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+html body .wb-form-select > .wb-form-select__trigger,
+html body #root .wb-form-select > .wb-form-select__trigger {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 13px;
+  border: 1px solid #c7c8cb !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  color: #30343c !important;
+  font: inherit;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  transform: none !important;
+}
+
+html body .wb-form-select > .wb-form-select__trigger:is(:focus-visible, [aria-expanded="true"]),
+html body #root .wb-form-select > .wb-form-select__trigger:is(:focus-visible, [aria-expanded="true"]) {
+  outline: 2px solid rgb(63 73 90 / 24%);
+  outline-offset: 2px;
+  border-color: #3f495a !important;
+}
+
+html body .wb-form-select > .wb-form-select__trigger:disabled,
+html body #root .wb-form-select > .wb-form-select__trigger:disabled {
+  background: #f1f1ef !important;
+  color: #858990 !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+html body .wb-form-select > .wb-form-select__trigger[aria-invalid="true"],
+html body #root .wb-form-select > .wb-form-select__trigger[aria-invalid="true"] {
+  border-color: #b4414c !important;
+}
+
+.wb-form-select__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html body .wb-form-select__trigger > .wb-form-select__chevron {
+  position: static;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  transform: none;
+  pointer-events: none;
+}
+
+html body .wb-form-select__listbox {
+  position: fixed;
+  z-index: 10000;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+  border: 1px solid #c8c8c5;
+  border-radius: 12px;
+  background: #f8f8f6;
+  box-shadow: 0 10px 24px rgb(40 48 61 / 15%);
+  color: #30343c;
+  font-family: var(--waterbridge-font-family, "NanumSquare", "Malgun Gothic", sans-serif);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+  scrollbar-width: thin;
+}
+
+html body .wb-form-select__option {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  min-height: 40px;
+  box-sizing: border-box;
+  align-content: center;
+  margin: 2px 0;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #eeefec;
+  color: #30343c;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+html body .wb-form-select__option small {
+  color: inherit;
+  font-size: 0.85em;
+}
+
+html body .wb-form-select__option.is-active:not([aria-disabled="true"]) {
+  border-color: #3f495a;
+  background: #3f495a;
+  color: #fff;
+}
+
+html body .wb-form-select__option[aria-disabled="true"] {
+  color: #93969b;
+  cursor: not-allowed;
+}
+
+html body .wb-form-select__empty {
+  padding: 16px;
+  color: #68717d;
+  text-align: center;
+}

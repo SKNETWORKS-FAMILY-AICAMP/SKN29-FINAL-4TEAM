@@ -1,3 +1,4 @@
+import FormSelect from "../../../common/components/form/FormSelect";
 import {
   STATUS_LABELS,
 } from "../../consultation/model/consultantWorkspaceModel";
@@ -69,95 +70,90 @@ export default function OperationsDashboardFilters({
         </label>
         <label>
           제품 모델
-          <select
+          <FormSelect
             value={filters.productModel}
-            onChange={(event) => update("productModel", event.target.value)}
-          >
-            <option value="ALL">전체 모델</option>
-            {options.productModels.map((value) => (
-              <option key={value} value={value}>
-                {formatProductModelAndName(value)}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => update("productModel", value)}
+            options={[
+              { value: "ALL", label: "전체 모델" },
+              ...options.productModels.map((value) => ({ value, label: formatProductModelAndName(value) })),
+            ]}
+          />
         </label>
         <label>
           관리 유형
-          <select
+          <FormSelect
             value={filters.managementType}
-            onChange={(event) => update("managementType", event.target.value)}
-          >
-            <option value="ALL">전체 관리 유형</option>
-            {options.managementTypes.map((value) => (
-              <option key={value} value={value}>{value}</option>
-            ))}
-          </select>
+            onChange={(value) => update("managementType", value)}
+            options={[
+              { value: "ALL", label: "전체 관리 유형" },
+              ...options.managementTypes.map((value) => ({ value, label: value })),
+            ]}
+          />
         </label>
         <label>
           처리 담당자
-          <select
+          <FormSelect
             value={filters.assignee}
-            onChange={(event) => update("assignee", event.target.value)}
-          >
-            <option value="ALL">전체 담당자</option>
-            {options.assignees.map((value) => (
-              <option key={value} value={value}>{value}</option>
-            ))}
-          </select>
+            onChange={(value) => update("assignee", value)}
+            options={[
+              { value: "ALL", label: "전체 담당자" },
+              ...options.assignees.map((value) => ({ value, label: value })),
+            ]}
+          />
         </label>
         <label>
           증상 유형
-          <select
+          <FormSelect
             value={filters.symptom}
-            onChange={(event) => update("symptom", event.target.value)}
-          >
-            <option value="ALL">전체 증상</option>
-            {options.symptoms.map((value) => (
-              <option key={value} value={value}>{value}</option>
-            ))}
-          </select>
+            onChange={(value) => update("symptom", value)}
+            options={[
+              { value: "ALL", label: "전체 증상" },
+              ...options.symptoms.map((value) => ({ value, label: value })),
+            ]}
+          />
         </label>
         <label>
           위험도
-          <select
+          <FormSelect
             value={filters.risk}
-            onChange={(event) =>
-              update("risk", event.target.value as "ALL" | CounselorRisk)
+            onChange={(value) =>
+              update("risk", value as "ALL" | CounselorRisk)
             }
-          >
-            <option value="ALL">전체 위험도</option>
-            <option value="DANGER">긴급</option>
-            <option value="CAUTION">주의</option>
-            <option value="GENERAL">일반</option>
-            <option value="UNKNOWN">미확인</option>
-          </select>
+            options={[
+              { value: "ALL", label: "전체 위험도" },
+              { value: "DANGER", label: "긴급" },
+              { value: "CAUTION", label: "주의" },
+              { value: "GENERAL", label: "일반" },
+              { value: "UNKNOWN", label: "미확인" },
+            ]}
+          />
         </label>
         <label>
           문의 상태
-          <select
+          <FormSelect
             value={filters.status}
-            onChange={(event) =>
-              update("status", event.target.value as "ALL" | CounselorStatus)
+            onChange={(value) =>
+              update("status", value as "ALL" | CounselorStatus)
             }
-          >
-            <option value="ALL">전체 상태</option>
-            {FILTERABLE_STATUSES.map(([value, label]) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
+            options={[
+              { value: "ALL", label: "전체 상태" },
+              ...FILTERABLE_STATUSES.map(([value, label]) => ({ value, label })),
+            ]}
+          />
         </label>
         <label>
           처리 결과
-          <select
+          <FormSelect
             value={filters.result}
-            onChange={(event) =>
-              update("result", event.target.value as OperationsFilters["result"])
+            onChange={(value) =>
+              update("result", value as OperationsFilters["result"])
             }
-          >
-            <option value="ALL">전체 처리 결과</option>
-            <option value="RESOLVED">처리 완료</option>
-            <option value="IN_PROGRESS">처리 중</option>
-          </select>
+            options={[
+              { value: "ALL", label: "전체 처리 결과" },
+              { value: "RESOLVED", label: "처리 완료" },
+              { value: "IN_PROGRESS", label: "처리 중" },
+            ]}
+          />
         </label>
       </div>
 

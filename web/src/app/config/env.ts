@@ -54,11 +54,16 @@ export function readApiBaseUrl(value: string | undefined): string {
 const isDesignPreview = import.meta.env.DEV && import.meta.env.MODE === "design";
 
 export const appEnv = {
-  apiBaseUrl: readApiBaseUrl(import.meta.env.VITE_API_BASE_URL),
+  isDesignPreview,
+  // 디자인 미리보기는 같은 출처의 Vite 샘플 API만 사용한다. 로컬 환경변수에
+  // 운영 주소가 있어도 실제 고객 데이터나 상태 변경 요청을 보내지 않는다.
+  apiBaseUrl: isDesignPreview
+    ? "/api/v1"
+    : readApiBaseUrl(import.meta.env.VITE_API_BASE_URL),
   // 로컬 개발·Test에서는 명시값이 없을 때만 Mock을 허용한다.
   // Production Build는 환경변수 누락을 Mock 전환으로 해석하지 않는다.
   useMockApi:
-    isDesignPreview ||
+    !isDesignPreview &&
     readBoolean(import.meta.env.VITE_USE_MOCK_API, import.meta.env.DEV),
   mockAuthenticated:
     isDesignPreview ||
@@ -66,15 +71,14 @@ export const appEnv = {
   mockRole: isDesignPreview
     ? "CONSULTANT"
     : readRole(import.meta.env.VITE_MOCK_ROLE),
-  // 일반 개발 Mock은 실제 CONS-04 Backend 응답과 같은 화면 밀도를 사용한다.
-  // 디자인 모드는 DB와 분리된 다건·상태 전환 시나리오를 사용한다.
+  // 디자인 모드도 배포용 REMOTE 화면을 사용하며 데이터만 Vite에서 공급한다.
+  // 이 데이터셋 설정은 기존 Mock 테스트/개발 경로에서만 사용한다.
   mockDataset: isDesignPreview
-    ? "DESIGN_SCENARIOS"
+    ? "REMOTE_PARITY"
     : readMockDataset(import.meta.env.VITE_MOCK_DATASET),
   // Backend가 비어 있거나 일부 업무함만 있을 때 디자인용 다건 Mock으로
   // 자동 전환할지 선택한다. 실제 API/E2E에서는 반드시 false로 둔다.
-  enableDesignMockFallback: readBoolean(
-    import.meta.env.VITE_ENABLE_DESIGN_MOCK_FALLBACK,
-    false,
-  ),
+  enableDesignMockFallback:
+    !isDesignPreview &&
+    readBoolean(import.meta.env.VITE_ENABLE_DESIGN_MOCK_FALLBACK, false),
 } as const;

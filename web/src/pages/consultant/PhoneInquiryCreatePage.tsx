@@ -6,14 +6,19 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { appEnv } from "../../app/config/env";
 import { createInquiryDetailPath } from "../../app/router/routePaths";
 import { ApiClientError } from "../../common/api/apiError";
 import { IdempotencyOperationTracker } from "../../common/api/idempotencyOperation";
 import { createRequestContext } from "../../common/api/requestContext";
+import FormSelect from "../../common/components/form/FormSelect";
 import { parseInquiryId } from "../../entities/inquiry/inquiryIdentifiers";
+import {
+  CONSULTANT_COMPLETED_LIST_PATH,
+  createConsultantCompletionState,
+} from "../../features/consultation/model/consultantCompletionNavigation";
 import type {
   ConsultantInquiryListQuery,
   ConsultantInquiryStatusDto,
@@ -131,6 +136,7 @@ function candidateOptionId(subscriptionId: string): string {
 }
 
 export default function PhoneInquiryCreatePage() {
+  const navigate = useNavigate();
   const sidebarRepositoryQuery = useMemo<ConsultantInquiryListQuery>(
     () => ({
       status: [
@@ -314,6 +320,9 @@ export default function PhoneInquiryCreatePage() {
       operationTrackerRef.current.finish();
       setRegisteredInquiry(result.data);
       sidebarQuery.retry();
+      navigate(CONSULTANT_COMPLETED_LIST_PATH, {
+        state: createConsultantCompletionState("PHONE_REGISTERED", result.data.inquiry_id, result.data.status_code),
+      });
     } catch (error) {
       const retryable =
         error instanceof ApiClientError &&
@@ -497,23 +506,18 @@ export default function PhoneInquiryCreatePage() {
 
                 <label>
                   <span>대표 증상 *</span>
-                  <span className="phone-inquiry-select-control">
-                    <select
-                      required
-                      value={form.symptomCode}
-                      onChange={(event) =>
-                        updateForm("symptomCode", event.target.value as PhoneInquirySymptomCode | "")
-                      }
-                    >
-                      <option value="">대표 증상을 선택해 주세요</option>
-                      {(Object.entries(SYMPTOM_LABELS) as readonly [PhoneInquirySymptomCode, string][]).map(
-                        ([code, label]) => <option key={code} value={code}>{label}</option>,
-                      )}
-                    </select>
-                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
-                      <path d="m7 9.5 5 5 5-5" />
-                    </svg>
-                  </span>
+                  <FormSelect
+                    required
+                    disabled={!selectedCandidate || isSubmitting}
+                    value={form.symptomCode}
+                    onChange={(value) =>
+                      updateForm("symptomCode", value as PhoneInquirySymptomCode | "")
+                    }
+                    options={[
+                      { value: "", label: "대표 증상을 선택해 주세요" },
+                      ...Object.entries(SYMPTOM_LABELS).map(([value, label]) => ({ value, label })),
+                    ]}
+                  />
                 </label>
 
                 <label className="phone-inquiry-field--wide">

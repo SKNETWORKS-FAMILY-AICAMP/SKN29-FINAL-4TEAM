@@ -51,7 +51,9 @@ describe("ConsultantNoticePage", () => {
       "aria-selected",
       "true",
     );
-    expect(screen.getAllByRole("tab").at(-1)).toHaveAccessibleName("공지사항");
+    expect(screen.getByRole("tab", { name: "직원 연락처" })).toBeVisible();
+    expect(panel).toHaveClass("consultant-directory-panel");
+    expect(panel.closest(".consultant-directory-app")).not.toBeNull();
   });
 
   it("분류와 검색어로 필요한 공지만 찾을 수 있다", async () => {

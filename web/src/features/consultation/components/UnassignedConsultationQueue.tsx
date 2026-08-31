@@ -15,7 +15,9 @@ import {
 } from "../repositories/consultationWriteRepository";
 import "./UnassignedConsultationQueue.css";
 
-const PAGE_SIZE = 3;
+// The queue API supports up to 100; use its standard page size so counselors
+// can scan the waiting list without paging after every three inquiries.
+const PAGE_SIZE = 20;
 const defaultWriteRepository = createRemoteConsultationWriteRepository();
 
 const RISK_LABELS = {
@@ -134,7 +136,8 @@ export default function UnassignedConsultationQueue({
     dataRepository,
   );
   const total = queueQuery.data?.pageInfo.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const responsePageSize = queueQuery.data?.pageInfo.size ?? PAGE_SIZE;
+  const totalPages = Math.max(1, Math.ceil(total / responsePageSize));
 
   const refreshQueueAfterClaim = (itemMayBeGone: boolean) => {
     if (
@@ -241,98 +244,99 @@ export default function UnassignedConsultationQueue({
         </p>
       )}
 
-      {queueQuery.status === "loading" ? (
-        <p className="unassigned-consultation-queue__state" role="status">
-          미배정 상담을 불러오고 있습니다.
-        </p>
-      ) : queueQuery.status === "error" ? (
-        <div className="unassigned-consultation-queue__state" role="alert">
-          <span>{getQueueErrorMessage(queueQuery.error)}</span>
-          {queueQuery.correlationId && (
-            <small>확인 번호: {queueQuery.correlationId}</small>
-          )}
-          <button type="button" onClick={queueQuery.retry}>
-            다시 불러오기
-          </button>
-        </div>
-      ) : queueQuery.data?.items.length ? (
-        <div className="unassigned-consultation-queue__items">
-          {queueQuery.data.items.map((inquiry) => {
-            const isClaiming = claimingInquiryId === inquiry.inquiryId;
-            return (
-              <article
-                className={`unassigned-consultation-card is-${inquiry.riskLevel}`}
-                key={inquiry.inquiryId}
-                data-testid={`unassigned-consultation-${inquiry.inquiryId}`}
-              >
-                <button
-                  type="button"
-                  className="unassigned-consultation-card__body"
-                  aria-label={`${inquiry.symptomSummary} 문의 미리보기`}
-                  onClick={() => setPreviewInquiry(inquiry)}
+      <div className="unassigned-consultation-queue__content">
+        {queueQuery.status === "loading" ? (
+          <p className="unassigned-consultation-queue__state" role="status">
+            미배정 상담을 불러오고 있습니다.
+          </p>
+        ) : queueQuery.status === "error" ? (
+          <div className="unassigned-consultation-queue__state" role="alert">
+            <span>{getQueueErrorMessage(queueQuery.error)}</span>
+            {queueQuery.correlationId && (
+              <small>확인 번호: {queueQuery.correlationId}</small>
+            )}
+            <button type="button" onClick={queueQuery.retry}>
+              다시 불러오기
+            </button>
+          </div>
+        ) : queueQuery.data?.items.length ? (
+          <div className="unassigned-consultation-queue__items">
+            {queueQuery.data.items.map((inquiry) => {
+              const isClaiming = claimingInquiryId === inquiry.inquiryId;
+              return (
+                <article
+                  className={`unassigned-consultation-card is-${inquiry.riskLevel}`}
+                  key={inquiry.inquiryId}
+                  data-testid={`unassigned-consultation-${inquiry.inquiryId}`}
                 >
-                  <span className="unassigned-consultation-card__meta">
-                    <span>{RISK_LABELS[inquiry.riskLevel]}</span>
-                    <span>{inquiry.priority}</span>
-                    <span>{formatWaitingTime(inquiry.waitingSeconds)}</span>
-                  </span>
-                  <strong>{inquiry.symptomSummary}</strong>
-                  <span className="unassigned-consultation-card__customer">
-                    {inquiry.customerDisplayNameMasked} ·{" "}
-                    {formatProductModelAndName(inquiry.productModel)}
-                  </span>
-                </button>
-                {canClaim(inquiry) ? (
                   <button
-                    className="unassigned-consultation-card__claim"
                     type="button"
-                    disabled={claimingInquiryId !== null}
-                    aria-label={`${inquiry.customerDisplayNameMasked} ${inquiry.symptomSummary} 상담 시작`}
-                    onClick={() => void handleClaim(inquiry)}
+                    className="unassigned-consultation-card__body"
+                    aria-label={`${inquiry.symptomSummary} 문의 미리보기`}
+                    onClick={() => setPreviewInquiry(inquiry)}
                   >
-                    {isClaiming ? "시작하는 중" : "상담 시작"}
+                    <span className="unassigned-consultation-card__meta">
+                      <span className="unassigned-consultation-card__risk">
+                        {RISK_LABELS[inquiry.riskLevel]}
+                      </span>
+                      <span>{formatWaitingTime(inquiry.waitingSeconds)}</span>
+                    </span>
+                    <strong>{inquiry.symptomSummary}</strong>
                   </button>
-                ) : (
-                  <span className="unassigned-consultation-card__unavailable">
-                    현재 배정할 수 없음
-                  </span>
-                )}
-              </article>
-            );
-          })}
-        </div>
-      ) : (
-        <p className="unassigned-consultation-queue__state">
-          현재 기다리는 미배정 상담이 없습니다.
-        </p>
-      )}
+                  {canClaim(inquiry) ? (
+                    <button
+                      className="unassigned-consultation-card__claim"
+                      type="button"
+                      disabled={claimingInquiryId !== null}
+                      aria-label={`${inquiry.symptomSummary} 상담 시작`}
+                      onClick={() => void handleClaim(inquiry)}
+                    >
+                      {isClaiming ? "시작하는 중" : "상담 시작"}
+                    </button>
+                  ) : (
+                    <span className="unassigned-consultation-card__unavailable">
+                      현재 배정할 수 없음
+                    </span>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="unassigned-consultation-queue__state">
+            현재 기다리는 미배정 상담이 없습니다.
+          </p>
+        )}
+      </div>
 
-      {queueQuery.status === "success" && totalPages > 1 && (
+      {queueQuery.status === "success" && (
         <nav
           className="unassigned-consultation-queue__pagination"
           aria-label="미배정 상담 페이지"
         >
-          <button
-            type="button"
-            aria-label="미배정 이전 페이지"
-            disabled={page <= 1}
-            onClick={() => setPage((current) => Math.max(1, current - 1))}
-          >
-            이전
-          </button>
-          <span>
-            {page} / {totalPages}
+          <span className="unassigned-consultation-queue__page-summary">
+            총 {total}건 · {page}/{totalPages}페이지
           </span>
-          <button
-            type="button"
-            aria-label="미배정 다음 페이지"
-            disabled={page >= totalPages}
-            onClick={() =>
-              setPage((current) => Math.min(totalPages, current + 1))
-            }
-          >
-            다음
-          </button>
+          <div className="unassigned-consultation-queue__page-controls">
+            <button
+              type="button"
+              aria-label="미배정 이전 페이지"
+              disabled={page <= 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              이전
+            </button>
+            <button
+              type="button"
+              aria-label="미배정 다음 페이지"
+              disabled={page >= totalPages}
+              onClick={() =>
+                setPage((current) => Math.min(totalPages, current + 1))
+              }
+            >
+              다음
+            </button>
+          </div>
         </nav>
       )}
 
@@ -369,10 +373,6 @@ export default function UnassignedConsultationQueue({
               <div>
                 <dt>긴급도</dt>
                 <dd>{RISK_LABELS[previewInquiry.riskLevel]}</dd>
-              </div>
-              <div>
-                <dt>우선순위</dt>
-                <dd>{previewInquiry.priority}</dd>
               </div>
               <div>
                 <dt>대기 시간</dt>
