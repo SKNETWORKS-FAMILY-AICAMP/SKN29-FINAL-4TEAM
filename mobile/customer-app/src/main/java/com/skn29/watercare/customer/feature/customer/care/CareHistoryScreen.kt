@@ -39,11 +39,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.CareHistoryItemDto
 import com.skn29.watercare.core.model.CustomerSelfCareType
-import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.customer.home.CustomerBottomTab
 import com.skn29.watercare.customer.feature.customer.home.CustomerCleanBottomBar
+import com.skn29.watercare.customer.feature.shared.CustomerEmptyState
+import com.skn29.watercare.customer.feature.shared.CustomerErrorState
+import com.skn29.watercare.customer.feature.shared.CustomerInitialLoadingState
 import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 
@@ -71,6 +73,9 @@ fun CareHistoryScreen(
         viewModel.state
             .collectAsStateWithLifecycle()
 
+    // 케어 이력은 방문 처리나 상담 처리 후
+    // 서버에서 변경될 수 있으므로 화면으로 돌아올 때 재조회한다.
+    // Pull-to-refresh와 같은 load()를 사용해 상태 기준을 하나로 유지한다.
     LifecycleEventEffect(
         Lifecycle.Event.ON_RESUME
     ) {
@@ -196,8 +201,19 @@ fun CareHistoryContent(
             )
         },
 ) {
-        if (state.loadingSubscriptions) {
-            // Visible loading UI intentionally hidden.
+        if (
+            state.loadingSubscriptions &&
+            state.subscriptions.isEmpty()
+        ) {
+            // 최초 정수기 목록을 받기 전에는
+            // 빈 케어 화면 대신 로딩 상태를 보여준다.
+            // 기존 목록이 있는 새로고침은 Pull indicator만 사용한다.
+            CustomerInitialLoadingState(
+                title =
+                    "케어 정보를 확인하고 있어요",
+                message =
+                    "관리할 정수기와 케어 이력을 불러오고 있어요.",
+            )
         }
 
         state.errorMessage?.let { message ->
@@ -207,7 +223,18 @@ fun CareHistoryContent(
                     state.errorKind ==
                     CareHistoryErrorKind.SERVER
 
-            ErrorCard(
+            // Network / Server 장애는 다시 시도할 수 있고,
+            // 사용자 입력 문제와 구분해 복구 행동을 보여준다.
+            CustomerErrorState(
+                title =
+                    if (
+                        state.errorKind ==
+                            CareHistoryErrorKind.NETWORK
+                    ) {
+                        "인터넷 연결을 확인해주세요"
+                    } else {
+                        "케어 정보를 확인하지 못했어요"
+                    },
                 message = message,
                 onRetry =
                     if (retryable) {
@@ -228,11 +255,16 @@ fun CareHistoryContent(
             !state.loadingSubscriptions &&
             state.subscriptions.isEmpty()
         ) {
-            SectionCard("케어 이력") {
-                Text(
-                    "현재 고객 본인 명의의 관리 가능한 정수기가 없습니다."
-                )
-            }
+            // API 요청은 성공했지만 관리 가능한 제품이 없는 정상 Empty 상태.
+            CustomerEmptyState(
+                title =
+                    "관리할 정수기가 없어요",
+                message =
+                    "현재 고객 본인 명의의 관리 가능한 정수기가 없어요.",
+                actionLabel =
+                    "다시 확인",
+                onAction = onRetry,
+            )
             return@WaterCareScreen
         }
 
@@ -400,7 +432,16 @@ fun CareHistoryContent(
 
             SectionCard("완료된 케어 이력") {
                 if (state.loadingHistory) {
-                    // Visible loading UI intentionally hidden.
+                    // 정수기 목록은 이미 보이는 상태이므로
+                    // 전체 화면을 다시 로딩으로 덮지 않는다.
+                    Text(
+                        "케어 이력을 확인하고 있어요.",
+                        style =
+                            MaterialTheme.typography.bodyMedium,
+                        color =
+                            MaterialTheme.colorScheme
+                                .onSurfaceVariant,
+                    )
                 } else if (
                     state.items.isEmpty()
                 ) {

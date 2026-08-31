@@ -23,9 +23,10 @@ import androidx.compose.ui.unit.sp
 import com.skn29.watercare.core.model.CustomerInquiryQuestion
 import com.skn29.watercare.core.model.InquiryActionLabels
 import com.skn29.watercare.core.model.InquiryLabels
-import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
+import com.skn29.watercare.customer.feature.shared.CustomerErrorState
+import com.skn29.watercare.customer.feature.shared.CustomerSubmittingState
 import com.skn29.watercare.customer.feature.shared.SectionCard
 
 @Composable
@@ -84,7 +85,14 @@ fun FollowUpQuestionsSection(
                 onSelectOption = onSelectOption,
                 onSubmit = onSubmit,
             )
-            // Visible loading UI intentionally hidden.
+
+            // 답변 전송 중에는 Form을 유지하되
+            // 입력과 버튼은 disabled해 중복 제출을 막고,
+            // 사용자에게는 현재 서버로 전송 중임을 알린다.
+            CustomerSubmittingState(
+                message =
+                    "작성한 답변을 전송하고 있어요.",
+            )
         }
 
         is FollowUpUiState.Success -> {
@@ -177,9 +185,20 @@ fun FollowUpQuestionsSection(
         }
 
         is FollowUpUiState.Error -> {
-            ErrorCard(
-                "추가 질문을 확인하는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.",
-                if (state.retryable && state.questions.isEmpty()) onReload else null,
+            CustomerErrorState(
+                title =
+                    "추가 질문을 확인하지 못했어요",
+                message =
+                    "작성한 답변은 유지했어요. 잠시 후 다시 확인해주세요.",
+                onRetry =
+                    if (
+                        state.retryable &&
+                        state.questions.isEmpty()
+                    ) {
+                        onReload
+                    } else {
+                        null
+                    },
             )
             if (state.snapshot != null && state.questions.isNotEmpty()) {
                 Column(modifier = Modifier.testTag("followUpError")) {

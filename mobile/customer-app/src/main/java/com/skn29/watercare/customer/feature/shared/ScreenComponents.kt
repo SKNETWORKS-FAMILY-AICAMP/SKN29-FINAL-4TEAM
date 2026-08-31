@@ -195,6 +195,111 @@ fun CustomerInitialLoadingState(
     }
 }
 
+/**
+ * 정상적으로 조회했지만 보여줄 데이터가 없을 때 사용한다.
+ *
+ * Error와 Empty를 구분하는 것이 중요하다.
+ * Empty는 "서버가 고장 남"이 아니라
+ * "요청은 성공했지만 현재 데이터가 없음"을 의미한다.
+ */
+@Composable
+fun CustomerEmptyState(
+    title: String,
+    message: String,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+) {
+    SectionCard(title) {
+        Text(
+            text = message,
+            style =
+                MaterialTheme.typography.bodyMedium,
+            color =
+                MaterialTheme.colorScheme
+                    .onSurfaceVariant,
+        )
+
+        if (
+            actionLabel != null &&
+            onAction != null
+        ) {
+            LiquidGlassButton(
+                text = actionLabel,
+                onClick = onAction,
+                accent = false,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+/**
+ * API 호출이 실패했을 때 사용자에게
+ * "무엇을 할 수 있는지"까지 알려주는 공통 Error UI.
+ *
+ * 단순히 exception message를 노출하지 않고,
+ * 사용자가 이해할 수 있는 문구와 Retry action을 보여준다.
+ */
+@Composable
+fun CustomerErrorState(
+    title: String =
+        "정보를 불러오지 못했어요",
+    message: String,
+    retryLabel: String =
+        "다시 시도",
+    onRetry: (() -> Unit)? = null,
+) {
+    SectionCard(title) {
+        Text(
+            text = message,
+            style =
+                MaterialTheme.typography.bodyMedium,
+            color =
+                MaterialTheme.colorScheme
+                    .onSurfaceVariant,
+        )
+
+        if (onRetry != null) {
+            LiquidGlassButton(
+                text = retryLabel,
+                onClick = onRetry,
+                accent = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+/**
+ * 사용자가 Submit/Save를 누른 후
+ * 서버 응답을 기다리는 상태.
+ *
+ * 버튼만 disabled하면 앱이 멈춘 것처럼 보일 수 있어
+ * 진행 중임을 명시적으로 보여준다.
+ * 동시에 기존 enabled=false 로직은 유지해
+ * 중복 요청을 방지한다.
+ */
+@Composable
+fun CustomerSubmittingState(
+    message: String,
+) {
+    SectionCard(
+        title =
+            "처리하고 있어요",
+    ) {
+        CircularProgressIndicator()
+
+        Text(
+            text = message,
+            style =
+                MaterialTheme.typography.bodyMedium,
+            color =
+                MaterialTheme.colorScheme
+                    .onSurfaceVariant,
+        )
+    }
+}
+
 @Composable
 fun ProductInfoCard(
     product: ProductSummary,
