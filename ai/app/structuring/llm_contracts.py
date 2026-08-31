@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field as dataclass_field
 from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -42,6 +42,22 @@ class SymptomEvidenceClaim(BaseModel):
     evidence_quote: str = Field(min_length=1, max_length=500)
 
 
+class SafetySignals(BaseModel):
+    """LLM이 추출하되 정책 판단에는 사용하지 않는 내부 안전 의미 feature."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    electrical_component_damage: bool = False
+    exposed_wire: bool = False
+    water_near_electrical_part: bool = False
+    smoke_or_burn: bool = False
+    shock_or_spark: bool = False
+
+    @property
+    def requires_danger_policy(self) -> bool:
+        return any(self.model_dump().values())
+
+
 class SymptomStructuringResult(BaseModel):
     """Provider 전용 결과이며 외부 DTO는 StructuredSymptom으로 유지한다."""
 
@@ -49,6 +65,7 @@ class SymptomStructuringResult(BaseModel):
 
     structured_symptom: StructuredSymptom
     evidence_claims: list[SymptomEvidenceClaim] = Field(max_length=60)
+    safety_signals: SafetySignals = Field(default_factory=SafetySignals)
 
 
 class LLMUsageMetadata(Protocol):
@@ -72,6 +89,7 @@ class SymptomStructuringLLMResponse:
     usage: LLMUsageMetadata
     latency_ms: float
     evidence_claims: tuple[SymptomEvidenceClaim, ...] = ()
+    safety_signals: SafetySignals = dataclass_field(default_factory=SafetySignals)
 
 
 class SymptomStructuringLLMClient(Protocol):

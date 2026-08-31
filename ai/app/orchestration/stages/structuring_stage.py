@@ -16,7 +16,8 @@ def execute_structuring_stage(
     """고객 입력 증상을 표준 항목으로 구조화"""
     start_time = time.perf_counter()
 
-    ctx.structured_symptom = SymptomStructurer(llm_client=llm_client).structure(
+    structurer = SymptomStructurer(llm_client=llm_client)
+    ctx.structured_symptom = structurer.structure(
         raw_text=ctx.raw_symptom,
         selected_symptoms=ctx.selected_symptoms,
         previous_answers=ctx.previous_answers,
@@ -24,6 +25,7 @@ def execute_structuring_stage(
         model_code=ctx.model_code,
         timeout_seconds=timeout_seconds,
     )
+    ctx.safety_signals = structurer.last_safety_signals
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(

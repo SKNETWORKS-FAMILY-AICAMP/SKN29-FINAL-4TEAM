@@ -8,11 +8,7 @@ from ...structuring.llm_contracts import (
     FollowUpWordingLLMClient,
     SymptomStructuringLLMClient,
 )
-from ...retrieval import (
-    EvidenceApplicabilityGate,
-    RetrievalConfigurationError,
-    RetrievalOutcome,
-)
+from ...retrieval import RetrievalConfigurationError, RetrievalOutcome
 from ...schemas import RiskLevel
 from ..agents import (
     AgentRole,
@@ -24,6 +20,7 @@ from ..agents import (
 )
 from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
+from ..clarification_policy import should_wait_for_customer_input
 
 
 class MultiAgentPipeline:
@@ -73,20 +70,7 @@ class MultiAgentPipeline:
         if symptom_output.safety_assessment.risk_level == RiskLevel.DANGER:
             shared.handoff(AgentRole.CARE_DECISION, HandoffReason.DANGER_PRIORITY)
             care_agent.run(ctx)
-        elif symptom_output.clarification_needed:
-            shared.awaiting_customer_input = True
-            shared.handoff(
-                AgentRole.CARE_DECISION,
-                HandoffReason.CUSTOMER_INPUT_PENDING,
-            )
-            care_agent.run(ctx, awaiting_customer_input=True)
-        elif EvidenceApplicabilityGate().requires_more_information(
-            symptom_type=symptom_output.structured_symptom.symptom_type,
-            missing_field_names=(
-                item.field_name for item in symptom_output.missing_fields
-            ),
-            previous_answers=ctx.previous_answers,
-        ):
+        elif should_wait_for_customer_input(ctx):
             shared.awaiting_customer_input = True
             shared.handoff(
                 AgentRole.CARE_DECISION,

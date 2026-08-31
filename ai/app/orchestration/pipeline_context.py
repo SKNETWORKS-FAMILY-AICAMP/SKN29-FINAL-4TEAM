@@ -14,6 +14,7 @@ from ..schemas import (
     TraceContext,
     UsageGuidance,
 )
+from ..structuring.llm_contracts import SafetySignals
 
 
 class PipelineContext(BaseModel):
@@ -26,6 +27,10 @@ class PipelineContext(BaseModel):
 
     # 중간 실행 결과
     structured_symptom: Optional[StructuredSymptom] = Field(None, description="구조화 증상")
+    safety_signals: SafetySignals = Field(
+        default_factory=SafetySignals,
+        description="내부 semantic layer가 추출한 안전 feature",
+    )
     missing_fields: List[MissingField] = Field(default_factory=list, description="추가 확인이 필요한 누락 필드")
     followup_questions: List[FollowUpQuestion] = Field(default_factory=list, description="안전한 추가 질문")
     safety_assessment: Optional[SafetyAssessment] = Field(None, description="안전/위험도 평가 결과")
@@ -43,6 +48,14 @@ class PipelineContext(BaseModel):
     awaiting_customer_input: bool = Field(
         False,
         description="Runtime이 근거 적용·NO_EVIDENCE 확정 전에 추가 질문 답변을 기다리는 내부 상태",
+    )
+    retrieval_query_text: Optional[str] = Field(
+        None,
+        description="PII 제거 후 구조화 문맥을 결합한 내부 검색 질의",
+    )
+    evidence_selection_reasons: List[str] = Field(
+        default_factory=list,
+        description="고객 원문을 제외한 scenario 근거 선택 내부 trace",
     )
 
     # 메타데이터 및 지연 추적

@@ -5,6 +5,7 @@ from typing import List, Optional
 from ..schemas import RiskLevel, SafetyAssessment
 from .rule_precedence import select_effective_safety_rule
 from .rule_loader import SafetyRuleLoader
+from ..structuring.llm_contracts import SafetySignals
 
 
 class RiskClassifier:
@@ -29,7 +30,12 @@ class RiskClassifier:
         self.loader = rule_loader or SafetyRuleLoader()
         self.rules_config = self.loader.get_safety_rules().get("rules", {})
 
-    def classify(self, raw_text: str, selected_symptoms: Optional[List[str]] = None) -> SafetyAssessment:
+    def classify(
+        self,
+        raw_text: str,
+        selected_symptoms: Optional[List[str]] = None,
+        safety_signals: SafetySignals | None = None,
+    ) -> SafetyAssessment:
         """자연어 증상 및 대표 선택 증상을 분석하여 위험도 판정"""
         leak_is_explicitly_negated = any(
             re.search(pattern, raw_text)
@@ -52,6 +58,26 @@ class RiskClassifier:
         highest_priority = "general_guidance"
         requires_consultation = False
         reasons = []
+
+        signals = safety_signals or SafetySignals()
+        if signals.water_near_electrical_part:
+            matched_rule_ids.append("SAFETY-LEAK-001")
+            detected_risks.append("전기 부품 주변 누수")
+            reasons.append("[Semantic Safety] 전기 부품 주변 물기 감지")
+        electrical_features = (
+            signals.electrical_component_damage
+            or signals.exposed_wire
+            or signals.smoke_or_burn
+            or signals.shock_or_spark
+        )
+        if electrical_features:
+            matched_rule_ids.append("SAFETY-ELECTRICAL-001")
+            detected_risks.append("전기 부품 손상·노출 위험")
+            reasons.append("[Semantic Safety] 전기 부품 손상 또는 노출 감지")
+        if signals.requires_danger_policy:
+            highest_risk = RiskLevel.DANGER
+            highest_priority = "priority_consultation"
+            requires_consultation = True
 
         # 명시적 위험 규칙 탐색
         for rule_key, rule_def in self.rules_config.items():

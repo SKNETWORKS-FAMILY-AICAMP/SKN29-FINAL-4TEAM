@@ -7,6 +7,7 @@ from ...common.timeout import CancellationToken, PipelineCancelledError
 from ...retrieval import (
     EvidenceApplicabilityGate,
     EvidenceTopicFilter,
+    ScenarioEvidenceSelector,
     RetrievalConfigurationError,
     RetrievalExecutionError,
     RetrievalOutcome,
@@ -17,6 +18,7 @@ from ...retrieval.search.vector_search import VectorSearchService
 from ...schemas import AiStage, EvidenceReference, ProcessingTrace
 from ..harness.product_registry import resolve_product_generation
 from ..pipeline_context import PipelineContext
+from ...retrieval.query.context_builder import RetrievalContextBuilder
 
 
 def execute_retrieval_stage(
@@ -32,8 +34,12 @@ def execute_retrieval_stage(
     # reject them without rewriting customer-provided identity.
     product_generation = resolve_product_generation(ctx.model_code) or "D"
 
+    ctx.retrieval_query_text = RetrievalContextBuilder().build(
+        raw_symptom=ctx.raw_symptom,
+        structured_symptom=ctx.structured_symptom,
+    )
     query = RetrievalQuery(
-        query_text=ctx.raw_symptom,
+        query_text=ctx.retrieval_query_text,
         model_code=ctx.model_code,
         product_generation=product_generation,
         top_k=5,
@@ -83,6 +89,14 @@ def execute_retrieval_stage(
                 symptom_type=symptom_type,
                 applicability=ctx.evidence_applicability,
             )
+            selection = ScenarioEvidenceSelector().select_chunks(
+                chunks,
+                structured_symptom=ctx.structured_symptom,
+                raw_symptom=ctx.raw_symptom,
+                applicability=ctx.evidence_applicability,
+            )
+            chunks = list(selection.chunks)
+            ctx.evidence_selection_reasons = list(selection.reasons)
 
             # RetrievedChunk -> EvidenceReference 변환
             evidence_list = []

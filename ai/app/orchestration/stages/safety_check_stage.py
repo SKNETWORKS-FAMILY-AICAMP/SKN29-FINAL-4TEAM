@@ -11,7 +11,11 @@ def execute_safety_check_stage(ctx: PipelineContext) -> None:
     start_time = time.perf_counter()
 
     classifier = RiskClassifier()
-    ctx.safety_assessment = classifier.classify(ctx.raw_symptom, ctx.selected_symptoms)
+    ctx.safety_assessment = classifier.classify(
+        ctx.raw_symptom,
+        ctx.selected_symptoms,
+        ctx.safety_signals,
+    )
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(

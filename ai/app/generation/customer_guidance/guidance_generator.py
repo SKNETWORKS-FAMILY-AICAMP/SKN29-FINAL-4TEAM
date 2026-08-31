@@ -16,7 +16,7 @@ from ...integrations.llm import (
 )
 from ...integrations.llm.token_usage import log_llm_usage
 from ...schemas import ModelMetadata, UsageGuidance
-from ...validation.safety import UsageGuidanceValidator
+from ...validation.safety import GuidanceMessageGuard, UsageGuidanceValidator
 from .models import GuidanceGenerationRequest
 from .prompt_identity import PROMPT_VERSION
 
@@ -130,6 +130,10 @@ class CustomerGuidanceGenerator:
                 retryable=False,
             )
         try:
+            GuidanceMessageGuard().validate_grounding(
+                candidate.message,
+                grounding_texts=request.evidence_summaries,
+            )
             accepted_guidance = UsageGuidanceValidator().validate(
                 ctx.safety_assessment,
                 candidate,
@@ -179,18 +183,29 @@ class CustomerGuidanceGenerator:
             values = [
                 symptom_type,
                 target_water_type,
+                symptom.occurrence_time,
+                symptom.occurrence_condition,
                 symptom.error_code,
                 (
                     ctx.evidence_applicability.provider_label
                     if ctx.evidence_applicability is not None
                     else None
                 ),
+                *symptom.accompanying_symptoms,
+                *symptom.actions_taken,
             ]
-        symptom_summary = " | ".join(
-            CustomerGuidanceGenerator._redact_provider_text(value)
-            for value in values
-            if value
-        )
+        sanitized_values: list[str] = []
+        seen_values: set[str] = set()
+        for value in values:
+            if not value:
+                continue
+            sanitized = CustomerGuidanceGenerator._redact_provider_text(value)
+            normalized = " ".join(sanitized.split()).casefold()
+            if not sanitized or normalized in seen_values:
+                continue
+            seen_values.add(normalized)
+            sanitized_values.append(sanitized)
+        symptom_summary = " | ".join(sanitized_values)
         if not symptom_summary:
             symptom_summary = "기타 증상"
         sanitized_model_code = CustomerGuidanceGenerator._redact_provider_text(

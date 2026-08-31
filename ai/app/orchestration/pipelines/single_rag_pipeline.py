@@ -10,7 +10,7 @@ from ...structuring.llm_contracts import (
     FollowUpWordingLLMClient,
     SymptomStructuringLLMClient,
 )
-from ...retrieval import EvidenceApplicabilityGate, RetrievalConfigurationError
+from ...retrieval import RetrievalConfigurationError
 from ...schemas import AiStage
 from ..stages import (
     execute_generation_stage,
@@ -21,6 +21,7 @@ from ..stages import (
     execute_structuring_stage,
     execute_validation_stage,
 )
+from ..clarification_policy import should_wait_for_customer_input
 
 
 class SingleRAGPipeline:
@@ -113,17 +114,11 @@ class SingleRAGPipeline:
 
     @staticmethod
     def _route_after_missing_fields(state):
-        ctx = state["ctx"]
-        requires_more_information = EvidenceApplicabilityGate().requires_more_information(
-            symptom_type=(
-                ctx.structured_symptom.symptom_type
-                if ctx.structured_symptom is not None
-                else None
-            ),
-            missing_field_names=(item.field_name for item in ctx.missing_fields),
-            previous_answers=ctx.previous_answers,
+        return (
+            "questionnaire_pending"
+            if should_wait_for_customer_input(state["ctx"])
+            else "retrieval"
         )
-        return "questionnaire_pending" if requires_more_information else "retrieval"
 
     def _questionnaire_pending(self, state):
         self._run_stage(

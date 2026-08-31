@@ -131,6 +131,7 @@ class OpenAIResponsesSymptomStructuringClient(_TaskConfiguredResponsesClient):
         return SymptomStructuringLLMResponse(
             output=result.structured_symptom,
             evidence_claims=tuple(result.evidence_claims),
+            safety_signals=result.safety_signals,
             model_name=response.model_name,
             prompt_version=self.prompt_version,
             usage=response.usage,
@@ -153,6 +154,8 @@ class OpenAIResponsesSymptomStructuringClient(_TaskConfiguredResponsesClient):
         symptom_schema["required"] = list(properties)
         claim_schema = schema["$defs"]["SymptomEvidenceClaim"]
         claim_schema["required"] = list(claim_schema["properties"])
+        signal_schema = schema["$defs"]["SafetySignals"]
+        signal_schema["required"] = list(signal_schema["properties"])
         schema["required"] = list(schema["properties"])
         return schema
 

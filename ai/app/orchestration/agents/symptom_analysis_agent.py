@@ -15,6 +15,7 @@ from ..stages import (
     execute_structuring_stage,
 )
 from .contracts import SymptomAgentOutput
+from ..clarification_policy import should_wait_for_customer_input
 
 
 class SymptomAnalysisAgent:
@@ -98,5 +99,5 @@ class SymptomAnalysisAgent:
             safety_assessment=ctx.safety_assessment,
             missing_fields=list(ctx.missing_fields),
             followup_questions=list(ctx.followup_questions),
-            clarification_needed=bool(ctx.followup_questions),
+            clarification_needed=should_wait_for_customer_input(ctx),
         )

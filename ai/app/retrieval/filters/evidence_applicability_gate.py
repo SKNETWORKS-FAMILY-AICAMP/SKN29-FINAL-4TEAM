@@ -165,6 +165,11 @@ class EvidenceApplicabilityGate:
         candidates = list(chunks)
         if symptom_type != self._TASTE_OR_ODOR_SYMPTOM:
             return candidates
-        if applicability == EvidenceApplicability.ABSENCE_WITHIN_10_DAYS:
+        if applicability in {
+            EvidenceApplicability.ABSENCE_WITHIN_10_DAYS,
+            EvidenceApplicability.ABSENCE_OVER_10_DAYS,
+            EvidenceApplicability.LONG_UNUSED,
+            EvidenceApplicability.UNSUITABLE_INSTALLATION,
+        }:
             return candidates
         return []

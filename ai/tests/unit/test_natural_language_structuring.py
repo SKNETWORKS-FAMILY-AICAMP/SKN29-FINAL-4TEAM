@@ -89,10 +89,16 @@ class FakeFollowUpClient:
             raise self.error
         wordings = self.wordings
         if wordings is None:
+            default_questions = {
+                "occurrence_time": "증상은 언제부터 시작됐나요?",
+                "target_water_type": "어떤 출수에서 증상이 발생하나요?",
+                "occurrence_condition": "증상은 어떤 조건에서 발생하나요?",
+                "actions_taken": "이미 확인하거나 조치해 본 내용이 있나요?",
+            }
             wordings = [
                 FollowUpWording(
                     target_field=field,
-                    question_text=f"현재 증상과 관련해 {field} 정보는 어떻게 되나요?",
+                    question_text=default_questions[field],
                 )
                 for field in request.target_fields
             ]
@@ -288,7 +294,7 @@ def test_previous_answer_evidence_must_match_question_target_field() -> None:
     )
 
     assert result.occurrence_time is None
-    assert result.actions_taken == ["오늘 아침부터"]
+    assert result.actions_taken == []
 
 
 def test_water_type_claim_must_match_evidence_meaning() -> None:

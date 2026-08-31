@@ -101,9 +101,9 @@ class SymptomNormalizer:
     def normalize_symptom_type(self, raw_text: str, selected_symptoms: list[str]) -> str:
         if selected_symptoms and selected_symptoms[0] != "기타 증상":
             selected = selected_symptoms[0]
-            mapped = self._SELECTED_SYMPTOM_CODE_MAP.get(selected.upper())
-            if mapped != "기타 증상":
-                return mapped or selected
+            mapped = self.canonical_selected_symptom(selected)
+            if mapped not in {None, "기타 증상"}:
+                return mapped
         normalized_text = raw_text
         for pattern in self._NEGATED_SYMPTOM_PATTERNS:
             normalized_text = re.sub(pattern, " ", normalized_text)
@@ -114,11 +114,13 @@ class SymptomNormalizer:
         return "기타 증상"
 
     def normalize_water_type(self, text: str) -> str | None:
-        found = [
-            normalized
-            for normalized, keywords in self._WATER_RULES
-            if any(keyword in text for keyword in keywords)
-        ]
+        found = []
+        for normalized, keywords in self._WATER_RULES:
+            matched = any(keyword in text for keyword in keywords)
+            if normalized == "정수" and "정수" in text:
+                matched = matched and re.search(r"정수(?!기)", text) is not None
+            if matched:
+                found.append(normalized)
         if len(found) > 1:
             return "전체"
         return found[0] if found else None
@@ -132,8 +134,17 @@ class SymptomNormalizer:
 
     @staticmethod
     def extract_occurrence_condition(text: str) -> str | None:
-        markers = ("누르면", "사용할 때", "출수할 때", "작동할 때", "중에", "동안", "경우")
-        return text if any(marker in text for marker in markers) else None
+        markers = (
+            ("출수 버튼을 누를 때", ("출수 버튼을 누르면", "버튼을 누르면")),
+            ("사용할 때", ("사용할 때", "사용 중에", "사용 중")),
+            ("출수할 때", ("출수할 때",)),
+            ("작동할 때", ("작동할 때",)),
+            ("특정 조건", ("동안", "경우")),
+        )
+        for canonical, phrases in markers:
+            if any(phrase in text for phrase in phrases):
+                return canonical
+        return None
 
     @staticmethod
     def extract_error_code(text: str) -> str | None:

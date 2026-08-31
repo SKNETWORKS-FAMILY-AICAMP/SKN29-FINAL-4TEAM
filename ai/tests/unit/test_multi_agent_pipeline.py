@@ -60,6 +60,7 @@ class EvidenceSearchService:
                 official_url="https://example.invalid/official-manual",
                 verification_status="official_verified",
                 allowed_use=True,
+                topic_code="symptom_low_flow",
             )
         ]
 
@@ -302,7 +303,7 @@ def test_multi_agent_evidence_path_matches_single_rag_public_contract():
 
 
 def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence():
-    raw_symptom = "정수기 상태가 이상합니다."
+    raw_symptom = "출수 온도가 이상합니다."
     result = _run_multi_agent(
         search_service=EmptySearchService(),
         raw_symptom=raw_symptom,
@@ -319,7 +320,7 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
     assert response.safety_assessment.risk_level == RiskLevel.CAUTION
     assert response.safety_assessment.requires_consultation is True
-    assert HandoffReason.MORE_INFORMATION_REQUIRED in {
+    assert HandoffReason.CUSTOMER_INPUT_PENDING in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }
     assert result.routing_disposition == (
@@ -410,7 +411,7 @@ def test_multi_agent_earthy_taste_within_ten_days_uses_applicable_evidence():
     assert response.failure_stage is None
     assert str(response.correlation_id) == CORRELATION_ID
     assert len(response.evidence_references) == 1
-    assert llm.requests[0].symptom_summary.endswith("10일 이내 부재 후")
+    assert "10일 이내 부재 후" in llm.requests[0].symptom_summary
     assert HandoffReason.EVIDENCE_READY in {
         item.reason_code for item in result.multi_agent_metadata.handoffs
     }

@@ -22,23 +22,11 @@ _PRIVATE_QUESTION_PATTERNS = (
     re.compile(r"https?://\S+", flags=re.IGNORECASE),
 )
 
-_QUESTION_SEMANTIC_RULES = {
-    "occurrence_time": {
-        "required_any": ("언제", "시작", "부터"),
-        "forbidden": ("조건", "항상", "간헐", "버튼", "사용 중", "이유", "원인"),
-    },
-    "target_water_type": {
-        "required_any": ("출수", "냉수", "온수", "정수", "물"),
-        "forbidden": ("이유", "원인", "언제부터"),
-    },
-    "occurrence_condition": {
-        "required_any": ("조건", "항상", "간헐", "경우", "때", "중"),
-        "forbidden": ("부터", "시작", "이유", "원인"),
-    },
-    "actions_taken": {
-        "required_any": ("조치", "확인", "해보", "해 보", "시도", "취하"),
-        "forbidden": ("이유", "원인", "언제부터"),
-    },
+_QUESTION_INTENT_MARKERS = {
+    "occurrence_time": ("언제", "시작", "부터", "시점", "기간"),
+    "target_water_type": ("어떤 출수", "어느 출수", "냉수", "온수", "정수", "전체 출수"),
+    "occurrence_condition": ("어떤 조건", "특정 조건", "항상", "간헐", "반복", "경우", "버튼을 누를 때"),
+    "actions_taken": ("조치", "확인", "해보", "해 보", "시도", "취하", "무엇을 했"),
 }
 
 
@@ -228,13 +216,20 @@ class FollowUpQuestionGenerator:
         target_field: str,
         question_text: str,
     ) -> bool:
-        rule = _QUESTION_SEMANTIC_RULES.get(target_field)
-        if rule is None:
+        markers = _QUESTION_INTENT_MARKERS.get(target_field)
+        if markers is None:
             return False
         compact = " ".join(question_text.split())
-        if any(token in compact for token in rule["forbidden"]):
+        if re.search(r"\b(?:occurrence_time|target_water_type|occurrence_condition|actions_taken)\b", compact):
             return False
-        return any(token in compact for token in rule["required_any"])
+        if not any(token in compact for token in markers):
+            return False
+        if target_field == "occurrence_condition":
+            time_only = any(token in compact for token in ("언제", "부터", "시작"))
+            condition_intent = any(token in compact for token in markers)
+            if time_only and not condition_intent:
+                return False
+        return True
 
     @staticmethod
     def _fallback_reason(exc: Exception) -> str:

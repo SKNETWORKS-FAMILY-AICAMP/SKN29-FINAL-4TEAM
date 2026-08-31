@@ -228,7 +228,7 @@ def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
         taste_message
     ]
     assert client.requests[0].symptom_summary == (
-        "물맛/냄새 이상 | 정수 | 10일 이내 부재 후"
+        "물맛/냄새 이상 | 정수 | 오늘부터 | 10일 이내 부재 후 | 아직 조치하지 않음"
     )
     assert client.requests[0].evidence_summaries == [taste_message]
 
@@ -236,7 +236,6 @@ def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
 @pytest.mark.parametrize(
     ("answer_text", "expected_code", "expected_condition"),
     [
-        ("해당 없음", "NOT_APPLICABLE", "해당 없음"),
         ("10일 이상 부재 후", "ABSENCE_OVER_10_DAYS", "10일 이상 부재 후"),
         ("장시간 미사용 후", "LONG_UNUSED", "장시간 미사용 후"),
         (
@@ -246,12 +245,17 @@ def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
         ),
     ],
 )
-def test_earthy_taste_context_without_safe_self_guidance_routes_to_no_evidence(
+def test_earthy_taste_applicability_preserves_matching_official_evidence(
     answer_text,
     expected_code,
     expected_condition,
 ):
-    client = SequenceLLMClient(llm_response())
+    client = SequenceLLMClient(
+        llm_response(
+            message="물맛과 냄새 관련 공식 근거",
+            actions=["기본 필터 및 사용 환경 유지"],
+        )
+    )
     previous_answers = [
         *COMPLETE_TASTE_ANSWERS[:-1],
         {
@@ -268,14 +272,12 @@ def test_earthy_taste_context_without_safe_self_guidance_routes_to_no_evidence(
     )
     result = pipeline_result.to_analysis_result()
 
-    assert client.calls == 0
+    assert client.calls == 1
     assert pipeline_result.context.evidence_applicability.value == expected_code
     assert result.structured_symptom.occurrence_condition == expected_condition
-    assert pipeline_result.context.retrieval_outcome.value == "NO_MATCH"
-    assert result.status.value == "FALLBACK"
-    assert result.failure_stage.value == "RETRIEVING"
-    assert result.evidence_references == []
-    assert result.usage_guidance.guidance_status.value == "PENDING_CONSULTATION"
+    assert pipeline_result.context.retrieval_outcome.value == "AVAILABLE"
+    assert result.evidence_references
+    assert result.usage_guidance.guidance_status.value == "NORMAL"
 
 
 def test_earthy_taste_with_only_unrelated_evidence_fails_closed_without_llm():
@@ -703,7 +705,7 @@ def test_provider_request_redacts_pii_and_excludes_raw_occurrence_condition():
     assert phone_number not in serialized
     assert "서울시 고객동" not in serialized
     assert raw_symptom not in serialized
-    assert provider_request.symptom_summary.startswith("기타 증상")
+    assert provider_request.symptom_summary.startswith("출수량 저하")
     assert provider_request.model_code == "WPUJAC104DWH"
 
 

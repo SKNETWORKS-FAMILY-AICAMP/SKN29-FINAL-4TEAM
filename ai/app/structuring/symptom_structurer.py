@@ -11,6 +11,7 @@ from .llm_contracts import (
     ALLOWED_SYMPTOM_TYPES,
     ALLOWED_WATER_TYPES,
     SymptomEvidenceClaim,
+    SafetySignals,
     SymptomStructuringLLMClient,
     SymptomStructuringRequest,
 )
@@ -45,6 +46,7 @@ class SymptomStructurer:
     ) -> None:
         self.normalizer = normalizer or SymptomNormalizer()
         self.llm_client = llm_client
+        self.last_safety_signals = SafetySignals()
 
     def structure(
         self,
@@ -60,6 +62,7 @@ class SymptomStructurer:
 
         selected = selected_symptoms or []
         previous = previous_answers or []
+        self.last_safety_signals = SafetySignals()
         fallback = self._structure_with_rules(raw_text, selected, previous)
         prompt_version = str(
             getattr(self.llm_client, "prompt_version", "symptom_structuring/v1")
@@ -96,6 +99,7 @@ class SymptomStructurer:
                 span.set_attribute("prompt.version", response.prompt_version)
                 candidate = response.output
                 evidence_claims = response.evidence_claims
+                self.last_safety_signals = response.safety_signals
             except Exception as exc:
                 span.set_attribute("fallback.used", True)
                 span.set_attribute("validation.result", "PROVIDER_FAILURE")
@@ -180,6 +184,7 @@ class SymptomStructurer:
     ) -> StructuredSymptom:
         answer_by_field: dict[str, str] = {}
         actions = self.normalizer.extract_actions(raw_text)
+        validated_selected = self._validated_selected_symptoms(selected)
 
         for answer in previous_answers:
             if not isinstance(answer, dict):
@@ -192,11 +197,17 @@ class SymptomStructurer:
             if answer_text in self._INTENTIONAL_NON_ANSWERS:
                 # 거절·확인 불가를 실제 증상 값으로 저장하지 않되 같은 질문은 반복하지 않는다.
                 continue
+            validated_answer = self._validated_previous_answer(
+                target_field,
+                answer_text,
+            )
+            if validated_answer is None:
+                continue
             if target_field == "actions_taken":
-                if answer_text not in actions:
-                    actions.append(answer_text)
+                if validated_answer not in actions:
+                    actions.append(validated_answer)
             else:
-                answer_by_field[target_field] = answer_text
+                answer_by_field[target_field] = validated_answer
 
         return StructuredSymptom(
             symptom_type=self.normalizer.normalize_symptom_type(raw_text, selected),
@@ -213,7 +224,7 @@ class SymptomStructurer:
                 or self.normalizer.extract_occurrence_condition(raw_text)
             ),
             error_code=self.normalizer.extract_error_code(raw_text),
-            accompanying_symptoms=list(dict.fromkeys(selected)),
+            accompanying_symptoms=validated_selected,
             actions_taken=actions,
         )
 
@@ -254,19 +265,8 @@ class SymptomStructurer:
         if candidate.error_code is not None and candidate.error_code != fallback.error_code:
             raise ValueError("고객 원문에서 확인되지 않은 error_code입니다.")
 
-        selected_canonical = next(
-            (
-                normalized
-                for value in selected_symptoms
-                if (normalized := self.normalizer.canonical_selected_symptom(value))
-                not in {None, "기타 증상"}
-            ),
-            None,
-        )
-        if selected_canonical is not None and candidate.symptom_type != selected_canonical:
-            raise ValueError("선택 증상과 symptom_type이 일치하지 않습니다.")
-
         rejected_fields: set[str] = set()
+        validated_selected = self._validated_selected_symptoms(selected_symptoms)
 
         def accepted_scalar(field_name: str, value: str | None, fallback_value):
             if value is None:
@@ -341,10 +341,16 @@ class SymptomStructurer:
             answer_text = str(answer.get("answer_text", "")).strip()
             if not target_field or not answer_text or answer_text in self._INTENTIONAL_NON_ANSWERS:
                 continue
+            validated_answer = self._validated_previous_answer(
+                target_field,
+                answer_text,
+            )
+            if validated_answer is None:
+                continue
             if target_field == "actions_taken":
-                previous_actions.append(answer_text)
+                previous_actions.append(validated_answer)
             else:
-                answer_by_field[target_field] = answer_text
+                answer_by_field[target_field] = validated_answer
 
         return (
             candidate.model_copy(
@@ -362,7 +368,7 @@ class SymptomStructurer:
                     "error_code": fallback.error_code,
                     "accompanying_symptoms": list(
                         dict.fromkeys(
-                            [*selected_symptoms, *accompanying_symptoms]
+                            [*validated_selected, *accompanying_symptoms]
                         )
                     ),
                     "actions_taken": list(
@@ -390,6 +396,11 @@ class SymptomStructurer:
         previous_answers: list[dict[str, str]],
     ) -> bool:
         normalized_value = self._normalize_evidence_text(value)
+        raw_rule_symptom = (
+            self.normalizer.normalize_symptom_type(raw_text, [])
+            if field_name == "symptom_type"
+            else None
+        )
         for claim in claims:
             if claim.field_name != field_name:
                 continue
@@ -402,6 +413,15 @@ class SymptomStructurer:
                 selected_symptoms=selected_symptoms,
                 previous_answers=previous_answers,
             ):
+                continue
+            if (
+                field_name == "symptom_type"
+                and claim.source == "RAW_SYMPTOM"
+                and raw_rule_symptom not in {None, "기타 증상", value}
+            ):
+                # 보수적 Rule이 원문에서 다른 명시 신호를 확인한 경우에는
+                # LLM 후보를 fail-closed 처리한다. selected hint 충돌은 여기서
+                # 비교하지 않는다.
                 continue
             if self._claim_value_matches_evidence(
                 field_name,
@@ -430,11 +450,17 @@ class SymptomStructurer:
             return any(
                 quote in self._normalize_evidence_text(item)
                 for item in selected_symptoms
+                if self.normalizer.canonical_selected_symptom(item) is not None
             )
         if claim.source == "PREVIOUS_ANSWER":
             return any(
                 self._QUESTION_FIELD_MAP.get(str(answer.get("question_id", "")))
                 == field_name
+                and self._validated_previous_answer(
+                    field_name,
+                    str(answer.get("answer_text", "")),
+                )
+                is not None
                 and quote
                 in self._normalize_evidence_text(
                     str(answer.get("answer_text", ""))
@@ -481,7 +507,64 @@ class SymptomStructurer:
             return False
         if field_name == "symptom_type" and source == "SELECTED_SYMPTOM":
             return self.normalizer.canonical_selected_symptom(evidence_quote) == value
-        return field_name == "symptom_type"
+        if field_name == "symptom_type" and source == "RAW_SYMPTOM":
+            return self._has_substantive_symptom_evidence(evidence_quote)
+        return False
+
+    def _validated_previous_answer(
+        self,
+        field_name: str,
+        answer_text: str,
+    ) -> str | None:
+        """결정된 문진 선택지/형식만 구조화·Provider 문맥에 반영한다."""
+
+        value = answer_text.strip()
+        if field_name == "occurrence_time":
+            extracted = self.normalizer.extract_occurrence_time(value)
+            return value if extracted is not None else None
+        if field_name == "target_water_type":
+            normalized = self.normalizer.normalize_water_type(value)
+            return normalized if normalized in ALLOWED_WATER_TYPES else None
+        if field_name == "occurrence_condition":
+            allowed = {
+                "항상",
+                "간헐적으로",
+                "출수 버튼을 누를 때",
+                "버튼을 누를 때",
+                "특정 기능 사용 중",
+            }
+            return value if value in allowed else None
+        if field_name == "actions_taken":
+            allowed = {
+                "없음",
+                "아직 조치하지 않음",
+                "전원 재부팅",
+                "원수 밸브 확인",
+                "필터 확인",
+            }
+            return value if value in allowed else None
+        return None
+
+    def _validated_selected_symptoms(self, values: list[str]) -> list[str]:
+        return list(
+            dict.fromkeys(
+                value
+                for value in values
+                if self.normalizer.canonical_selected_symptom(value) is not None
+            )
+        )
+
+    def _has_substantive_symptom_evidence(self, evidence_quote: str) -> bool:
+        """출수명·시점만 인용한 symptom_type 자기주장을 거절한다."""
+
+        normalized = self._normalize_evidence_text(evidence_quote)
+        stripped = re.sub(
+            r"(?:정수기|냉수|온수|정수|전체|물|오늘|어제|그제|최근|부터|자꾸|계속)",
+            " ",
+            normalized,
+        )
+        informative = re.sub(r"[^0-9a-z가-힣]+", "", stripped)
+        return len(informative) >= 2
 
     @staticmethod
     def _normalize_evidence_text(value: str) -> str:

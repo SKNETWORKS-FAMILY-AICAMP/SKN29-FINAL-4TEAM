@@ -114,7 +114,11 @@ def _resolved(
     )
 
 
-def _chunk(model_code="WPUIAC425SNW"):
+def _chunk(
+    model_code="WPUIAC425SNW",
+    *,
+    topic_code="symptom_cold_temperature",
+):
     return RetrievedChunk(
         chunk_id=f"CHILD-{model_code}-TEST",
         document_title=f"{model_code} 사용설명서",
@@ -132,6 +136,7 @@ def _chunk(model_code="WPUIAC425SNW"):
         verification_status="official_verified",
         allowed_use=True,
         runtime_eligible=True,
+        topic_code=topic_code,
     )
 
 
@@ -370,7 +375,7 @@ def test_mcp_multi_agent_combined_path_uses_backend_context_and_mcp_evidence(
     )
 
     search_service = _SearchService(
-        [_chunk("WPUJAC104DWH")]
+        [_chunk("WPUJAC104DWH", topic_code="symptom_low_flow")]
     )
 
     llm = _LLM()
