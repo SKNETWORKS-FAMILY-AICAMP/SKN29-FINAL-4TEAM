@@ -235,7 +235,7 @@ Set-Location backend
 # 서버 실행 후 별도 Terminal
 Set-Location ..
 <python-3.13> scripts/smoke/check_backend_auth.py
-<python-3.13> scripts/testing/check_week4_service_runtime.py
+# check_week4_service_runtime.py는 2026-08-31 폐기됨. 아래 결과는 당시의 기록임.
 ```
 
 ## 11. 최종 결론

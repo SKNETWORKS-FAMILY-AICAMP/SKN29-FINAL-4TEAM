@@ -503,16 +503,16 @@ fun CustomerHomeContent(
                 !previewMode &&
                     remoteInquiryForSelectedProduct
                         ?.let { snapshot ->
-                            val status =
-                                snapshot.statusCode
-                                    .trim()
-                                    .uppercase()
-
-                            status in setOf(
-                                "DRAFT",
-                                "QUESTIONNAIRE_IN_PROGRESS",
-                            ) &&
-                                snapshot.stateVersion >= 1 &&
+                            // 문의 취소 가능 여부를 Mobile이 statusCode로
+                            // 다시 계산하지 않는다.
+                            //
+                            // Backend State Machine이 현재 상태와 Guard를 검증한 후
+                            // CANCEL_INQUIRY를 allowed_actions에 넣어준 경우에만
+                            // 고객에게 취소 기능을 노출한다.
+                            //
+                            // 이렇게 해야 Backend에서 취소 정책이 바뀌어도
+                            // Mobile의 hard-coded status 목록과 어긋나지 않는다.
+                            snapshot.stateVersion >= 1 &&
                                 snapshot.allowedActions.any {
                                     action ->
                                     action.normalizedCode ==

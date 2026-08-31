@@ -242,15 +242,16 @@ fun GuidanceScreen(
                 ?.uppercase() ==
                 "AI_GUIDANCE"
 
-    // AI_GUIDANCE? Backend? AI ??? ???? ?? ??
-    // ?? ?? snapshot? ?? ??? ? ??.
+    // AI_GUIDANCE는 Backend가 AI 결과를 준비하고 있는 동안
+    // 잠시 최신 snapshot을 다시 확인할 수 있다.
     //
-    // ?? CONSULTATION_REQUIRED? "?? AI? ???? ??"? ???
-    // Backend? ???/?? ?? ? ??? ????? ??? ?? ????.
+    // 반면 CONSULTATION_REQUIRED는 "아직 AI가 준비되지 않음"이 아니라
+    // Backend가 안전성과 근거를 검증한 후 상담이 필요하다고
+    // 결정한 정상적인 Workflow 상태이다.
     //
-    // ??? CONSULTATION_REQUIRED?? polling ???? ????
-    // ??? ?? ?????? ? 2.5??? ?? Inquiry? ?? ?????
-    // ???? ?? ?? ??? ?? ? ??.
+    // CONSULTATION_REQUIRED까지 polling 대상에 넣으면
+    // 이미 상태가 결정됐는데도 같은 Inquiry를 반복 조회하여
+    // 고객에게 앱이 멈춘 것처럼 보일 수 있다.
 
     LaunchedEffect(
         inquiryId,
@@ -279,6 +280,10 @@ fun GuidanceScreen(
             state as?
                 GuidanceUiState.ConsultationResult
         )?.result
+
+    val consultationRequestSucceeded =
+        consultationState is
+            ConsultationRequestUiState.Success
 
     val showResolutionFirst =
         effectiveStatusCode
@@ -326,6 +331,8 @@ fun GuidanceScreen(
 
             CustomerProgressOverview(
                 statusCode = progressStatusCode,
+                consultationRequestSucceeded =
+                    consultationRequestSucceeded,
             )
             if (fixturePreview) {
                 SectionCard("미리보기 화면") {
@@ -544,37 +551,85 @@ fun GuidanceScreen(
                             ?.trim()
                             ?.uppercase()
 
-                    if (
-                        normalizedStatus ==
-                            "CONSULTATION_REQUIRED"
-                    ) {
-                        // CONSULTATION_REQUIRED? ?? ??? ???.
-                        // Backend? AI ????? ??????
-                        // ?? ??? ????? ??? ?? workflow ???.
-                        //
-                        // Spinner? ?? ???? ?? ??? ??? ????.
-                        // ?? "?? ??" ??? ?? allowed_actions ??
-                        // ?? ?? Section?? ????.
-                        SectionCard(
-                            "상담이 필요한 상태예요"
-                        ) {
-                            Text(
-                                "현재 내용은 자동 안내만으로 확정하지 않고 "
-                                    + "상담사가 함께 확인하도록 처리됐어요.",
-                                style =
-                                    MaterialTheme.typography
-                                        .bodyMedium,
-                                color =
-                                    MaterialTheme.colorScheme
-                                        .onSurfaceVariant,
-                            )
+                    when (normalizedStatus) {
+                        "CONSULTATION_REQUIRED" -> {
+                            // CONSULTATION_REQUIRED는 로딩 상태가 아니다.
+                            // Backend가 안전성과 근거를 확인한 후
+                            // 상담사의 추가 확인이 필요하다고
+                            // 판단한 정상적인 Workflow 상태이다.
+                            if (
+                                !consultationRequestSucceeded
+                            ) {
+                                SectionCard(
+                                    "상담 연결 단계예요"
+                                ) {
+                                    Text(
+                                        "입력한 증상과 문의 내용을 확인한 결과, "
+                                            + "자동 안내만으로 확정하기보다 "
+                                            + "상담사가 함께 확인하는 것이 좋아요.",
+                                        style =
+                                            MaterialTheme.typography
+                                                .bodyMedium,
+                                        color =
+                                            MaterialTheme.colorScheme
+                                                .onSurfaceVariant,
+                                    )
+
+                                    Text(
+                                        "아래 '상담사 연결 요청하기'를 누르면 "
+                                            + "지금까지 작성한 내용이 함께 전달돼요.",
+                                        style =
+                                            MaterialTheme.typography
+                                                .bodySmall,
+                                        color =
+                                            MaterialTheme.colorScheme
+                                                .onSurfaceVariant,
+                                    )
+                                }
+                            }
                         }
-                    } else {
-                        CustomerInitialLoadingState(
-                            title =
-                                "안내를 준비하고 있어요",
-                            message = current.message,
-                        )
+
+                        "CONSULTATION_IN_PROGRESS" -> {
+                            // 상담 접수 후 앱을 종료했다 다시 실행해도
+                            // Spinner로 되돌아가지 않고
+                            // 현재 상담이 접수된 상태라는 것을 복구한다.
+                            if (
+                                consultationState !is
+                                    ConsultationRequestUiState.Success
+                            ) {
+                                SectionCard(
+                                    "상담이 진행 중이에요"
+                                ) {
+                                    LiquidGlassPill(
+                                        "상담 진행 중"
+                                    )
+
+                                    Text(
+                                        "상담사가 지금까지 작성한 내용을 "
+                                            + "확인하고 있어요.",
+                                        style =
+                                            MaterialTheme.typography
+                                                .bodyMedium,
+                                    )
+
+                                    BulletList(
+                                        listOf(
+                                            "상담사가 문의 내용을 확인해요",
+                                            "필요한 경우 연락 또는 방문 안내를 드려요",
+                                            "앱을 닫아도 홈에서 진행 상태를 다시 확인할 수 있어요",
+                                        )
+                                    )
+                                }
+                            }
+                        }
+
+                        else ->
+                            CustomerInitialLoadingState(
+                                title =
+                                    "안내를 준비하고 있어요",
+                                message =
+                                    current.message,
+                            )
                     }
                 }
 
@@ -647,23 +702,30 @@ fun GuidanceScreen(
                     )
 
                 is ConsultationRequestUiState.Success ->
-                    SectionCard("상담 요청 완료") {
+                    SectionCard("상담 요청이 접수됐어요") {
                         LiquidGlassPill("상담 접수됨")
 
                         Text(
-                            "상담 요청이 전달됐어요.",
+                            "상담 요청이 정상적으로 접수됐어요.",
                             style =
                                 MaterialTheme.typography
                                     .titleMedium,
                             fontWeight = FontWeight.Bold,
                         )
 
+                        // REQUEST_CONSULTATION 성공 후에도
+                        // Backend Inquiry status는 CONSULTATION_REQUIRED를 유지한다.
+                        // 성공 직후에는 상태 코드 문구를 그대로
+                        // 보여주지 않고 WAITING Consultation이 생성된
+                        // 실제 상태를 고객용 문구로 안내한다.
                         Text(
-                            customerInquiryStatusText(
-                                currentConsultation
-                                    .snapshot
-                                    .statusCode
-                            )
+                            "상담사 배정을 기다리고 있어요.",
+                            style =
+                                MaterialTheme.typography
+                                    .bodyMedium,
+                            color =
+                                MaterialTheme.colorScheme
+                                    .onSurfaceVariant,
                         )
 
                         Text(
@@ -849,6 +911,7 @@ private fun GuidanceDisplayModel.withInquiryCode(
 @Composable
 private fun CustomerProgressOverview(
     statusCode: String?,
+    consultationRequestSucceeded: Boolean = false,
 ) {
     LiquidGlassPanel(
         modifier = Modifier
@@ -866,13 +929,27 @@ private fun CustomerProgressOverview(
         }
 
         Text(
-            customerInquiryProgressHeadline(statusCode),
+            if (consultationRequestSucceeded) {
+                "상담 요청이 접수됐어요"
+            } else {
+                customerInquiryProgressHeadline(
+                    statusCode
+                )
+            },
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )
 
         Text(
-            customerInquiryProgressDescription(statusCode),
+            if (consultationRequestSucceeded) {
+                "상담사 배정을 기다리고 있어요. " +
+                    "진행 상태는 홈과 현재 문의에서 " +
+                    "다시 확인할 수 있어요."
+            } else {
+                customerInquiryProgressDescription(
+                    statusCode
+                )
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
