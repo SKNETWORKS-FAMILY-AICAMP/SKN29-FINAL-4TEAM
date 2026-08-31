@@ -239,11 +239,18 @@ fun GuidanceScreen(
             state is GuidanceUiState.NotReady &&
             effectiveStatusCode
                 ?.trim()
-                ?.uppercase() in
-            setOf(
-                "AI_GUIDANCE",
-                "CONSULTATION_REQUIRED",
-            )
+                ?.uppercase() ==
+                "AI_GUIDANCE"
+
+    // AI_GUIDANCE? Backend? AI ??? ???? ?? ??
+    // ?? ?? snapshot? ?? ??? ? ??.
+    //
+    // ?? CONSULTATION_REQUIRED? "?? AI? ???? ??"? ???
+    // Backend? ???/?? ?? ? ??? ????? ??? ?? ????.
+    //
+    // ??? CONSULTATION_REQUIRED?? polling ???? ????
+    // ??? ?? ?????? ? 2.5??? ?? Inquiry? ?? ?????
+    // ???? ?? ?? ??? ?? ? ??.
 
     LaunchedEffect(
         inquiryId,
@@ -338,26 +345,69 @@ fun GuidanceScreen(
                 cancelAction != null &&
                 cancelState !is CancelInquiryUiState.Success
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
+                SectionCard(
+                    "문의 관리"
                 ) {
+                    Text(
+                        text =
+                            "현재 문의를 더 이상 진행하지 않거나 "
+                                + "내용을 처음부터 다시 작성하고 싶다면 "
+                                + "문의를 취소할 수 있어요.",
+                        style =
+                            MaterialTheme.typography
+                                .bodySmall,
+                        color =
+                            MaterialTheme.colorScheme
+                                .onSurfaceVariant,
+                    )
+
+                    // 문의 취소는 자주 사용하는 Primary Action은 아니지만
+                    // 사용자가 작성 내용을 처음부터 다시 시작하고 싶을 때
+                    // 쉽게 찾을 수 있어야 한다.
+                    //
+                    // 기존의 작은 우측 TextButton 대신
+                    // 전체 너비의 destructive action으로 표시한다.
+                    // 실제 취소는 아래 AlertDialog에서 한 번 더 확인한다.
                     TextButton(
-                        onClick = { showCancelDialog = true },
+                        onClick = {
+                            showCancelDialog = true
+                        },
                         enabled =
                             effectiveStateVersion != null &&
                                 cancelState !is
                                     CancelInquiryUiState.Cancelling,
-                        modifier = Modifier.testTag(
-                            "cancelInquiryAction"
-                        ),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(
+                                    RoundedCornerShape(
+                                        14.dp
+                                    )
+                                )
+                                .background(
+                                    MaterialTheme
+                                        .colorScheme
+                                        .errorContainer
+                                        .copy(
+                                            alpha = 0.72f
+                                        )
+                                )
+                                .testTag(
+                                    "cancelInquiryAction"
+                                ),
                     ) {
                         Text(
-                            text = "문의 취소하기",
-                            style = MaterialTheme.typography.bodySmall,
+                            text =
+                                "현재 문의 취소하기",
+                            style =
+                                MaterialTheme.typography
+                                    .bodyMedium,
                             color =
-                                MaterialTheme.colorScheme
-                                    .onSurfaceVariant,
+                                MaterialTheme
+                                    .colorScheme
+                                    .error,
+                            fontWeight =
+                                FontWeight.Bold,
                         )
                     }
                 }
@@ -488,12 +538,45 @@ fun GuidanceScreen(
                         )
                     }
 
-                is GuidanceUiState.NotReady ->
-                    CustomerInitialLoadingState(
-                        title =
-                            "안내를 준비하고 있어요",
-                        message = current.message,
-                    )
+                is GuidanceUiState.NotReady -> {
+                    val normalizedStatus =
+                        effectiveStatusCode
+                            ?.trim()
+                            ?.uppercase()
+
+                    if (
+                        normalizedStatus ==
+                            "CONSULTATION_REQUIRED"
+                    ) {
+                        // CONSULTATION_REQUIRED? ?? ??? ???.
+                        // Backend? AI ????? ??????
+                        // ?? ??? ????? ??? ?? workflow ???.
+                        //
+                        // Spinner? ?? ???? ?? ??? ??? ????.
+                        // ?? "?? ??" ??? ?? allowed_actions ??
+                        // ?? ?? Section?? ????.
+                        SectionCard(
+                            "상담이 필요한 상태예요"
+                        ) {
+                            Text(
+                                "현재 내용은 자동 안내만으로 확정하지 않고 "
+                                    + "상담사가 함께 확인하도록 처리됐어요.",
+                                style =
+                                    MaterialTheme.typography
+                                        .bodyMedium,
+                                color =
+                                    MaterialTheme.colorScheme
+                                        .onSurfaceVariant,
+                            )
+                        }
+                    } else {
+                        CustomerInitialLoadingState(
+                            title =
+                                "안내를 준비하고 있어요",
+                            message = current.message,
+                        )
+                    }
+                }
 
                 is GuidanceUiState.AiFailure ->
                     GuidanceFailureStateContent(
