@@ -147,8 +147,14 @@ def eligible(
         and digests <= known
         and not digests.intersection(protected_refs)
         and all(
-            tag.rpartition(":")[0] in repositories
-            and SHA.fullmatch(tag.rpartition(":")[2])
+            # The containerd store can return repo@sha256 in RepoTags too.
+            # Accept it only when it is also this image's recorded RepoDigest;
+            # do not treat an arbitrary digest-shaped alias as ownership proof.
+            tag in digests
+            or (
+                tag.rpartition(":")[0] in repositories
+                and SHA.fullmatch(tag.rpartition(":")[2])
+            )
             for tag in tags
         )
     )

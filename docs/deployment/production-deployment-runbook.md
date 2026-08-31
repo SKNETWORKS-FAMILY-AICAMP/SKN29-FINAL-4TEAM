@@ -92,6 +92,10 @@ source runtime env files or resolve Compose configuration containing secrets.
 - Only remove local application images whose digest references are all recorded
   in valid historical release manifests for the incoming release's exact ECR
   `waterbridge/web`, `waterbridge/backend`, and `waterbridge/ai` repositories.
+  The containerd image store can also return `repository@sha256:...` inside
+  `RepoTags`. Such an alias is accepted only when it is present in the same
+  image's `RepoDigests` and in a valid release manifest. An arbitrary digest-like
+  alias does not establish ownership or bypass current/previous protection.
   Unknown aliases, mutable tags, dangling images, other accounts/repositories,
   Tempo and database/QA tools are not cleanup targets.
 - Removal uses `docker image rm --no-prune` without force. Docker conflicts are
@@ -121,6 +125,44 @@ The containerd store retains compressed and extracted image layers separately
 from Docker's data root; see [Docker storage documentation](https://docs.docker.com/engine/storage/containerd/).
 Image deletion behavior and conflict protection follow
 [Docker image rm](https://docs.docker.com/reference/cli/docker/image/rm/).
+
+### SSM shell boundary
+
+GitHub Actions `shell: bash` does not select the interpreter used by
+`AWS-RunShellScript` on EC2. The SSM agent's outer shell is `sh`, which is `dash`
+on the observed Ubuntu host. Do not send unwrapped Bash `[[ ... ]]`, `%q`
+quoting or `pipefail` setup to that outer shell.
+
+The runner-side `build_ssm_bash_parameters.py` joins the trusted command strings
+and POSIX-quotes the complete body for one explicit
+`exec /bin/bash -euo pipefail -c ...` invocation. Release deployment, rollback and
+Canary actions all use this builder. The Canary state guard runs before even
+the shared-directory preparation or S3 download. The outer shell never evaluates
+the inner Bash body, and the command exit status is preserved for SSM polling.
+The Canary runner checks out the helper from its validated main caller SHA, not
+the older expected runtime SHA, so it can still control a pre-fix deployment.
+
+Regression tests execute the generated wire payload through Linux `/bin/sh`,
+including active/inactive Canary state, S3-copy failure, rollback, pipeline
+failure, unset variables, and Bash `%q` arguments with quotes/newlines. External
+operations are replaced by test-only executables in an exclusive temporary PATH;
+tests never call AWS or modify production paths. Container-based test runners
+must provide an executable temporary directory for those stubs.
+
+On a Windows workstation with an already running local Docker Desktop
+containerd store, the opt-in probe below also verifies real image deletion:
+
+```powershell
+.\backend\.venv\Scripts\python.exe -B scripts/testing/verify_release_image_cleanup.py --run-local-probe
+```
+
+It creates two tiny OCI images locally (no registry pull or push), reproduces
+digest references in both `RepoTags` and `RepoDigests`, selects/deletes the
+obsolete image, and verifies that the protected image and existing volumes
+remain. It then removes its remaining QA image, checking a unique ownership
+label and excluding every pre-existing image ID. It rejects non-local Docker
+endpoints and never creates a container or volume. This probe is not an EC2
+cleanup command and is not run automatically by a release.
 
 Tempo 3 uses `live_store` rather than the removed 2.x `ingester` section. In
 monolithic `target=all` mode it flushes blocks to object storage without Kafka.
