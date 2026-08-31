@@ -252,7 +252,11 @@
 }
 
 .consultant-notice-list p {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   color: #63798d;
   font-size: 13px;
   line-height: 1.55;
