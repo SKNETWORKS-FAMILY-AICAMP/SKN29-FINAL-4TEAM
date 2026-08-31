@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.skn29.watercare.core.WaterCareCore
 import com.skn29.watercare.core.model.CustomerInquirySnapshot
 import com.skn29.watercare.customer.common.VmFactory
+import com.skn29.watercare.customer.feature.shared.CustomerInitialLoadingState
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 import kotlinx.coroutines.flow.collect
 
@@ -56,7 +57,10 @@ fun FollowUpQuestionsScreen(
             .collectAsStateWithLifecycle()
 
 
-    // APP_WIDE_REFRESH_FOLLOWUP
+    // 최초 진입은 ViewModel의 load()가 담당하고,
+    // 다른 화면에서 돌아온 경우에만 silent refresh를 수행한다.
+    // silent refresh를 사용하면 작성 중인 답변을 지우지 않고
+    // 서버의 최신 workflow 상태만 반영할 수 있다.
     var hasResumedOnce by
         remember(inquiryId) {
             mutableStateOf(false)
@@ -186,6 +190,16 @@ fun FollowUpQuestionsScreen(
             title = "추가 질문",
             onBack = onBack,
         ) {
+            if (state is FollowUpUiState.Loading) {
+                // 첫 조회에서 아무 내용도 없는 화면을 보여주지 않는다.
+                CustomerInitialLoadingState(
+                    title =
+                        "추가 질문을 확인하고 있어요",
+                    message =
+                        "현재 문의 상태와 필요한 추가 질문을 불러오고 있어요.",
+                )
+            }
+
             FollowUpCancelSection(
                 snapshot = snapshot,
                 cancelState = cancelState,
@@ -229,7 +243,16 @@ fun FollowUpQuestionsScreen(
                     ?.uppercase() ==
                     "QUESTIONNAIRE_IN_PROGRESS"
             ) {
-                // Visible loading UI intentionally hidden.
+                // 답변은 모두 저장됐지만 Backend가
+                // 다음 workflow 상태로 전환하는 중일 수 있다.
+                // 이 순간을 Empty로 보여주면
+                // "질문이 사라졌다"고 오해할 수 있어 처리 중으로 표시한다.
+                CustomerInitialLoadingState(
+                    title =
+                        "다음 단계를 준비하고 있어요",
+                    message =
+                        "답변을 확인했어요. 맞춤 안내를 준비하고 있어요.",
+                )
             }
 
             if (!blockFollowUpInteraction) {

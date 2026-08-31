@@ -63,6 +63,9 @@ import com.skn29.watercare.customer.R
 import com.skn29.watercare.customer.common.VmFactory
 import com.skn29.watercare.customer.feature.shared.BulletList
 import com.skn29.watercare.customer.feature.shared.EvidenceCard
+import com.skn29.watercare.customer.feature.shared.CustomerErrorState
+import com.skn29.watercare.customer.feature.shared.CustomerInitialLoadingState
+import com.skn29.watercare.customer.feature.shared.CustomerSubmittingState
 import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.StatusBadge
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
@@ -125,7 +128,9 @@ fun GuidanceScreen(
         viewModel.consultationState.collectAsStateWithLifecycle()
 
 
-    // APP_WIDE_REFRESH_GUIDANCE
+    // 다른 화면에서 돌아왔을 때 inquiry snapshot을 다시 확인한다.
+    // refreshSilently()는 기존 안내를 지우지 않고
+    // Backend workflow 변경만 반영하기 위한 새로고침이다.
     var hasResumedOnce by
         remember(
             inquiryId,
@@ -187,7 +192,6 @@ fun GuidanceScreen(
         }
     }
     var showCancelDialog by remember { mutableStateOf(false) }
-    val guidanceAutoRetryCount = 0
     val actualInquiryCode = submittedInquiryCode.trim()
     val preferredGuidance = when (val current = state) {
         is GuidanceUiState.Content -> current.guidance
@@ -363,7 +367,10 @@ fun GuidanceScreen(
                 CancelInquiryUiState.Idle -> Unit
 
                 CancelInquiryUiState.Cancelling ->
-                    Unit
+                    CustomerSubmittingState(
+                        message =
+                            "문의 취소를 처리하고 있어요.",
+                    )
 
                 is CancelInquiryUiState.Success ->
                     SectionCard("문의 취소 완료") {
@@ -437,7 +444,12 @@ fun GuidanceScreen(
 
             when (val current = state) {
                 GuidanceUiState.Loading ->
-                    Unit
+                    CustomerInitialLoadingState(
+                        title =
+                            "맞춤 안내를 확인하고 있어요",
+                        message =
+                            "문의 상태와 해결 안내를 불러오고 있어요.",
+                    )
 
                 is GuidanceUiState.Content ->
                     GuidanceResultReveal {
@@ -456,9 +468,11 @@ fun GuidanceScreen(
                     Unit
 
                 is GuidanceUiState.ConsultationResultNotReady ->
-                    ErrorCard(
-                        current.message,
-                        viewModel::load,
+                    CustomerErrorState(
+                        title =
+                            "상담 결과를 아직 확인할 수 없어요",
+                        message = current.message,
+                        onRetry = viewModel::load,
                     )
 
                 is GuidanceUiState.NoEvidence ->
@@ -475,13 +489,11 @@ fun GuidanceScreen(
                     }
 
                 is GuidanceUiState.NotReady ->
-                    if (guidanceAutoRetryCount >= 6) {
-                        TextButton(
-                            onClick = viewModel::load,
-                        ) {
-                            Text("다시 확인")
-                        }
-                    }
+                    CustomerInitialLoadingState(
+                        title =
+                            "안내를 준비하고 있어요",
+                        message = current.message,
+                    )
 
                 is GuidanceUiState.AiFailure ->
                     GuidanceFailureStateContent(
@@ -496,9 +508,17 @@ fun GuidanceScreen(
                     )
 
                 is GuidanceUiState.Error ->
-                    ErrorCard(
-                        "현재 안내를 확인할 수 없어요. 잠시 후 다시 시도해주세요.",
-                        if (current.retryable) viewModel::load else null,
+                    CustomerErrorState(
+                        title =
+                            "현재 안내를 확인할 수 없어요",
+                        message =
+                            "잠시 후 다시 확인해주세요.",
+                        onRetry =
+                            if (current.retryable) {
+                                viewModel::load
+                            } else {
+                                null
+                            },
                     )
             }
 
@@ -538,7 +558,10 @@ fun GuidanceScreen(
                 ConsultationRequestUiState.Idle -> Unit
 
                 ConsultationRequestUiState.Requesting ->
-                    Unit
+                    CustomerSubmittingState(
+                        message =
+                            "상담사에게 문의 내용을 전달하고 있어요.",
+                    )
 
                 is ConsultationRequestUiState.Success ->
                     SectionCard("상담 요청 완료") {
