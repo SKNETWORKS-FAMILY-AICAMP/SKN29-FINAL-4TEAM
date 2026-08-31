@@ -15,6 +15,7 @@ from .llm_contracts import (
     SymptomStructuringLLMClient,
     SymptomStructuringRequest,
 )
+from ..common.timeout import call_with_wall_clock_timeout
 from ..schemas import StructuredSymptom, TraceContext
 from .symptom_normalizer import SymptomNormalizer
 
@@ -134,11 +135,15 @@ class SymptomStructurer:
                 )
                 return fallback
             try:
-                response = self.llm_client.structure_symptom(
-                    SymptomStructuringRequest(
-                        raw_symptom=raw_text,
-                        selected_symptoms=tuple(selected),
-                        previous_answers=tuple(previous),
+                request = SymptomStructuringRequest(
+                    raw_symptom=raw_text,
+                    selected_symptoms=tuple(selected),
+                    previous_answers=tuple(previous),
+                )
+                response = call_with_wall_clock_timeout(
+                    lambda: self.llm_client.structure_symptom(
+                        request,
+                        timeout_seconds=timeout_seconds,
                     ),
                     timeout_seconds=timeout_seconds,
                 )

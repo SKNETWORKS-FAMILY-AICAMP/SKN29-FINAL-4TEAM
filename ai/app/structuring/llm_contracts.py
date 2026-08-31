@@ -131,7 +131,7 @@ class FollowUpWording(BaseModel):
 
     target_field: str = Field(min_length=1, max_length=100)
     question_text: str = Field(min_length=1, max_length=200)
-    options: list[str] = Field(default_factory=list, max_length=5)
+    options: list[str] = Field(default_factory=list, max_length=6)
     allow_free_text: bool = False
 
 

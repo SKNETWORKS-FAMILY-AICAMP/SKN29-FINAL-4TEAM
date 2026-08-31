@@ -312,7 +312,9 @@ def test_mcp_no_evidence_and_cross_model_evidence_fail_closed(monkeypatch):
         model_code="WPUIAC425SNW",
     )
     assert empty.context.retrieval_outcome == RetrievalOutcome.NO_MATCH
-    assert empty.to_analysis_result().status.value == "FALLBACK"
+    assert empty.to_analysis_result().status.value == "SUCCEEDED"
+    assert empty.context.awaiting_customer_input is True
+    assert empty.context.followup_questions
     assert empty.context.evidence_references == []
 
     wrong_search = _SearchService([_chunk("WPUIAC606SNW")])

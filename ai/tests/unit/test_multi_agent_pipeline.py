@@ -65,6 +65,31 @@ class EvidenceSearchService:
         ]
 
 
+class AmbiguousHotWaterSearchService:
+    def search(self, *args, **kwargs):
+        return [
+            RetrievedChunk(
+                chunk_id="RAG-WPUJAC104DWH-HOT-AMBIGUOUS",
+                document_title="WPU-JAC104D 사용설명서",
+                document_version="REV.00",
+                page=37,
+                page_refs=[37],
+                manual_model="WPUJAC104DWH",
+                model_code="WPUJAC104DWH",
+                product_generation="D",
+                content=(
+                    "첫 출수에서만 온수가 미지근할 수 있습니다. "
+                    "여러 잔을 연속 출수할 때 온수가 미지근해질 수 있습니다."
+                ),
+                similarity_score=0.92,
+                official_url="https://example.invalid/official-manual",
+                verification_status="official_verified",
+                allowed_use=True,
+                topic_code="symptom_hot_water_safety",
+            )
+        ]
+
+
 class TasteEvidenceSearchService:
     def __init__(self):
         self.calls = 0
@@ -302,6 +327,49 @@ def test_multi_agent_evidence_path_matches_single_rag_public_contract():
     ]
 
 
+def test_missing_fields_do_not_block_retrieval_when_evidence_is_sufficient():
+    ctx = PipelineContext(
+        trace_context=TraceContext(
+            inquiry_id=INQUIRY_ID,
+            correlation_id=CORRELATION_ID,
+            ai_request_id="ai-req-retrieval-first",
+            state_version=1,
+        ),
+        raw_symptom="찬물이 약하게 나와요",
+    )
+    token = CancellationToken()
+
+    symptom_output = SymptomAnalysisAgent(token).run(ctx)
+    assert symptom_output.missing_fields
+    assert symptom_output.followup_questions == []
+    evidence_output = EvidenceAnalysisAgent(EvidenceSearchService(), token).run(ctx)
+
+    assert evidence_output.retrieval_outcome == RetrievalOutcome.AVAILABLE
+    assert evidence_output.evidence_sufficient is True
+    assert evidence_output.request_more_information is False
+    assert ctx.followup_questions == []
+
+
+def test_ambiguous_evidence_generates_scenario_distinguishing_question():
+    result = _run_multi_agent(
+        search_service=AmbiguousHotWaterSearchService(),
+        raw_symptom="온수가 미지근해요",
+        llm_client=UnexpectedGuidanceLLMClient(),
+    )
+
+    assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
+    assert result.context.evidence_sufficient is False
+    assert result.context.evidence_clarification_reason == (
+        "EVIDENCE_SCENARIOS_AMBIGUOUS"
+    )
+    assert result.context.awaiting_customer_input is True
+    assert len(result.context.followup_questions) == 1
+    question = result.context.followup_questions[0]
+    assert question.target_field == "occurrence_condition"
+    assert "첫 잔" in " ".join(question.options)
+    assert "연속" in " ".join(question.options)
+
+
 def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence():
     raw_symptom = "출수 온도가 이상합니다."
     result = _run_multi_agent(
@@ -332,9 +400,10 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     )
 
 
-def test_multi_agent_earthy_taste_waits_for_context_before_evidence_handoff():
+def test_multi_agent_earthy_taste_retrieves_before_evidence_clarification():
+    search_service = TasteEvidenceSearchService()
     result = _run_multi_agent(
-        search_service=UnexpectedSearchService(),
+        search_service=search_service,
         raw_symptom="물에서 흙맛이 나는 것 같아요",
         llm_client=UnexpectedGuidanceLLMClient(),
     )
@@ -342,7 +411,8 @@ def test_multi_agent_earthy_taste_waits_for_context_before_evidence_handoff():
     reasons = [item.reason_code for item in result.multi_agent_metadata.handoffs]
 
     assert result.context.awaiting_customer_input is True
-    assert result.context.retrieval_outcome == RetrievalOutcome.NOT_RUN
+    assert search_service.calls == 1
+    assert result.context.retrieval_outcome == RetrievalOutcome.NO_MATCH
     assert result.multi_agent_metadata.awaiting_customer_input is True
     assert response.status.value == "SUCCEEDED"
     assert response.failure_stage is None
@@ -351,8 +421,8 @@ def test_multi_agent_earthy_taste_waits_for_context_before_evidence_handoff():
     assert response.evidence_references == []
     assert response.usage_guidance.guidance_status == UsageGuidanceStatus.PENDING_CONSULTATION
     assert HandoffReason.CUSTOMER_INPUT_PENDING in reasons
-    assert HandoffReason.RETRIEVAL_REQUIRED not in reasons
-    assert AgentRole.EVIDENCE_ANALYSIS not in {
+    assert HandoffReason.RETRIEVAL_REQUIRED in reasons
+    assert AgentRole.EVIDENCE_ANALYSIS in {
         item.to_agent for item in result.multi_agent_metadata.handoffs
     }
 

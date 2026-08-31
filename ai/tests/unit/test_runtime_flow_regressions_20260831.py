@@ -13,6 +13,9 @@ from ai.app.retrieval.filters.scenario_evidence_selector import ScenarioEvidence
 from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
 from ai.app.retrieval.query.context_builder import RetrievalContextBuilder
 from ai.app.orchestration.clarification_policy import should_wait_for_customer_input
+from ai.app.orchestration.evidence_clarification_policy import (
+    EvidenceClarificationPolicy,
+)
 from ai.app.orchestration.pipeline_context import PipelineContext
 from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.orchestration.pipelines.single_rag_pipeline import SingleRAGPipeline
@@ -100,6 +103,14 @@ def test_occurrence_condition_start_time_question_falls_back_only_that_field():
             )
         ],
     )
+
+
+@pytest.mark.parametrize(
+    "raw_text",
+    ["지난주부터", "지난달부터", "며칠 전부터", "지난 주말부터"],
+)
+def test_relative_time_expressions_are_preserved_without_reasking(raw_text):
+    assert SymptomNormalizer().extract_occurrence_time(raw_text) == raw_text
 
     assert validation.questions == fallback
     assert validation.fallback_fields == ("occurrence_condition",)
@@ -820,8 +831,51 @@ def test_single_rag_waits_for_required_question_but_not_optional_question():
     )
 
     assert should_wait_for_customer_input(ctx) is True
-    assert SingleRAGPipeline._route_after_missing_fields({"ctx": ctx}) == "questionnaire_pending"
+    assert SingleRAGPipeline._route_after_missing_fields({"ctx": ctx}) == "retrieval"
+    ctx.evidence_clarification_reason = "NO_EVIDENCE_REQUIRES_DISAMBIGUATION"
+    assert SingleRAGPipeline._route_after_evidence({"ctx": ctx}) == "questionnaire_pending"
     ctx.missing_fields[0] = ctx.missing_fields[0].model_copy(
         update={"importance": "low"}
     )
+    ctx.evidence_clarification_reason = None
+    assert should_wait_for_customer_input(ctx) is False
+    assert SingleRAGPipeline._route_after_evidence({"ctx": ctx}) == "generation"
+
+
+def test_evidence_clarification_limit_does_not_wait_without_a_question():
+    ctx = PipelineContext(
+        trace_context=TraceContext(
+            inquiry_id=UUID("018f2f9b-7c30-7981-b541-1a987c88b703"),
+            correlation_id=UUID("018f2f9b-7c30-7981-b541-1a987c88b704"),
+            ai_request_id="ai-req-clarification-limit",
+            state_version=1,
+        ),
+        raw_symptom="물에서 흙맛이 나요",
+        previous_answers=[
+            {
+                "question_id": "followup-occurrence-time",
+                "answer_text": "오늘부터",
+            }
+        ],
+        structured_symptom=StructuredSymptom(symptom_type="물맛/냄새 이상"),
+        safety_assessment=SafetyAssessment(
+            risk_level="general",
+            priority="general_guidance",
+            requires_consultation=False,
+            matched_safety_rule_ids=[],
+            safety_reason="일반",
+        ),
+        missing_fields=[
+            MissingField(
+                field_name="taste_odor_applicability",
+                reason="근거 적용성 확인",
+                importance="medium",
+            )
+        ],
+    )
+
+    decision = EvidenceClarificationPolicy().decide(ctx)
+
+    assert decision.reason == "CLARIFICATION_LIMIT_REACHED"
+    assert decision.target_fields == ()
     assert should_wait_for_customer_input(ctx) is False

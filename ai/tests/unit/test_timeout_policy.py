@@ -16,12 +16,19 @@ from ai.app.common.protected_database import ProtectedDatabaseOperationError
 def test_stage_timeout_policy_matches_configured_budget():
     policy = get_stage_timeout_policy()
 
-    assert policy.for_stage("STRUCTURING") == 5.0
-    assert policy.for_stage("CHECKING_MISSING_FIELDS") == 5.0
+    assert policy.for_stage("STRUCTURING") == 8.0
+    assert policy.for_stage("CHECKING_MISSING_FIELDS") == 8.0
     assert policy.for_stage("SAFETY_CHECK") == 3.0
     assert policy.for_stage("RETRIEVING") == 5.0
     assert policy.for_stage("GENERATING") == 15.0
     assert policy.for_stage("VALIDATING") == 3.0
+    assert policy.for_provider("SYMPTOM_STRUCTURING") == 6.0
+    assert policy.for_provider("FOLLOWUP_WORDING") == 4.0
+    assert (
+        policy.for_provider("SYMPTOM_STRUCTURING")
+        < policy.for_stage("STRUCTURING")
+        < 30.0
+    )
 
 
 def test_retry_policy_is_enabled_for_transient_failures_only():

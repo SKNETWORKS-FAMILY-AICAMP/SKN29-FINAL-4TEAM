@@ -3,7 +3,7 @@
 import time
 
 from ...retrieval import EvidenceApplicabilityGate
-from ...schemas import AiStage, MissingField, ProcessingTrace
+from ...schemas import AiStage, FollowUpQuestion, MissingField, ProcessingTrace
 from ...structuring import (
     DuplicateQuestionGuard,
     FollowUpQuestionGenerator,
@@ -18,8 +18,10 @@ def execute_missing_fields_stage(
     llm_client: FollowUpWordingLLMClient | None = None,
     *,
     timeout_seconds: float = 4.0,
+    target_field_names: tuple[str, ...] | None = None,
+    question_overrides: tuple[FollowUpQuestion, ...] = (),
 ) -> None:
-    """구조화 결과에서 누락된 값만 질문으로 변환한다."""
+    """누락은 전체 기록하되 Evidence가 선택한 field만 질문으로 변환한다."""
     started_at = time.perf_counter()
     if ctx.structured_symptom is None:
         raise RuntimeError("누락 필드 검사 전에 증상 구조화가 필요합니다.")
@@ -52,8 +54,31 @@ def execute_missing_fields_stage(
                 importance="medium",
             )
         )
+    selected_missing_fields = ctx.missing_fields
+    if target_field_names is not None:
+        selected = set(target_field_names)
+        selected_missing_fields = [
+            item for item in ctx.missing_fields if item.field_name in selected
+        ]
+    override_by_field = {item.target_field: item for item in question_overrides}
+    applicability_question = applicability_gate.followup_question(
+        symptom_type=ctx.structured_symptom.symptom_type,
+        previous_answers=ctx.previous_answers,
+    )
+    if (
+        applicability_question is not None
+        and (
+            target_field_names is None
+            or applicability_gate.TARGET_FIELD in target_field_names
+        )
+    ):
+        override_by_field.setdefault(
+            applicability_gate.TARGET_FIELD,
+            applicability_question,
+        )
+
     generated = FollowUpQuestionGenerator(llm_client=llm_client).generate(
-        ctx.missing_fields,
+        selected_missing_fields,
         symptom=ctx.structured_symptom,
         raw_symptom=ctx.raw_symptom,
         selected_symptoms=ctx.selected_symptoms,
@@ -61,17 +86,12 @@ def execute_missing_fields_stage(
         trace_context=ctx.trace_context,
         model_code=ctx.model_code,
         timeout_seconds=timeout_seconds,
+        question_overrides=override_by_field,
     )
     ctx.followup_questions = DuplicateQuestionGuard().filter(
         generated,
         ctx.previous_answers,
     )
-    applicability_question = applicability_gate.followup_question(
-        symptom_type=ctx.structured_symptom.symptom_type,
-        previous_answers=ctx.previous_answers,
-    )
-    if applicability_question is not None:
-        ctx.followup_questions.append(applicability_question)
     elapsed_ms = (time.perf_counter() - started_at) * 1000.0
     ctx.processing_traces.append(
         ProcessingTrace(

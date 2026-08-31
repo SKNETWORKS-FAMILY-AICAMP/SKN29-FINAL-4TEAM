@@ -14,6 +14,7 @@ from ...retrieval import RetrievalConfigurationError
 from ...schemas import AiStage
 from ..stages import (
     execute_generation_stage,
+    execute_evidence_clarification_stage,
     execute_missing_fields_stage,
     execute_questionnaire_pending_stage,
     execute_retrieval_stage,
@@ -49,6 +50,7 @@ class SingleRAGPipeline:
         graph.add_node("missing_fields", self._missing_fields)
         graph.add_node("questionnaire_pending", self._questionnaire_pending)
         graph.add_node("retrieval", self._retrieval)
+        graph.add_node("evidence_clarification", self._evidence_clarification)
         graph.add_node("generation", self._generation)
         graph.add_node("validation", self._validation)
         graph.add_edge(START, "structuring")
@@ -61,25 +63,31 @@ class SingleRAGPipeline:
         graph.add_conditional_edges(
             "missing_fields",
             self._route_after_missing_fields,
+            {"retrieval": "retrieval"},
+        )
+        graph.add_edge("retrieval", "evidence_clarification")
+        graph.add_conditional_edges(
+            "evidence_clarification",
+            self._route_after_evidence,
             {
                 "questionnaire_pending": "questionnaire_pending",
-                "retrieval": "retrieval",
+                "generation": "generation",
             },
         )
         graph.add_edge("questionnaire_pending", "validation")
-        graph.add_edge("retrieval", "generation")
         graph.add_edge("generation", "validation")
         graph.add_edge("validation", END)
         self.graph = graph.compile()
 
     def _structuring(self, state):
-        timeout_seconds = self.timeout_policy.for_stage(AiStage.STRUCTURING.value)
         self._run_stage(
             AiStage.STRUCTURING,
             lambda ctx: execute_structuring_stage(
                 ctx,
                 self.symptom_llm_client,
-                timeout_seconds=min(4.0, timeout_seconds),
+                timeout_seconds=self.timeout_policy.for_provider(
+                    "SYMPTOM_STRUCTURING"
+                ),
             ),
             state["ctx"],
         )
@@ -98,15 +106,15 @@ class SingleRAGPipeline:
         )
 
     def _missing_fields(self, state):
-        timeout_seconds = self.timeout_policy.for_stage(
-            AiStage.CHECKING_MISSING_FIELDS.value
-        )
         self._run_stage(
             AiStage.CHECKING_MISSING_FIELDS,
             lambda ctx: execute_missing_fields_stage(
                 ctx,
-                self.followup_llm_client,
-                timeout_seconds=min(4.0, timeout_seconds),
+                None,
+                timeout_seconds=self.timeout_policy.for_provider(
+                    "FOLLOWUP_WORDING"
+                ),
+                target_field_names=(),
             ),
             state["ctx"],
         )
@@ -114,10 +122,14 @@ class SingleRAGPipeline:
 
     @staticmethod
     def _route_after_missing_fields(state):
+        return "retrieval"
+
+    @staticmethod
+    def _route_after_evidence(state):
         return (
             "questionnaire_pending"
             if should_wait_for_customer_input(state["ctx"])
-            else "retrieval"
+            else "generation"
         )
 
     def _questionnaire_pending(self, state):
@@ -140,6 +152,22 @@ class SingleRAGPipeline:
                 self.search_service,
                 cancellation_token=self.cancellation_token,
             )
+            if getattr(self.search_service, "rejected_chunk_ids", []):
+                state["ctx"].evidence_clarification_allowed = False
+        return state
+
+    def _evidence_clarification(self, state):
+        self._run_stage(
+            AiStage.CHECKING_MISSING_FIELDS,
+            lambda ctx: execute_evidence_clarification_stage(
+                ctx,
+                self.followup_llm_client,
+                timeout_seconds=self.timeout_policy.for_provider(
+                    "FOLLOWUP_WORDING"
+                ),
+            ),
+            state["ctx"],
+        )
         return state
 
     def _generation(self, state):

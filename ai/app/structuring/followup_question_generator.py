@@ -13,6 +13,7 @@ from .llm_contracts import (
     FollowUpWordingRequest,
     MissingFieldContext,
 )
+from ..common.timeout import call_with_wall_clock_timeout
 from ..schemas import FollowUpQuestion, MissingField, StructuredSymptom, TraceContext
 
 
@@ -59,7 +60,22 @@ _QUESTION_INTENT_MARKERS = {
         "버튼을 누를 때",
     ),
     "actions_taken": ("조치", "확인", "해보", "해 보", "시도", "취하", "무엇을 했"),
+    "taste_odor_applicability": (
+        "장기 부재",
+        "장시간 미사용",
+        "설치 장소",
+        "시작",
+    ),
 }
+
+_TASTE_ODOR_APPLICABILITY_OPTIONS = [
+    "10일 이내 부재 후",
+    "10일 이상 부재 후",
+    "장시간 미사용 후",
+    "부적합 장소 설치 후",
+    "해당 없음",
+    "확인 불가",
+]
 
 
 @dataclass(frozen=True, slots=True)
@@ -105,8 +121,12 @@ class FollowUpQuestionGenerator:
         trace_context: TraceContext | None = None,
         model_code: str = "",
         timeout_seconds: float = 4.0,
+        question_overrides: dict[str, FollowUpQuestion] | None = None,
     ) -> list[FollowUpQuestion]:
-        fallback = self._fixed_questions(missing_fields)
+        fallback = self._fixed_questions(
+            missing_fields,
+            question_overrides=question_overrides,
+        )
         if not fallback:
             return []
         target_fields = tuple(question.target_field for question in fallback)
@@ -140,29 +160,33 @@ class FollowUpQuestionGenerator:
                 )
                 return fallback
             try:
-                response = self.llm_client.generate_followup_wording(
-                    FollowUpWordingRequest(
-                        structured_symptom=symptom,
-                        target_fields=target_fields,
-                        raw_symptom=raw_symptom,
-                        selected_symptoms=tuple(selected_symptoms or ()),
-                        previous_answers=tuple(
-                            {
-                                "question_id": str(answer.get("question_id", "")),
-                                "answer_text": str(answer.get("answer_text", "")),
-                            }
-                            for answer in (previous_answers or ())
-                            if isinstance(answer, dict)
-                        ),
-                        missing_field_contexts=tuple(
-                            MissingFieldContext(
-                                target_field=missing.field_name,
-                                reason=missing.reason,
-                                importance=missing.importance,
-                            )
-                            for missing in missing_fields
-                            if missing.field_name in target_fields
-                        ),
+                request = FollowUpWordingRequest(
+                    structured_symptom=symptom,
+                    target_fields=target_fields,
+                    raw_symptom=raw_symptom,
+                    selected_symptoms=tuple(selected_symptoms or ()),
+                    previous_answers=tuple(
+                        {
+                            "question_id": str(answer.get("question_id", "")),
+                            "answer_text": str(answer.get("answer_text", "")),
+                        }
+                        for answer in (previous_answers or ())
+                        if isinstance(answer, dict)
+                    ),
+                    missing_field_contexts=tuple(
+                        MissingFieldContext(
+                            target_field=missing.field_name,
+                            reason=missing.reason,
+                            importance=missing.importance,
+                        )
+                        for missing in missing_fields
+                        if missing.field_name in target_fields
+                    ),
+                )
+                response = call_with_wall_clock_timeout(
+                    lambda: self.llm_client.generate_followup_wording(
+                        request,
+                        timeout_seconds=timeout_seconds,
                     ),
                     timeout_seconds=timeout_seconds,
                 )
@@ -249,9 +273,16 @@ class FollowUpQuestionGenerator:
     def _fixed_questions(
         self,
         missing_fields: list[MissingField],
+        *,
+        question_overrides: dict[str, FollowUpQuestion] | None = None,
     ) -> list[FollowUpQuestion]:
         questions: list[FollowUpQuestion] = []
+        overrides = question_overrides or {}
         for missing in missing_fields:
+            override = overrides.get(missing.field_name)
+            if override is not None:
+                questions.append(override)
+                continue
             definition = self._QUESTIONS.get(missing.field_name)
             if definition is None:
                 continue
@@ -381,10 +412,11 @@ class FollowUpQuestionGenerator:
         if not options:
             return fallback_options
         normalized = [" ".join(option.split()) for option in options]
-        if not 2 <= len(normalized) <= 5:
+        maximum_options = 6 if target_field == "taste_odor_applicability" else 5
+        if not 2 <= len(normalized) <= maximum_options:
             raise _FollowUpFieldValidationError(
                 "OPTION_FORMAT_INVALID",
-                "Follow-up 선택지는 2~5개여야 합니다.",
+                "Follow-up 선택지는 2~6개여야 합니다.",
             )
         if any(not option or len(option) > 80 or "\n" in option for option in normalized):
             raise _FollowUpFieldValidationError(
@@ -425,6 +457,14 @@ class FollowUpQuestionGenerator:
                 raise _FollowUpFieldValidationError(
                     "CANONICAL_OPTION_MISMATCH",
                     "Closed-domain 선택지가 변경되었습니다.",
+                )
+            return normalized
+
+        if target_field == "taste_odor_applicability":
+            if normalized != _TASTE_ODOR_APPLICABILITY_OPTIONS:
+                raise _FollowUpFieldValidationError(
+                    "CANONICAL_OPTION_MISMATCH",
+                    "근거 적용성 선택지가 변경되었습니다.",
                 )
             return normalized
 

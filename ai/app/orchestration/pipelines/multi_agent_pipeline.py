@@ -20,7 +20,6 @@ from ..agents import (
 )
 from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
-from ..clarification_policy import should_wait_for_customer_input
 
 
 class MultiAgentPipeline:
@@ -61,6 +60,7 @@ class MultiAgentPipeline:
             self.search_service,
             token,
             retrieval_configuration_error=self.retrieval_configuration_error,
+            followup_llm_client=self.followup_llm_client,
         )
         care_agent = CareDecisionAgent(token, self.llm_client)
 
@@ -70,25 +70,10 @@ class MultiAgentPipeline:
         if symptom_output.safety_assessment.risk_level == RiskLevel.DANGER:
             shared.handoff(AgentRole.CARE_DECISION, HandoffReason.DANGER_PRIORITY)
             care_agent.run(ctx)
-        elif should_wait_for_customer_input(ctx):
-            shared.awaiting_customer_input = True
-            shared.handoff(
-                AgentRole.CARE_DECISION,
-                HandoffReason.CUSTOMER_INPUT_PENDING,
-            )
-            care_agent.run(ctx, awaiting_customer_input=True)
         else:
             shared.handoff(AgentRole.EVIDENCE_ANALYSIS, HandoffReason.RETRIEVAL_REQUIRED)
             evidence_output = evidence_agent.run(ctx)
             if evidence_output.request_more_information:
-                if shared.feedback_handoff_count >= 1:
-                    raise RuntimeError("한 실행의 Evidence Feedback은 1회를 초과할 수 없습니다.")
-                shared.feedback_handoff_count += 1
-                shared.handoff(
-                    AgentRole.SYMPTOM_ANALYSIS,
-                    HandoffReason.MORE_INFORMATION_REQUIRED,
-                )
-                symptom_agent.review_evidence_feedback(ctx)
                 shared.awaiting_customer_input = True
                 shared.handoff(
                     AgentRole.CARE_DECISION,

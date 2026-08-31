@@ -6,6 +6,7 @@ import json
 import os
 import re
 from pathlib import Path
+from threading import Lock
 
 import httpx
 import yaml
@@ -27,6 +28,36 @@ from .llm_client import (
     LLMOutputValidationError,
     OpenAIResponsesLLMClient,
 )
+
+
+_SHARED_HTTP_CLIENT: httpx.Client | None = None
+_SHARED_HTTP_CLIENT_LOCK = Lock()
+
+
+def get_shared_natural_language_http_client() -> httpx.Client:
+    """증상 구조화와 Follow-up Provider가 TCP/TLS connection pool을 공유한다."""
+
+    global _SHARED_HTTP_CLIENT
+    with _SHARED_HTTP_CLIENT_LOCK:
+        if _SHARED_HTTP_CLIENT is None or _SHARED_HTTP_CLIENT.is_closed:
+            _SHARED_HTTP_CLIENT = httpx.Client(
+                limits=httpx.Limits(
+                    max_connections=20,
+                    max_keepalive_connections=10,
+                )
+            )
+        return _SHARED_HTTP_CLIENT
+
+
+def close_shared_natural_language_http_client() -> None:
+    """앱 종료 시 공유 Provider connection pool을 정리한다."""
+
+    global _SHARED_HTTP_CLIENT
+    with _SHARED_HTTP_CLIENT_LOCK:
+        client = _SHARED_HTTP_CLIENT
+        _SHARED_HTTP_CLIENT = None
+    if client is not None:
+        client.close()
 
 
 class _TaskConfiguredResponsesClient(OpenAIResponsesLLMClient):

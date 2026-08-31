@@ -240,6 +240,7 @@ class PipelineRouter:
             from ..integrations.llm.natural_language_client import (
                 OpenAIResponsesFollowUpWordingClient,
                 OpenAIResponsesSymptomStructuringClient,
+                get_shared_natural_language_http_client,
             )
 
             client_class = (
@@ -247,7 +248,9 @@ class PipelineRouter:
                 if task_name == "symptom_structuring"
                 else OpenAIResponsesFollowUpWordingClient
             )
-            return client_class.from_environment()
+            return client_class.from_environment(
+                http_client=get_shared_natural_language_http_client()
+            )
         except LLMConfigurationError:
             # 구조화·질문 표현은 기존 결정적 구현으로 안전하게 복귀한다.
             _log_llm_configuration_fallback_once(
@@ -392,6 +395,7 @@ class PipelineRouter:
             selected_symptoms=selected_symptoms or [],
             previous_answers=previous_answers or []
         )
+        ctx.evidence_clarification_allowed = product_context.runtime_approved
 
         base_search_service = (
             _create_mcp_evidence_search_service()

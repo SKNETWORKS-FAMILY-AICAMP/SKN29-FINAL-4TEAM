@@ -64,7 +64,11 @@ class EmptySearchService:
 
 
 class MixedTasteEvidenceSearchService:
+    def __init__(self):
+        self.calls = 0
+
     def search(self, *args, **kwargs):
+        self.calls += 1
         return [
             RetrievedChunk(
                 chunk_id="RAG-WPUJAC104DWH-LOW-FLOW-001",
@@ -179,19 +183,21 @@ COMPLETE_TASTE_ANSWERS = [
 ]
 
 
-def test_earthy_taste_waits_for_context_before_retrieval_or_llm():
+def test_earthy_taste_retrieves_before_clarification_and_skips_guidance_llm():
     client = SequenceLLMClient(llm_response())
+    search_service = MixedTasteEvidenceSearchService()
 
     pipeline_result = run_pipeline(
-        search_service=UnexpectedSearchService(),
+        search_service=search_service,
         llm_client=client,
         raw_symptom="물에서 흙맛이 나는 것 같아요",
     )
     result = pipeline_result.to_analysis_result()
 
     assert client.calls == 0
+    assert search_service.calls == 1
     assert pipeline_result.context.awaiting_customer_input is True
-    assert pipeline_result.context.retrieval_outcome.value == "NOT_RUN"
+    assert pipeline_result.context.retrieval_outcome.value == "NO_MATCH"
     assert result.status.value == "SUCCEEDED"
     assert result.failure_stage is None
     assert {

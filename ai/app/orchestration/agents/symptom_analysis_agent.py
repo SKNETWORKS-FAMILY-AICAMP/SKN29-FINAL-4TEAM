@@ -1,4 +1,4 @@
-"""증상 구조화·안전 우선·추가 질문 역할."""
+"""증상 구조화·안전 우선·검색 문맥 생성 역할."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from ..clarification_policy import should_wait_for_customer_input
 
 
 class SymptomAnalysisAgent:
-    """구조화와 질문 후보만 소유하며 최종 안내를 결정하지 않는다."""
+    """구조화와 Safety를 소유하며 질문·최종 안내를 결정하지 않는다."""
 
     allowed_tools = (
         "SymptomStructurer",
@@ -27,7 +27,6 @@ class SymptomAnalysisAgent:
         "SafetyRule",
         "MissingFieldChecker",
         "DuplicateQuestionGuard",
-        "FollowUpWordingLLM",
     )
 
     def __init__(
@@ -43,13 +42,14 @@ class SymptomAnalysisAgent:
         self.followup_llm_client = followup_llm_client
 
     def run(self, ctx: PipelineContext) -> SymptomAgentOutput:
-        structuring_timeout = self.timeout_policy.for_stage(AiStage.STRUCTURING.value)
         self._run_stage(
             AiStage.STRUCTURING,
             lambda current: execute_structuring_stage(
                 current,
                 self.symptom_llm_client,
-                timeout_seconds=min(4.0, structuring_timeout),
+                timeout_seconds=self.timeout_policy.for_provider(
+                    "SYMPTOM_STRUCTURING"
+                ),
             ),
             ctx,
         )
@@ -60,27 +60,20 @@ class SymptomAnalysisAgent:
             ctx.missing_fields = []
             ctx.followup_questions = []
         else:
+            # MissingField는 retrieval context로만 기록하고 이 단계에서는
+            # 고객 입력을 차단하는 질문을 만들지 않는다.
             self._run_stage(
                 AiStage.CHECKING_MISSING_FIELDS,
                 lambda current: execute_missing_fields_stage(
                     current,
-                    self.followup_llm_client,
-                    timeout_seconds=min(
-                        4.0,
-                        self.timeout_policy.for_stage(
-                            AiStage.CHECKING_MISSING_FIELDS.value
-                        ),
+                    None,
+                    timeout_seconds=self.timeout_policy.for_provider(
+                        "FOLLOWUP_WORDING"
                     ),
+                    target_field_names=(),
                 ),
                 ctx,
             )
-        return self._output(ctx)
-
-    def review_evidence_feedback(self, ctx: PipelineContext) -> SymptomAgentOutput:
-        """검색 근거 부족 시 이미 생성된 질문을 고객 입력 대기로 확정한다."""
-
-        if not ctx.followup_questions:
-            raise RuntimeError("Evidence Feedback에 사용할 추가 질문이 없습니다.")
         return self._output(ctx)
 
     def _run_stage(self, stage: AiStage, callback, ctx: PipelineContext) -> None:

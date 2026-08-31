@@ -13,6 +13,9 @@ from .interfaces.http.routes.health_routes import router as health_router
 from .interfaces.http.runtime_policy import get_runtime_policy
 from .interfaces.http.structured_logging import configure_structured_logging
 from .integrations.llm.token_usage import configure_llm_usage_logging
+from .integrations.llm.natural_language_client import (
+    close_shared_natural_language_http_client,
+)
 from .integrations.mcp.session_manager import (
     close_shared_mcp_session_manager,
     warmup_shared_mcp_search_runtime,
@@ -48,9 +51,8 @@ async def _lifespan(app: FastAPI):
                 )
         yield
     finally:
-        await asyncio.to_thread(
-            close_shared_mcp_session_manager
-        )
+        await asyncio.to_thread(close_shared_mcp_session_manager)
+        await asyncio.to_thread(close_shared_natural_language_http_client)
         shutdown_telemetry()
 
 

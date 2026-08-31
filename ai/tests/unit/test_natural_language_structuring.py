@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from contextlib import AbstractContextManager
 from uuid import UUID
 
@@ -889,12 +890,6 @@ def test_pipeline_router_injects_both_natural_language_clients() -> None:
         state_version=1,
         raw_symptom="상태가 이상합니다",
         selected_symptoms=["NOISE"],
-        previous_answers=[
-            {
-                "question_id": "followup-occurrence-time",
-                "answer_text": "답변하지 않음",
-            }
-        ],
     )
 
     assert len(symptom_client.requests) == 1
@@ -903,8 +898,28 @@ def test_pipeline_router_injects_both_natural_language_clients() -> None:
     followup_request = followup_client.requests[0]
     assert followup_request.raw_symptom == "상태가 이상합니다"
     assert followup_request.selected_symptoms == ("NOISE",)
-    assert followup_request.previous_answers[0]["answer_text"] == "답변하지 않음"
+    assert followup_request.previous_answers == ()
     assert followup_request.missing_field_contexts
+
+
+def test_symptom_provider_wall_clock_timeout_uses_deterministic_fallback() -> None:
+    class SlowSymptomClient(FakeSymptomClient):
+        def structure_symptom(self, request, *, timeout_seconds):
+            time.sleep(0.2)
+            return super().structure_symptom(
+                request,
+                timeout_seconds=timeout_seconds,
+            )
+
+    started_at = time.perf_counter()
+    result = SymptomStructurer(llm_client=SlowSymptomClient()).structure(
+        "찬물이 약하게 나와요",
+        timeout_seconds=0.02,
+    )
+
+    assert time.perf_counter() - started_at < 0.15
+    assert result.symptom_type == "출수량 저하"
+    assert result.target_water_type == "냉수"
 
 
 def test_structuring_and_followup_spans_contain_metadata_not_customer_text(

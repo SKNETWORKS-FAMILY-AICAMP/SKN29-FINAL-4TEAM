@@ -57,6 +57,18 @@ class PipelineContext(BaseModel):
         default_factory=list,
         description="고객 원문을 제외한 scenario 근거 선택 내부 trace",
     )
+    evidence_sufficient: bool = Field(
+        False,
+        description="현재 근거만으로 Care Decision을 진행할 수 있는지 표시",
+    )
+    evidence_clarification_reason: Optional[str] = Field(
+        None,
+        description="원문 없이 남기는 Evidence clarification 결정 코드",
+    )
+    evidence_clarification_allowed: bool = Field(
+        True,
+        description="제품·근거 무결성 Guard가 clarification을 허용하는지 표시",
+    )
 
     # 메타데이터 및 지연 추적
     model_metadata: ModelMetadata = Field(

@@ -351,7 +351,9 @@ def test_three_model_integration_profile_allows_iac_retrieval_only_when_explicit
     )
 
     assert delegate.calls > 0
-    assert result.to_analysis_result().status.value == "FALLBACK"
+    assert result.to_analysis_result().status.value == "SUCCEEDED"
+    assert result.context.awaiting_customer_input is True
+    assert result.context.followup_questions
 
 
 def test_runtime_registry_matches_data_contract_and_activation_status():

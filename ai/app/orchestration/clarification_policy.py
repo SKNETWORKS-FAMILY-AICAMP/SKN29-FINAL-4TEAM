@@ -16,6 +16,16 @@ def should_wait_for_customer_input(ctx: PipelineContext) -> bool:
     ):
         return False
 
+    if not ctx.followup_questions:
+        return False
+
+    if ctx.evidence_clarification_reason in {
+        "EVIDENCE_APPLICABILITY_AMBIGUOUS",
+        "EVIDENCE_SCENARIOS_AMBIGUOUS",
+        "NO_EVIDENCE_REQUIRES_DISAMBIGUATION",
+    }:
+        return True
+
     symptom_type = (
         ctx.structured_symptom.symptom_type
         if ctx.structured_symptom is not None
