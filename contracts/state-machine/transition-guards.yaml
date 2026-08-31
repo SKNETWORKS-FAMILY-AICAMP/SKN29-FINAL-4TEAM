@@ -548,6 +548,20 @@ guards:
     error_code: DANGER_RESULT_CONFLICT
     message: 위험 판정과 안전 안내 결과가 충돌합니다.
     expose_to_external_client: false
+- id: G-AI-CONSULTATION-REQUIRED
+  category: SAFETY_AND_EVIDENCE
+  description: 검증된 비위험 AI 결과가 명시적으로 상담 필요를 요구해야 한다.
+  conditions:
+  - ai_result.exists == true
+  - ai_result.validation.passed == true
+  - ai_result.output_schema_valid == true
+  - ai_result.requires_consultation == true
+  - ai_result.danger_detected == false
+  failure:
+    http_status: 409
+    error_code: AI_CONSULTATION_PRECONDITION_FAILED
+    message: AI 상담 전환 조건을 충족하지 못했습니다.
+    expose_to_external_client: false
 - id: G-DANGER-ASSESSMENT-VALID
   category: SAFETY_AND_EVIDENCE
   description: 위험 감지 이벤트에는 재현 가능한 명시적 위험 규칙 결과가 있어야 한다.
@@ -565,12 +579,12 @@ guards:
     expose_to_external_client: false
 - id: G-NO-USABLE-EVIDENCE
   category: SAFETY_AND_EVIDENCE
-  description: 검색은 수행됐지만 고객 안내에 사용할 수 있는 공식 근거가 없어야 한다.
+  description: 검색 결과가 없거나 Backend 정식 근거 검증을 통과한 근거가 없어야 한다.
   conditions:
   - ai_result.exists == true
   - ai_result.retrieval_completed == true
-  - count(filter(ai_result.evidence, evidence.is_official == true and evidence.is_usable == true)) == 0
-  - ai_result.requires_consultation == true
+  - backend.verified_evidence is empty
+  - ai_result.evidence is empty or backend.canonical_evidence_verification_failed == true
   failure:
     http_status: 409
     error_code: NO_EVIDENCE_EVENT_PRECONDITION_FAILED

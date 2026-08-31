@@ -38,6 +38,7 @@ import com.skn29.watercare.core.ui.theme.WaterCareTheme
 import com.skn29.watercare.customer.feature.customer.guidance.CustomerResolutionSection
 import com.skn29.watercare.customer.feature.customer.guidance.CustomerResolutionUiState
 import com.skn29.watercare.customer.feature.customer.guidance.GuidanceContent
+import com.skn29.watercare.customer.feature.customer.guidance.GuidanceProcessingDelayedContent
 import com.skn29.watercare.customer.feature.shared.WaterCareScreen
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeContent
 import com.skn29.watercare.customer.feature.customer.home.CustomerHomeUiState
@@ -667,6 +668,61 @@ class CustomerMinimumFlowTest {
             )
                 .assertDoesNotExistCompat()
         }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun cautionPartialStop_showsRestrictedGuidanceAsNormalContent() =
+        runManualComposeUiTest {
+            setContent {
+                WaterCareTheme {
+                    WaterCareScreen(title = "Guidance test") {
+                        GuidanceContent(
+                            guidance = cautionGuidance(),
+                            noEvidence = false,
+                            onRetry = {},
+                        )
+                    }
+                }
+            }
+
+            onNodeWithText("주의가 필요한 안내예요")
+                .assertIsDisplayed()
+            onNodeWithText("주의 · 일부 기능 중지")
+                .assertIsDisplayed()
+            onNodeWithText("온수 출수")
+                .performScrollTo()
+                .assertIsDisplayed()
+            onNodeWithText("냉수만 사용하세요.")
+                .performScrollTo()
+                .assertIsDisplayed()
+        }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun delayedProcessing_showsRetryAndCancelRecoveryActions() =
+        runManualComposeUiTest {
+            var retried = false
+            var cancelled = false
+            setContent {
+                WaterCareTheme {
+                    GuidanceProcessingDelayedContent(
+                        onRetry = { retried = true },
+                        onCancel = { cancelled = true },
+                        cancelEnabled = true,
+                    )
+                }
+            }
+
+            onNodeWithText("처리가 예상보다 오래 걸리고 있어요")
+                .assertIsDisplayed()
+            onNodeWithTag("retryDelayedGuidance")
+                .performClick()
+            onNodeWithTag("cancelDelayedInquiry")
+                .performClick()
+            assertTrue(retried)
+            assertTrue(cancelled)
+        }
+
     @Test
     @OptIn(ExperimentalTestApi::class)
     fun completionPending_resolutionActions_areVisibleAndClickable() =
@@ -900,6 +956,25 @@ class CustomerMinimumFlowTest {
         requiresConsultation = true,
         evidence = emptyList(),
         allowedActions = listOf(AllowedAction(code = InquiryActionLabels.REQUEST_CONSULTATION, label = "상담 요청")),
+    )
+
+    private fun cautionGuidance() = GuidanceDisplayModel(
+        inquiryId = TEST_INQUIRY_ID,
+        inquiryCode = "DEMO-CAUTION-001",
+        statusCode = "AI_GUIDANCE",
+        stateVersion = 3,
+        symptomSummary = "온수 온도 이상",
+        riskLevel = RiskLevel.CAUTION,
+        usageStatus = UsageGuidanceStatus.PARTIAL_STOP,
+        usageMessage = "온수 기능만 사용을 중지하세요.",
+        restrictedFunctions = listOf("온수 출수"),
+        safeActions = listOf("냉수만 사용하세요."),
+        escalationConditions = emptyList(),
+        prohibitedActions = listOf("제품 분해"),
+        nextAction = "온수 사용 중지",
+        requiresConsultation = false,
+        evidence = emptyList(),
+        allowedActions = emptyList(),
     )
 
     companion object {

@@ -137,10 +137,28 @@ class InquiryAIService:
             idempotency_key=str(ai_request_id)
         ).first()
         if existing is not None:
+            replay_payload = request_payload
+            if (
+                existing.inquiry_id == inquiry.pk
+                and isinstance(existing.input_payload, dict)
+                and request_payload.get("state_version")
+                != existing.input_payload.get("state_version")
+            ):
+                # A successful first call can advance Inquiry.state_version.
+                # Compare all current request fields against the original
+                # version so the same logical retry replays, while changed
+                # symptom/answer content still conflicts.
+                replay_payload = {
+                    **request_payload,
+                    "state_version": existing.input_payload.get(
+                        "state_version"
+                    ),
+                }
+                input_digest = cls._input_digest(replay_payload)
             outcome = cls._replay_or_conflict(
                 existing,
                 input_digest=input_digest,
-                request_payload=request_payload,
+                request_payload=replay_payload,
                 validator=contract_validator,
             )
             cls._log_outcome(outcome, trace=trace)
@@ -589,6 +607,15 @@ class InquiryAIService:
                     },
                 )
                 verified_evidence_ids = []
+        if (
+            result.event_candidate == "SAFE_GUIDANCE_READY"
+            and not verified_evidence_ids
+        ):
+            # A schema-valid draft is still not customer-visible when the
+            # Backend cannot bind it to canonical official evidence.
+            guidance.review_status_code = GuidanceReviewPolicy.REJECTED
+            guidance.full_clean()
+            guidance.save(update_fields=["review_status_code", "updated_at"])
         cls._update_inquiry_projection(
             inquiry,
             result=result,
@@ -956,16 +983,6 @@ class InquiryAIService:
             )
             item.full_clean()
             item.save()
-        if guidance.review_status_code == GuidanceReviewPolicy.PENDING:
-            from apps.inquiries.services.human_review_service import (
-                HumanReviewService,
-            )
-
-            HumanReviewService.create_pending(
-                guidance=guidance,
-                ai_request_id=run.idempotency_key,
-                source_inquiry_state_version=inquiry.state_version,
-            )
         return guidance
 
     @staticmethod
@@ -1039,6 +1056,10 @@ class InquiryAIService:
         elif references_were_rejected:
             inquiry.evidence_mode = Inquiry.EvidenceMode.PARTIAL_EVIDENCE
             inquiry.evidence_ids = []
+            inquiry.usage_guidance_status = (
+                Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+            )
+            update_fields.append("usage_guidance_status")
             update_fields.extend(["evidence_mode", "evidence_ids"])
         inquiry.save(update_fields=update_fields)
 
@@ -1054,13 +1075,26 @@ class InquiryAIService:
         if event is None:
             return None, "NO_STATE_EVENT_CANDIDATE"
         if event == "SAFE_GUIDANCE_READY" and not verified_evidence_ids:
-            return None, "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+            # Reuse the existing no-usable-evidence transition when the AI
+            # cited evidence but Backend canonical verification rejected it.
+            event = "NO_EVIDENCE"
 
         domain_results = {
             "G-PRODUCT-VALIDATION-FAILED": (
                 result.is_product_validation_failed
             ),
-            "G-NO-USABLE-EVIDENCE": result.is_no_evidence,
+            "G-NO-USABLE-EVIDENCE": (
+                result.is_no_evidence
+                or (
+                    bool(result.payload["evidence_references"])
+                    and not verified_evidence_ids
+                )
+            ),
+            "G-AI-CONSULTATION-REQUIRED": (
+                event == "AI_CONSULTATION_REQUIRED"
+                and result.requires_consultation
+                and result.risk_level != "danger"
+            ),
             "G-SAFE-GUIDANCE-VALID": (
                 event == "SAFE_GUIDANCE_READY"
                 and not result.payload["safety_assessment"][

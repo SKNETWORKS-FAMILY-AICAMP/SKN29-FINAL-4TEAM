@@ -35,17 +35,20 @@ class GuidanceReviewPolicy:
 
     @classmethod
     def initial_status(cls, result: ReviewableAIResult) -> str:
-        """Return the fail-closed initial review status for one AI result."""
+        """Return the customer-visibility status for one validated AI result.
 
-        if result.is_fallback or result.is_no_evidence:
+        Runtime guidance is decided by deterministic Backend safety/evidence
+        gates. HumanReview remains available for separate quality-review
+        workflows, but is not a PRE_SEND dependency of the customer flow.
+        """
+
+        if (
+            result.is_fallback
+            or result.is_no_evidence
+            or result.requires_consultation
+        ):
             return cls.REJECTED
-        if result.risk_level == "caution":
-            return (
-                cls.PENDING
-                if result.requires_consultation
-                else cls.CONFIRMED
-            )
-        if result.risk_level in {"general", "danger"}:
+        if result.risk_level in {"general", "caution"}:
             # CONFIRMED means the existing Backend safety/evidence gate, not
             # a human approval. APPROVED remains reserved for a future
             # consultant decision API.

@@ -31,7 +31,10 @@ from apps.evidence.models import (
     SourceDocument,
 )
 from apps.evidence.services import EvidenceReferenceVerifier
-from apps.inquiries.models import Guidance, Inquiry
+from apps.inquiries.models import Guidance, HumanReview, Inquiry
+from apps.inquiries.services.customer_inquiry_service import (
+    CustomerInquiryService,
+)
 from apps.inquiries.services.inquiry_ai_service import InquiryAIService
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
@@ -731,6 +734,74 @@ def test_default_verifier_persists_evidence_link_and_applies_safe_event():
     assert AIRetrievalHit.objects.filter(
         retrieval_run=retrieval_run,
     ).count() == 1
+    http_client.close()
+
+
+def test_caution_partial_stop_is_published_without_pre_send_human_review():
+    mapping, inquiry = create_verified_mapping(sequence=122)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        request_payload = json.loads(request.content.decode("utf-8"))
+        example_path = (
+            DEFAULT_CONTRACT_ROOT
+            / "examples"
+            / "symptom-analysis"
+            / "caution-pre-send-human-review.json"
+        )
+        response = json.loads(example_path.read_text(encoding="utf-8"))[
+            "response"
+        ]
+        for field in (
+            "inquiry_id",
+            "correlation_id",
+            "ai_request_id",
+            "state_version",
+            "model_code",
+        ):
+            response[field] = request_payload[field]
+        response["evidence_references"] = [evidence_reference(mapping)]
+        return httpx.Response(200, json=response)
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    client = AIClient(
+        base_url="http://ai.test",
+        mode="local",
+        http_client=http_client,
+    )
+
+    outcome = InquiryAIService.analyze_inquiry(
+        inquiry_public_id=inquiry.public_id,
+        correlation_id=uuid4(),
+        ai_request_id=uuid4(),
+        client=client,
+    )
+
+    assert outcome.event_candidate == "SAFE_GUIDANCE_READY"
+    assert outcome.event_applied == "SAFE_GUIDANCE_READY"
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.AI_GUIDANCE
+    assert inquiry.risk_level_code == Inquiry.RiskLevel.CAUTION
+    assert (
+        inquiry.usage_guidance_status
+        == Inquiry.UsageGuidanceStatus.PARTIAL_STOP
+    )
+    guidance = Guidance.objects.get(inquiry=inquiry)
+    assert guidance.review_status_code == "CONFIRMED"
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
+
+    projected = CustomerInquiryService.guidance_for_customer(
+        actor=inquiry.initiated_by,
+        inquiry_public_id=inquiry.public_id,
+    )
+    assert projected["risk_level"] == "caution"
+    assert projected["usage_guidance_status"] == "PARTIAL_STOP"
+    assert projected["restricted_functions"] == [
+        "해당 기능(냉수/온수) 한정 확인 필요"
+    ]
+    assert projected["safe_actions"] == [
+        "필터 교체 주기 및 전원 램프 상태를 확인하세요.",
+        "자가조치 안내에 따라 점검해 보세요.",
+    ]
     http_client.close()
 
 

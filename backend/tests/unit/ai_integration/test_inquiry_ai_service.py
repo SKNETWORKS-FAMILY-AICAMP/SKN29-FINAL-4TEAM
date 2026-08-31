@@ -20,6 +20,7 @@ from apps.evidence.models import EvidenceLink
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
+    HumanReview,
     Inquiry,
     InquiryQA,
     SymptomAssessment,
@@ -191,6 +192,7 @@ def analyze(inquiry: Inquiry, client: AIClient, **kwargs):
 
 
 def cancel_inquiry(inquiry: Inquiry, *, key: str) -> None:
+    inquiry.refresh_from_db()
     InquiryService.cancel(
         actor=inquiry.initiated_by,
         inquiry_public_id=inquiry.public_id,
@@ -204,7 +206,7 @@ def cancel_inquiry(inquiry: Inquiry, *, key: str) -> None:
     )
 
 
-def test_safe_result_is_persisted_but_held_without_verified_evidence():
+def test_safe_result_without_verified_evidence_routes_to_consultation():
     inquiry = create_inquiry(1)
     client, http_client, calls = make_client()
 
@@ -212,8 +214,8 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
 
     assert outcome.status == AIRun.Status.SUCCEEDED
     assert outcome.event_candidate == "SAFE_GUIDANCE_READY"
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
     assert outcome.saved_assessment is True
     assert outcome.saved_guidance is True
     assert len(calls) == 1
@@ -221,16 +223,20 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
     guidance = Guidance.objects.get(inquiry=inquiry)
     assert guidance.items.count() == 2
-    assert guidance.review_status_code == "CONFIRMED"
+    assert guidance.review_status_code == "REJECTED"
 
     inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
     assert inquiry.risk_level_code == Inquiry.RiskLevel.GENERAL
     assert inquiry.evidence_ids == []
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
     assert inquiry.requires_fallback is True
-    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    assert (
+        inquiry.usage_guidance_status
+        == Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+    )
+    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
     http_client.close()
 
 
@@ -249,8 +255,9 @@ def test_evidence_verifier_failure_is_fail_closed_without_losing_ai_result():
 
     inquiry.refresh_from_db()
     assert outcome.status == AIRun.Status.SUCCEEDED
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
     assert inquiry.evidence_ids == []
     assert inquiry.requires_fallback is True
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
@@ -344,15 +351,15 @@ def test_injected_evidence_id_cannot_bypass_backend_mapping():
         ],
     )
 
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
     inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
     assert inquiry.evidence_ids == []
     assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
-    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 0
+    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
     http_client.close()
 
 
@@ -391,6 +398,55 @@ def test_no_evidence_result_routes_to_consultation_required():
     assert inquiry.requires_fallback is True
     assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
     assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
+    http_client.close()
+
+
+def test_caution_requiring_consultation_skips_human_review_and_routes_directly():
+    inquiry = create_inquiry(111)
+
+    def caution_consultation(response: dict, _request: dict) -> dict:
+        response["safety_assessment"].update(
+            {
+                "risk_level": "caution",
+                "priority": "consultation_recommended",
+                "requires_consultation": True,
+                "matched_safety_rule_ids": [],
+                "detected_risks": ["추가 확인 필요"],
+                "safety_reason": "상담 확인이 필요한 증상입니다.",
+            }
+        )
+        response["usage_guidance"].update(
+            {
+                "guidance_status": "PARTIAL_STOP",
+                "message": "해당 기능 사용을 중지하고 상담을 요청하세요.",
+                "restricted_functions": ["증상 발생 기능"],
+                "next_actions": ["상담을 요청하세요."],
+            }
+        )
+        return response
+
+    client, http_client, _calls = make_client(transform=caution_consultation)
+
+    outcome = analyze(inquiry, client)
+
+    assert outcome.event_candidate == "AI_CONSULTATION_REQUIRED"
+    assert outcome.event_applied == "AI_CONSULTATION_REQUIRED"
+    assert outcome.pending_reason is None
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
+    assert inquiry.risk_level_code == Inquiry.RiskLevel.CAUTION
+    assert (
+        inquiry.usage_guidance_status
+        == Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+    )
+    guidance = Guidance.objects.get(inquiry=inquiry)
+    assert guidance.review_status_code == "REJECTED"
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
+    assert (
+        TransitionHistory.objects.get(inquiry=inquiry).event_code
+        == "AI_CONSULTATION_REQUIRED"
+    )
     http_client.close()
 
 
@@ -848,7 +904,8 @@ def test_duplicate_request_replays_without_second_http_call_or_rows():
     assert first.idempotent_replay is False
     assert replay.idempotent_replay is True
     assert replay.ai_run_id == first.ai_run_id
-    assert replay.pending_reason == "REPLAYED_EXISTING_RESULT"
+    assert replay.pending_reason == "STALE_STATE_VERSION"
+    assert replay.stale is True
     assert len(calls) == 1
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1

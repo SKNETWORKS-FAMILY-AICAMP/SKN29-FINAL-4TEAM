@@ -164,6 +164,8 @@ def map_success_response(
         event_candidate = "DANGER_DETECTED"
     elif is_no_evidence:
         event_candidate = "NO_EVIDENCE"
+    elif status == "SUCCEEDED" and safety["requires_consultation"]:
+        event_candidate = "AI_CONSULTATION_REQUIRED"
     elif (
         status == "SUCCEEDED"
         and evidence

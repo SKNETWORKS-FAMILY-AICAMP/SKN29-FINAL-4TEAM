@@ -227,6 +227,25 @@ transitions:
   - STORE_VALIDATED_GUIDANCE
   - STORE_VALIDATED_EVIDENCE_REFERENCES
   description: 공식 근거와 안전 검증을 통과한 안내를 고객에게 제공한다.
+- id: TR-INQ-040
+  event: AI_CONSULTATION_REQUIRED
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-AI-CONSULTATION-REQUIRED
+  effects:
+  - BLOCK_GENERAL_SELF_GUIDANCE
+  - SET_REQUIRES_CONSULTATION
+  - SET_USAGE_GUIDANCE_PENDING_CONSULTATION
+  description: 검증된 AI 결과가 상담 필요를 명시하면 PRE_SEND 검토 없이 상담 대기로 전환한다.
 - id: TR-INQ-009
   event: DANGER_DETECTED
   from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS

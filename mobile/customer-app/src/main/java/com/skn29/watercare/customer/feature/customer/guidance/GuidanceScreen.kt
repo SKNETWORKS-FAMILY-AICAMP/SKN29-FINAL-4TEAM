@@ -234,13 +234,24 @@ fun GuidanceScreen(
                 preferredGuidance?.statusCode
             }
 
+    var guidancePollingExhausted by
+        remember(inquiryId) {
+            mutableStateOf(false)
+        }
+
+    val normalizedEffectiveStatus =
+        effectiveStatusCode
+            ?.trim()
+            ?.uppercase()
+
     val awaitingGuidance =
         !fixturePreview &&
             state is GuidanceUiState.NotReady &&
-            effectiveStatusCode
-                ?.trim()
-                ?.uppercase() ==
-                "AI_GUIDANCE"
+            normalizedEffectiveStatus in
+                setOf(
+                    "AI_GUIDANCE",
+                    "QUESTIONNAIRE_IN_PROGRESS",
+                )
 
     // AI_GUIDANCE? Backend? AI ??? ???? ?? ??
     // ?? ?? snapshot? ?? ??? ? ??.
@@ -257,9 +268,11 @@ fun GuidanceScreen(
         awaitingGuidance,
     ) {
         if (!awaitingGuidance) {
+            guidancePollingExhausted = false
             return@LaunchedEffect
         }
 
+        guidancePollingExhausted = false
         repeat(12) {
             delay(2_500)
 
@@ -271,6 +284,12 @@ fun GuidanceScreen(
             }
 
             viewModel.refreshSilently()
+        }
+
+        if (
+            viewModel.state.value is GuidanceUiState.NotReady
+        ) {
+            guidancePollingExhausted = true
         }
     }
 
@@ -569,6 +588,20 @@ fun GuidanceScreen(
                                         .onSurfaceVariant,
                             )
                         }
+                    } else if (
+                        normalizedStatus ==
+                            "QUESTIONNAIRE_IN_PROGRESS" &&
+                        guidancePollingExhausted
+                    ) {
+                        GuidanceProcessingDelayedContent(
+                            onRetry = viewModel::load,
+                            onCancel = {
+                                showCancelDialog = true
+                            },
+                            cancelEnabled =
+                                cancelAction != null &&
+                                    effectiveStateVersion != null,
+                        )
                     } else {
                         CustomerInitialLoadingState(
                             title =
@@ -1111,6 +1144,9 @@ fun GuidanceContent(
                 UsageGuidanceStatus.PENDING_CONSULTATION
 
     val dangerous = safetyCritical || noEvidence
+    val cautionLimited =
+        guidance.riskLevel == RiskLevel.CAUTION ||
+            guidance.usageStatus == UsageGuidanceStatus.PARTIAL_STOP
 
     val headline = when {
         noEvidence ->
@@ -1121,6 +1157,8 @@ fun GuidanceContent(
             "사용 전에 상담이 필요해요"
         guidance.riskLevel == RiskLevel.DANGER ->
             "안전을 먼저 확인해주세요"
+        cautionLimited ->
+            "주의가 필요한 안내예요"
         else ->
             "지금 할 수 있는 해결 방법을 확인해보세요"
     }
@@ -1128,6 +1166,8 @@ fun GuidanceContent(
     val heroMessage = when {
         dangerous ->
             "안전을 위해 아래 내용을 순서대로 확인해주세요. 필요하면 바로 상담을 연결할 수 있어요."
+        cautionLimited ->
+            "제한된 기능은 사용하지 말고 공식 안내 범위의 확인 사항만 진행해주세요."
         else ->
             "가장 먼저 확인해야 할 내용부터 순서대로 정리했어요."
     }
@@ -1150,6 +1190,7 @@ fun GuidanceContent(
             ) {
                 LiquidGlassPill(
                     if (dangerous) "안전 확인"
+                    else if (cautionLimited) "주의 안내"
                     else "맞춤 안내"
                 )
 
@@ -1354,6 +1395,43 @@ internal fun GuidanceFailureStateContent(
         )
 
         else -> Unit
+    }
+}
+
+@Composable
+internal fun GuidanceProcessingDelayedContent(
+    onRetry: () -> Unit,
+    onCancel: () -> Unit,
+    cancelEnabled: Boolean,
+) {
+    SectionCard("처리가 예상보다 오래 걸리고 있어요") {
+        Text(
+            "입력하신 문의는 그대로 보관되어 있어요. " +
+                "상태를 다시 확인하거나 현재 문의를 취소할 수 있어요.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        LiquidGlassButton(
+            text = "다시 확인",
+            onClick = onRetry,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag("retryDelayedGuidance"),
+            accent = true,
+        )
+
+        TextButton(
+            onClick = onCancel,
+            enabled = cancelEnabled,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .testTag("cancelDelayedInquiry"),
+        ) {
+            Text("문의 취소")
+        }
     }
 }
 

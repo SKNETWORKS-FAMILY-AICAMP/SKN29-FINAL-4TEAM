@@ -12,6 +12,7 @@ from apps.inquiries.services.guidance_review_policy import (
 @dataclass(frozen=True)
 class ResultStub:
     risk_level: str
+    requires_consultation: bool = False
     is_fallback: bool = False
     is_no_evidence: bool = False
 
@@ -20,8 +21,15 @@ class ResultStub:
     ("result", "expected"),
     [
         (ResultStub("general"), GuidanceReviewPolicy.CONFIRMED),
-        (ResultStub("danger"), GuidanceReviewPolicy.CONFIRMED),
-        (ResultStub("caution"), GuidanceReviewPolicy.PENDING),
+        (
+            ResultStub("danger", requires_consultation=True),
+            GuidanceReviewPolicy.REJECTED,
+        ),
+        (ResultStub("caution"), GuidanceReviewPolicy.CONFIRMED),
+        (
+            ResultStub("caution", requires_consultation=True),
+            GuidanceReviewPolicy.REJECTED,
+        ),
         (
             ResultStub("caution", is_fallback=True),
             GuidanceReviewPolicy.REJECTED,

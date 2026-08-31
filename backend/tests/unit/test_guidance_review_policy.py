@@ -30,7 +30,7 @@ def test_caution_without_consultation_is_customer_visible():
     )
 
 
-def test_caution_requiring_consultation_still_goes_to_human_review():
+def test_caution_requiring_consultation_is_not_customer_visible():
     assert (
         GuidanceReviewPolicy.initial_status(
             _result(
@@ -38,7 +38,7 @@ def test_caution_requiring_consultation_still_goes_to_human_review():
                 requires_consultation=True,
             )
         )
-        == GuidanceReviewPolicy.PENDING
+        == GuidanceReviewPolicy.REJECTED
     )
 
 
@@ -65,14 +65,22 @@ def test_fallback_and_no_evidence_remain_fail_closed():
     )
 
 
-def test_general_and_danger_keep_existing_confirmed_behavior():
-    for risk_level in ("general", "danger"):
-        assert (
-            GuidanceReviewPolicy.initial_status(
-                _result(
-                    risk_level=risk_level,
-                    requires_consultation=risk_level == "danger",
-                )
+def test_general_is_confirmed_and_danger_is_rejected():
+    assert (
+        GuidanceReviewPolicy.initial_status(
+            _result(
+                risk_level="general",
+                requires_consultation=False,
             )
-            == GuidanceReviewPolicy.CONFIRMED
         )
+        == GuidanceReviewPolicy.CONFIRMED
+    )
+    assert (
+        GuidanceReviewPolicy.initial_status(
+            _result(
+                risk_level="danger",
+                requires_consultation=True,
+            )
+        )
+        == GuidanceReviewPolicy.REJECTED
+    )
