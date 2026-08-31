@@ -42,8 +42,24 @@ class SymptomEvidenceClaim(BaseModel):
     evidence_quote: str = Field(min_length=1, max_length=500)
 
 
+class SafetySignalEvidence(BaseModel):
+    """Safety Signal과 고객 입력 원문을 연결하는 내부 근거 계약."""
+
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    signal_name: Literal[
+        "electrical_component_damage",
+        "exposed_wire",
+        "water_near_electrical_part",
+        "smoke_or_burn",
+        "shock_or_spark",
+    ]
+    evidence_quote: str = Field(min_length=1, max_length=500)
+    source: Literal["RAW_SYMPTOM", "PREVIOUS_ANSWER"]
+
+
 class SafetySignals(BaseModel):
-    """LLM이 추출하되 정책 판단에는 사용하지 않는 내부 안전 의미 feature."""
+    """LLM이 추출하고 근거 검증 후에만 정책 입력이 되는 내부 안전 feature."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -52,10 +68,19 @@ class SafetySignals(BaseModel):
     water_near_electrical_part: bool = False
     smoke_or_burn: bool = False
     shock_or_spark: bool = False
+    evidence: list[SafetySignalEvidence] = Field(default_factory=list, max_length=10)
 
     @property
     def requires_danger_policy(self) -> bool:
-        return any(self.model_dump().values())
+        return any(
+            (
+                self.electrical_component_damage,
+                self.exposed_wire,
+                self.water_near_electrical_part,
+                self.smoke_or_burn,
+                self.shock_or_spark,
+            )
+        )
 
 
 class SymptomStructuringResult(BaseModel):
@@ -106,6 +131,8 @@ class FollowUpWording(BaseModel):
 
     target_field: str = Field(min_length=1, max_length=100)
     question_text: str = Field(min_length=1, max_length=200)
+    options: list[str] = Field(default_factory=list, max_length=5)
+    allow_free_text: bool = False
 
 
 class FollowUpWordingResult(BaseModel):

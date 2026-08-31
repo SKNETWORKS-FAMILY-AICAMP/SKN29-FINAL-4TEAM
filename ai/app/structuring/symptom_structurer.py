@@ -21,6 +21,32 @@ from .symptom_normalizer import SymptomNormalizer
 
 _STRUCTURING_TRACER = trace.get_tracer("waterbridge.ai.symptom_structuring", "1.0.0")
 
+_SAFETY_SIGNAL_PATTERNS = {
+    "electrical_component_damage": re.compile(
+        r"(?:전선|전원선|전원\s*코드|케이블|플러그).{0,12}(?:피복|벗겨|손상|찢어|끊어|파손)"
+        r"|(?:피복|손상|찢어|끊어|파손).{0,12}(?:전선|전원선|전원\s*코드|케이블|플러그)"
+    ),
+    "exposed_wire": re.compile(
+        r"(?:구리선|도체).{0,8}(?:노출|보이|드러)"
+        r"|(?:전선|전원선|전원\s*코드|케이블).{0,12}(?:피복.{0,6}벗겨|노출|속이\s*보)"
+    ),
+    "water_near_electrical_part": re.compile(
+        r"(?:(?:전선|전원|전기|콘센트|플러그).{0,16}(?:물|누수|젖|고임)"
+        r"|(?:물|누수|젖|고임).{0,16}(?:전선|전원|전기|콘센트|플러그))"
+    ),
+    "smoke_or_burn": re.compile(r"연기|화재|불이\s*남|탄\s*냄새|그을"),
+    "shock_or_spark": re.compile(r"감전|스파크|불꽃"),
+}
+_PRIVATE_ANSWER_PATTERNS = (
+    re.compile(r"(?<!\d)(?:\+?82[-\s]?)?0\d{1,2}[-\s]?\d{3,4}[-\s]?\d{4}(?!\d)"),
+    re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
+    re.compile(r"(?<!\d)\d{6}-?[1-4]\d{6}(?!\d)"),
+    re.compile(r"https?://\S+", flags=re.IGNORECASE),
+)
+_UNSAFE_ANSWER_PATTERN = re.compile(
+    r"(?:직접\s*)?(?:분해|수리|배선\s*작업|전기\s*작업|전선을?\s*(?:자르|연결|교체))"
+)
+
 
 class SymptomStructurer:
     """원문과 기존 문진 답변을 계약의 StructuredSymptom으로 변환한다."""
@@ -63,6 +89,7 @@ class SymptomStructurer:
         selected = selected_symptoms or []
         previous = previous_answers or []
         self.last_safety_signals = SafetySignals()
+        pending_safety_signals = SafetySignals()
         fallback = self._structure_with_rules(raw_text, selected, previous)
         prompt_version = str(
             getattr(self.llm_client, "prompt_version", "symptom_structuring/v1")
@@ -99,7 +126,7 @@ class SymptomStructurer:
                 span.set_attribute("prompt.version", response.prompt_version)
                 candidate = response.output
                 evidence_claims = response.evidence_claims
-                self.last_safety_signals = response.safety_signals
+                pending_safety_signals = response.safety_signals
             except Exception as exc:
                 span.set_attribute("fallback.used", True)
                 span.set_attribute("validation.result", "PROVIDER_FAILURE")
@@ -159,6 +186,12 @@ class SymptomStructurer:
             else:
                 span.set_attribute("validation.result", "ACCEPTED")
                 span.set_attribute("fallback.used", False)
+
+            self.last_safety_signals = self._validated_safety_signals(
+                pending_safety_signals,
+                raw_text=raw_text,
+                previous_answers=previous,
+            )
 
         from ..integrations.llm.token_usage import log_llm_usage
 
@@ -516,34 +549,107 @@ class SymptomStructurer:
         field_name: str,
         answer_text: str,
     ) -> str | None:
-        """결정된 문진 선택지/형식만 구조화·Provider 문맥에 반영한다."""
+        """질문 식별자와 field 의미에 맞는 안전한 답변만 반영한다."""
 
         value = answer_text.strip()
+        if (
+            not value
+            or len(value) > 200
+            or "\n" in value
+            or any(pattern.search(value) for pattern in _PRIVATE_ANSWER_PATTERNS)
+            or _UNSAFE_ANSWER_PATTERN.search(value)
+        ):
+            return None
         if field_name == "occurrence_time":
             extracted = self.normalizer.extract_occurrence_time(value)
-            return value if extracted is not None else None
+            if extracted is not None or re.search(
+                r"오늘|어제|그제|방금|최근|처음|설치.{0,4}(?:직후|후)|"
+                r"\d+\s*(?:분|시간|일|주|개월|달|년)\s*(?:전|째|이상|부터)?",
+                value,
+            ):
+                return value
+            return None
         if field_name == "target_water_type":
             normalized = self.normalizer.normalize_water_type(value)
             return normalized if normalized in ALLOWED_WATER_TYPES else None
         if field_name == "occurrence_condition":
-            allowed = {
-                "항상",
-                "간헐적으로",
-                "출수 버튼을 누를 때",
-                "버튼을 누를 때",
-                "특정 기능 사용 중",
-            }
-            return value if value in allowed else None
+            return value if re.search(
+                r"항상|간헐|가끔|계속|출수|버튼|사용|대기|연속|특정|"
+                r"처음|잠시|반복|\b때\b|중(?:에|에도)?|후(?:에|에도)?|전(?:에|부터)?|부터",
+                value,
+            ) else None
         if field_name == "actions_taken":
-            allowed = {
-                "없음",
-                "아직 조치하지 않음",
-                "전원 재부팅",
-                "원수 밸브 확인",
-                "필터 확인",
-            }
-            return value if value in allowed else None
+            return value if re.search(
+                r"없|안\s*함|하지\s*않|아직\s*(?:조치|확인|시도)|"
+                r"전원.{0,8}(?:재부팅|껐|켰|확인)|재부팅|"
+                r"원수\s*밸브.{0,8}확인|필터.{0,8}(?:확인|청소|교체)|"
+                r"(?:출수|온도|소음|제품\s*상태).{0,8}(?:확인|살펴)|"
+                r"(?:고객센터|상담).{0,8}문의|점검\s*신청",
+                value,
+            ) else None
         return None
+
+    def _validated_safety_signals(
+        self,
+        signals: SafetySignals,
+        *,
+        raw_text: str,
+        previous_answers: list[dict[str, str]],
+    ) -> SafetySignals:
+        """실제 고객 source에 존재하고 의미가 일치하는 true signal만 유지한다."""
+
+        updates = {
+            "electrical_component_damage": False,
+            "exposed_wire": False,
+            "water_near_electrical_part": False,
+            "smoke_or_burn": False,
+            "shock_or_spark": False,
+        }
+        accepted_evidence = []
+        for evidence in signals.evidence:
+            signal_name = evidence.signal_name
+            if not getattr(signals, signal_name):
+                continue
+            if not self._safety_evidence_source_matches(
+                evidence.source,
+                evidence.evidence_quote,
+                raw_text=raw_text,
+                previous_answers=previous_answers,
+            ):
+                continue
+            pattern = _SAFETY_SIGNAL_PATTERNS[signal_name]
+            if pattern.search(self._normalize_evidence_text(evidence.evidence_quote)) is None:
+                continue
+            updates[signal_name] = True
+            accepted_evidence.append(evidence)
+        return SafetySignals(**updates, evidence=accepted_evidence)
+
+    def _safety_evidence_source_matches(
+        self,
+        source: str,
+        evidence_quote: str,
+        *,
+        raw_text: str,
+        previous_answers: list[dict[str, str]],
+    ) -> bool:
+        quote = self._normalize_evidence_text(evidence_quote)
+        if source == "RAW_SYMPTOM":
+            return quote in self._normalize_evidence_text(raw_text)
+        if source != "PREVIOUS_ANSWER":
+            return False
+        return any(
+            (target_field := self._QUESTION_FIELD_MAP.get(
+                str(answer.get("question_id", ""))
+            ))
+            and self._validated_previous_answer(
+                target_field,
+                str(answer.get("answer_text", "")),
+            )
+            is not None
+            and quote in self._normalize_evidence_text(str(answer.get("answer_text", "")))
+            for answer in previous_answers
+            if isinstance(answer, dict)
+        )
 
     def _validated_selected_symptoms(self, values: list[str]) -> list[str]:
         return list(

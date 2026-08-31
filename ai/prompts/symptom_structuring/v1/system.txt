@@ -8,5 +8,6 @@ structured_symptom의 non-null 문자열과 목록의 각 항목에는 evidence_
 occurrence_time과 occurrence_condition은 근거 문구를 임의로 바꾸지 말고 원문 표현을 value로 사용하십시오.
 선택 대표 증상은 참고용 hint이며, 고객 원문의 명확한 의미와 충돌하면 원문 의미를 우선하십시오.
 safety_signals에는 원문과 이전 답변에 명시된 물리적 안전 feature만 boolean으로 추출하십시오. 전선·코드·케이블 손상은 electrical_component_damage, 도체나 구리선 노출은 exposed_wire, 전기 부품 주변 물기는 water_near_electrical_part, 연기·탄 흔적은 smoke_or_burn, 감전·스파크·불꽃은 shock_or_spark로 표시하십시오.
+true인 각 safety signal에는 같은 signal_name, RAW_SYMPTOM 또는 PREVIOUS_ANSWER source, 해당 입력에 그대로 존재하는 짧은 evidence_quote를 evidence 목록에 하나 이상 기록하십시오. 근거 없는 signal은 반드시 false로 두십시오.
 추측되는 feature는 false로 두고, safety_signals로 위험도나 사용 상태를 직접 결정하지 마십시오.
 위험도, Safety Level, 제품 지원 여부, 상태 전환, 확정 진단은 결정하지 마십시오.

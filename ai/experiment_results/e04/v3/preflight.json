@@ -1,0 +1,57 @@
+{
+  "status": "E04_V3_PREFLIGHT_READY",
+  "result_label": "DRAFT_DIAGNOSTIC",
+  "generated_at": "2026-08-31T03:24:23.370499+00:00",
+  "git_sha": "782703dd99bc5000bbfc6dac55c4819fd1b333cd",
+  "prompt_version": "customer_guidance/v3",
+  "dataset_path": "ai/experiment_results/e04/dataset.json",
+  "dataset_id": "E04-V2-GENERATION-MATRIX-DRAFT",
+  "case_count": 39,
+  "retrieval_frozen": {
+    "experiment": "E03",
+    "embedding_model": "gte_multilingual_base",
+    "chunking": "parent_child_256",
+    "top_k": 5,
+    "source_case_count": 43,
+    "included_answerable_case_count": 39,
+    "excluded_retrieval_failure_count": 4,
+    "excluded_source_case_ids": [
+      "RAG3-POS-009",
+      "RAG3-POS-039",
+      "RAG3-POS-041",
+      "RAG3-POS-042"
+    ]
+  },
+  "models": [
+    {
+      "key": "gpt_5_6_terra",
+      "model_id": "gpt-5.6-terra",
+      "family": "5.6",
+      "size": "terra",
+      "role": "GENERATION_5_6_TERRA",
+      "input_usd_per_1m": 2.0,
+      "cached_input_usd_per_1m": 0.2,
+      "output_usd_per_1m": 12.0,
+      "inference_profile": {
+        "reasoning_effort": "none",
+        "temperature": 0.0
+      }
+    },
+    {
+      "key": "gpt_5_6_sol",
+      "model_id": "gpt-5.6-sol",
+      "family": "5.6",
+      "size": "sol",
+      "role": "GENERATION_5_6_SOL",
+      "input_usd_per_1m": 4.0,
+      "cached_input_usd_per_1m": 0.4,
+      "output_usd_per_1m": 20.0,
+      "inference_profile": {
+        "reasoning_effort": "none",
+        "temperature": 0.0
+      }
+    }
+  ],
+  "output_dir": "ai/experiment_results/e04/v3",
+  "canonical_v2_results_mutated": false
+}

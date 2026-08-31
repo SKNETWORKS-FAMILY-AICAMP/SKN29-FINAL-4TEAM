@@ -4,4 +4,4 @@
 [질문 대상 필드 JSON]
 {target_fields_json}
 
-질문 대상 필드의 순서와 집합을 유지하여 각 필드에 대한 question_text를 작성하십시오.
+질문 대상 필드의 순서와 집합을 유지하여 각 필드에 대한 question_text, 맥락형 options, allow_free_text를 작성하십시오. target_field는 절대 변경하지 마십시오.

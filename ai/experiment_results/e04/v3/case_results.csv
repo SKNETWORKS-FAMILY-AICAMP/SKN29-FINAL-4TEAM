@@ -1,0 +1,7 @@
+﻿model_key,model_id,family,size,case_id,source_case_id,api_success,relevant_message_selected,message_in_context,actions_allowed,downstream_accepted,latency_ms,input_tokens,cached_input_tokens,cache_write_tokens,output_tokens,reasoning_tokens,total_tokens,attempt_count,estimated_cost_usd,error_type
+gpt_5_6_terra,gpt-5.6-terra,5.6,terra,E04V2-GEN-001,RAG3-POS-001,True,False,False,True,True,3146.625,1895,0,1892,101,0,1996,1,0.005948,
+gpt_5_6_terra,gpt-5.6-terra,5.6,terra,E04V2-GEN-002,RAG3-POS-002,True,False,False,True,True,1538.529,1934,0,1931,57,0,1991,1,0.0055175,
+gpt_5_6_terra,gpt-5.6-terra,5.6,terra,E04V2-GEN-003,RAG3-POS-003,True,False,False,True,True,2398.149,1935,0,1932,146,0,2081,1,0.006588,
+gpt_5_6_terra,gpt-5.6-terra,5.6,terra,E04V2-GEN-004,RAG3-POS-004,True,False,False,True,True,2785.098,1922,0,1919,65,0,1987,1,0.0055835,
+gpt_5_6_terra,gpt-5.6-terra,5.6,terra,E04V2-GEN-005,RAG3-POS-005,True,False,False,True,True,1969.408,1899,0,1896,79,0,1978,1,0.005694,
+gpt_5_6_terra,gpt-5.6-terra,5.6,terra,E04V2-GEN-006,RAG3-POS-006,True,False,False,True,True,2337.966,1863,0,1860,107,0,1970,1,0.00594,

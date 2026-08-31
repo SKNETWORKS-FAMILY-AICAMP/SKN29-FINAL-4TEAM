@@ -28,6 +28,11 @@ class _ToolRequest:
 
 
 @dataclass(slots=True)
+class _ConnectRequest:
+    future: Future[None]
+
+
+@dataclass(slots=True)
 class _StopRequest:
     future: Future[None]
 
@@ -46,7 +51,9 @@ class McpStdioSessionManager:
         self._start_lock = Lock()
         self._ready = Event()
         self._loop: asyncio.AbstractEventLoop | None = None
-        self._queue: asyncio.Queue[_ToolRequest | _StopRequest] | None = None
+        self._queue: asyncio.Queue[
+            _ConnectRequest | _ToolRequest | _StopRequest
+        ] | None = None
         self._thread: Thread | None = None
         self._worker_error: BaseException | None = None
 
@@ -117,6 +124,10 @@ class McpStdioSessionManager:
                     if client is None:
                         client = self._client_factory()
                         await client.connect()
+
+                    if isinstance(request, _ConnectRequest):
+                        self._complete_result(request.future, None)
+                        continue
 
                     result = await client.call_tool(
                         request.tool_name,
@@ -209,6 +220,18 @@ class McpStdioSessionManager:
             ),
         )
         return future.result(timeout=timeout_seconds)
+
+    def ensure_connected(
+        self,
+        *,
+        timeout_seconds: float | None = None,
+    ) -> None:
+        """Start the stdio subprocess independently of any Tool deadline."""
+
+        loop, queue = self._ensure_worker()
+        future: Future[None] = Future()
+        self._enqueue(loop, queue, _ConnectRequest(future=future))
+        future.result(timeout=timeout_seconds)
 
     def warmup_search_runtime(
         self,

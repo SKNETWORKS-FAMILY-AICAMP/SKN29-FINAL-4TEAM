@@ -156,6 +156,10 @@ class OpenAIResponsesSymptomStructuringClient(_TaskConfiguredResponsesClient):
         claim_schema["required"] = list(claim_schema["properties"])
         signal_schema = schema["$defs"]["SafetySignals"]
         signal_schema["required"] = list(signal_schema["properties"])
+        safety_evidence_schema = schema["$defs"]["SafetySignalEvidence"]
+        safety_evidence_schema["required"] = list(
+            safety_evidence_schema["properties"]
+        )
         schema["required"] = list(schema["properties"])
         return schema
 

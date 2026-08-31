@@ -29,6 +29,7 @@ from ai.app.structuring.followup_question_generator import FollowUpQuestionGener
 from ai.app.structuring.llm_contracts import (
     FollowUpWording,
     SafetySignals,
+    SafetySignalEvidence,
     SymptomEvidenceClaim,
     SymptomStructuringLLMResponse,
 )
@@ -126,6 +127,109 @@ def test_occurrence_condition_wording_accepts_condition_question():
 
     assert result[0].target_field == "occurrence_condition"
     assert result[0].question_text.startswith("증상이 항상")
+
+
+@pytest.mark.parametrize(
+    ("symptom", "question_text", "options"),
+    [
+        (
+            StructuredSymptom(
+                symptom_type="온도 이상",
+                target_water_type="온수",
+            ),
+            "온수가 미지근한 증상은 어떤 조건에서 발생하나요?",
+            [
+                "첫 출수부터 미지근함",
+                "여러 잔 연속 출수할 때",
+                "가끔만 미지근함",
+                "항상 미지근함",
+            ],
+        ),
+        (
+            StructuredSymptom(symptom_type="소음 이상"),
+            "웅웅거리는 소음은 어떤 조건에서 발생하나요?",
+            [
+                "출수할 때",
+                "출수 후 잠시 동안",
+                "대기 중에도 계속",
+                "간헐적으로 발생할 때",
+            ],
+        ),
+    ],
+)
+def test_context_aware_occurrence_options_are_accepted(
+    symptom,
+    question_text,
+    options,
+):
+    generator = FollowUpQuestionGenerator()
+    fallback = generator._fixed_questions(
+        [
+            MissingField(
+                field_name="occurrence_condition",
+                reason="발생 조건 확인",
+                importance="medium",
+            )
+        ]
+    )
+
+    result = generator._apply_wording(
+        fallback,
+        [
+            FollowUpWording(
+                target_field="occurrence_condition",
+                question_text=question_text,
+                options=options,
+                allow_free_text=True,
+            )
+        ],
+        symptom=symptom,
+    )
+
+    assert result[0].question_id == "followup-occurrence-condition"
+    assert result[0].target_field == "occurrence_condition"
+    assert result[0].options == options
+
+
+def test_followup_closed_domain_options_remain_canonical():
+    generator = FollowUpQuestionGenerator()
+    fallback = generator._fixed_questions(
+        [MissingField(field_name="target_water_type", reason="필요", importance="high")]
+    )
+
+    result = generator._apply_wording(
+        fallback,
+        [
+            FollowUpWording(
+                target_field="target_water_type",
+                question_text="어떤 출수에서 증상이 발생하나요?",
+                options=["냉수", "온수", "정수", "전체"],
+            )
+        ],
+        symptom=StructuredSymptom(symptom_type="온도 이상"),
+    )
+
+    assert result[0].options == ["냉수", "온수", "정수", "전체"]
+
+
+def test_followup_unsafe_repair_option_rejects_entire_dynamic_plan():
+    generator = FollowUpQuestionGenerator()
+    fallback = generator._fixed_questions(
+        [MissingField(field_name="actions_taken", reason="필요", importance="low")]
+    )
+
+    with pytest.raises(ValueError):
+        generator._apply_wording(
+            fallback,
+            [
+                FollowUpWording(
+                    target_field="actions_taken",
+                    question_text="이미 확인하거나 조치해 본 내용이 있나요?",
+                    options=["아직 확인하지 않음", "제품을 직접 분해해 확인"],
+                )
+            ],
+            symptom=StructuredSymptom(symptom_type="기타 증상"),
+        )
 
 
 def test_low_flow_normalizer_understands_jal_an_nawaeyo():
@@ -283,6 +387,18 @@ def test_semantic_safety_signal_is_wired_through_runtime_without_public_schema_c
             signals=SafetySignals(
                 electrical_component_damage=True,
                 exposed_wire=True,
+                evidence=[
+                    SafetySignalEvidence(
+                        signal_name="electrical_component_damage",
+                        evidence_quote="전선 피복이 벗겨졌어요",
+                        source="RAW_SYMPTOM",
+                    ),
+                    SafetySignalEvidence(
+                        signal_name="exposed_wire",
+                        evidence_quote="전선 피복이 벗겨졌어요",
+                        source="RAW_SYMPTOM",
+                    ),
+                ],
             ),
         ),
     ).run_pipeline(
@@ -296,6 +412,133 @@ def test_semantic_safety_signal_is_wired_through_runtime_without_public_schema_c
     assert result.safety_assessment.risk_level == RiskLevel.DANGER
     assert result.safety_assessment.requires_consultation is True
     assert result.usage_guidance.guidance_status.value == "TOTAL_STOP"
+
+
+def test_safety_signal_without_evidence_is_rejected_before_policy():
+    structurer = SymptomStructurer(
+        llm_client=_SemanticSymptomClient(
+            StructuredSymptom(symptom_type="온도 이상", target_water_type="냉수"),
+            [
+                _claim("symptom_type", "온도 이상", "미지근"),
+                _claim("target_water_type", "냉수", "냉수"),
+            ],
+            signals=SafetySignals(exposed_wire=True),
+        )
+    )
+
+    structurer.structure("냉수가 미지근해요")
+    assessment = RiskClassifier().classify(
+        "냉수가 미지근해요",
+        safety_signals=structurer.last_safety_signals,
+    )
+
+    assert structurer.last_safety_signals.exposed_wire is False
+    assert assessment.risk_level != RiskLevel.DANGER
+
+
+def test_valid_safety_evidence_survives_structuring_validation():
+    raw = "정수기 전선 피복이 벗겨졌어요"
+    structurer = SymptomStructurer(
+        llm_client=_SemanticSymptomClient(
+            StructuredSymptom(symptom_type="전기 이상"),
+            [_claim("symptom_type", "전기 이상", raw)],
+            signals=SafetySignals(
+                electrical_component_damage=True,
+                evidence=[
+                    SafetySignalEvidence(
+                        signal_name="electrical_component_damage",
+                        evidence_quote="전선 피복이 벗겨졌어요",
+                        source="RAW_SYMPTOM",
+                    )
+                ],
+            ),
+        )
+    )
+
+    structurer.structure(raw)
+
+    assert structurer.last_safety_signals.electrical_component_damage is True
+    assert len(structurer.last_safety_signals.evidence) == 1
+
+
+def test_safety_evidence_quote_must_support_claimed_signal_semantics():
+    raw = "냉수가 미지근해요"
+    structurer = SymptomStructurer(
+        llm_client=_SemanticSymptomClient(
+            StructuredSymptom(symptom_type="온도 이상", target_water_type="냉수"),
+            [
+                _claim("symptom_type", "온도 이상", "미지근"),
+                _claim("target_water_type", "냉수", "냉수"),
+            ],
+            signals=SafetySignals(
+                exposed_wire=True,
+                evidence=[
+                    SafetySignalEvidence(
+                        signal_name="exposed_wire",
+                        evidence_quote=raw,
+                        source="RAW_SYMPTOM",
+                    )
+                ],
+            ),
+        )
+    )
+
+    structurer.structure(raw)
+
+    assert structurer.last_safety_signals.exposed_wire is False
+
+
+def test_rejected_structured_candidate_resets_even_evidenced_safety_signals():
+    raw = "정수기 전선 피복이 벗겨졌어요"
+    structurer = SymptomStructurer(
+        llm_client=_SemanticSymptomClient(
+            StructuredSymptom(symptom_type="지원하지 않는 유형"),
+            [],
+            signals=SafetySignals(
+                exposed_wire=True,
+                evidence=[
+                    SafetySignalEvidence(
+                        signal_name="exposed_wire",
+                        evidence_quote="전선 피복이 벗겨졌어요",
+                        source="RAW_SYMPTOM",
+                    )
+                ],
+            ),
+        )
+    )
+
+    result = structurer.structure(raw)
+
+    assert result.symptom_type != "지원하지 않는 유형"
+    assert structurer.last_safety_signals.requires_danger_policy is False
+
+
+@pytest.mark.parametrize("raw", ["스파크가 튀어요", "연기가 나요", "탄 냄새가 나요"])
+def test_emergency_keyword_backstop_remains_danger_without_llm_signal(raw):
+    assessment = RiskClassifier().classify(raw, safety_signals=SafetySignals())
+
+    assert assessment.risk_level == RiskLevel.DANGER
+    assert assessment.requires_consultation is True
+
+
+def test_dynamic_previous_answer_is_accepted_and_reaches_retrieval_context():
+    answer = "여러 잔 연속 출수할 때"
+    symptom = SymptomStructurer().structure(
+        "온수가 미지근해요",
+        previous_answers=[
+            {
+                "question_id": "followup-occurrence-condition",
+                "answer_text": answer,
+            }
+        ],
+    )
+    query = RetrievalContextBuilder().build(
+        raw_symptom="온수가 미지근해요",
+        structured_symptom=symptom,
+    )
+
+    assert symptom.occurrence_condition == answer
+    assert answer in query
 
 
 def test_noise_missing_field_policy_does_not_require_water_type():

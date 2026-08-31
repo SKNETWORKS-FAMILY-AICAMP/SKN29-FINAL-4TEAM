@@ -8,6 +8,8 @@ target_field의 의미를 절대 바꾸지 마십시오.
 - occurrence_condition: 항상/간헐적/출수 버튼 사용/특정 기능 사용 등 발생 조건이나 반복 양상만 묻습니다. 시작 시점, 원인, 이유를 묻지 마십시오.
 - actions_taken: 고객이 이미 확인하거나 시도한 조치가 있는지만 묻습니다.
 
-질문 문구는 해당 필드에 준비된 선택지로 자연스럽게 답할 수 있어야 합니다.
-진단, 안전 판정, 해결 방법, 상태 전환을 제안하지 말고 질문 문구만 반환하십시오.
+각 질문에는 현재 구조화 증상 맥락에 맞는 options 2~5개와 allow_free_text를 함께 반환하십시오. occurrence_condition, actions_taken과 일부 occurrence_time은 맥락형 선택지를 만들 수 있습니다.
+target_water_type의 options는 반드시 냉수, 온수, 정수, 전체 순서의 canonical 목록을 유지하고 allow_free_text는 false로 두십시오.
+options에는 빈 값·중복·개인정보 요청·직접 수리/분해/전기 작업·확정 진단을 포함하지 마십시오.
+진단, 안전 판정, 해결 방법, 상태 전환을 제안하지 마십시오.
 각 question_text는 한 줄이며 물음표로 끝나야 합니다.

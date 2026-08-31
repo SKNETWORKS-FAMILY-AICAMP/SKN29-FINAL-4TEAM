@@ -21,6 +21,23 @@ _PRIVATE_QUESTION_PATTERNS = (
     re.compile(r"(?<!\d)\d{6}-?[1-4]\d{6}(?!\d)"),
     re.compile(r"https?://\S+", flags=re.IGNORECASE),
 )
+_UNSAFE_OPTION_PATTERN = re.compile(
+    r"(?:직접\s*)?(?:분해|수리|배선\s*작업|전기\s*작업|전선을?\s*(?:자르|연결|교체))"
+)
+_DIAGNOSIS_OPTION_PATTERN = re.compile(
+    r"(?:원인|고장|불량|누전).{0,8}(?:확정|분명|때문|입니다|이다)"
+)
+_DYNAMIC_OPTION_MARKERS = {
+    "occurrence_time": re.compile(
+        r"오늘|어제|그제|방금|최근|처음|직후|\d+\s*(?:분|시간|일|주|개월|달|년)"
+    ),
+    "occurrence_condition": re.compile(
+        r"항상|간헐|가끔|계속|출수|버튼|사용|대기|연속|특정|처음|잠시|반복|때|중|후|전|부터"
+    ),
+    "actions_taken": re.compile(
+        r"없|안\s*함|하지\s*않|아직|확인|재부팅|껐|켰|청소|교체|문의|점검|살펴|시도|해\s*봄|해봤"
+    ),
+}
 
 _QUESTION_INTENT_MARKERS = {
     "occurrence_time": ("언제", "시작", "부터", "시점", "기간"),
@@ -128,6 +145,7 @@ class FollowUpQuestionGenerator:
                 accepted = self._apply_wording(
                     fallback,
                     response.output.questions,
+                    symptom=symptom,
                 )
             except ValueError:
                 span.set_attribute("validation.result", "REJECTED")
@@ -184,6 +202,8 @@ class FollowUpQuestionGenerator:
     def _apply_wording(
         fallback: list[FollowUpQuestion],
         wordings: list[FollowUpWording],
+        *,
+        symptom: StructuredSymptom | None = None,
     ) -> list[FollowUpQuestion]:
         expected_fields = [question.target_field for question in fallback]
         actual_fields = [wording.target_field for wording in wordings]
@@ -191,10 +211,17 @@ class FollowUpQuestionGenerator:
             raise ValueError("Follow-up target_field가 중복되었습니다.")
         if set(actual_fields) != set(expected_fields):
             raise ValueError("Follow-up target_field 계약이 변경되었습니다.")
-        wording_by_field = {item.target_field: item.question_text for item in wordings}
+        wording_by_field = {item.target_field: item for item in wordings}
         result: list[FollowUpQuestion] = []
         for fixed in fallback:
-            question_text = wording_by_field[fixed.target_field].strip()
+            wording = wording_by_field[fixed.target_field]
+            question_text = wording.question_text.strip()
+            if wording.allow_free_text and fixed.target_field not in {
+                "occurrence_time",
+                "occurrence_condition",
+                "actions_taken",
+            }:
+                raise ValueError("Closed-domain 질문은 자유 입력을 허용할 수 없습니다.")
             if (
                 len(question_text) > 200
                 or "\n" in question_text
@@ -206,10 +233,81 @@ class FollowUpQuestionGenerator:
                 )
             ):
                 raise ValueError("Follow-up 질문 문구 형식 또는 의미가 target_field와 일치하지 않습니다.")
+            options = FollowUpQuestionGenerator._validated_options(
+                target_field=fixed.target_field,
+                options=wording.options,
+                fallback_options=fixed.options,
+                symptom=symptom,
+            )
             result.append(
-                fixed.model_copy(update={"question_text": question_text})
+                fixed.model_copy(
+                    update={
+                        "question_text": question_text,
+                        "options": options,
+                    }
+                )
             )
         return result
+
+    @staticmethod
+    def _validated_options(
+        *,
+        target_field: str,
+        options: list[str],
+        fallback_options: list[str],
+        symptom: StructuredSymptom | None,
+    ) -> list[str]:
+        # 이전 내부 client와의 호환을 위해 options 미제공은 고정 선택지를 쓴다.
+        if not options:
+            return fallback_options
+        normalized = [" ".join(option.split()) for option in options]
+        if not 2 <= len(normalized) <= 5:
+            raise ValueError("Follow-up 선택지는 2~5개여야 합니다.")
+        if any(not option or len(option) > 80 or "\n" in option for option in normalized):
+            raise ValueError("Follow-up 선택지 길이 또는 형식이 올바르지 않습니다.")
+        if len({option.casefold() for option in normalized}) != len(normalized):
+            raise ValueError("Follow-up 선택지가 비어 있거나 중복되었습니다.")
+        if any(
+            any(pattern.search(option) for pattern in _PRIVATE_QUESTION_PATTERNS)
+            or _UNSAFE_OPTION_PATTERN.search(option)
+            or _DIAGNOSIS_OPTION_PATTERN.search(option)
+            or option.endswith(("?", "？"))
+            for option in normalized
+        ):
+            raise ValueError("Follow-up 선택지가 안전 또는 개인정보 정책에 맞지 않습니다.")
+
+        if target_field == "target_water_type":
+            if normalized != ["냉수", "온수", "정수", "전체"]:
+                raise ValueError("Closed-domain 선택지가 변경되었습니다.")
+            return normalized
+
+        marker = _DYNAMIC_OPTION_MARKERS.get(target_field)
+        if marker is None or any(marker.search(option) is None for option in normalized):
+            raise ValueError("Follow-up 선택지가 target_field 의미와 맞지 않습니다.")
+        if not FollowUpQuestionGenerator._options_match_symptom(normalized, symptom):
+            raise ValueError("Follow-up 선택지가 현재 증상 맥락과 맞지 않습니다.")
+        return normalized
+
+    @staticmethod
+    def _options_match_symptom(
+        options: list[str],
+        symptom: StructuredSymptom | None,
+    ) -> bool:
+        if symptom is None:
+            return True
+        joined = " ".join(options)
+        if symptom.target_water_type == "온수" and "냉수" in joined and "온수" not in joined:
+            return False
+        if symptom.target_water_type == "냉수" and "온수" in joined and "냉수" not in joined:
+            return False
+        incompatible_markers = {
+            "소음 이상": ("미지근", "차갑", "온도"),
+            "온도 이상": ("웅웅", "소음", "소리가"),
+        }
+        return not any(
+            marker in joined
+            for marker in incompatible_markers.get(symptom.symptom_type, ())
+        )
 
     @staticmethod
     def _question_matches_target_field(

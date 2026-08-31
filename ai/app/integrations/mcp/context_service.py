@@ -63,21 +63,53 @@ class McpBackendContextService:
     """Resolve Product and Inquiry Context through one MCP client session."""
 
     TIMEOUT_ENV = "AI_MCP_CONTEXT_TIMEOUT_SECONDS"
+    STARTUP_TIMEOUT_ENV = "AI_MCP_SESSION_STARTUP_TIMEOUT_SECONDS"
+    TOOL_TIMEOUT_ENV = "AI_MCP_CONTEXT_TOOL_TIMEOUT_SECONDS"
     DEFAULT_TIMEOUT_SECONDS = 8.0
+    DEFAULT_STARTUP_TIMEOUT_SECONDS = 20.0
+    DEFAULT_TOOL_TIMEOUT_SECONDS = 4.0
 
     def __init__(
         self,
         *,
         client_factory: Callable[[], WaterBridgeMCPClient] = WaterBridgeMCPClient,
         timeout_seconds: float | None = None,
+        startup_timeout_seconds: float | None = None,
+        tool_timeout_seconds: float | None = None,
     ) -> None:
         self._client_factory = client_factory
         self.timeout_seconds = (
-            self._timeout_from_environment()
+            self._timeout_from_environment(
+                self.TIMEOUT_ENV,
+                self.DEFAULT_TIMEOUT_SECONDS,
+            )
             if timeout_seconds is None
             else timeout_seconds
         )
-        if not 0.1 <= self.timeout_seconds <= 30.0:
+        self.startup_timeout_seconds = (
+            self._timeout_from_environment(
+                self.STARTUP_TIMEOUT_ENV,
+                self.DEFAULT_STARTUP_TIMEOUT_SECONDS,
+            )
+            if startup_timeout_seconds is None
+            else startup_timeout_seconds
+        )
+        self.tool_timeout_seconds = (
+            self._timeout_from_environment(
+                self.TOOL_TIMEOUT_ENV,
+                self.DEFAULT_TOOL_TIMEOUT_SECONDS,
+            )
+            if tool_timeout_seconds is None
+            else tool_timeout_seconds
+        )
+        if not all(
+            0.1 <= value <= 30.0
+            for value in (
+                self.timeout_seconds,
+                self.startup_timeout_seconds,
+                self.tool_timeout_seconds,
+            )
+        ):
             raise McpBackendContextError(
                 tool_name=McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT,
                 kind=BackendContextFailureKind.UNAVAILABLE,
@@ -178,6 +210,7 @@ class McpBackendContextService:
         """Resolve both Backend Context Tools on the shared MCP stdio session."""
 
         manager = get_shared_mcp_session_manager()
+        manager.ensure_connected(timeout_seconds=self.startup_timeout_seconds)
         deadline = monotonic() + self.timeout_seconds
         arguments = {
             "inquiry_id": str(inquiry_id),
@@ -188,7 +221,7 @@ class McpBackendContextService:
             remaining = deadline - monotonic()
             if remaining <= 0:
                 raise TimeoutError("MCP Backend Context timeout")
-            return remaining
+            return min(remaining, self.tool_timeout_seconds)
 
         product_result = manager.call_tool(
             McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT.value,
@@ -232,9 +265,12 @@ class McpBackendContextService:
             "correlation_id": str(correlation_id),
         }
         async with self._client_factory() as client:
-            product_result = await client.call_tool(
-                McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT.value,
-                arguments,
+            product_result = await asyncio.wait_for(
+                client.call_tool(
+                    McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT.value,
+                    arguments,
+                ),
+                timeout=self.tool_timeout_seconds,
             )
             product = self._parse_output(
                 product_result,
@@ -246,9 +282,12 @@ class McpBackendContextService:
                 McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT,
             )
 
-            inquiry_result = await client.call_tool(
-                McpBackendContextToolName.GET_INQUIRY_CONTEXT.value,
-                arguments,
+            inquiry_result = await asyncio.wait_for(
+                client.call_tool(
+                    McpBackendContextToolName.GET_INQUIRY_CONTEXT.value,
+                    arguments,
+                ),
+                timeout=self.tool_timeout_seconds,
             )
             inquiry = self._parse_output(
                 inquiry_result,
@@ -326,9 +365,13 @@ class McpBackendContextService:
         )
 
     @classmethod
-    def _timeout_from_environment(cls) -> float:
+    def _timeout_from_environment(
+        cls,
+        env_name: str,
+        default_seconds: float,
+    ) -> float:
         try:
-            return float(os.getenv(cls.TIMEOUT_ENV, str(cls.DEFAULT_TIMEOUT_SECONDS)))
+            return float(os.getenv(env_name, str(default_seconds)))
         except ValueError as exc:
             raise McpBackendContextError(
                 tool_name=McpBackendContextToolName.LOOKUP_PRODUCT_CONTEXT,

@@ -7,11 +7,26 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from uuid import UUID, uuid4
 
+import pytest
+
+from ai.app.integrations.mcp.session_manager import close_shared_mcp_session_manager
 from ai.app.orchestration.pipeline_router import PipelineRouter
+
+
+@pytest.fixture
+def isolated_mcp_session():
+    """Ensure the subprocess observes only this test's Backend environment."""
+
+    close_shared_mcp_session_manager()
+    try:
+        yield
+    finally:
+        close_shared_mcp_session_manager()
 
 
 def test_mcp_transport_calls_http_context_then_fails_closed_without_vector(
     monkeypatch,
+    isolated_mcp_session,
 ):
     inquiry_id = UUID("018f2f9b-7c30-7981-b541-1a987c88b401")
     correlation_id = UUID("018f2f9b-7c30-7981-b541-1a987c88b402")
@@ -86,6 +101,8 @@ def test_mcp_transport_calls_http_context_then_fails_closed_without_vector(
         monkeypatch.setenv("AI_HANDOFF_INTERNAL_TOKEN", token)
         monkeypatch.setenv("AI_BACKEND_CONTEXT_TIMEOUT_SECONDS", "2")
         monkeypatch.setenv("AI_MCP_CONTEXT_TIMEOUT_SECONDS", "6")
+        monkeypatch.setenv("AI_MCP_SESSION_STARTUP_TIMEOUT_SECONDS", "20")
+        monkeypatch.setenv("AI_MCP_CONTEXT_TOOL_TIMEOUT_SECONDS", "3")
         monkeypatch.delenv("AI_VECTOR_DSN", raising=False)
 
         result = PipelineRouter(search_service=None).run_pipeline(
@@ -102,7 +119,7 @@ def test_mcp_transport_calls_http_context_then_fails_closed_without_vector(
         thread.join(timeout=2)
 
     harness = result.reliability_runtime.harness_runtime.harness
-    assert len(observed) == 2
+    assert len(observed) == 2, harness.model_dump(mode="json")
     assert all(item["path"].endswith(f"/{inquiry_id}/context") for item in observed)
     assert all(item["token"] == token for item in observed)
     assert all(
