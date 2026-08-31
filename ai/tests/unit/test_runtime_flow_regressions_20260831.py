@@ -104,6 +104,12 @@ def test_occurrence_condition_start_time_question_falls_back_only_that_field():
         ],
     )
 
+    assert validation.questions == fallback
+    assert validation.fallback_fields == ("occurrence_condition",)
+    assert validation.rejection_reasons == {
+        "occurrence_condition": "QUESTION_INTENT_MISMATCH"
+    }
+
 
 @pytest.mark.parametrize(
     "raw_text",
@@ -111,12 +117,6 @@ def test_occurrence_condition_start_time_question_falls_back_only_that_field():
 )
 def test_relative_time_expressions_are_preserved_without_reasking(raw_text):
     assert SymptomNormalizer().extract_occurrence_time(raw_text) == raw_text
-
-    assert validation.questions == fallback
-    assert validation.fallback_fields == ("occurrence_condition",)
-    assert validation.rejection_reasons == {
-        "occurrence_condition": "QUESTION_INTENT_MISMATCH"
-    }
 
 
 def test_occurrence_condition_wording_accepts_condition_question():
