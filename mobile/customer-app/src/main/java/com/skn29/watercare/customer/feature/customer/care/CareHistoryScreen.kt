@@ -76,10 +76,22 @@ fun CareHistoryScreen(
     // 케어 이력은 방문 처리나 상담 처리 후
     // 서버에서 변경될 수 있으므로 화면으로 돌아올 때 재조회한다.
     // Pull-to-refresh와 같은 load()를 사용해 상태 기준을 하나로 유지한다.
+    // ViewModel init이 첫 조회를 이미 수행한다.
+    // 최초 ON_RESUME에서 같은 API를 두 번 호출하지 않고
+    // 다른 화면에서 돌아온 경우에만 최신 이력을 확인한다.
+    var hasResumedOnce by
+        remember {
+            mutableStateOf(false)
+        }
+
     LifecycleEventEffect(
         Lifecycle.Event.ON_RESUME
     ) {
-        viewModel.load()
+        if (hasResumedOnce) {
+            viewModel.load()
+        } else {
+            hasResumedOnce = true
+        }
     }
 
     LaunchedEffect(state.authExpired) {
@@ -91,8 +103,14 @@ fun CareHistoryScreen(
 
     PullToRefreshBox(
         isRefreshing =
-            state.loadingSubscriptions ||
-                state.loadingHistory,
+            (
+                state.loadingSubscriptions ||
+                    state.loadingHistory
+            ) &&
+                (
+                    state.subscriptions.isNotEmpty() ||
+                        state.items.isNotEmpty()
+                ),
         onRefresh = viewModel::load,
     ) {
         CareHistoryContent(
