@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://waterbridge.local/schemas/reference_cases/three_model_reference_scenarios_v1.schema.json",
+  "title": "WaterBridge three-model reference scenario catalogue v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "catalog_version",
+    "catalog_status",
+    "runtime_use",
+    "training_use",
+    "curation_status",
+    "expected_records",
+    "description",
+    "scenarios"
+  ],
+  "properties": {
+    "catalog_version": {
+      "const": "three-model-reference-v1"
+    },
+    "catalog_status": {
+      "const": "REFERENCE_ONLY"
+    },
+    "runtime_use": {
+      "const": "REFERENCE_ONLY"
+    },
+    "training_use": {
+      "const": "PROHIBITED"
+    },
+    "curation_status": {
+      "const": "CANDIDATE"
+    },
+    "expected_records": {
+      "const": 45
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 45,
+      "maxItems": 45,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/scenario"
+      }
+    }
+  },
+  "$defs": {
+    "nonemptyText": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonemptyTextList": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/nonemptyText"
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "exact_model_code",
+        "model_family",
+        "risk_level",
+        "title",
+        "customer_utterance",
+        "topic_code",
+        "context_facts",
+        "source_document_id",
+        "source_policy",
+        "manual_page_refs",
+        "evidence_group_ids",
+        "evidence_readiness",
+        "expected_route",
+        "expected_requires_consultation",
+        "expected_publication_gate",
+        "expected_usage_guidance_status",
+        "expected_reason",
+        "response_outline"
+      ],
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "pattern": "^REF-(JAC104|IAC425|IAC606)-(G|C|D)-00[1-5]$"
+        },
+        "exact_model_code": {
+          "enum": [
+            "WPUJAC104DWH",
+            "WPUIAC425SNW",
+            "WPUIAC606SNW"
+          ]
+        },
+        "model_family": {
+          "enum": [
+            "WPU-JAC104",
+            "WPU-IAC425",
+            "WPU-IAC606"
+          ]
+        },
+        "risk_level": {
+          "enum": [
+            "general",
+            "caution",
+            "danger"
+          ]
+        },
+        "title": {
+          "$ref": "#/$defs/nonemptyText"
+        },
+        "customer_utterance": {
+          "$ref": "#/$defs/nonemptyText"
+        },
+        "topic_code": {
+          "$ref": "#/$defs/nonemptyText"
+        },
+        "context_facts": {
+          "$ref": "#/$defs/nonemptyTextList"
+        },
+        "source_document_id": {
+          "enum": [
+            "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "MAN-SKMAGIC-WPU-IAC425-REV02",
+            "MAN-SKMAGIC-WPU-IAC606-REV00"
+          ]
+        },
+        "source_policy": {
+          "enum": [
+            "MVP_SOURCE_REFERENCE",
+            "EXPANSION_REFERENCE_ONLY"
+          ]
+        },
+        "manual_page_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "evidence_group_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonemptyText"
+          }
+        },
+        "evidence_readiness": {
+          "enum": [
+            "SCENARIO_GROUP_VERIFIED",
+            "TOPIC_GROUP_SELECTION_PENDING",
+            "SOURCE_PAGE_ONLY"
+          ]
+        },
+        "expected_route": {
+          "enum": [
+            "AI_GUIDANCE",
+            "HUMAN_REVIEW",
+            "EMERGENCY_ESCALATION"
+          ]
+        },
+        "expected_requires_consultation": {
+          "type": "boolean"
+        },
+        "expected_publication_gate": {
+          "enum": [
+            "AUTO_GUIDANCE_ELIGIBLE",
+            "HUMAN_APPROVAL_REQUIRED",
+            "SAFETY_ESCALATION_ONLY"
+          ]
+        },
+        "expected_usage_guidance_status": {
+          "enum": [
+            "NORMAL",
+            "PARTIAL_STOP",
+            "TOTAL_STOP"
+          ]
+        },
+        "expected_reason": {
+          "$ref": "#/$defs/nonemptyText"
+        },
+        "response_outline": {
+          "$ref": "#/$defs/nonemptyTextList"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "risk_level": {
+                "const": "general"
+              }
+            },
+            "required": [
+              "risk_level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "expected_route": {
+                "const": "AI_GUIDANCE"
+              },
+              "expected_requires_consultation": {
+                "const": false
+              },
+              "expected_publication_gate": {
+                "const": "AUTO_GUIDANCE_ELIGIBLE"
+              },
+              "expected_usage_guidance_status": {
+                "const": "NORMAL"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "risk_level": {
+                "const": "caution"
+              }
+            },
+            "required": [
+              "risk_level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "expected_route": {
+                "const": "HUMAN_REVIEW"
+              },
+              "expected_publication_gate": {
+                "const": "HUMAN_APPROVAL_REQUIRED"
+              },
+              "expected_usage_guidance_status": {
+                "const": "PARTIAL_STOP"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "risk_level": {
+                "const": "danger"
+              }
+            },
+            "required": [
+              "risk_level"
+            ]
+          },
+          "then": {
+            "properties": {
+              "expected_route": {
+                "const": "EMERGENCY_ESCALATION"
+              },
+              "expected_requires_consultation": {
+                "const": true
+              },
+              "expected_publication_gate": {
+                "const": "SAFETY_ESCALATION_ONLY"
+              },
+              "expected_usage_guidance_status": {
+                "const": "TOTAL_STOP"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
