@@ -14,9 +14,14 @@ def _canonical_topic_by_chunk_id() -> dict[str, str]:
     """팀 DB View에 없는 주제 코드를 고정 Canonical 입력에서 복원한다."""
 
     return {
-        chunk.chunk_id: chunk.topic_code
-        for chunk in ChunkLoader().load_verified_chunks()
-        if chunk.topic_code
+        **{
+            chunk.chunk_id: chunk.topic_code
+            for chunk in ChunkLoader().load_verified_chunks()
+            if chunk.topic_code
+        },
+        # Exact v2 Child identity; never infer a topic from arbitrary ID suffixes.
+        # The View omits topic_code, and production images only bundle MVP data.
+        "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001": "symptom_taste_odor",
     }
 
 
