@@ -1,0 +1,125 @@
+{
+  "schema": "CONSULTATION_CONTEXT_PROVIDER_CANARY_PRE_EXECUTION_REVIEW_V1",
+  "recorded_at_kst": "2026-08-31T21:20:52+09:00",
+  "overall_status": "HOLD_BEFORE_EXECUTE",
+  "is_execute_report": false,
+  "owner": "이동윤 / AI·RAG",
+  "request_document_sha256": "c2b1141c440b15d916f5aa074edb8b73b08206205bbee7e480fd4e320b5b2833",
+  "backend_owner_receipt": {
+    "backend_release_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+    "inquiry_id": "ed95ee7c-0e4f-40ca-ae31-8d6c8fe7b104",
+    "correlation_id": "098566a1-dd22-4b65-bc72-ced6d035bef0",
+    "ai_request_id": "71283a67-76a8-4b98-818d-3bbc95233111",
+    "source_inquiry_state_version": 2,
+    "backend_review_id": "c34115fd-822d-447f-b1c4-bba43f0627b4",
+    "review_state_version_after_reject": 2,
+    "checkpoint_thread_id": "hitl-f6f10ab299eacb75bc9705a4ddabd617",
+    "inspect_status": "INSPECTED_OWNER_REPORTED",
+    "backend_rejected_review_and_handoff_zero": "OWNER_REPORTED_NOT_REQUERIED_BY_THIS_TASK"
+  },
+  "actual_source_host_check": {
+    "access_method": "Existing AWS browser Session Manager; expired session reconnected; metadata and readonly stdin audit only",
+    "aws_instance_id": "i-06b21819ee7eb4846",
+    "input_path": "/home/ubuntu/.waterbridge-provider-canary/ed95ee7c-0e4f-40ca-ae31-8d6c8fe7b104/input.json",
+    "input_bytes": 11379,
+    "input_mode": "600",
+    "input_owner": "ubuntu",
+    "container_id": "43fd908192b3525948b2faa717774ae64f35875dc551790e0d3601908e5b59e3",
+    "current_release_path_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+    "container_status": "Up 4 hours (healthy)",
+    "canonical_identity_file_sha256": "ab98aa6cfe839366cb13ecc3839d72ee0ae99419af85f702f0c2f1d05bdca169",
+    "audit_result": {
+      "canonical_evidence_count": 5,
+      "evidence_binding_sha256": "f33102c7be550173c0a0109d7d5e652c34a6dd96d497c3bc9a9a6c5119d91f60",
+      "handoff_calls": 0,
+      "identifier_binding": "PASS",
+      "input_bytes": 11379,
+      "input_sha256": "e2847f81e6690f8a978dec8fa385290b5e2afcd20e78fb5406e6131b7bf9d4c5",
+      "provider_calls": 0,
+      "python": "3.13.13",
+      "raw_input_sha256": "e2847f81e6690f8a978dec8fa385290b5e2afcd20e78fb5406e6131b7bf9d4c5",
+      "scope": "SOURCE_HOST_READONLY_INPUT_AUDIT",
+      "status": "PASS"
+    },
+    "canonical_checks": [
+      "Five distinct Canonical JAC104 Child IDs",
+      "Exact model WPUJAC104DWH and generation D",
+      "official_verified / allowed_use / runtime_eligible",
+      "Canonical TEXT_AND_VISUAL_VERIFIED",
+      "Source-file SHA-256 equality",
+      "Exact content SHA-256 equality",
+      "Page membership",
+      "Input schema, synthetic classification and supplied identifiers"
+    ],
+    "not_performed": [
+      "Destination-host transfer verification",
+      "Fresh RDS query",
+      "Backend review/ledger query",
+      "Runner inspect on a Clean destination worktree"
+    ]
+  },
+  "local_provenance": {
+    "branch": "dongyoon",
+    "head": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+    "local_origin_main_ref": "c8c196ff9e34ae5475759aeb7f117d5a7f4d34e8",
+    "origin_main_fetched_this_task": false,
+    "worktree_dirty": true,
+    "unrelated_changes_preserved": true,
+    "final_runner_execution_commit": null,
+    "runner_last_change_commit": "f8d4b0f30a23bbf51ee0902ff9b317a6a4aa00dd",
+    "target_three_files_worktree_diff_exit_code": 0,
+    "target_files": [
+      "ai/scripts/run_consultation_context_provider_canary.py",
+      "ai/app/integrations/llm/consultation_summary_client.py",
+      "ai/app/integrations/backend/handoff_client.py"
+    ],
+    "unit_test": {
+      "python": "3.13.13",
+      "command": ".\\ai\\.venv\\Scripts\\python.exe -m pytest ai/tests/unit/test_consultation_context_provider_canary.py -q -p no:cacheprovider",
+      "passed": 13,
+      "exit_code": 0,
+      "scope": "Local fake-Provider unit tests only; not real Provider or Backend verification"
+    }
+  },
+  "protected_transfer": {
+    "status": "NOT_RUN",
+    "destination_host": null,
+    "scp_sftp_route": null,
+    "input_copied_to_local": false,
+    "ssh_scp_sftp_binaries_available": true,
+    "local_ssh_config_present": false
+  },
+  "execution": {
+    "provider": "NOT_RUN",
+    "actual_context_provider_calls": 0,
+    "first_handoff": "NOT_RUN",
+    "replay": "NOT_RUN",
+    "actual_handoff_calls": 0,
+    "customer_guidance_provider_calls": 0,
+    "new_inquiries_created": 0,
+    "operating_environment_changed": false,
+    "backend_database_written": false,
+    "automatic_rerun": false
+  },
+  "blockers": [
+    {
+      "code": "PROTECTED_DESTINATION_UNCONFIRMED",
+      "required": "User/Backend owner identifies the approved protected Host and SCP/SFTP route; do not paste input or credentials into chat"
+    },
+    {
+      "code": "HANDOFF_RETRY_POLICY_NEEDS_CONFIRMATION",
+      "basis": "Production handoff_client.MAX_ATTEMPTS=2: timeout/network and selected HTTP failures can trigger one internal retransmission. Explicit successful-payload Replay is a separate operation and does not call Provider again.",
+      "required": "Confirm whether prohibition is Runner re-execution only or also internal HTTP retransmission. For strict first-error stop, obtain the Handoff owner's approved one-attempt execution method before Execute; no shared code altered"
+    }
+  ],
+  "next_steps": [
+    "Confirm protected destination and transfer route",
+    "Resolve first-error stop versus Handoff internal retransmission policy with owner 윤승혁 / Backend 최지용",
+    "Prepare an isolated Clean checkout at the fixed agreed Runner SHA without discarding current work",
+    "Verify transferred size/raw SHA plus both Runner hashes and inspect; precheck a new writable report path before any Provider call",
+    "Execute once only; stop on Provider failure or ambiguous delivery; never rerun automatically"
+  ],
+  "external_messages_sent": false,
+  "whole_service_e2e": "NOT_RUN",
+  "operating_activation": "NOT_AUTHORIZED_BY_THIS_REVIEW"
+}

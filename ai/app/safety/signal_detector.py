@@ -37,6 +37,20 @@ _HYPOTHETICAL = re.compile(
     r"라면|다면|일\s*경우|가정|(?:나|발생하|튀|새|벗겨지|노출되|손상되|들어가|들어오|잠기|침수되)면|젖으면"
 )
 _MENTION = re.compile(rf"{_PART}|연기|화재|스파크|불꽃|누수|감전|히터|온수\s*모듈|물(?:이|가|은|도)?")
+_BUTTON_ALERT = re.compile(
+    r"(?P<controls>(?:온수|정수|냉수)[^.!?\n]{0,48}?)(?:버튼|선택\s*표시등)"
+    r"(?:들)?(?:이|은|는|도|가)?\s*"
+    r"(?:(?:전부|모두|다|동시에|함께|일제히)\s*)+"
+    r"(?:깜박(?:이|거리)?|깜빡(?:이|거리)?|점멸(?:하)?)"
+)
+_RED_DISPLAY = re.compile(
+    r"(?:표시창|디스플레이|화면|led|lcd)(?:이|가|은|는|도|에)?\s*"
+    r"(?:빨간\s*(?:색|불)|빨갛|빨강|붉은\s*(?:색|불)|붉|적색)"
+)
+_INDICATOR_CONDITION = re.compile(
+    r"지\s*않|아닌|(?:깜박|깜빡|점멸|켜|들어오|변)[가-힣]{0,8}면|경우|일\s*때"
+    r"|안\s*(?:깜박|깜빡|점멸|켜|들어오|변)|(?:색|빨강)(?:이|이라)?면"
+)
 
 
 def _normalize(text: str) -> str:
@@ -90,6 +104,42 @@ def detect_safety_evidence(text: str) -> tuple[tuple[str, str], ...]:
     return tuple(result)
 
 
+def has_asserted_hot_water_panel_alert(text: str) -> bool:
+    """Recognize the combined heater alert described in IAC425 p46 / IAC606 p43.
+
+    This is an observation detector, not an evaluation-case lookup. All three
+    water controls must blink together and the display must be red; an ordinary
+    lock light, one blinking control, a denial or a hypothetical is insufficient.
+    The caller maps it to the existing approved heater rule and its guidance.
+    """
+    normalized = _normalize(text)
+
+    def asserted_indicator(match: re.Match[str]) -> bool:
+        right = next(
+            (boundary.start() for boundary in _BOUNDARY.finditer(normalized, match.end())),
+            len(normalized),
+        )
+        clause = normalized[match.start():min(right, match.end() + 28)]
+        return (
+            _asserted(normalized, match.start(), match.end())
+            and not _INDICATOR_CONDITION.search(clause)
+        )
+
+    displays = [match for match in _RED_DISPLAY.finditer(normalized) if asserted_indicator(match)]
+    for buttons in _BUTTON_ALERT.finditer(normalized):
+        controls = buttons.group("controls")
+        if set(re.findall(r"온수|정수|냉수", controls)) != {"온수", "정수", "냉수"}:
+            continue
+        # Only a list of controls is accepted: exclude "냉수만", "온수 제외", etc.
+        if re.sub(r"온수|정수|냉수|이랑|하고|와|과|및|랑|[\s\[\],·/&]", "", controls):
+            continue
+        if asserted_indicator(buttons) and any(
+            abs(display.start() - buttons.end()) <= 160 for display in displays
+        ):
+            return True
+    return False
+
+
 def supports_safety_quote(text: str, signal_name: str, quote: str) -> bool:
     pattern = _PATTERNS.get(signal_name)
     normalized, quote = _normalize(text), _normalize(quote)
@@ -102,4 +152,7 @@ def supports_safety_quote(text: str, signal_name: str, quote: str) -> bool:
     )
 
 
-__all__ = ["detect_safety_evidence", "has_asserted_keyword", "supports_safety_quote"]
+__all__ = [
+    "detect_safety_evidence", "has_asserted_keyword", "supports_safety_quote",
+    "has_asserted_hot_water_panel_alert",
+]

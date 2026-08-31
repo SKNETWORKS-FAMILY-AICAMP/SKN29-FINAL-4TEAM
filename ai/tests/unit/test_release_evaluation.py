@@ -1,6 +1,8 @@
 """Release evaluation fails closed and cannot feed the Oracle into Runtime."""
 
 import json
+from hashlib import sha1
+import subprocess
 from types import SimpleNamespace
 
 import pytest
@@ -9,9 +11,11 @@ from ai.app.integrations.llm import LLMUsage
 from ai.app.schemas import StructuredSymptom, SymptomAnalysisResult
 from ai.app.structuring.llm_contracts import SymptomStructuringLLMResponse, SymptomStructuringRequest
 from ai.app.validation.routing import ResponseRoutingDisposition
-from ai.evaluation.release_evidence import execution_blockers, json_sha256, write_report
+from ai.evaluation import release_evidence
+from ai.evaluation.release_evidence import execution_blockers, execution_source_changed, json_sha256, write_report
 from ai.evaluation.runners import reference_scenario_runner as runner
 from ai.scripts import evaluate_reference_scenarios as script
+from ai.scripts import prepare_release_qa
 from ai.scripts import verify_three_model_readonly_runtime as readonly_script
 
 
@@ -86,12 +90,12 @@ def test_report_checksum_and_clean_sha_requirements(tmp_path):
     output = tmp_path / "result.json"
     write_report(output, report)
     assert json.loads(output.read_text())["artifact_payload_sha256"] == json_sha256(report)
-    assert execution_blockers({"python_version": "3.13.13", "commit_sha": "a" * 40, "dirty": False}, "a" * 40) == []
+    assert execution_blockers({"python_version": "3.13.13", "commit_sha": "a" * 40, "dirty": False, "git_metadata_verified": True}, "a" * 40) == []
     assert "CLEAN_EXECUTION_TREE_REQUIRED" in execution_blockers({"python_version": "3.13.13", "commit_sha": "a" * 40, "dirty": True}, "a" * 40)
 
 
 def test_reference_eval_db_failure_never_runs_provider_or_leaks_driver_text(monkeypatch, tmp_path):
-    monkeypatch.setattr(script, "execution_provenance", lambda: {"python_version": "3.13.13", "commit_sha": "a" * 40, "dirty": False})
+    monkeypatch.setattr(script, "execution_provenance", lambda: {"python_version": "3.13.13", "commit_sha": "a" * 40, "dirty": False, "git_metadata_verified": True})
     monkeypatch.setenv("AI_RAG_RUNTIME_PROFILE", "three_model_integration")
     monkeypatch.setenv("AI_VECTOR_TABLE_NAME", "backend_ai_rag_chunks_v1")
     monkeypatch.setenv("AI_EMBEDDING_REVISION", "5617a9f61b028005a4858fdac845db406aefb181")
@@ -126,7 +130,7 @@ def test_readonly_50_checks_entire_index_before_embedding(monkeypatch):
 @pytest.mark.parametrize("source_changed", [False, True])
 def test_readonly_50_cannot_certify_a_source_changed_during_execution(monkeypatch, tmp_path, source_changed):
     before = {"python_version": "3.13.13", "commit_sha": "a" * 40,
-              "dirty": False, "runtime_source_sha256": "b" * 64}
+              "dirty": False, "runtime_source_sha256": "b" * 64, "git_metadata_verified": True}
     after = {**before, "dirty": source_changed,
              "runtime_source_sha256": "c" * 64 if source_changed else "b" * 64}
     snapshots = iter([before, after])
@@ -139,3 +143,79 @@ def test_readonly_50_cannot_certify_a_source_changed_during_execution(monkeypatc
     if source_changed:
         assert report["status"] == "HOLD"
         assert report["reason_code"] == "EXECUTION_SOURCE_CHANGED"
+
+
+def test_fixed_sha_and_clean_strings_without_a_commit_object_are_not_evidence(monkeypatch, tmp_path):
+    def metadata_only(command, **kwargs):
+        if command[1:] == ["rev-parse", "HEAD"]:
+            return SimpleNamespace(stdout="a" * 40)
+        if command[1:] == ["rev-parse", "--show-toplevel"]:
+            return SimpleNamespace(stdout=str(tmp_path))
+        raise subprocess.CalledProcessError(64, command, stderr="PRIVATE_DRIVER_TEXT")
+    monkeypatch.setattr(release_evidence.subprocess, "run", metadata_only)
+    result = release_evidence.execution_provenance(tmp_path)
+    assert result["git_metadata_verified"] is False
+    assert result["commit_sha"] is None and result["dirty"] is None
+    assert "VERIFIED_GIT_COMMIT_REQUIRED" in execution_blockers(result, "a" * 40)
+    assert "PRIVATE_DRIVER_TEXT" not in json.dumps(result)
+
+
+def test_reported_sha_must_match_the_actual_commit_object(monkeypatch, tmp_path):
+    commit = b"tree " + b"b" * 40 + b"\n\nsynthetic provenance test\n"
+    actual_sha = sha1(f"commit {len(commit)}\0".encode() + commit, usedforsecurity=False).hexdigest()
+    def actual_object(command, **kwargs):
+        values = {
+            ("rev-parse", "HEAD"): actual_sha,
+            ("rev-parse", "--show-toplevel"): str(tmp_path),
+            ("cat-file", "commit", actual_sha): commit,
+            ("branch", "--show-current"): "",
+            ("status", "--porcelain"): "",
+        }
+        return SimpleNamespace(stdout=values[tuple(command[1:])])
+    monkeypatch.setattr(release_evidence.subprocess, "run", actual_object)
+    result = release_evidence.execution_provenance(tmp_path)
+    assert result["git_metadata_verified"] is True and result["commit_sha"] == actual_sha
+    commit += b"tampered"
+    result = release_evidence.execution_provenance(tmp_path)
+    assert result["git_metadata_verified"] is False and result["commit_sha"] is None
+
+
+@pytest.mark.parametrize("field", ["input_file_sha256", "evaluation_source_sha256", "git_metadata_verified"])
+def test_prompt_or_oracle_or_evaluator_change_invalidates_the_same_runtime_sha(field):
+    before = {"commit_sha": "a" * 40, "dirty": False, "runtime_source_sha256": "b" * 64,
+              "input_file_sha256": {"oracle": "c" * 64},
+              "evaluation_source_sha256": "d" * 64, "git_metadata_verified": True}
+    after = {**before, field: "changed"}
+    assert execution_source_changed(before, after)
+
+
+def test_missing_dataset_is_not_a_final_sha_candidate():
+    source = {"python_version": "3.13.13", "commit_sha": "a" * 40,
+              "dirty": False, "git_metadata_verified": True,
+              "missing_identity_files": ["data/config/rag/three_model_evaluation_cases.json"]}
+    assert "RELEASE_IDENTITY_INPUTS_MISSING" in execution_blockers(source, "a" * 40)
+
+
+def test_offline_qa_preparation_does_not_run_a_db_or_provider(monkeypatch):
+    def network_forbidden(*args, **kwargs):
+        raise AssertionError("Offline preparation cannot contact an external service")
+    monkeypatch.setattr(readonly_script, "_read_index_rows", network_forbidden)
+    monkeypatch.setattr(script, "PipelineRouter", network_forbidden)
+    report = prepare_release_qa.prepare("a" * 40)
+    assert report["status"] == "QA_INPUTS_READY"
+    assert report["reference_45"]["declared_case_count"] == 45
+    assert report["readonly_50"]["case_types"] == {"POSITIVE": 43, "NEGATIVE": 7}
+    assert report["executed_45_cases"] == report["executed_50_cases"] == 0
+    assert report["database_queries"] == report["provider_requests"] == 0
+    assert report["clean_source_ready_for_candidate_run"] is False
+    assert report["final_sha_eligible"] is False
+
+
+def test_offline_qa_preparation_reports_missing_data_without_private_paths(monkeypatch):
+    def missing(*args):
+        raise FileNotFoundError("PRIVATE_DATA_SOURCE_PATH")
+    monkeypatch.setattr(prepare_release_qa, "load_three_model_evaluation_inputs", missing)
+    report = prepare_release_qa.prepare("a" * 40)
+    assert report["status"] == "HOLD"
+    assert report["failure_stage"] == "READONLY_50_INPUTS"
+    assert "PRIVATE_DATA_SOURCE_PATH" not in json.dumps(report)

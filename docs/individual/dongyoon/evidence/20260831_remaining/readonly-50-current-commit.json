@@ -1,0 +1,2862 @@
+{
+  "activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+  "artifact_payload_sha256": "44200cb4faeea81134ecbd7dd032e024e22c31d5294c45474883fec8175c7b5c",
+  "backend_writes": 0,
+  "case_count": 50,
+  "case_results": [
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-001",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "736573b9bc5c43d00ac74bc5a22e615f2dd45ffe040ec9e0afc74c5c2ab951d5",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "e4e6f6777a09c8f58a52f3885bc9e4d7b0da29fc5943c1e6cc9ffc982a5dd5d3",
+      "top_similarity_score": 0.645611,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-002",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "736573b9bc5c43d00ac74bc5a22e615f2dd45ffe040ec9e0afc74c5c2ab951d5",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "a632742538a31d532cf491e9bdaa88ceece38868172018b63d730a09890c13f0",
+      "top_similarity_score": 0.706407,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-003",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "736573b9bc5c43d00ac74bc5a22e615f2dd45ffe040ec9e0afc74c5c2ab951d5",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "35dcc75efd015689210c151fc7d99df8490217ce9a982ac2127270e5c1787073",
+      "top_similarity_score": 0.682841,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-004",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c2e1ae5a2d3ca1db65a9a1a63367bc8817f99abac6ab6f4a6eafba3ed214fdcc",
+          "evidence_group_id": "EVD-WPUIAC425SNW-DEFROST-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "6ba0413bf0f2302c69d764f5544086bb4c948f281ac2bca9c0b366cf826aa7db",
+          "evidence_group_id": "EVD-WPUIAC425SNW-ICE-MAKING-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c3f622596dbbd6a861bf5242a680c9a16e2de124b12fb14408acddd4f14535c2",
+          "evidence_group_id": "EVD-WPUIAC425SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0823999a8417d6fe685cdc1371978c6546389f1d2ec5882f5a63be392bb5a05e",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-VENTILATION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "8bccfd3d9b8ad7c9263d36dd3b5924a2eda3c0ea16c8e871d92e7ed9752569b0",
+      "top_similarity_score": 0.632484,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-005",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "d575854725a1d68781cab08a8008307c70ea84579b3ed5587fb711c45a96affc",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-STEAM-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "32cf762cb6b252de6b9c7e57387ae1529e42962aad34e90596935a808bf4773c",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-HOT-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "510becbfa54128c54f7267415f40728620c1ad30d3885ad727e7647316b33076",
+      "top_similarity_score": 0.651866,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-006",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-STEAM-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "d575854725a1d68781cab08a8008307c70ea84579b3ed5587fb711c45a96affc",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-STEAM-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P005-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "55d0e74c850bc3334a64b140f543c7b7b5f03873b91f9075bbc585cadc0410b3",
+          "evidence_group_id": "EVD-WPUIAC425SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "1853cfefd6c57af15d706cf26aae654db7043b5a7c9c835ad42494016437b251",
+      "top_similarity_score": 0.653163,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-007",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "cdf1476f4ca2c2d1ab26b0ab1665cf22746aafa0fde042c2b5b34aa7e1265401",
+          "evidence_group_id": "EVD-WPUIAC425SNW-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "32cf762cb6b252de6b9c7e57387ae1529e42962aad34e90596935a808bf4773c",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-HOT-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "10b2c3efb82c38dce7b2a4f929cff203a18419fe8343b1c97759d5a65ae45d3f",
+      "top_similarity_score": 0.622116,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-008",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "6ba0413bf0f2302c69d764f5544086bb4c948f281ac2bca9c0b366cf826aa7db",
+          "evidence_group_id": "EVD-WPUIAC425SNW-ICE-MAKING-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c2e1ae5a2d3ca1db65a9a1a63367bc8817f99abac6ab6f4a6eafba3ed214fdcc",
+          "evidence_group_id": "EVD-WPUIAC425SNW-DEFROST-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "3d7848a7690ce4fbcb41317a820249cd359991a15cc06312cbf09fea84e923c7",
+      "top_similarity_score": 0.59587,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-009",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0b5dc72752cdcc62f4082ea30aac70d1d22d15e59b6b2dfb57cfdd68b36048b1",
+          "evidence_group_id": "EVD-WPUIAC425SNW-ICE-QUALITY-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "736573b9bc5c43d00ac74bc5a22e615f2dd45ffe040ec9e0afc74c5c2ab951d5",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 2,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "3ce88f705bc0e2ef9994ddfe7f5e69715cc5e7af45833d5627378f83b9440098",
+      "top_similarity_score": 0.623543,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-010",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "736573b9bc5c43d00ac74bc5a22e615f2dd45ffe040ec9e0afc74c5c2ab951d5",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P005-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "55d0e74c850bc3334a64b140f543c7b7b5f03873b91f9075bbc585cadc0410b3",
+          "evidence_group_id": "EVD-WPUIAC425SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 3,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "b1a2848a6bab20231ae7a41b3f80e689784aba23269c1dbb8e98cdeee9381b4f",
+      "top_similarity_score": 0.520725,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-011",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "cdf1476f4ca2c2d1ab26b0ab1665cf22746aafa0fde042c2b5b34aa7e1265401",
+          "evidence_group_id": "EVD-WPUIAC425SNW-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "ea8a343039d8c7d467c684dd5ea111e9cf240566bf48399dec38ff7e9d7e74c8",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "f7e84e60d4e6a71652301a316b16662a8b4894f54e95a0776df2b449d0d753f3",
+      "top_similarity_score": 0.645208,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-012",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-NO-HOT-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "32cf762cb6b252de6b9c7e57387ae1529e42962aad34e90596935a808bf4773c",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-HOT-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 3,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "a4637796cdb91b01324cffa93c214f988726b8cfc7a0d268ecec39cda8a5614b",
+      "top_similarity_score": 0.609204,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-013",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "736573b9bc5c43d00ac74bc5a22e615f2dd45ffe040ec9e0afc74c5c2ab951d5",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-ICE-QUALITY-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0b5dc72752cdcc62f4082ea30aac70d1d22d15e59b6b2dfb57cfdd68b36048b1",
+          "evidence_group_id": "EVD-WPUIAC425SNW-ICE-QUALITY-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "72d4cae6ca202fd2605707bdc8899ae4fa844c46ccdd41175e6c70adbb450b23",
+      "top_similarity_score": 0.640778,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-014",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-NO-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "ea8a343039d8c7d467c684dd5ea111e9cf240566bf48399dec38ff7e9d7e74c8",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3312a5fccd176a5a9860f4da3849cafd45e5b02b609aad1a7959301761c5d583",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "4541cc55d2efb135318fed86b4e73c8349b07e09d1f81e72f82402949ba3db82",
+      "top_similarity_score": 0.546897,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-015",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0823999a8417d6fe685cdc1371978c6546389f1d2ec5882f5a63be392bb5a05e",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-VENTILATION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "6ba0413bf0f2302c69d764f5544086bb4c948f281ac2bca9c0b366cf826aa7db",
+          "evidence_group_id": "EVD-WPUIAC425SNW-ICE-MAKING-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c2e1ae5a2d3ca1db65a9a1a63367bc8817f99abac6ab6f4a6eafba3ed214fdcc",
+          "evidence_group_id": "EVD-WPUIAC425SNW-DEFROST-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c3f622596dbbd6a861bf5242a680c9a16e2de124b12fb14408acddd4f14535c2",
+          "evidence_group_id": "EVD-WPUIAC425SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 2,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "4c142f29b871f8bc39a5b934a1237473d2599213704cc1224147a4f45461b4f4",
+      "top_similarity_score": 0.57226,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-016",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0823999a8417d6fe685cdc1371978c6546389f1d2ec5882f5a63be392bb5a05e",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-VENTILATION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-DEFROST-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c2e1ae5a2d3ca1db65a9a1a63367bc8817f99abac6ab6f4a6eafba3ed214fdcc",
+          "evidence_group_id": "EVD-WPUIAC425SNW-DEFROST-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P044-ICE-MAKING-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "6ba0413bf0f2302c69d764f5544086bb4c948f281ac2bca9c0b366cf826aa7db",
+          "evidence_group_id": "EVD-WPUIAC425SNW-ICE-MAKING-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c3f622596dbbd6a861bf5242a680c9a16e2de124b12fb14408acddd4f14535c2",
+          "evidence_group_id": "EVD-WPUIAC425SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "501a9391ff855e2377c863a9ea42ef7b64172638b6458e44c29c218388c62569",
+      "top_similarity_score": 0.579723,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-017",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-PARTICLES-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "5fb968f5ff89ab4c57998429d2506af6e8a6c6a1d8d53a4a9f4d9149d0357d2d",
+          "evidence_group_id": "EVD-WPUIAC425SNW-PARTICLES-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P005-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "55d0e74c850bc3334a64b140f543c7b7b5f03873b91f9075bbc585cadc0410b3",
+          "evidence_group_id": "EVD-WPUIAC425SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P046-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "eb37b43064c01e9a73dc0210657f5e777a4209b3573b9af170a285e7c7821208",
+          "evidence_group_id": "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "1205799c82781c1ff448e324b7c385466b3b729298f550aafbc48c979633b32c",
+          "evidence_group_id": "EVD-WPUIAC425SNW-TASTE-ODOR-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "ea93333afda3007b5e0ce372aa4848423cba568819f58dbb1ba773c7bf2b4d24",
+      "top_similarity_score": 0.675537,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-018",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-VENTILATION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0823999a8417d6fe685cdc1371978c6546389f1d2ec5882f5a63be392bb5a05e",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-VENTILATION-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P045-TASTE-ODOR-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "1205799c82781c1ff448e324b7c385466b3b729298f550aafbc48c979633b32c",
+          "evidence_group_id": "EVD-WPUIAC425SNW-TASTE-ODOR-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC425SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC425SNW-P043-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "736573b9bc5c43d00ac74bc5a22e615f2dd45ffe040ec9e0afc74c5c2ab951d5",
+          "evidence_group_id": "EVD-WPUIAC425SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+        }
+      ],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 2,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "d06d3414817e28e3944af346aa22e2ae61d82136e010a37f811ed5c7db807363",
+      "top_similarity_score": 0.500504,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-019",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e2576f710b13ce2f12790ded9268eda2007965bb16008e687b035cebfc3eb400",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "ae3be341d5b5e4d012565ccd64344b7d3ab241dc0150607af1b594679f1baa4d",
+      "top_similarity_score": 0.652874,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-020",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e2576f710b13ce2f12790ded9268eda2007965bb16008e687b035cebfc3eb400",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "b0776c9618352e760bbd9b684767419f373917ce1aedfe522a8a3d80765205fe",
+      "top_similarity_score": 0.704138,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-021",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e2576f710b13ce2f12790ded9268eda2007965bb16008e687b035cebfc3eb400",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "7e6c64e7e82b9c3c306d268114f917cfc5791f822347bdee9bd0bdf230da10f4",
+      "top_similarity_score": 0.679792,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-022",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-DEFROST-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c2e1ae5a2d3ca1db65a9a1a63367bc8817f99abac6ab6f4a6eafba3ed214fdcc",
+          "evidence_group_id": "EVD-WPUIAC606SNW-DEFROST-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-ICE-MAKING-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "6ba0413bf0f2302c69d764f5544086bb4c948f281ac2bca9c0b366cf826aa7db",
+          "evidence_group_id": "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-VENTILATION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3fd1789d0c27ae636b6e6dbc7c627ca363278f520e74d01bada81dcad3836575",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NOISE-VENTILATION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c3f622596dbbd6a861bf5242a680c9a16e2de124b12fb14408acddd4f14535c2",
+          "evidence_group_id": "EVD-WPUIAC606SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "45bbd3016d521935537ce6a5bc35edf1ba227cfbf8a383b69ff2e5f083d3add1",
+      "top_similarity_score": 0.617852,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-023",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-STEAM-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "d575854725a1d68781cab08a8008307c70ea84579b3ed5587fb711c45a96affc",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-STEAM-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-NO-HOT-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "32cf762cb6b252de6b9c7e57387ae1529e42962aad34e90596935a808bf4773c",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-HOT-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "5526f8f68d41ddd2bd74e0bb46228f871de11c2e3ab4669ed33683094cb081ce",
+      "top_similarity_score": 0.646034,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-024",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-NO-HOT-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "32cf762cb6b252de6b9c7e57387ae1529e42962aad34e90596935a808bf4773c",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-HOT-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-STEAM-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "d575854725a1d68781cab08a8008307c70ea84579b3ed5587fb711c45a96affc",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-STEAM-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "1be871b37e6686ef0a2211919b6f0b804a42de9887606afb563e3c6738951e4d",
+      "top_similarity_score": 0.643919,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-025",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-NO-HOT-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "32cf762cb6b252de6b9c7e57387ae1529e42962aad34e90596935a808bf4773c",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-HOT-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "cdf1476f4ca2c2d1ab26b0ab1665cf22746aafa0fde042c2b5b34aa7e1265401",
+          "evidence_group_id": "EVD-WPUIAC606SNW-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "ba1a7498879f6482c2494f4c8dea82261a9f50acb416f7493dfb801559605eb7",
+      "top_similarity_score": 0.637516,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-026",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-ICE-MAKING-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "6ba0413bf0f2302c69d764f5544086bb4c948f281ac2bca9c0b366cf826aa7db",
+          "evidence_group_id": "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e2576f710b13ce2f12790ded9268eda2007965bb16008e687b035cebfc3eb400",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "404c8c74cead3589d4f7d376a3f0b7c0afc71ace0cb236ee0e33905d48a7c7f1",
+      "top_similarity_score": 0.587319,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-027",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-ICE-QUALITY-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0b5dc72752cdcc62f4082ea30aac70d1d22d15e59b6b2dfb57cfdd68b36048b1",
+          "evidence_group_id": "EVD-WPUIAC606SNW-ICE-QUALITY-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e2576f710b13ce2f12790ded9268eda2007965bb16008e687b035cebfc3eb400",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 2,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "57dddb9faba16b9bcec7b2f2c949ab59ea1712e1a5c4b8d19e4e0675b8cc01a3",
+      "top_similarity_score": 0.623154,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-028",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e2576f710b13ce2f12790ded9268eda2007965bb16008e687b035cebfc3eb400",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P005-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "55d0e74c850bc3334a64b140f543c7b7b5f03873b91f9075bbc585cadc0410b3",
+          "evidence_group_id": "EVD-WPUIAC606SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 3,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "4553a5f706d771aa5e37372d49cbfaf09b63ca94f31588d772e005797d9bbc26",
+      "top_similarity_score": 0.523734,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-029",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "cdf1476f4ca2c2d1ab26b0ab1665cf22746aafa0fde042c2b5b34aa7e1265401",
+          "evidence_group_id": "EVD-WPUIAC606SNW-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-PARTICLES-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "5fb968f5ff89ab4c57998429d2506af6e8a6c6a1d8d53a4a9f4d9149d0357d2d",
+          "evidence_group_id": "EVD-WPUIAC606SNW-PARTICLES-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "f0ff05d4f3e29a4674456e7ccf5859df703360d1721fa4f0ffa57cd7833cc204",
+      "top_similarity_score": 0.565975,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-030",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-NO-HOT-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "32cf762cb6b252de6b9c7e57387ae1529e42962aad34e90596935a808bf4773c",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-HOT-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 3,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "471962cfa9efd46133c9a708f7d0edc82624705854a735228b9d5811a7d34ddc",
+      "top_similarity_score": 0.607177,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-031",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "124647ee129a5f5ac19d50483a42ace87eede5cde776b457c1c5e15a5e28f232",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e2576f710b13ce2f12790ded9268eda2007965bb16008e687b035cebfc3eb400",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-NO-HOT-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "32cf762cb6b252de6b9c7e57387ae1529e42962aad34e90596935a808bf4773c",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-HOT-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "5f19d8ef7b746d20ba00be21866cbe880c2552d5e3213035b4966d10aaec913b",
+      "top_similarity_score": 0.638144,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-032",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-NO-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "ea8a343039d8c7d467c684dd5ea111e9cf240566bf48399dec38ff7e9d7e74c8",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-TEMPERATURE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "05a9ab6982ed9bd4abaed0a1f7e7de7d89a65362f9da0720b55fdf663f1c1f41",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "8df97a9b0fa4584062d55ad2a795be788088621e532e2595b8e32c1d41b570f3",
+      "top_similarity_score": 0.553919,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-033",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-VENTILATION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3fd1789d0c27ae636b6e6dbc7c627ca363278f520e74d01bada81dcad3836575",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NOISE-VENTILATION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-DEFROST-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c2e1ae5a2d3ca1db65a9a1a63367bc8817f99abac6ab6f4a6eafba3ed214fdcc",
+          "evidence_group_id": "EVD-WPUIAC606SNW-DEFROST-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c3f622596dbbd6a861bf5242a680c9a16e2de124b12fb14408acddd4f14535c2",
+          "evidence_group_id": "EVD-WPUIAC606SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 2,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "4ca9e1179ef414069805b487fad0b78dc8fb4d9c2f46f12b796594ba95ca4e86",
+      "top_similarity_score": 0.560051,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-034",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-VENTILATION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3fd1789d0c27ae636b6e6dbc7c627ca363278f520e74d01bada81dcad3836575",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NOISE-VENTILATION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "985a17c90b22d1c61733c23aed2fac167239e0b5ec038ce70e0c7755a8c869d1",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NOISE-NORMAL-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-DEFROST-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c2e1ae5a2d3ca1db65a9a1a63367bc8817f99abac6ab6f4a6eafba3ed214fdcc",
+          "evidence_group_id": "EVD-WPUIAC606SNW-DEFROST-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P041-ICE-MAKING-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "6ba0413bf0f2302c69d764f5544086bb4c948f281ac2bca9c0b366cf826aa7db",
+          "evidence_group_id": "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "a588569caad77e1e435278b3d478a6e7c854083eeacbb58164a987815d2f7909",
+      "top_similarity_score": 0.574581,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-035",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-PARTICLES-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "5fb968f5ff89ab4c57998429d2506af6e8a6c6a1d8d53a4a9f4d9149d0357d2d",
+          "evidence_group_id": "EVD-WPUIAC606SNW-PARTICLES-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-INTERRUPTION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0be96d16fc1dec64ec2913f5ee596b0ca0fb0a7cb7b2c4e78c1e0c199b800548",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P005-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "55d0e74c850bc3334a64b140f543c7b7b5f03873b91f9075bbc585cadc0410b3",
+          "evidence_group_id": "EVD-WPUIAC606SNW-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-TASTE-ODOR-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "23a257687a88088e7785797f4ac490dddafefe5d51523acc21f8f116b7a22625",
+          "evidence_group_id": "EVD-WPUIAC606SNW-TASTE-ODOR-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P043-HOT-WATER-STOPPED-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e1279e01749e08ba9cd880cb9401af1cd5f9bf8998942275bd2e335ceeebff10",
+          "evidence_group_id": "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "d4c724f40eb6eb31d0bf6cc14cd105f88faf5115d5509ddc6b344cfe43583147",
+      "top_similarity_score": 0.693332,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-036",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-TASTE-ODOR-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "23a257687a88088e7785797f4ac490dddafefe5d51523acc21f8f116b7a22625",
+          "evidence_group_id": "EVD-WPUIAC606SNW-TASTE-ODOR-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-NOISE-VENTILATION-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3fd1789d0c27ae636b6e6dbc7c627ca363278f520e74d01bada81dcad3836575",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NOISE-VENTILATION-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P040-COLD-LOCK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "e2576f710b13ce2f12790ded9268eda2007965bb16008e687b035cebfc3eb400",
+          "evidence_group_id": "EVD-WPUIAC606SNW-COLD-LOCK-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-NO-ICE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "f989cee5563ec521892d5579956120a01f766056e81a2cacc7ad96548c971882",
+          "evidence_group_id": "EVD-WPUIAC606SNW-NO-ICE-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        },
+        {
+          "chunk_id": "CHILD-WPUIAC606SNW-P042-PARTICLES-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "5fb968f5ff89ab4c57998429d2506af6e8a6c6a1d8d53a4a9f4d9149d0357d2d",
+          "evidence_group_id": "EVD-WPUIAC606SNW-PARTICLES-001",
+          "index_version": "2.0.0",
+          "source_hash": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+        }
+      ],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "d5e5fe11f20d06fe119300311e29d9d183d1bc934c096f0c23ad7aef46d15bf7",
+      "top_similarity_score": 0.503355,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": false,
+      "case_id": "RAG3-POS-037",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "2a3ba70ce1368c7877f909a0606a1c46c0cbbb15fdf281476a1b2d9bc5b2ce92",
+          "evidence_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0d09aa73634381be2a48e5f26485c3ba8ee45a23eec3bc0c48a5b1a2a29f63e9",
+          "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "4201347afd47ac794634b79460d45b47fccbf27982bda90bb4a631f2185d2fe6",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "87eed047034ef1dc29be1a23feae67cf65e9df06c1a0b9d380c4ce6005752fc0",
+          "evidence_group_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P007-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "d0e1113a934f601f14b4594adf6a8208425026810eaecceec292105930891fe2",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        }
+      ],
+      "exact_sales_code": "WPUJAC104DWH",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 2,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "aef60edb3cbe7f6fb9657a164276756eaf3bed7ad9b7a8ca5ada006939e0ef95",
+      "top_similarity_score": 0.740141,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": false,
+      "case_id": "RAG3-POS-038",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-MODULE-CHECK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "3368485943d987dbbcd7d2369a3cee5aef3bc942d9947dccd574f12268c11981",
+          "evidence_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "4201347afd47ac794634b79460d45b47fccbf27982bda90bb4a631f2185d2fe6",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0c49e7d73000aed4871cdf795f57f655c1e265ee0686f99bfc6f443409995d66",
+          "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P007-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "d0e1113a934f601f14b4594adf6a8208425026810eaecceec292105930891fe2",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "cd5adf7e6b828b8ce69ba9f8071dc2725b11da2658df010f06707d6c02a9413f",
+          "evidence_group_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        }
+      ],
+      "exact_sales_code": "WPUJAC104DWH",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "bc671f357b51d8d654c19a857208dc1b3924118051c907091abd625ebb1ec84e",
+      "top_similarity_score": 0.848365,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": false,
+      "case_id": "RAG3-POS-039",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "2a3ba70ce1368c7877f909a0606a1c46c0cbbb15fdf281476a1b2d9bc5b2ce92",
+          "evidence_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "4201347afd47ac794634b79460d45b47fccbf27982bda90bb4a631f2185d2fe6",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "6297f178b1356a36741e5df06d2bebd18cac7ba3637f1fc044ebde950af4cb2e",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0c49e7d73000aed4871cdf795f57f655c1e265ee0686f99bfc6f443409995d66",
+          "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c984007f3d361bf0e98fe17968137e1b2c43b8565bde5bcd9e71abac9dde069d",
+          "evidence_group_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        }
+      ],
+      "exact_sales_code": "WPUJAC104DWH",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 3,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "a17c334aea454841506b01d8789408b5e79afa6944080a18399eff7057547920",
+      "top_similarity_score": 0.675221,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-040",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "4201347afd47ac794634b79460d45b47fccbf27982bda90bb4a631f2185d2fe6",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "2a3ba70ce1368c7877f909a0606a1c46c0cbbb15fdf281476a1b2d9bc5b2ce92",
+          "evidence_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0c49e7d73000aed4871cdf795f57f655c1e265ee0686f99bfc6f443409995d66",
+          "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c984007f3d361bf0e98fe17968137e1b2c43b8565bde5bcd9e71abac9dde069d",
+          "evidence_group_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "87eed047034ef1dc29be1a23feae67cf65e9df06c1a0b9d380c4ce6005752fc0",
+          "evidence_group_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        }
+      ],
+      "exact_sales_code": "WPUJAC104DWH",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 1,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "2125bd7ad2908c3a3ea714cb17dd98cf3ab0cd12322225a592555003203eedb8",
+      "top_similarity_score": 0.785484,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-041",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "2a3ba70ce1368c7877f909a0606a1c46c0cbbb15fdf281476a1b2d9bc5b2ce92",
+          "evidence_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "4201347afd47ac794634b79460d45b47fccbf27982bda90bb4a631f2185d2fe6",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "c984007f3d361bf0e98fe17968137e1b2c43b8565bde5bcd9e71abac9dde069d",
+          "evidence_group_id": "EVD-WPUJAC104DWH-NO-WATER-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0c49e7d73000aed4871cdf795f57f655c1e265ee0686f99bfc6f443409995d66",
+          "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P007-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "d0e1113a934f601f14b4594adf6a8208425026810eaecceec292105930891fe2",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        }
+      ],
+      "exact_sales_code": "WPUJAC104DWH",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 3,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "3e3b4c9fa7144704b833838eda4b52cc49e916fa56162d37d5b34410d9a8df00",
+      "top_similarity_score": 0.74657,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-042",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "2a3ba70ce1368c7877f909a0606a1c46c0cbbb15fdf281476a1b2d9bc5b2ce92",
+          "evidence_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "4201347afd47ac794634b79460d45b47fccbf27982bda90bb4a631f2185d2fe6",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "87eed047034ef1dc29be1a23feae67cf65e9df06c1a0b9d380c4ce6005752fc0",
+          "evidence_group_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P007-LEAK-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "d0e1113a934f601f14b4594adf6a8208425026810eaecceec292105930891fe2",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LEAK-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0c49e7d73000aed4871cdf795f57f655c1e265ee0686f99bfc6f443409995d66",
+          "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        }
+      ],
+      "exact_sales_code": "WPUJAC104DWH",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 3,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "2a4344b8ec5cf584fd7788791f5cd25e497410b7a18fd93c8b84b58a945139d4",
+      "top_similarity_score": 0.656132,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-POS-043",
+      "case_type": "POSITIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P039-HOT-CHECK-PROCESS-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "2a3ba70ce1368c7877f909a0606a1c46c0cbbb15fdf281476a1b2d9bc5b2ce92",
+          "evidence_group_id": "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "cd5adf7e6b828b8ce69ba9f8071dc2725b11da2658df010f06707d6c02a9413f",
+          "evidence_group_id": "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "4201347afd47ac794634b79460d45b47fccbf27982bda90bb4a631f2185d2fe6",
+          "evidence_group_id": "EVD-WPUJAC104DWH-LOW-FLOW-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "0c49e7d73000aed4871cdf795f57f655c1e265ee0686f99bfc6f443409995d66",
+          "evidence_group_id": "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        },
+        {
+          "chunk_id": "CHILD-WPUJAC104DWH-P037-NOISE-001",
+          "chunk_set_sha256": "5b022ea8f00b22fe8cf9e386d2ffe91a1a136e2c6237ed4b64ba9edcb181a304",
+          "content_sha256": "87eed047034ef1dc29be1a23feae67cf65e9df06c1a0b9d380c4ce6005752fc0",
+          "evidence_group_id": "EVD-WPUJAC104DWH-NOISE-001",
+          "index_version": "2.0.0",
+          "source_hash": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+        }
+      ],
+      "exact_sales_code": "WPUJAC104DWH",
+      "expected_group_hit_at_5": true,
+      "expected_group_rank_at_5": 2,
+      "expected_no_evidence": false,
+      "forbidden_hit_count": 0,
+      "no_evidence": false,
+      "passed": true,
+      "result_count": 5,
+      "result_sha256": "d27b100220e74c2e09596bdec31c6a8dfdf8bbf33f6cde1fddd2bc016bd86a0d",
+      "top_similarity_score": 0.63907,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-NEG-001",
+      "case_type": "NEGATIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [],
+      "exact_sales_code": "WPUJAC104DWH",
+      "expected_group_hit_at_5": false,
+      "expected_group_rank_at_5": null,
+      "expected_no_evidence": true,
+      "forbidden_hit_count": 0,
+      "no_evidence": true,
+      "passed": true,
+      "result_count": 0,
+      "result_sha256": "3b22f47a6d3da18e1d00f697c38fcc42f5fed3464eb7085c4edcd291858469db",
+      "top_similarity_score": null,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-NEG-002",
+      "case_type": "NEGATIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [],
+      "exact_sales_code": "WPUIAC425SNW",
+      "expected_group_hit_at_5": false,
+      "expected_group_rank_at_5": null,
+      "expected_no_evidence": true,
+      "forbidden_hit_count": 0,
+      "no_evidence": true,
+      "passed": true,
+      "result_count": 0,
+      "result_sha256": "6e463ea964d182174f3c2008a6a6e2c9069c85d910eead827685046c9285b2b3",
+      "top_similarity_score": null,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-NEG-003",
+      "case_type": "NEGATIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [],
+      "exact_sales_code": "WPUIAC606SNW",
+      "expected_group_hit_at_5": false,
+      "expected_group_rank_at_5": null,
+      "expected_no_evidence": true,
+      "forbidden_hit_count": 0,
+      "no_evidence": true,
+      "passed": true,
+      "result_count": 0,
+      "result_sha256": "7c2f3c58bf85eaa3210a5d1955639ce8cfc08e0b5c6bc22d073145aa58d1d70d",
+      "top_similarity_score": null,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-NEG-004",
+      "case_type": "NEGATIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [],
+      "exact_sales_code": "WPUJCC104D",
+      "expected_group_hit_at_5": false,
+      "expected_group_rank_at_5": null,
+      "expected_no_evidence": true,
+      "forbidden_hit_count": 0,
+      "no_evidence": true,
+      "passed": true,
+      "result_count": 0,
+      "result_sha256": "2b7cd400ed39a4869d51b2536b63f43c06db598e6b1a71c594291069afb15c6e",
+      "top_similarity_score": null,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-NEG-005",
+      "case_type": "NEGATIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [],
+      "exact_sales_code": "WPUIAC506SNW",
+      "expected_group_hit_at_5": false,
+      "expected_group_rank_at_5": null,
+      "expected_no_evidence": true,
+      "forbidden_hit_count": 0,
+      "no_evidence": true,
+      "passed": true,
+      "result_count": 0,
+      "result_sha256": "0c59af9821562901d52da5a19e495aa09bcebfd57b2d3928ffe3d3d8deea946b",
+      "top_similarity_score": null,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-NEG-006",
+      "case_type": "NEGATIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [],
+      "exact_sales_code": "UNVERIFIED_FAQ",
+      "expected_group_hit_at_5": false,
+      "expected_group_rank_at_5": null,
+      "expected_no_evidence": true,
+      "forbidden_hit_count": 0,
+      "no_evidence": true,
+      "passed": true,
+      "result_count": 0,
+      "result_sha256": "681e2ed210cbc0235b383ef859df2b9d750afda41509f2e1721d41f2149aecf6",
+      "top_similarity_score": null,
+      "unverified_evidence_hit_count": 0
+    },
+    {
+      "all_source_variants_hit_at_5": true,
+      "case_id": "RAG3-NEG-007",
+      "case_type": "NEGATIVE",
+      "cross_model_document_retrieved": false,
+      "cross_model_hit_count": 0,
+      "direct_parent_hit_count": 0,
+      "evidence": [],
+      "exact_sales_code": "WPUIAC999ZZZ",
+      "expected_group_hit_at_5": false,
+      "expected_group_rank_at_5": null,
+      "expected_no_evidence": true,
+      "forbidden_hit_count": 0,
+      "no_evidence": true,
+      "passed": true,
+      "result_count": 0,
+      "result_sha256": "fac939e34ed8446f0fad67ee42f8aa554e2dd2e9c00b3a01be3d65a05d6551a4",
+      "top_similarity_score": null,
+      "unverified_evidence_hit_count": 0
+    }
+  ],
+  "cross_model_hit_count": 0,
+  "database_versions": {
+    "pgvector_version": "0.8.2",
+    "postgresql_version": "16.14"
+  },
+  "direct_parent_hit_count": 0,
+  "embedding_model": "BAAI/bge-m3",
+  "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+  "end_final_sha_blockers": [],
+  "end_provenance": {
+    "branch": "",
+    "commit_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+    "dirty": false,
+    "file_hash_normalization": "UTF8_LF",
+    "input_file_sha256": {
+      "ai/configs/canonical_evidence_identity_3model.json": "ab98aa6cfe839366cb13ecc3839d72ee0ae99419af85f702f0c2f1d05bdca169",
+      "ai/configs/canonical_evidence_topics_3model.json": "012f0ef0eb1add440101042767ad39928de4bc7e98bbe5c96e13f575f510d145",
+      "ai/configs/index_manifest.json": "91027e88dec6c3bff1e590aaf4479ca021ac284eb0bdc8e1eec6c76473da667e",
+      "ai/configs/index_manifest_3model.json": "3fa0f26c0c2c2628f9d4410c061ff17dd8d6ce9c6e0b76358cbb0bb0a9c28a1e",
+      "ai/configs/model_profiles.yaml": "9ba942070e0e0955f3b03dbeec74812b9d68422a32cac85c41f834a49ff8f5c6",
+      "ai/configs/retrieval_policy.yaml": "cacd38ad7618b1438bf6e74bf13606d0ede03f064da890c3d999ae9b6457b7e1",
+      "ai/configs/retry_policy.yaml": "76ac62b550426b1dcd2ddf61d28e539085afbdf9c94f02be256110ddcd22393d",
+      "ai/configs/runtime_identity.json": "449287a74c2aef00d8b801d48795ce365dbdda611fb073939e5fa35870b450e4",
+      "ai/configs/safety_rules.yaml": "8c695f6c315aeabebfe2e7ba34d4dc294bdbefa3c1727034b730d36ed83148c5",
+      "ai/prompts/customer_guidance/v3/system.txt": "4143c4f96192ede6b903ed6d83512b6a59ecf06f2e67725fa660800b531f05cd",
+      "ai/prompts/customer_guidance/v3/user_template.txt": "bf59917b133f5bb7912a24ada30ed0522c6943f2d22ecb2b9993256ae3c3e649",
+      "ai/prompts/followup_question/v1/system.txt": "6f0cdacee6a331963fb4a56c3f60cbc9f6ed4ff356a04f96d32fa27feed5b86f",
+      "ai/prompts/followup_question/v1/user_template.txt": "319f5f75039b2d63cc465d2b3e08652eae0bbe5ba0017d282a4d71fadc215378",
+      "ai/prompts/prompt_registry.yaml": "924fe6e723b118bc95c94a4bf234a9e01b1bc91cd9d8c06d81abd4386143162a",
+      "ai/prompts/symptom_structuring/v1/system.txt": "52973aba0ab3fae525626dad4fc0bb310076a6f7bf49c54d3660b1489a950237",
+      "ai/prompts/symptom_structuring/v1/user_template.txt": "6be806a389f0c8b213846e95c4729f0d49c8fb2e3a593b34e23c2a25dd199e06"
+    },
+    "python_version": "3.13.13",
+    "recorded_at_utc": "2026-08-31T12:21:01.264408+00:00",
+    "runtime_source_sha256": "76256990d5f0a3badf5aa4499d4f43a38105fbf5b72a33f49a536d864347ad61"
+  },
+  "evaluation_file_sha256": "b0316ce050c91c8900e805e85a5f8fff836ccd2e04cdcf328437c2c68a70fbf1",
+  "final_sha_blockers": [],
+  "final_sha_eligible": true,
+  "generation_model": null,
+  "index_identity": {
+    "approved_model_codes": [
+      "WPUIAC425SNW",
+      "WPUIAC606SNW",
+      "WPUJAC104DWH"
+    ],
+    "approved_model_row_count": 53,
+    "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+    "index_row_count": 53,
+    "index_version": "2.0.0",
+    "model_row_counts": {
+      "WPUIAC425SNW": 19,
+      "WPUIAC606SNW": 19,
+      "WPUJAC104DWH": 15
+    }
+  },
+  "negative_no_evidence_count": 7,
+  "passed_count": 50,
+  "positive_group_hit_count": 43,
+  "prompt_version": null,
+  "provenance": {
+    "branch": "",
+    "commit_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+    "dirty": false,
+    "file_hash_normalization": "UTF8_LF",
+    "input_file_sha256": {
+      "ai/configs/canonical_evidence_identity_3model.json": "ab98aa6cfe839366cb13ecc3839d72ee0ae99419af85f702f0c2f1d05bdca169",
+      "ai/configs/canonical_evidence_topics_3model.json": "012f0ef0eb1add440101042767ad39928de4bc7e98bbe5c96e13f575f510d145",
+      "ai/configs/index_manifest.json": "91027e88dec6c3bff1e590aaf4479ca021ac284eb0bdc8e1eec6c76473da667e",
+      "ai/configs/index_manifest_3model.json": "3fa0f26c0c2c2628f9d4410c061ff17dd8d6ce9c6e0b76358cbb0bb0a9c28a1e",
+      "ai/configs/model_profiles.yaml": "9ba942070e0e0955f3b03dbeec74812b9d68422a32cac85c41f834a49ff8f5c6",
+      "ai/configs/retrieval_policy.yaml": "cacd38ad7618b1438bf6e74bf13606d0ede03f064da890c3d999ae9b6457b7e1",
+      "ai/configs/retry_policy.yaml": "76ac62b550426b1dcd2ddf61d28e539085afbdf9c94f02be256110ddcd22393d",
+      "ai/configs/runtime_identity.json": "449287a74c2aef00d8b801d48795ce365dbdda611fb073939e5fa35870b450e4",
+      "ai/configs/safety_rules.yaml": "8c695f6c315aeabebfe2e7ba34d4dc294bdbefa3c1727034b730d36ed83148c5",
+      "ai/prompts/customer_guidance/v3/system.txt": "4143c4f96192ede6b903ed6d83512b6a59ecf06f2e67725fa660800b531f05cd",
+      "ai/prompts/customer_guidance/v3/user_template.txt": "bf59917b133f5bb7912a24ada30ed0522c6943f2d22ecb2b9993256ae3c3e649",
+      "ai/prompts/followup_question/v1/system.txt": "6f0cdacee6a331963fb4a56c3f60cbc9f6ed4ff356a04f96d32fa27feed5b86f",
+      "ai/prompts/followup_question/v1/user_template.txt": "319f5f75039b2d63cc465d2b3e08652eae0bbe5ba0017d282a4d71fadc215378",
+      "ai/prompts/prompt_registry.yaml": "924fe6e723b118bc95c94a4bf234a9e01b1bc91cd9d8c06d81abd4386143162a",
+      "ai/prompts/symptom_structuring/v1/system.txt": "52973aba0ab3fae525626dad4fc0bb310076a6f7bf49c54d3660b1489a950237",
+      "ai/prompts/symptom_structuring/v1/user_template.txt": "6be806a389f0c8b213846e95c4729f0d49c8fb2e3a593b34e23c2a25dd199e06"
+    },
+    "python_version": "3.13.13",
+    "recorded_at_utc": "2026-08-31T12:19:19.126044+00:00",
+    "runtime_source_sha256": "76256990d5f0a3badf5aa4499d4f43a38105fbf5b72a33f49a536d864347ad61"
+  },
+  "public_runtime_activation": "HOLD",
+  "runtime_profile": "three_model_integration",
+  "status": "PASS",
+  "unverified_evidence_hit_count": 0
+}

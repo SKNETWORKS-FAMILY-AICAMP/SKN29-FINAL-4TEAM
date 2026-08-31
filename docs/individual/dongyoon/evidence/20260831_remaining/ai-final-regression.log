@@ -1,0 +1,28 @@
+........................................................................ [  6%]
+......................................................................................................................................... [ 19%]
+........................................................................ [ 26%]
+....................................................... [ 31%]
+....................................................... [ 36%]
+........................................................................ [ 43%]
+........................................................................ [ 49%]
+........................................................................ [ 56%]
+........................................................................ [ 63%]
+........................................................................ [ 69%]
+........................................................................ [ 76%]
+........................................................................ [ 83%]
+........................................................................ [ 89%]
+........................................................................ [ 96%]
+.....................................                                    [100%]
+============================== warnings summary ===============================
+ai\tests\unit\test_schemas_and_configs.py:9
+ai\tests\unit\test_schemas_and_configs.py:9
+  C:\Project\SKN29-FINAL-4TEAM\ai\tests\unit\test_schemas_and_configs.py:9: DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, in favor of the https://github.com/python-jsonschema/referencing library, which provides more compliant referencing behavior as well as more flexible APIs for customization. A future release will remove RefResolver. Please file a feature request (on referencing) if you are missing an API for the kind of customization you need.
+    from jsonschema import Draft202012Validator, FormatChecker, RefResolver
+
+ai\scripts\smoke_test.py:14
+ai\scripts\smoke_test.py:14
+  C:\Project\SKN29-FINAL-4TEAM\ai\scripts\smoke_test.py:14: DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, in favor of the https://github.com/python-jsonschema/referencing library, which provides more compliant referencing behavior as well as more flexible APIs for customization. A future release will remove RefResolver. Please file a feature request (on referencing) if you are missing an API for the kind of customization you need.
+    from jsonschema import Draft202012Validator, FormatChecker, RefResolver
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1076 passed, 4 warnings, 41 subtests passed in 35.53s

@@ -1,0 +1,149 @@
+{
+  "audit": {
+    "candidate_identity_and_validator_parity": true,
+    "candidate_runtime_executed": false,
+    "connection_tls": "TLSv1.3",
+    "database_endpoint_matches_console": true,
+    "database_write_statements_executed_by_audit": 0,
+    "default_transaction_read_only": "on",
+    "evidence_text_exported": false,
+    "finished_at_utc": "2026-08-31T10:55:07.604781+00:00",
+    "git_metadata_present": false,
+    "index_identity": {
+      "approved_model_codes": [
+        "WPUJAC104DWH"
+      ],
+      "approved_model_row_count": 15,
+      "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+      "index_row_count": 53,
+      "index_version": "2.0.0",
+      "model_row_counts": {
+        "WPUIAC425SNW": 19,
+        "WPUIAC606SNW": 19,
+        "WPUJAC104DWH": 15
+      }
+    },
+    "manifest_index_version": "2.0.0",
+    "model_counts": {
+      "WPUIAC425SNW": 19,
+      "WPUIAC606SNW": 19,
+      "WPUJAC104DWH": 15
+    },
+    "pgvector_version": "0.8.2",
+    "postgresql_version": "16.14",
+    "privileges": {
+      "actual_denied_dml_attempted": false,
+      "approved_view_select": true,
+      "approved_view_write": false,
+      "base_table_access": false,
+      "public_schema_create": false
+    },
+    "provider_calls": 0,
+    "public_runtime_activation_by_audit": "HOLD",
+    "python_version": "3.13.13",
+    "qa_assets_present": {
+      "ai/evaluation/three_model_rag.py": true,
+      "ai/scripts/verify_three_model_readonly_runtime.py": true,
+      "data/config/rag/three_model_evaluation_cases.json": false,
+      "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl": false,
+      "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl": false
+    },
+    "reference_candidate_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+    "resolved_runtime_profile": "jac104_v2_recovery",
+    "result_payload_sha256": "aa51e7154c879b4268e2c1a1809f7cdd7f09cfe163e3bcb488bece94b0390230",
+    "runtime_settings": {
+      "AI_EMBEDDING_REVISION": "5617a9f61b028005a4858fdac845db406aefb181",
+      "AI_HANDOFF_BACKEND_ENABLED": "false",
+      "AI_PIPELINE_RUNTIME": "multi_agent",
+      "AI_RAG_RUNTIME_PROFILE": "jac104_v2_recovery",
+      "AI_RETRIEVAL_TRANSPORT": "mcp",
+      "AI_VECTOR_TABLE_NAME": "backend_ai_rag_chunks_v1"
+    },
+    "scope": "BROWSER_SSM_RDS_READONLY_METADATA_AUDIT",
+    "source_file_sha256": {
+      "ai/app/retrieval/verification/index_readiness.py": "18fefb9ff62057d90391f6fc4af1c525fd760ea74243a57373aba17f79148c37",
+      "ai/configs/canonical_evidence_identity_3model.json": "ab98aa6cfe839366cb13ecc3839d72ee0ae99419af85f702f0c2f1d05bdca169",
+      "ai/configs/index_manifest_3model.json": "3fa0f26c0c2c2628f9d4410c061ff17dd8d6ce9c6e0b76358cbb0bb0a9c28a1e"
+    },
+    "started_at_utc": "2026-08-31T10:55:06.688837+00:00",
+    "status": "PASS",
+    "transaction_read_only": "on",
+    "view_counts": {
+      "complete_lineage": 53,
+      "distinct_child_ids": 53,
+      "max_dimension": 1024,
+      "min_dimension": 1024,
+      "rows": 53
+    },
+    "view_metadata_snapshot_sha256": "4ba126ba091a30e737dcc02acdd3d282381b72096de43e3a6093497867e4bd2d"
+  },
+  "capture_method": "Browser DOM visible Output code innerText; UTF-8 LF text artifact",
+  "console_observation": {
+    "availability_zone": "ap-northeast-2a",
+    "connected_compute_resources": 1,
+    "db_identifier": "waterbridge",
+    "deletion_protection": true,
+    "encryption": true,
+    "engine": "PostgreSQL",
+    "engine_version": "16.14",
+    "instance_class": "db.t4g.micro",
+    "internet_access_gateway": "Disabled",
+    "linked_ec2_status": "Running",
+    "linked_ec2_status_checks": "3/3 passed",
+    "region": "ap-northeast-2",
+    "status": "Available"
+  },
+  "container_after": {
+    "health": "healthy",
+    "id": "43fd908192b3525948b2faa717774ae64f35875dc551790e0d3601908e5b59e3",
+    "image": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+    "restart_count": 0,
+    "started_at": "2026-08-31T08:48:52.285476335Z",
+    "status": "running"
+  },
+  "container_before": {
+    "health": "healthy",
+    "id": "43fd908192b3525948b2faa717774ae64f35875dc551790e0d3601908e5b59e3",
+    "image": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+    "restart_count": 0,
+    "started_at": "2026-08-31T08:48:52.285476335Z",
+    "status": "running"
+  },
+  "container_metadata_unchanged": true,
+  "decision": "RDS_READONLY_IDENTITY_PASS",
+  "gates": {
+    "additional_origin_ledger_pm_confirmation": "PENDING",
+    "independent_qa": "NOT_RUN",
+    "official_readonly_50": "HOLD_MISSING_QA_DATA_ASSETS_AND_FINAL_SHA_EXECUTION_ENVIRONMENT",
+    "public_runtime_changes_by_this_task": 0,
+    "rds_canonical_53_and_15_19_19": "PASS",
+    "rds_readonly_connectivity": "PASS_FROM_EC2_VIA_BROWSER_SSM",
+    "rds_writes_by_this_task": 0,
+    "reference_45": "NOT_RUN",
+    "runtime_profile_manifest_view_identity": "PASS_JAC104_V2_RECOVERY_JAC104_ONLY",
+    "three_model_public_activation": "HOLD"
+  },
+  "limitations": [
+    "The whole running application image was not attested to reference candidate SHA 521c1d1d; only the canonical identity, index manifest and index validator hashes were matched.",
+    "The SQL transaction verified metadata and DB-computed content hashes. No vector similarity queries or 50 retrieval cases were executed.",
+    "Permission introspection covered the approved view, public schema CREATE and five named forbidden base tables; no write-denial probe was attempted.",
+    "Unchanged container identity, image, state, health, restart count and start time are observed metadata, not an audit of every host file or application request."
+  ],
+  "reference_candidate_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+  "schema": "WATERBRIDGE_RDS_BROWSER_VERIFICATION_V1",
+  "scope": "AWS console -> SSM Run Command -> existing AI container -> RDS readonly metadata",
+  "ssm": {
+    "audit_timeout_seconds": 90,
+    "command_id": "e8c8b5e1-8a7a-44bb-b37a-155e6debc32a",
+    "console_url": "https://ap-northeast-2.console.aws.amazon.com/systems-manager/run-command/e8c8b5e1-8a7a-44bb-b37a-155e6debc32a/i-06b21819ee7eb4846?region=ap-northeast-2",
+    "document": "AWS-RunShellScript",
+    "finish_time_utc": "2026-08-31T10:55:07Z",
+    "new_cloudwatch_output_destination": false,
+    "new_s3_output_destination": false,
+    "response_code": 0,
+    "ssm_execution_timeout_seconds": 120,
+    "start_time_utc": "2026-08-31T10:55:06Z",
+    "status": "Success"
+  },
+  "stdout_artifact": "docs/individual/dongyoon/20260831_rds_browser_stdout.txt"
+}

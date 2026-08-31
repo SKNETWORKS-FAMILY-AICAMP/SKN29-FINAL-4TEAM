@@ -1,0 +1,134 @@
+[
+  {
+    "page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P004",
+    "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+    "exact_sales_code": "WPUJAC104DWH",
+    "page": 4,
+    "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+    "verification_status": "TEXT_EXTRACTED",
+    "source_path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+    "relevant_lines": [
+      "제품 이동 및 설치 시 냉매 배관 손상에 주의하세요."
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P005",
+    "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+    "exact_sales_code": "WPUJAC104DWH",
+    "page": 5,
+    "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+    "verification_status": "TEXT_EXTRACTED",
+    "source_path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
+    "relevant_lines": [
+      "가스(도시 가스, 프로판 가스 등)가 샐 때는 제품이나 전원 코드를 만지지 말고 즉시 창문을 열어 완전히",
+      "환기하세요.",
+      "가스(냉매)가 샐 때는 제품이나 전원 코드를 만지지 말고 즉시 창문을 열어 완전히 환기하세요."
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-IAC425-REV02-P004",
+    "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+    "exact_sales_code": "WPUIAC425SNW",
+    "page": 4,
+    "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+    "verification_status": "TEXT_EXTRACTED",
+    "source_path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+    "relevant_lines": [
+      "제품 이동 및 설치 시 냉매 배관 손상에 주의하세요.",
+      "가스(도시가스, 프로판가스 등)가 샐 때는 제품이나 전원 코드를 만지지 말고 즉시 창문을 열어 완전히",
+      "환기하세요."
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-IAC425-REV02-P005",
+    "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+    "exact_sales_code": "WPUIAC425SNW",
+    "page": 5,
+    "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+    "verification_status": "VISUALLY_REVIEWED",
+    "source_path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+    "relevant_lines": [
+      "가스(냉매)가 샐 때는 제품이나 전원 코드를 만지지 말고 즉시 창문을 열어 완전히 환기하세요."
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-IAC425-REV02-P006",
+    "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+    "exact_sales_code": "WPUIAC425SNW",
+    "page": 6,
+    "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+    "verification_status": "TEXT_EXTRACTED",
+    "source_path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+    "relevant_lines": [
+      "● 가연성 천연가스(이소부탄, R600a)를 냉매로 사용하며, 소량이지만 가연성 가스이기에 제품 운반, 설치,",
+      "사용 중 제품 손상으로 가스가 샐 경우 불꽃이 튀면 화재, 폭발, 상해의 원인이 될 수 있습니다.",
+      "제품 설치 및 사용 중, 냉매관 회로가 손상되지 않도록 하세요.",
+      "● 제품에 사용되는 소량의 냉매여도 가연성 가스이므로, 샐 경우 화재 및 상해의 원인이 됩니다."
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-IAC425-REV02-P044",
+    "document_id": "MAN-SKMAGIC-WPU-IAC425-REV02",
+    "exact_sales_code": "WPUIAC425SNW",
+    "page": 44,
+    "source_file_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+    "verification_status": "VISUALLY_REVIEWED",
+    "source_path": "data/processed/documents/manuals/expansion/manual_pages_iac425.jsonl",
+    "relevant_lines": [
+      "- 생성된 얼음을 아이스룸에 떨어뜨리기 위해 냉매가 순환하는 소리로,"
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-IAC606-REV00-P004",
+    "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+    "exact_sales_code": "WPUIAC606SNW",
+    "page": 4,
+    "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+    "verification_status": "TEXT_EXTRACTED",
+    "source_path": "data/processed/documents/manuals/expansion/manual_pages_iac606.jsonl",
+    "relevant_lines": [
+      "제품 이동 및 설치 시 냉매 배관 손상에 주의하세요.",
+      "가스(도시가스, 프로판가스 등)가 샐 때는 제품이나 전원 코드를 만지지 말고 즉시 창문을 열어 완전히",
+      "환기하세요."
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-IAC606-REV00-P005",
+    "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+    "exact_sales_code": "WPUIAC606SNW",
+    "page": 5,
+    "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+    "verification_status": "VISUALLY_REVIEWED",
+    "source_path": "data/processed/documents/manuals/expansion/manual_pages_iac606.jsonl",
+    "relevant_lines": [
+      "가스(냉매)가 샐 때는 제품이나 전원 코드를 만지지 말고 즉시 창문을 열어 완전히 환기하세요."
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-IAC606-REV00-P006",
+    "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+    "exact_sales_code": "WPUIAC606SNW",
+    "page": 6,
+    "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+    "verification_status": "TEXT_EXTRACTED",
+    "source_path": "data/processed/documents/manuals/expansion/manual_pages_iac606.jsonl",
+    "relevant_lines": [
+      "● 가연성 천연가스(이소부탄, R600a)를 냉매로 사용하며, 소량이지만 가연성 가스이기에 제품 운반, 설치,",
+      "사용 중 제품 손상으로 가스가 샐 경우 불꽃이 튀면 화재, 폭발, 상해의 원인이 될 수 있습니다.",
+      "제품 설치 및 사용 중, 냉매관 회로가 손상되지 않도록 하세요.",
+      "● 제품에 사용되는 소량의 냉매여도 가연성 가스이므로, 샐 경우 화재 및 상해의 원인이 됩니다."
+    ]
+  },
+  {
+    "page_id": "MAN-SKMAGIC-WPU-IAC606-REV00-P041",
+    "document_id": "MAN-SKMAGIC-WPU-IAC606-REV00",
+    "exact_sales_code": "WPUIAC606SNW",
+    "page": 41,
+    "source_file_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+    "verification_status": "VISUALLY_REVIEWED",
+    "source_path": "data/processed/documents/manuals/expansion/manual_pages_iac606.jsonl",
+    "relevant_lines": [
+      "- 생성된 얼음을 아이스룸에 떨어뜨리기 위해 냉매가 순환하는 소리로,"
+    ]
+  }
+]

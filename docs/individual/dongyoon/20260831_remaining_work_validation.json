@@ -1,0 +1,162 @@
+{
+  "additional_consultation_origin_ledger": "PROPOSED_NOT_IMPLEMENTED_PENDING_PM_BACKEND_CONFIRMATION",
+  "ai_regression": {
+    "artifact": "evidence/20260831_remaining/ai-final-regression.json",
+    "passed": 1076,
+    "scope": "LOCAL_UNIT_AND_CONTRACT_DIRTY_WORKTREE",
+    "status": "PASS",
+    "subtests_passed": 41,
+    "warnings": 4
+  },
+  "artifact_manifest": "evidence/20260831_remaining/artifact-manifest.json",
+  "artifact_payload_sha256": "17b780d6d393dd98f5951815d01727cf428e1d0417bb1f86aa5221aab25bf066",
+  "backend_regression": {
+    "artifact": "evidence/20260831_remaining/backend-clean-regression.json",
+    "passed": 1671,
+    "scope": "LOCAL_SQLITE_UNIT_AND_API_CLEAN_521c1d1",
+    "skipped": 37,
+    "status": "PASS_WITH_SKIPS"
+  },
+  "backend_same_inquiry_publication_e2e": "NOT_RUN",
+  "branch": "dongyoon",
+  "commit_or_push_by_this_turn": false,
+  "completion_thresholds": {
+    "caution_unapproved_publication_zero": "NOT_CERTIFIED_JOINT_E2E_NOT_RUN",
+    "danger_misses_zero": "NOT_MET_OR_NOT_CERTIFIED_WITH_ERRORS",
+    "inappropriate_auto_guidance_zero": "NOT_CERTIFIED_FULL_45_NOT_RUN"
+  },
+  "danger_subset": {
+    "artifact": "evidence/20260831_remaining/danger-15-after-fix.json",
+    "database_queries": 0,
+    "provider_requests": 0,
+    "runs": {
+      "multi_agent": {
+        "attempted_cases": 15,
+        "completed_cases": 13,
+        "error_count": 2,
+        "external_dependency_attempts_blocked": {
+          "followup_provider": 3,
+          "retrieval": 2,
+          "symptom_provider": 3
+        },
+        "fully_passed": 9,
+        "known_danger_misses_among_completed": 1,
+        "observed_danger_results": 12,
+        "total_danger_miss_count": null,
+        "usage_contract_conflicts": [
+          "REF-JAC104-D-005",
+          "REF-IAC425-D-005",
+          "REF-IAC606-D-005"
+        ]
+      },
+      "single_rag": {
+        "attempted_cases": 15,
+        "completed_cases": 13,
+        "error_count": 2,
+        "external_dependency_attempts_blocked": {
+          "followup_provider": 3,
+          "retrieval": 2,
+          "symptom_provider": 3
+        },
+        "fully_passed": 9,
+        "known_danger_misses_among_completed": 1,
+        "observed_danger_results": 12,
+        "total_danger_miss_count": null,
+        "usage_contract_conflicts": [
+          "REF-JAC104-D-005",
+          "REF-IAC425-D-005",
+          "REF-IAC606-D-005"
+        ]
+      }
+    },
+    "scope": "OFFLINE_15_OF_45_TWO_PIPELINES",
+    "status": "FAIL"
+  },
+  "decisions_and_qa_handoff": "20260831_remaining_decisions_and_qa_handoff.md",
+  "dirty": true,
+  "existing_caution_human_review_contract": "ALREADY_ESTABLISHED_NOT_REOPENED",
+  "external_messages_sent": false,
+  "final_release_eligible": false,
+  "full_reference_45_provider_evaluation": "NOT_RUN",
+  "head": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+  "independent_qa": {
+    "local_handoff_package": "READY",
+    "request_sent": false,
+    "status": "NOT_RUN"
+  },
+  "new_development_branch_created": false,
+  "operating_runtime": {
+    "approved_model_codes": [
+      "WPUJAC104DWH"
+    ],
+    "configuration_changed": false,
+    "pipeline": "multi_agent",
+    "profile": "jac104_v2_recovery",
+    "transport": "mcp"
+  },
+  "pm_merge_approval": "NOT_REQUESTED_NOT_APPROVED",
+  "provider_requests_by_this_turn": 0,
+  "rds_and_public_activation": "HOLD_UNCHANGED",
+  "rds_writes_by_this_turn": 0,
+  "readonly_50": {
+    "artifact": "evidence/20260831_remaining/readonly-50-current-commit.json",
+    "command_id": "26e71b64-50b4-4a91-a551-c5d37340af63",
+    "cross_model_hits": 0,
+    "direct_parent_hits": 0,
+    "dirty": false,
+    "docker_shared_build_cache_pruned": false,
+    "eligibility_note": "Raw runner true means this clean execution SHA passed; pending source edits, Safety/ledger decisions and final PR/QA are not covered.",
+    "embedding_model": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "execution_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+    "final_pr_evidence_eligible": false,
+    "fixture_insertion": "NOT_PERFORMED_READONLY_RUN",
+    "fixture_rollback": "NOT_APPLICABLE",
+    "generation_model": null,
+    "index_identity": {
+      "approved_model_codes": [
+        "WPUIAC425SNW",
+        "WPUIAC606SNW",
+        "WPUJAC104DWH"
+      ],
+      "approved_model_row_count": 53,
+      "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+      "index_row_count": 53,
+      "index_version": "2.0.0",
+      "model_row_counts": {
+        "WPUIAC425SNW": 19,
+        "WPUIAC606SNW": 19,
+        "WPUJAC104DWH": 15
+      }
+    },
+    "named_qa_resources_and_temp_files_removed": true,
+    "negative": 7,
+    "operating_container_metadata_unchanged": true,
+    "passed": 50,
+    "pgvector_version": "0.8.2",
+    "positive": 43,
+    "postgresql_version": "16.14",
+    "profile": "three_model_integration",
+    "prompt_version": null,
+    "raw_runner_source_eligibility": true,
+    "result_file_sha256": "9086f53ea3e9d35c48867945841f98393615189352e2014c739e07cfe27aaa91",
+    "scope": "OFFICIAL_RDS_CURRENT_COMMITTED_CANDIDATE_ONLY",
+    "status": "PASS",
+    "temporary_attribute_override": "ai/evaluation/indexes/playground_bge_m3_page_v1.npz -text",
+    "tracked_file_bytes_verified": 3438,
+    "transport": "direct",
+    "unverified_hits": 0
+  },
+  "recorded_at_utc": "2026-08-31T12:30:16.872965+00:00",
+  "remaining": [
+    "PM_BACKEND_DATA_REFRIGERANT_RULE_AND_CONFLICTING_ACTIONS_CONTRACT",
+    "PM_BACKEND_DATA_HOT_WATER_PARTIAL_VS_TOTAL_ORACLE_SCOPE_DECISION",
+    "ADDITIONAL_LEDGER_CONTRACT_CONFIRMATION_THEN_OWNERS_IMPLEMENTATION",
+    "OFFICIAL_EVIDENCE_PROVIDER_TRANSMISSION_APPROVAL",
+    "FINAL_PR_SHA_45_AND_50_RERUN_WITH_BACKEND_PUBLICATION_VALIDATION",
+    "INDEPENDENT_QA_THEN_PM_MERGE_APPROVAL"
+  ],
+  "schema": "WATERBRIDGE_REMAINING_WORK_VALIDATION_V1",
+  "source_manifest": "evidence/20260831_remaining/working-tree-source-manifest.json",
+  "status": "HOLD_FOR_SAFETY_CONTRACT_LEDGER_APPROVAL_AND_FINAL_QA"
+}

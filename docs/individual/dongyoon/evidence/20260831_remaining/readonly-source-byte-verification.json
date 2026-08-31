@@ -1,0 +1,11 @@
+{
+  "actual_commit_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+  "dirty_entries": [],
+  "dirty_entry_count": 0,
+  "git_executable": "/usr/bin/git",
+  "python_version": "3.13.13",
+  "raw_blob_mismatches": [],
+  "raw_tracked_bytes_match_git_index": true,
+  "raw_tracked_file_count": 3438,
+  "temporary_binary_text_override": "ai/evaluation/indexes/playground_bge_m3_page_v1.npz -text"
+}

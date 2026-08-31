@@ -32,7 +32,8 @@ from ai.scripts.export_three_model_canonical_identity import IDENTITY_PATH
 from ai.scripts.verify_jac104_v2_recovery import _read_index_rows
 from ai.app.retrieval.verification.index_readiness import validate_readonly_index
 from ai.evaluation.release_evidence import (
-    execution_blockers, execution_provenance, json_sha256, text_file_sha256, write_report,
+    execution_blockers, execution_provenance, execution_source_changed,
+    json_sha256, text_file_sha256, write_report,
 )
 from ai.evaluation.readonly_environment import read_database_versions
 
@@ -189,10 +190,7 @@ def main(output_path: Path | None = None, expected_sha: str | None = None) -> in
         after = execution_provenance()
         report["end_provenance"] = after
         report["end_final_sha_blockers"] = execution_blockers(after, expected_sha)
-        source_changed = any(
-            after.get(field) != provenance.get(field)
-            for field in ("commit_sha", "dirty", "runtime_source_sha256", "input_file_sha256")
-        )
+        source_changed = execution_source_changed(provenance, after)
         if source_changed or (expected_sha and report["end_final_sha_blockers"]):
             report.update(status="HOLD", reason_code="EXECUTION_SOURCE_CHANGED")
     except Exception:

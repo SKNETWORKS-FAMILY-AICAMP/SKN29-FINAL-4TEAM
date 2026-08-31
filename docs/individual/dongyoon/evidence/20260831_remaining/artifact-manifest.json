@@ -1,0 +1,82 @@
+{
+  "ai-clean-baseline.json": {
+    "bytes": 1170,
+    "sha256": "93f9661395c5c46539279f675d56d55f0978017af6520618fcfe26c6fc84b751"
+  },
+  "ai-final-regression.json": {
+    "bytes": 1169,
+    "sha256": "4ea19c051590baf699cd730e8df491b4eedf63317697de985d5076520322cbf6"
+  },
+  "ai-final-regression.log": {
+    "bytes": 2701,
+    "sha256": "49babd106c43dd063ba9c4fae190debfcdb696992b2da2817c36774f384e1b70"
+  },
+  "aws-command-hashes.json": {
+    "bytes": 937,
+    "sha256": "b78df3b8058731e8b031ecdca04d50df507f334d847da2f62ca0ff0664973939"
+  },
+  "aws-submitted-commands.json": {
+    "bytes": 53990,
+    "sha256": "417b4abef6e83717e09200cdfec60d060ac89f79219a37424f98516abe50c3d2"
+  },
+  "backend-clean-regression.json": {
+    "bytes": 1172,
+    "sha256": "a6b847ce26a6306aa1746b6ee24f771830c5c410c51ccaa8626e0379f00ac9e5"
+  },
+  "backend-clean-regression.log": {
+    "bytes": 5879,
+    "sha256": "ffb23d739f4297ae5931ce5e617ba1c4010cb75a40bc7dcc0faa5fb08900bc8b"
+  },
+  "danger-15-after-fix.json": {
+    "bytes": 45560,
+    "sha256": "8a154a4b2aed70b355b038a10d784e0138defd282ab08513a4a6bd07bc58b25d"
+  },
+  "danger-15-after-fix.log": {
+    "bytes": 15731,
+    "sha256": "3bce4dbfa897d26edc8ce5a28e60b2f7070f830e95ccc4aeb70c09efc0ddffff"
+  },
+  "danger-15-before-fix.json": {
+    "bytes": 38860,
+    "sha256": "47d44d94be4da5b0da842aa84b21c0e5d50b50345c54f402b2c70708f9bf1f84"
+  },
+  "git-binary-attribute-diagnosis.json": {
+    "bytes": 426,
+    "sha256": "407c8c6db4bc8288591bce2a89c14fa82f87524f5ba86bb58b1623cdf4be150c"
+  },
+  "offline-preparation.json": {
+    "bytes": 5423,
+    "sha256": "6124df03f72b64f787eff834e48ad8235493f021d800d36eadb5401f9e302c73"
+  },
+  "rds-browser-captures.json": {
+    "bytes": 37345,
+    "sha256": "f84dbc359ebff657d762db2c8fd7beaab862a113d37b790192e0dcdbe767049f"
+  },
+  "rds-metadata-audit.json": {
+    "bytes": 6588,
+    "sha256": "00e147a3cca1d462dd40aea86de61927794b8c25b9bc455bf644197af17fed29"
+  },
+  "readonly-50-current-commit.json": {
+    "bytes": 143998,
+    "sha256": "9086f53ea3e9d35c48867945841f98393615189352e2014c739e07cfe27aaa91"
+  },
+  "readonly-binary-diagnosis-hold.json": {
+    "bytes": 424,
+    "sha256": "0e05231ebf91ed6fe1c0ec1596e8894fba53fb932e08ac3f57f1e399f67cf760"
+  },
+  "readonly-source-byte-verification.json": {
+    "bytes": 391,
+    "sha256": "c80f82ca3095ba75184f77187550c0e6990004e994835d88f9c3e39bd9cc05cd"
+  },
+  "readonly-source-hold.json": {
+    "bytes": 181,
+    "sha256": "078c59904b0fa49f908761e73b3efdb49734285cfa9f560a4bee18d9972dc8c4"
+  },
+  "refrigerant-source-review.json": {
+    "bytes": 6842,
+    "sha256": "a9f8af79a7b11ff7726dcff77dadd056d631f072686668eed806d25a8ade2ef1"
+  },
+  "working-tree-source-manifest.json": {
+    "bytes": 4404,
+    "sha256": "2031955d8870cd3eb0f647fa52850a1578e3504737f7dfc15240698edf683e62"
+  }
+}

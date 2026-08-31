@@ -1,0 +1,97 @@
+{
+  "artifact_payload_sha256": "5ef3868c12da331c2f6d05e43c8a21037d5072d28654af238bed7b51ef25f2a0",
+  "clean_source_ready_for_candidate_run": false,
+  "database_queries": 0,
+  "executed_45_cases": 0,
+  "executed_50_cases": 0,
+  "final_sha_blockers": [
+    "CLEAN_EXECUTION_TREE_REQUIRED"
+  ],
+  "final_sha_eligible": false,
+  "independent_qa": "NOT_RUN",
+  "ledger_implementation": "HOLD_PENDING_ADDITIONAL_CONTRACT",
+  "provenance": {
+    "branch": "dongyoon",
+    "commit_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+    "dirty": true,
+    "evaluation_source_sha256": "d63d42341c7a35c9a0bb73b5d698ea9a389b6a72a772d3666020a315636af97d",
+    "file_hash_normalization": "UTF8_LF",
+    "git_metadata_verified": true,
+    "input_file_sha256": {
+      "ai/configs/canonical_evidence_identity_3model.json": "ab98aa6cfe839366cb13ecc3839d72ee0ae99419af85f702f0c2f1d05bdca169",
+      "ai/configs/canonical_evidence_topics_3model.json": "012f0ef0eb1add440101042767ad39928de4bc7e98bbe5c96e13f575f510d145",
+      "ai/configs/index_manifest.json": "91027e88dec6c3bff1e590aaf4479ca021ac284eb0bdc8e1eec6c76473da667e",
+      "ai/configs/index_manifest_3model.json": "3fa0f26c0c2c2628f9d4410c061ff17dd8d6ce9c6e0b76358cbb0bb0a9c28a1e",
+      "ai/configs/model_profiles.yaml": "9ba942070e0e0955f3b03dbeec74812b9d68422a32cac85c41f834a49ff8f5c6",
+      "ai/configs/retrieval_policy.yaml": "cacd38ad7618b1438bf6e74bf13606d0ede03f064da890c3d999ae9b6457b7e1",
+      "ai/configs/retry_policy.yaml": "76ac62b550426b1dcd2ddf61d28e539085afbdf9c94f02be256110ddcd22393d",
+      "ai/configs/runtime_identity.json": "449287a74c2aef00d8b801d48795ce365dbdda611fb073939e5fa35870b450e4",
+      "ai/configs/safety_rules.yaml": "8c695f6c315aeabebfe2e7ba34d4dc294bdbefa3c1727034b730d36ed83148c5",
+      "ai/prompts/customer_guidance/v3/system.txt": "4143c4f96192ede6b903ed6d83512b6a59ecf06f2e67725fa660800b531f05cd",
+      "ai/prompts/customer_guidance/v3/user_template.txt": "bf59917b133f5bb7912a24ada30ed0522c6943f2d22ecb2b9993256ae3c3e649",
+      "ai/prompts/followup_question/v1/system.txt": "6f0cdacee6a331963fb4a56c3f60cbc9f6ed4ff356a04f96d32fa27feed5b86f",
+      "ai/prompts/followup_question/v1/user_template.txt": "319f5f75039b2d63cc465d2b3e08652eae0bbe5ba0017d282a4d71fadc215378",
+      "ai/prompts/prompt_registry.yaml": "924fe6e723b118bc95c94a4bf234a9e01b1bc91cd9d8c06d81abd4386143162a",
+      "ai/prompts/symptom_structuring/v1/system.txt": "52973aba0ab3fae525626dad4fc0bb310076a6f7bf49c54d3660b1489a950237",
+      "ai/prompts/symptom_structuring/v1/user_template.txt": "6be806a389f0c8b213846e95c4729f0d49c8fb2e3a593b34e23c2a25dd199e06",
+      "ai/requirements-linux.lock": "c3c34d156795973f3cde378fe53c0820e9b6650fde7f4741fd189e49f5cb3523",
+      "ai/requirements.lock": "259a7265b2c0b02c23f9433aafed659d95180445005e2d23f2f3bc7cc6ae3232",
+      "data/config/handoff/consumer_profiles.json": "623b6dad3743ec0e381a084a6c81648503bd1a7c7f273323666a17b905b63ab0",
+      "data/config/rag/three_model_evaluation_cases.json": "b0316ce050c91c8900e805e85a5f8fff836ccd2e04cdcf328437c2c68a70fbf1",
+      "data/processed/structured/evidence/rag_evidence_groups_3model_v1.jsonl": "ccd797db8c87b9b90efd88ebe16be5ac4d80008bc75e0cce46b3854f70c3143d",
+      "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl": "b4ba15c045d7c4eaf1e4cf90dff83ec9fa2c236f9cfcdad85467a42f1921eb78",
+      "data/reference_cases/three_model_reference_scenarios_v1.json": "98de959b4c894f76952f9950edce67a61683dff043df6b1fa0a5ee3db4a66754",
+      "data/schemas/reference_cases/three_model_reference_scenarios_v1.schema.json": "41fc3e5260ac8c2244e6b1520401b19ac6d698e9b60578b0ce28fff3e19e7929"
+    },
+    "missing_identity_files": [],
+    "python_version": "3.13.13",
+    "recorded_at_utc": "2026-08-31T12:26:15.759599+00:00",
+    "runtime_source_sha256": "7b37ebb65f698ec2ea121eb7aae8507a08ad5fd5742df38a7aa424e30e4ec725"
+  },
+  "provider_requests": 0,
+  "public_runtime_activation": "HOLD",
+  "rds_writes": 0,
+  "readonly_50": {
+    "case_types": {
+      "NEGATIVE": 7,
+      "POSITIVE": 43
+    },
+    "child_count": 53,
+    "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+    "declared_case_count": 50,
+    "embedding_model": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "evidence_group_count": 43,
+    "index_version": "2.0.0",
+    "model_counts": {
+      "WPUIAC425SNW": 19,
+      "WPUIAC606SNW": 19,
+      "WPUJAC104DWH": 15
+    },
+    "runtime_profile": "three_model_integration",
+    "transport": "direct",
+    "view": "backend_ai_rag_chunks_v1"
+  },
+  "reference_45": {
+    "case_count": 45,
+    "context_facts_policy": "ANNOTATION_ONLY_NOT_SENT_TO_RUNTIME",
+    "curation_status": "CANDIDATE",
+    "dataset_sha256": "98de959b4c894f76952f9950edce67a61683dff043df6b1fa0a5ee3db4a66754",
+    "declared_case_count": 45,
+    "input_protocol": "FIRST_TURN_CUSTOMER_UTTERANCE_ONLY",
+    "model_risk_counts": {
+      "WPUIAC425SNW:caution": 5,
+      "WPUIAC425SNW:danger": 5,
+      "WPUIAC425SNW:general": 5,
+      "WPUIAC606SNW:caution": 5,
+      "WPUIAC606SNW:danger": 5,
+      "WPUIAC606SNW:general": 5,
+      "WPUJAC104DWH:caution": 5,
+      "WPUJAC104DWH:danger": 5,
+      "WPUJAC104DWH:general": 5
+    },
+    "schema_sha256": "41fc3e5260ac8c2244e6b1520401b19ac6d698e9b60578b0ce28fff3e19e7929"
+  },
+  "scope": "OFFLINE_QA_PREPARATION_ONLY",
+  "status": "QA_INPUTS_READY"
+}

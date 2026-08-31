@@ -12,7 +12,7 @@ from ai.app.integrations.llm.natural_language_client import (
 from ai.app.orchestration.pipeline_router import PipelineRouter
 from ai.app.retrieval.runtime_profile import resolve_rag_runtime_profile
 from ai.app.retrieval.verification.index_readiness import validate_readonly_index
-from ai.evaluation.release_evidence import execution_blockers, execution_provenance, write_report
+from ai.evaluation.release_evidence import execution_blockers, execution_provenance, execution_source_changed, write_report
 from ai.evaluation.readonly_environment import read_database_versions
 from ai.evaluation.runners.reference_scenario_runner import AuditedProvider, evaluate_cases, load_reference_catalog
 from ai.scripts.verify_jac104_v2_recovery import _read_index_rows
@@ -67,7 +67,8 @@ def main(*, output: Path, expected_sha: str | None, execute: bool = False,
             report.update(evaluate_cases(cases, router, runtime=runtime, provider_events=events))
             after = execution_provenance()
             report["end_provenance"] = after
-            if execution_blockers(after, expected_sha) or after["runtime_source_sha256"] != provenance["runtime_source_sha256"]:
+            report["end_final_sha_blockers"] = execution_blockers(after, expected_sha)
+            if report["end_final_sha_blockers"] or execution_source_changed(provenance, after):
                 report.update(status="HOLD", reason_code="EXECUTION_SOURCE_CHANGED")
     except Exception as exc:
         report.update(status="HOLD", reason_code="REFERENCE_EVALUATION_REQUIREMENTS_NOT_MET",

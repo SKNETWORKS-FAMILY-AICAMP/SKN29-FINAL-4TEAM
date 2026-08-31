@@ -1,0 +1,26 @@
+{
+  "attempt1": {
+    "character_count": 11012,
+    "client_submitted_utf8_sha256": "9910181fa15f7cb8a97ca055348d14aeaa7df5237da5ac908d1c2cdea6a695d7"
+  },
+  "attempt2": {
+    "character_count": 11015,
+    "client_submitted_utf8_sha256": "ebb47c1f2edcaf7b726269dc5682524e8fb2f7da41d3572878c6bc36b968a4c1"
+  },
+  "attempt3": {
+    "character_count": 11522,
+    "client_submitted_utf8_sha256": "1d7c1e53123d1a22715035f37cb0d064df96f38a6ad9dadf6ee148ecab439b8c"
+  },
+  "attempt4": {
+    "character_count": 13820,
+    "client_submitted_utf8_sha256": "1b8799c7abeb137c5e712ca4c8ad93686706df867a6a587f87a2810f0b3ddb3b"
+  },
+  "host_preflight": {
+    "character_count": 2560,
+    "client_submitted_utf8_sha256": "fd45167a06307471e2e98cb77a8c0cf5f4e6308e7f1ba4bb8c89e3b1937478e6"
+  },
+  "tls_diagnostic": {
+    "character_count": 1860,
+    "client_submitted_utf8_sha256": "de8cce98c6eea7d2afdf04869d1efaa73ee75a1be6a4e65a18101bb6e6d74dbe"
+  }
+}

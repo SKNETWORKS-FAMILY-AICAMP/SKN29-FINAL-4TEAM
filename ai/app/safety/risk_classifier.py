@@ -5,7 +5,11 @@ from typing import List, Optional
 from ..schemas import RiskLevel, SafetyAssessment
 from .rule_precedence import select_effective_safety_rule
 from .rule_loader import SafetyRuleLoader
-from .signal_detector import detect_safety_evidence, has_asserted_keyword
+from .signal_detector import (
+    detect_safety_evidence,
+    has_asserted_hot_water_panel_alert,
+    has_asserted_keyword,
+)
 from ..structuring.llm_contracts import SafetySignals
 
 
@@ -81,7 +85,12 @@ class RiskClassifier:
             feature_rule_ids.append("SAFETY-ELECTRICAL-001")
             detected_risks.append("전기 부품 손상·노출 위험")
             reasons.append("[Safety] 전기 위험 관측 신호 감지")
-        if signals.requires_danger_policy or detected:
+        heater_alert = has_asserted_hot_water_panel_alert(source_text)
+        if heater_alert:
+            feature_rule_ids.append("SAFETY-HOT-WATER-HEATER-001")
+            detected_risks.append("온수·정수·냉수 버튼 동시 점멸 및 빨간 표시창")
+            reasons.append("[Safety] 공식 매뉴얼의 온수 히터 경고 표시 조합 감지")
+        if signals.requires_danger_policy or detected or heater_alert:
             highest_risk = RiskLevel.DANGER
             highest_priority = "priority_consultation"
             requires_consultation = True
