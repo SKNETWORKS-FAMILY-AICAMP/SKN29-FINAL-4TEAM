@@ -79,7 +79,7 @@ def _chunk(content: str, *, chunk_id="HOT") -> RetrievedChunk:
     )
 
 
-def test_occurrence_condition_wording_cannot_turn_into_start_time_question():
+def test_occurrence_condition_start_time_question_falls_back_only_that_field():
     generator = FollowUpQuestionGenerator()
     fallback = generator._fixed_questions(
         [
@@ -91,16 +91,21 @@ def test_occurrence_condition_wording_cannot_turn_into_start_time_question():
         ]
     )
 
-    with pytest.raises(ValueError):
-        generator._apply_wording(
-            fallback,
-            [
-                FollowUpWording(
-                    target_field="occurrence_condition",
-                    question_text="증상이 어제부터 발생했나요?",
-                )
-            ],
-        )
+    validation = generator._validate_wordings(
+        fallback,
+        [
+            FollowUpWording(
+                target_field="occurrence_condition",
+                question_text="증상이 어제부터 발생했나요?",
+            )
+        ],
+    )
+
+    assert validation.questions == fallback
+    assert validation.fallback_fields == ("occurrence_condition",)
+    assert validation.rejection_reasons == {
+        "occurrence_condition": "QUESTION_INTENT_MISMATCH"
+    }
 
 
 def test_occurrence_condition_wording_accepts_condition_question():
@@ -212,24 +217,27 @@ def test_followup_closed_domain_options_remain_canonical():
     assert result[0].options == ["냉수", "온수", "정수", "전체"]
 
 
-def test_followup_unsafe_repair_option_rejects_entire_dynamic_plan():
+def test_followup_unsafe_repair_option_falls_back_only_that_field():
     generator = FollowUpQuestionGenerator()
     fallback = generator._fixed_questions(
         [MissingField(field_name="actions_taken", reason="필요", importance="low")]
     )
 
-    with pytest.raises(ValueError):
-        generator._apply_wording(
-            fallback,
-            [
-                FollowUpWording(
-                    target_field="actions_taken",
-                    question_text="이미 확인하거나 조치해 본 내용이 있나요?",
-                    options=["아직 확인하지 않음", "제품을 직접 분해해 확인"],
-                )
-            ],
-            symptom=StructuredSymptom(symptom_type="기타 증상"),
-        )
+    validation = generator._validate_wordings(
+        fallback,
+        [
+            FollowUpWording(
+                target_field="actions_taken",
+                question_text="이미 확인하거나 조치해 본 내용이 있나요?",
+                options=["아직 확인하지 않음", "제품을 직접 분해해 확인"],
+            )
+        ],
+        symptom=StructuredSymptom(symptom_type="기타 증상"),
+    )
+
+    assert validation.questions == fallback
+    assert validation.fallback_fields == ("actions_taken",)
+    assert validation.rejection_reasons["actions_taken"] == "UNSAFE_OPTION"
 
 
 def test_low_flow_normalizer_understands_jal_an_nawaeyo():
@@ -242,6 +250,169 @@ def test_low_flow_normalizer_understands_jal_an_nawaeyo():
         )
         == "출수량 저하"
     )
+
+
+def test_chilled_water_low_flow_provenance_is_semantically_accepted():
+    raw = "어제부터 찬물이 잘 안 나오네요"
+    result = SymptomStructurer(
+        llm_client=_SemanticSymptomClient(
+            StructuredSymptom(
+                symptom_type="출수량 저하",
+                occurrence_time="어제부터",
+                target_water_type="냉수",
+            ),
+            [
+                _claim("symptom_type", "출수량 저하", "찬물이 잘 안 나오네요"),
+                _claim("occurrence_time", "어제부터", "어제부터"),
+                _claim("target_water_type", "냉수", "찬물"),
+            ],
+        )
+    ).structure(raw, ["LOW_FLOW"])
+
+    assert result.symptom_type == "출수량 저하"
+    assert result.occurrence_time == "어제부터"
+    assert result.target_water_type == "냉수"
+    missing = MissingFieldChecker().check(result)
+    assert "target_water_type" not in {item.field_name for item in missing}
+
+
+def test_chilled_water_evidence_cannot_support_hot_water_candidate():
+    raw = "어제부터 찬물이 잘 안 나오네요"
+    result = SymptomStructurer(
+        llm_client=_SemanticSymptomClient(
+            StructuredSymptom(
+                symptom_type="출수량 저하",
+                target_water_type="온수",
+            ),
+            [
+                _claim("symptom_type", "출수량 저하", "잘 안 나오네요"),
+                _claim("target_water_type", "온수", "찬물"),
+            ],
+        )
+    ).structure(raw)
+
+    assert result.target_water_type == "냉수"
+
+
+def test_normal_flow_statement_cannot_support_low_flow_candidate():
+    raw = "물이 잘 나옵니다"
+    result = SymptomStructurer(
+        llm_client=_SemanticSymptomClient(
+            StructuredSymptom(symptom_type="출수량 저하"),
+            [_claim("symptom_type", "출수량 저하", raw)],
+        )
+    ).structure(raw)
+
+    assert result.symptom_type != "출수량 저하"
+
+
+@pytest.mark.parametrize("raw", ["차가운 물이 약하게 나와요", "찬물이 약하게 나와요"])
+def test_common_cold_water_expressions_normalize_to_cold(raw):
+    assert SymptomNormalizer().normalize_water_type(raw) == "냉수"
+
+
+def test_followup_validation_keeps_valid_fields_when_one_field_fails():
+    generator = FollowUpQuestionGenerator()
+    fallback = generator._fixed_questions(
+        [
+            MissingField(field_name="target_water_type", reason="필요", importance="high"),
+            MissingField(field_name="occurrence_condition", reason="필요", importance="medium"),
+            MissingField(field_name="actions_taken", reason="필요", importance="low"),
+        ]
+    )
+    validation = generator._validate_wordings(
+        fallback,
+        [
+            FollowUpWording(
+                target_field="target_water_type",
+                question_text="어떤 출수에서 증상이 발생하나요?",
+                options=["찬물", "따뜻한 물"],
+            ),
+            FollowUpWording(
+                target_field="occurrence_condition",
+                question_text="첫 잔과 다음 잔 중 어느 상황에서 물이 더 약한가요?",
+                options=["첫 잔에서 유독 약함", "두 번째 잔부터 나아짐"],
+            ),
+            FollowUpWording(
+                target_field="actions_taken",
+                question_text="이미 확인하거나 조치해 본 내용이 있나요?",
+                options=["아직 조치하지 않음", "필터 상태를 확인함"],
+            ),
+        ],
+        symptom=StructuredSymptom(symptom_type="출수량 저하"),
+    )
+
+    assert validation.fallback_fields == ("target_water_type",)
+    assert validation.rejection_reasons["target_water_type"] == (
+        "CANONICAL_OPTION_MISMATCH"
+    )
+    assert validation.questions[0] == fallback[0]
+    assert validation.questions[1].options == [
+        "첫 잔에서 유독 약함",
+        "두 번째 잔부터 나아짐",
+    ]
+    assert validation.questions[2].options == [
+        "아직 조치하지 않음",
+        "필터 상태를 확인함",
+    ]
+
+
+def test_followup_target_change_falls_back_only_missing_expected_field():
+    generator = FollowUpQuestionGenerator()
+    fallback = generator._fixed_questions(
+        [
+            MissingField(field_name="occurrence_condition", reason="필요", importance="medium"),
+            MissingField(field_name="actions_taken", reason="필요", importance="low"),
+        ]
+    )
+    validation = generator._validate_wordings(
+        fallback,
+        [
+            FollowUpWording(
+                target_field="occurrence_time",
+                question_text="증상은 언제부터 시작됐나요?",
+            ),
+            FollowUpWording(
+                target_field="actions_taken",
+                question_text="이미 확인하거나 조치해 본 내용이 있나요?",
+                options=["아직 조치하지 않음", "필터 상태를 확인함"],
+            ),
+        ],
+    )
+
+    assert validation.fallback_fields == ("occurrence_condition",)
+    assert validation.questions[0] == fallback[0]
+    assert validation.questions[1].question_text.startswith("이미 확인")
+
+
+def test_followup_all_invalid_fields_use_all_fixed_questions():
+    generator = FollowUpQuestionGenerator()
+    fallback = generator._fixed_questions(
+        [
+            MissingField(field_name="target_water_type", reason="필요", importance="high"),
+            MissingField(field_name="occurrence_condition", reason="필요", importance="medium"),
+        ]
+    )
+    validation = generator._validate_wordings(
+        fallback,
+        [
+            FollowUpWording(
+                target_field="target_water_type",
+                question_text="어떤 출수에서 증상이 발생하나요?",
+                options=["찬물", "따뜻한 물"],
+            ),
+            FollowUpWording(
+                target_field="occurrence_condition",
+                question_text="증상은 언제부터 시작됐나요?",
+            ),
+        ],
+    )
+
+    assert validation.questions == fallback
+    assert set(validation.fallback_fields) == {
+        "target_water_type",
+        "occurrence_condition",
+    }
 
 
 def test_low_flow_topic_filter_rejects_cold_temperature_chunk(monkeypatch):

@@ -18,6 +18,7 @@ _ALLOWED_FIELDS = {
     "prompt_version",
     "reason",
     "validation_result",
+    "validation_reason",
     "fallback_fields",
     "target_field",
     "input_tokens",
@@ -34,6 +35,7 @@ _USAGE_EVENTS = {
 _FALLBACK_EVENTS = {
     "llm_symptom_structuring_fallback",
     "llm_followup_wording_fallback",
+    "llm_followup_wording_field_fallback",
     "llm_client_configuration_fallback",
 }
 

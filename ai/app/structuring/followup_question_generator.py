@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
 from opentelemetry import trace
 
@@ -43,9 +44,35 @@ _DYNAMIC_OPTION_MARKERS = {
 _QUESTION_INTENT_MARKERS = {
     "occurrence_time": ("언제", "시작", "부터", "시점", "기간"),
     "target_water_type": ("어떤 출수", "어느 출수", "냉수", "온수", "정수", "전체 출수"),
-    "occurrence_condition": ("어떤 조건", "특정 조건", "항상", "간헐", "반복", "경우", "버튼을 누를 때"),
+    "occurrence_condition": (
+        "어떤 조건",
+        "특정 조건",
+        "항상",
+        "간헐",
+        "반복",
+        "경우",
+        "상황",
+        "양상",
+        "패턴",
+        "첫 잔",
+        "다음 잔",
+        "버튼을 누를 때",
+    ),
     "actions_taken": ("조치", "확인", "해보", "해 보", "시도", "취하", "무엇을 했"),
 }
+
+
+@dataclass(frozen=True, slots=True)
+class FollowUpValidationResult:
+    questions: list[FollowUpQuestion]
+    fallback_fields: tuple[str, ...]
+    rejection_reasons: dict[str, str]
+
+
+class _FollowUpFieldValidationError(ValueError):
+    def __init__(self, reason: str, message: str) -> None:
+        self.reason = reason
+        super().__init__(message)
 
 
 class FollowUpQuestionGenerator:
@@ -164,26 +191,44 @@ class FollowUpQuestionGenerator:
                 target_fields=target_fields,
             )
             span.set_attribute("llm.model", response.model_name)
-            try:
-                accepted = self._apply_wording(
-                    fallback,
-                    response.output.questions,
-                    symptom=symptom,
-                )
-            except ValueError:
-                span.set_attribute("validation.result", "REJECTED")
-                span.set_attribute("fallback.used", True)
-                self._record_fallback(
+            validation = self._validate_wordings(
+                fallback,
+                response.output.questions,
+                symptom=symptom,
+            )
+            accepted = validation.questions
+            for field_name in validation.fallback_fields:
+                self._record_field_fallback(
                     trace_context=trace_context,
                     model_code=model_code,
                     prompt_version=response.prompt_version,
-                    target_fields=target_fields,
-                    reason="DOMAIN_VALIDATION_FAILED",
+                    target_field=field_name,
+                    validation_reason=validation.rejection_reasons[field_name],
                     model_name=response.model_name,
                 )
-                return fallback
-            span.set_attribute("validation.result", "ACCEPTED")
-            span.set_attribute("fallback.used", False)
+            if validation.fallback_fields:
+                all_fields_rejected = len(validation.fallback_fields) == len(fallback)
+                span.set_attribute(
+                    "validation.result",
+                    "REJECTED" if all_fields_rejected else "ACCEPTED_WITH_FIELD_FALLBACK",
+                )
+                span.set_attribute("fallback.used", True)
+                span.set_attribute(
+                    "fallback.fields",
+                    ",".join(validation.fallback_fields),
+                )
+                if all_fields_rejected:
+                    self._record_fallback(
+                        trace_context=trace_context,
+                        model_code=model_code,
+                        prompt_version=response.prompt_version,
+                        target_fields=target_fields,
+                        reason="DOMAIN_VALIDATION_FAILED",
+                        model_name=response.model_name,
+                    )
+            else:
+                span.set_attribute("validation.result", "ACCEPTED")
+                span.set_attribute("fallback.used", False)
 
         from ..integrations.llm.token_usage import log_llm_usage
 
@@ -228,49 +273,101 @@ class FollowUpQuestionGenerator:
         *,
         symptom: StructuredSymptom | None = None,
     ) -> list[FollowUpQuestion]:
-        expected_fields = [question.target_field for question in fallback]
-        actual_fields = [wording.target_field for wording in wordings]
-        if len(actual_fields) != len(set(actual_fields)):
-            raise ValueError("Follow-up target_field가 중복되었습니다.")
-        if set(actual_fields) != set(expected_fields):
-            raise ValueError("Follow-up target_field 계약이 변경되었습니다.")
-        wording_by_field = {item.target_field: item for item in wordings}
+        return FollowUpQuestionGenerator._validate_wordings(
+            fallback,
+            wordings,
+            symptom=symptom,
+        ).questions
+
+    @staticmethod
+    def _validate_wordings(
+        fallback: list[FollowUpQuestion],
+        wordings: list[FollowUpWording],
+        *,
+        symptom: StructuredSymptom | None = None,
+    ) -> FollowUpValidationResult:
+        wordings_by_field: dict[str, list[FollowUpWording]] = {}
+        for wording in wordings:
+            wordings_by_field.setdefault(wording.target_field, []).append(wording)
         result: list[FollowUpQuestion] = []
+        fallback_fields: list[str] = []
+        rejection_reasons: dict[str, str] = {}
         for fixed in fallback:
-            wording = wording_by_field[fixed.target_field]
-            question_text = wording.question_text.strip()
-            if wording.allow_free_text and fixed.target_field not in {
-                "occurrence_time",
-                "occurrence_condition",
-                "actions_taken",
-            }:
-                raise ValueError("Closed-domain 질문은 자유 입력을 허용할 수 없습니다.")
-            if (
-                len(question_text) > 200
-                or "\n" in question_text
-                or not question_text.endswith(("?", "？"))
-                or any(pattern.search(question_text) for pattern in _PRIVATE_QUESTION_PATTERNS)
-                or not FollowUpQuestionGenerator._question_matches_target_field(
-                    fixed.target_field,
-                    question_text,
+            candidates = wordings_by_field.get(fixed.target_field, [])
+            if len(candidates) != 1:
+                fallback_fields.append(fixed.target_field)
+                rejection_reasons[fixed.target_field] = "TARGET_FIELD_MISMATCH"
+                result.append(fixed)
+                continue
+            try:
+                result.append(
+                    FollowUpQuestionGenerator._validate_one_wording(
+                        fixed,
+                        candidates[0],
+                        symptom=symptom,
+                    )
                 )
-            ):
-                raise ValueError("Follow-up 질문 문구 형식 또는 의미가 target_field와 일치하지 않습니다.")
-            options = FollowUpQuestionGenerator._validated_options(
-                target_field=fixed.target_field,
-                options=wording.options,
-                fallback_options=fixed.options,
-                symptom=symptom,
+            except _FollowUpFieldValidationError as exc:
+                fallback_fields.append(fixed.target_field)
+                rejection_reasons[fixed.target_field] = exc.reason
+                result.append(fixed)
+        return FollowUpValidationResult(
+            questions=result,
+            fallback_fields=tuple(fallback_fields),
+            rejection_reasons=rejection_reasons,
+        )
+
+    @staticmethod
+    def _validate_one_wording(
+        fixed: FollowUpQuestion,
+        wording: FollowUpWording,
+        *,
+        symptom: StructuredSymptom | None,
+    ) -> FollowUpQuestion:
+        question_text = wording.question_text.strip()
+        if wording.allow_free_text and fixed.target_field not in {
+            "occurrence_time",
+            "occurrence_condition",
+            "actions_taken",
+        }:
+            raise _FollowUpFieldValidationError(
+                "FREE_TEXT_NOT_ALLOWED",
+                "Closed-domain 질문은 자유 입력을 허용할 수 없습니다.",
             )
-            result.append(
-                fixed.model_copy(
-                    update={
-                        "question_text": question_text,
-                        "options": options,
-                    }
-                )
+        if any(pattern.search(question_text) for pattern in _PRIVATE_QUESTION_PATTERNS):
+            raise _FollowUpFieldValidationError(
+                "PII_DETECTED",
+                "Follow-up 질문에 개인정보 형식이 포함되었습니다.",
             )
-        return result
+        if (
+            len(question_text) > 200
+            or "\n" in question_text
+            or not question_text.endswith(("?", "？"))
+        ):
+            raise _FollowUpFieldValidationError(
+                "QUESTION_FORMAT_INVALID",
+                "Follow-up 질문 문구 형식이 올바르지 않습니다.",
+            )
+        if not FollowUpQuestionGenerator._question_matches_target_field(
+            fixed.target_field,
+            question_text,
+        ):
+            raise _FollowUpFieldValidationError(
+                "QUESTION_INTENT_MISMATCH",
+                "Follow-up 질문 의미가 target_field와 일치하지 않습니다.",
+            )
+        options = FollowUpQuestionGenerator._validated_options(
+            target_field=fixed.target_field,
+            options=wording.options,
+            fallback_options=fixed.options,
+            symptom=symptom,
+        )
+        return fixed.model_copy(
+            update={
+                "question_text": question_text,
+                "options": options,
+            }
+        )
 
     @staticmethod
     def _validated_options(
@@ -285,31 +382,100 @@ class FollowUpQuestionGenerator:
             return fallback_options
         normalized = [" ".join(option.split()) for option in options]
         if not 2 <= len(normalized) <= 5:
-            raise ValueError("Follow-up 선택지는 2~5개여야 합니다.")
+            raise _FollowUpFieldValidationError(
+                "OPTION_FORMAT_INVALID",
+                "Follow-up 선택지는 2~5개여야 합니다.",
+            )
         if any(not option or len(option) > 80 or "\n" in option for option in normalized):
-            raise ValueError("Follow-up 선택지 길이 또는 형식이 올바르지 않습니다.")
+            raise _FollowUpFieldValidationError(
+                "OPTION_FORMAT_INVALID",
+                "Follow-up 선택지 길이 또는 형식이 올바르지 않습니다.",
+            )
         if len({option.casefold() for option in normalized}) != len(normalized):
-            raise ValueError("Follow-up 선택지가 비어 있거나 중복되었습니다.")
+            raise _FollowUpFieldValidationError(
+                "OPTION_DUPLICATE",
+                "Follow-up 선택지가 중복되었습니다.",
+            )
         if any(
             any(pattern.search(option) for pattern in _PRIVATE_QUESTION_PATTERNS)
-            or _UNSAFE_OPTION_PATTERN.search(option)
-            or _DIAGNOSIS_OPTION_PATTERN.search(option)
-            or option.endswith(("?", "？"))
             for option in normalized
         ):
-            raise ValueError("Follow-up 선택지가 안전 또는 개인정보 정책에 맞지 않습니다.")
+            raise _FollowUpFieldValidationError(
+                "PII_DETECTED",
+                "Follow-up 선택지에 개인정보 형식이 포함되었습니다.",
+            )
+        if any(_UNSAFE_OPTION_PATTERN.search(option) for option in normalized):
+            raise _FollowUpFieldValidationError(
+                "UNSAFE_OPTION",
+                "Follow-up 선택지에 직접 수리 또는 전기 작업이 포함되었습니다.",
+            )
+        if any(_DIAGNOSIS_OPTION_PATTERN.search(option) for option in normalized):
+            raise _FollowUpFieldValidationError(
+                "DIAGNOSIS_OPTION",
+                "Follow-up 선택지에 확정 진단이 포함되었습니다.",
+            )
+        if any(option.endswith(("?", "？")) for option in normalized):
+            raise _FollowUpFieldValidationError(
+                "OPTION_FORMAT_INVALID",
+                "Follow-up 선택지는 질문 문장일 수 없습니다.",
+            )
 
         if target_field == "target_water_type":
             if normalized != ["냉수", "온수", "정수", "전체"]:
-                raise ValueError("Closed-domain 선택지가 변경되었습니다.")
+                raise _FollowUpFieldValidationError(
+                    "CANONICAL_OPTION_MISMATCH",
+                    "Closed-domain 선택지가 변경되었습니다.",
+                )
             return normalized
 
-        marker = _DYNAMIC_OPTION_MARKERS.get(target_field)
-        if marker is None or any(marker.search(option) is None for option in normalized):
-            raise ValueError("Follow-up 선택지가 target_field 의미와 맞지 않습니다.")
+        if target_field not in _DYNAMIC_OPTION_MARKERS:
+            raise _FollowUpFieldValidationError(
+                "OPTION_INTENT_MISMATCH",
+                "지원하지 않는 Follow-up target_field입니다.",
+            )
+        if not FollowUpQuestionGenerator._options_match_target_field(
+            target_field,
+            normalized,
+        ):
+            raise _FollowUpFieldValidationError(
+                "OPTION_INTENT_MISMATCH",
+                "Follow-up 선택지가 target_field 의미와 맞지 않습니다.",
+            )
         if not FollowUpQuestionGenerator._options_match_symptom(normalized, symptom):
-            raise ValueError("Follow-up 선택지가 현재 증상 맥락과 맞지 않습니다.")
+            raise _FollowUpFieldValidationError(
+                "OPTION_CONTEXT_MISMATCH",
+                "Follow-up 선택지가 현재 증상 맥락과 맞지 않습니다.",
+            )
         return normalized
+
+    @staticmethod
+    def _options_match_target_field(
+        target_field: str,
+        options: list[str],
+    ) -> bool:
+        joined = " ".join(options)
+        water_options = {"냉수", "온수", "정수", "전체"}
+        if set(options).issubset(water_options):
+            return False
+        time_marker = _DYNAMIC_OPTION_MARKERS["occurrence_time"]
+        condition_marker = _DYNAMIC_OPTION_MARKERS["occurrence_condition"]
+        action_marker = _DYNAMIC_OPTION_MARKERS["actions_taken"]
+        if target_field == "occurrence_time":
+            return not (
+                condition_marker.search(joined)
+                and time_marker.search(joined) is None
+            )
+        if target_field == "occurrence_condition":
+            return not (
+                all(time_marker.search(option) for option in options)
+                and condition_marker.search(joined) is None
+            )
+        if target_field == "actions_taken":
+            return not (
+                action_marker.search(joined) is None
+                and condition_marker.search(joined) is not None
+            )
+        return False
 
     @staticmethod
     def _options_match_symptom(
@@ -400,6 +566,47 @@ class FollowUpQuestionGenerator:
             reason=reason,
             validation_result="FALLBACK",
             target_field=",".join(target_fields),
+        )
+
+    @classmethod
+    def _record_field_fallback(
+        cls,
+        *,
+        trace_context: TraceContext | None,
+        model_code: str,
+        prompt_version: str,
+        target_field: str,
+        validation_reason: str,
+        model_name: str,
+    ) -> None:
+        with _FOLLOWUP_TRACER.start_as_current_span(
+            "waterbridge.followup.field_fallback"
+        ) as span:
+            cls._set_span_context(
+                span,
+                trace_context=trace_context,
+                model_code=model_code,
+                prompt_version=prompt_version,
+                target_fields=(target_field,),
+            )
+            span.set_attribute("fallback.used", True)
+            span.set_attribute("validation.result", validation_reason)
+
+        from ..integrations.llm.token_usage import log_llm_fallback
+
+        log_llm_fallback(
+            event="llm_followup_wording_field_fallback",
+            correlation_id=(trace_context.correlation_id if trace_context else None),
+            ai_request_id=(trace_context.ai_request_id if trace_context else None),
+            inquiry_id=(trace_context.inquiry_id if trace_context else None),
+            model_code=model_code or None,
+            task="followup_question",
+            model_name=model_name,
+            prompt_version=prompt_version,
+            reason=validation_reason,
+            validation_reason=validation_reason,
+            validation_result="FIELD_FALLBACK",
+            target_field=target_field,
         )
 
     @staticmethod

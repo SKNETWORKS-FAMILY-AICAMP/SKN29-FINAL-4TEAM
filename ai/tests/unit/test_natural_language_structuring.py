@@ -495,6 +495,76 @@ def test_followup_provider_failure_uses_fixed_template() -> None:
     assert generated[0].question_text == "어떤 출수에서 증상이 발생하나요?"
 
 
+def test_partial_followup_fallback_logs_only_rejected_field_metadata(caplog) -> None:
+    private_text = "010-1234-5678 찬물이 잘 안 나와요"
+    client = FakeFollowUpClient(
+        [
+            FollowUpWording(
+                target_field="target_water_type",
+                question_text="어떤 출수에서 증상이 발생하나요?",
+                options=["찬물", "따뜻한 물"],
+            ),
+            FollowUpWording(
+                target_field="occurrence_condition",
+                question_text="첫 잔과 다음 잔 중 어느 상황에서 물이 더 약한가요?",
+                options=["첫 잔에서 유독 약함", "두 번째 잔부터 나아짐"],
+            ),
+        ]
+    )
+
+    with caplog.at_level("WARNING", logger="watercare.ai.llm"):
+        generated = FollowUpQuestionGenerator(llm_client=client).generate(
+            [
+                MissingField(
+                    field_name="target_water_type",
+                    reason="출수 종류 확인",
+                    importance="high",
+                ),
+                MissingField(
+                    field_name="occurrence_condition",
+                    reason="발생 조건 확인",
+                    importance="medium",
+                ),
+            ],
+            symptom=StructuredSymptom(symptom_type="출수량 저하"),
+            raw_symptom=private_text,
+            trace_context=_trace_context(),
+        )
+
+    assert generated[0].options == ["냉수", "온수", "정수", "전체"]
+    assert generated[1].options == [
+        "첫 잔에서 유독 약함",
+        "두 번째 잔부터 나아짐",
+    ]
+    records = [json.loads(record.message) for record in caplog.records]
+    field_events = [
+        item
+        for item in records
+        if item["event"] == "llm_followup_wording_field_fallback"
+    ]
+    assert field_events == [
+        {
+            "ai_request_id": "ai-req-natural-language-001",
+            "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88b702",
+            "event": "llm_followup_wording_field_fallback",
+            "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b701",
+            "model_name": "fake-followup-model",
+            "prompt_version": "followup_question/v1",
+            "reason": "CANONICAL_OPTION_MISMATCH",
+            "task": "followup_question",
+            "target_field": "target_water_type",
+            "validation_reason": "CANONICAL_OPTION_MISMATCH",
+            "validation_result": "FIELD_FALLBACK",
+        }
+    ]
+    assert not any(
+        item["event"] == "llm_followup_wording_fallback"
+        for item in records
+    )
+    assert private_text not in caplog.text
+    assert "찬물" not in caplog.text
+
+
 def test_duplicate_guard_still_owns_duplicate_decision_after_llm_wording() -> None:
     questions = FollowUpQuestionGenerator(
         llm_client=FakeFollowUpClient()

@@ -46,6 +46,26 @@ _PRIVATE_ANSWER_PATTERNS = (
 _UNSAFE_ANSWER_PATTERN = re.compile(
     r"(?:직접\s*)?(?:분해|수리|배선\s*작업|전기\s*작업|전선을?\s*(?:자르|연결|교체))"
 )
+_SYMPTOM_EVIDENCE_PATTERNS = {
+    "제품 누수": re.compile(
+        r"누수|(?:물|냉수|온수|정수|찬물).{0,14}(?:새|흐르|고[여이]|떨어)"
+    ),
+    "전기 이상": re.compile(
+        r"스파크|감전|연기|탄\s*냄새|타는\s*냄새|전원선|전선|콘센트|플러그"
+    ),
+    "온도 이상": re.compile(
+        r"미지근|안\s*차갑|차갑지\s*않|뜨겁지\s*않|온도.{0,8}(?:이상|낮|높)"
+    ),
+    "출수량 저하": re.compile(
+        r"잘\s*안\s*나|안\s*나오|나오지\s*않|약하게\s*나|"
+        r"(?:물|출수|수압|양).{0,10}(?:약하|적|줄|낮)|졸졸|쫄쫄"
+    ),
+    "물맛/냄새 이상": re.compile(
+        r"(?:맛|냄새).{0,10}(?:이상|나|역|비리)|흙\s*맛|흙\s*냄새"
+    ),
+    "소음 이상": re.compile(r"소음|진동|웅웅|덜컹|소리가.{0,8}(?:나|커|이상)"),
+    "필터/관리 문의": re.compile(r"필터|교체\s*주기|관리\s*주기"),
+}
 
 
 class SymptomStructurer:
@@ -541,8 +561,25 @@ class SymptomStructurer:
         if field_name == "symptom_type" and source == "SELECTED_SYMPTOM":
             return self.normalizer.canonical_selected_symptom(evidence_quote) == value
         if field_name == "symptom_type" and source == "RAW_SYMPTOM":
-            return self._has_substantive_symptom_evidence(evidence_quote)
+            return self._symptom_type_matches_evidence(value, evidence_quote)
         return False
+
+    def _symptom_type_matches_evidence(
+        self,
+        value: str,
+        evidence_quote: str,
+    ) -> bool:
+        """Canonical label이 없어도 고객 표현의 의미가 field와 맞는지 확인한다."""
+
+        if not self._has_substantive_symptom_evidence(evidence_quote):
+            return False
+        rule_value = self.normalizer.normalize_symptom_type(evidence_quote, [])
+        if rule_value != "기타 증상":
+            return rule_value == value
+        if value == "기타 증상":
+            return True
+        pattern = _SYMPTOM_EVIDENCE_PATTERNS.get(value)
+        return pattern is not None and pattern.search(evidence_quote) is not None
 
     def _validated_previous_answer(
         self,
