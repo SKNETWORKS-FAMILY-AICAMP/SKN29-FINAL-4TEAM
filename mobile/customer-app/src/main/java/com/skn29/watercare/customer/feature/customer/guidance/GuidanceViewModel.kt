@@ -70,6 +70,12 @@ class GuidanceViewModel(
         StateFlow<ConsultationRequestUiState> =
         _consultationState.asStateFlow()
 
+    private val _refreshing =
+        MutableStateFlow(false)
+
+    val refreshing: StateFlow<Boolean> =
+        _refreshing.asStateFlow()
+
     private var silentRefreshInProgress =
         false
 
@@ -129,7 +135,15 @@ class GuidanceViewModel(
         }
     }
 
-    fun refreshSilently() {
+    fun refresh() {
+        refreshSilently(
+            showIndicator = true
+        )
+    }
+
+    fun refreshSilently(
+        showIndicator: Boolean = false,
+    ) {
         if (silentRefreshInProgress) {
             return
         }
@@ -143,6 +157,10 @@ class GuidanceViewModel(
         }
 
         silentRefreshInProgress = true
+
+        if (showIndicator) {
+            _refreshing.value = true
+        }
 
         viewModelScope.launch {
             try {
@@ -174,6 +192,10 @@ class GuidanceViewModel(
                     }
                 }
             } finally {
+                if (showIndicator) {
+                    _refreshing.value = false
+                }
+
                 silentRefreshInProgress =
                     false
             }

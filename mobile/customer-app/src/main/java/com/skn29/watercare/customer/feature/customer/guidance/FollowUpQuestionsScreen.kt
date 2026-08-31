@@ -56,6 +56,10 @@ fun FollowUpQuestionsScreen(
         viewModel.state
             .collectAsStateWithLifecycle()
 
+    val refreshing by
+        viewModel.refreshing
+            .collectAsStateWithLifecycle()
+
 
     // 최초 진입은 ViewModel의 load()가 담당하고,
     // 다른 화면에서 돌아온 경우에만 silent refresh를 수행한다.
@@ -182,9 +186,18 @@ fun FollowUpQuestionsScreen(
             cancelState is CancelInquiryUiState.Success
 
     PullToRefreshBox(
-        isRefreshing =
-            state is FollowUpUiState.Loading,
-        onRefresh = viewModel::load,
+        isRefreshing = refreshing,
+        onRefresh = {
+            if (
+                !blockFollowUpInteraction &&
+                state !is FollowUpUiState.Loading &&
+                state !is FollowUpUiState.Submitting
+            ) {
+                // 작성 중인 답변은 유지하고
+                // Backend의 최신 질문과 workflow 상태만 다시 확인한다.
+                viewModel.refresh()
+            }
+        },
     ) {
         WaterCareScreen(
             title = "추가 질문",

@@ -108,7 +108,14 @@ fun GuidanceScreen(
             )
         }
     )
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by
+        viewModel.state
+            .collectAsStateWithLifecycle()
+
+    val refreshing by
+        viewModel.refreshing
+            .collectAsStateWithLifecycle()
+
     val workflowSnapshot by
         viewModel.workflowSnapshot
             .collectAsStateWithLifecycle()
@@ -303,11 +310,18 @@ fun GuidanceScreen(
             }
 
     PullToRefreshBox(
-        isRefreshing =
-            state is GuidanceUiState.Loading,
+        isRefreshing = refreshing,
         onRefresh = {
-            if (!fixturePreview) {
-                viewModel.load()
+            if (
+                !fixturePreview &&
+                cancelState !is
+                    CancelInquiryUiState.Cancelling &&
+                consultationState !is
+                    ConsultationRequestUiState.Requesting
+            ) {
+                // Pull-to-refresh는 기존 화면을 유지한 채
+                // Backend snapshot만 다시 확인한다.
+                viewModel.refresh()
             }
         },
     ) {
@@ -342,162 +356,6 @@ fun GuidanceScreen(
                 }
             }
 
-
-            val cancelAction = effectiveAllowedActions.firstOrNull {
-                it.normalizedCode ==
-                    InquiryActionLabels.CANCEL_INQUIRY
-            }
-
-            if (
-                cancelAction != null &&
-                cancelState !is CancelInquiryUiState.Success
-            ) {
-                SectionCard(
-                    "문의 관리"
-                ) {
-                    Text(
-                        text =
-                            "현재 문의를 더 이상 진행하지 않거나 "
-                                + "내용을 처음부터 다시 작성하고 싶다면 "
-                                + "문의를 취소할 수 있어요.",
-                        style =
-                            MaterialTheme.typography
-                                .bodySmall,
-                        color =
-                            MaterialTheme.colorScheme
-                                .onSurfaceVariant,
-                    )
-
-                    // 문의 취소는 자주 사용하는 Primary Action은 아니지만
-                    // 사용자가 작성 내용을 처음부터 다시 시작하고 싶을 때
-                    // 쉽게 찾을 수 있어야 한다.
-                    //
-                    // 기존의 작은 우측 TextButton 대신
-                    // 전체 너비의 destructive action으로 표시한다.
-                    // 실제 취소는 아래 AlertDialog에서 한 번 더 확인한다.
-                    TextButton(
-                        onClick = {
-                            showCancelDialog = true
-                        },
-                        enabled =
-                            effectiveStateVersion != null &&
-                                cancelState !is
-                                    CancelInquiryUiState.Cancelling,
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(
-                                    RoundedCornerShape(
-                                        14.dp
-                                    )
-                                )
-                                .background(
-                                    MaterialTheme
-                                        .colorScheme
-                                        .errorContainer
-                                        .copy(
-                                            alpha = 0.72f
-                                        )
-                                )
-                                .testTag(
-                                    "cancelInquiryAction"
-                                ),
-                    ) {
-                        Text(
-                            text =
-                                "현재 문의 취소하기",
-                            style =
-                                MaterialTheme.typography
-                                    .bodyMedium,
-                            color =
-                                MaterialTheme
-                                    .colorScheme
-                                    .error,
-                            fontWeight =
-                                FontWeight.Bold,
-                        )
-                    }
-                }
-            }
-
-            when (val currentCancel = cancelState) {
-                CancelInquiryUiState.Idle -> Unit
-
-                CancelInquiryUiState.Cancelling ->
-                    CustomerSubmittingState(
-                        message =
-                            "문의 취소를 처리하고 있어요.",
-                    )
-
-                is CancelInquiryUiState.Success ->
-                    SectionCard("문의 취소 완료") {
-                        LiquidGlassPill("취소됨")
-                        Text(
-                            "문의가 취소됐어요.",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        if (currentCancel.idempotentReplay) {
-                            Text(
-                                "문의 취소가 이미 처리되어 있어요.",
-                                style =
-                                    MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                        LiquidGlassButton(
-                            text = "홈으로",
-                            onClick = onDone,
-                            accent = true,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-
-                is CancelInquiryUiState.Conflict ->
-                    SectionCard("문의 내용이 변경됐어요") {
-                        Text("문의 내용이 변경됐어요. 최신 상태를 확인해주세요.")
-                        currentCancel.currentStatus?.let { status ->
-                            Text(
-                                customerInquiryStatusText(status),
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                        if (currentCancel.canRetry) {
-                            LiquidGlassButton(
-                                text = "문의 취소 다시 시도",
-                                onClick =
-                                    viewModel::retryCancelAfterConflict,
-                                accent = false,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .testTag(
-                                        "retryCancelAfterConflict"
-                                    ),
-                            )
-                        } else {
-                            Text(
-                                "지금은 문의를 취소할 수 없어요.",
-                                style =
-                                    MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                    }
-
-                is CancelInquiryUiState.Error ->
-                    ErrorCard(
-                        "문의 취소를 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
-                        if (currentCancel.retryable) {
-                            {
-                                viewModel.cancelInquiry(
-                                    stateVersion =
-                                        effectiveStateVersion,
-                                )
-                            }
-                        } else {
-                            null
-                        },
-                    )
-            }
 
             when (val current = state) {
                 GuidanceUiState.Loading ->
@@ -847,6 +705,167 @@ fun GuidanceScreen(
                 )
             }
 
+            // 문의 취소는 Primary workflow보다 뒤에 배치한다.
+            // 고객이 현재 상태와 다음 행동을 먼저 확인한 뒤
+            // 필요할 때만 destructive action을 선택하게 한다.
+            val cancelAction = effectiveAllowedActions.firstOrNull {
+                it.normalizedCode ==
+                    InquiryActionLabels.CANCEL_INQUIRY
+            }
+
+            if (
+                cancelAction != null &&
+                cancelState !is CancelInquiryUiState.Success
+            ) {
+                SectionCard(
+                    "문의 관리"
+                ) {
+                    Text(
+                        text =
+                            "현재 문의를 더 이상 진행하지 않거나 "
+                                + "내용을 처음부터 다시 작성하고 싶다면 "
+                                + "문의를 취소할 수 있어요.",
+                        style =
+                            MaterialTheme.typography
+                                .bodySmall,
+                        color =
+                            MaterialTheme.colorScheme
+                                .onSurfaceVariant,
+                    )
+
+                    // 문의 취소는 자주 사용하는 Primary Action은 아니지만
+                    // 사용자가 작성 내용을 처음부터 다시 시작하고 싶을 때
+                    // 쉽게 찾을 수 있어야 한다.
+                    //
+                    // 기존의 작은 우측 TextButton 대신
+                    // 전체 너비의 destructive action으로 표시한다.
+                    // 실제 취소는 아래 AlertDialog에서 한 번 더 확인한다.
+                    TextButton(
+                        onClick = {
+                            showCancelDialog = true
+                        },
+                        enabled =
+                            effectiveStateVersion != null &&
+                                cancelState !is
+                                    CancelInquiryUiState.Cancelling,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(
+                                    RoundedCornerShape(
+                                        14.dp
+                                    )
+                                )
+                                .background(
+                                    MaterialTheme
+                                        .colorScheme
+                                        .errorContainer
+                                        .copy(
+                                            alpha = 0.72f
+                                        )
+                                )
+                                .testTag(
+                                    "cancelInquiryAction"
+                                ),
+                    ) {
+                        Text(
+                            text =
+                                "현재 문의 취소하기",
+                            style =
+                                MaterialTheme.typography
+                                    .bodyMedium,
+                            color =
+                                MaterialTheme
+                                    .colorScheme
+                                    .error,
+                            fontWeight =
+                                FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+
+            when (val currentCancel = cancelState) {
+                CancelInquiryUiState.Idle -> Unit
+
+                CancelInquiryUiState.Cancelling ->
+                    CustomerSubmittingState(
+                        message =
+                            "문의 취소를 처리하고 있어요.",
+                    )
+
+                is CancelInquiryUiState.Success ->
+                    SectionCard("문의 취소 완료") {
+                        LiquidGlassPill("취소됨")
+                        Text(
+                            "문의가 취소됐어요.",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        if (currentCancel.idempotentReplay) {
+                            Text(
+                                "문의 취소가 이미 처리되어 있어요.",
+                                style =
+                                    MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        LiquidGlassButton(
+                            text = "홈으로",
+                            onClick = onDone,
+                            accent = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
+                is CancelInquiryUiState.Conflict ->
+                    SectionCard("문의 내용이 변경됐어요") {
+                        Text("문의 내용이 변경됐어요. 최신 상태를 확인해주세요.")
+                        currentCancel.currentStatus?.let { status ->
+                            Text(
+                                customerInquiryStatusText(status),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        if (currentCancel.canRetry) {
+                            LiquidGlassButton(
+                                text = "문의 취소 다시 시도",
+                                onClick =
+                                    viewModel::retryCancelAfterConflict,
+                                accent = false,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag(
+                                        "retryCancelAfterConflict"
+                                    ),
+                            )
+                        } else {
+                            Text(
+                                "지금은 문의를 취소할 수 없어요.",
+                                style =
+                                    MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+
+                is CancelInquiryUiState.Error ->
+                    ErrorCard(
+                        "문의 취소를 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
+                        if (currentCancel.retryable) {
+                            {
+                                viewModel.cancelInquiry(
+                                    stateVersion =
+                                        effectiveStateVersion,
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                    )
+            }
+
+
+
             if (showCancelDialog) {
                 val action = effectiveAllowedActions.firstOrNull {
                     it.normalizedCode ==
@@ -930,7 +949,7 @@ private fun CustomerProgressOverview(
 
         Text(
             if (consultationRequestSucceeded) {
-                "상담 요청이 접수됐어요"
+                "상담 연결 상태"
             } else {
                 customerInquiryProgressHeadline(
                     statusCode
@@ -942,7 +961,7 @@ private fun CustomerProgressOverview(
 
         Text(
             if (consultationRequestSucceeded) {
-                "상담사 배정을 기다리고 있어요. " +
+                "상담 요청이 접수되어 상담사 배정을 기다리고 있어요. " +
                     "진행 상태는 홈과 현재 문의에서 " +
                     "다시 확인할 수 있어요."
             } else {

@@ -91,13 +91,16 @@ fun CarePrecheckScreen(
     }
 
     PullToRefreshBox(
-        isRefreshing = state.loading,
+        isRefreshing = state.refreshing,
         onRefresh = {
             if (
+                !state.loading &&
                 !state.saving &&
                 !state.submitting
             ) {
-                viewModel.retry()
+                // 작성 중인 사전 점검 내용을 그대로 보여주고
+                // 저장된 session의 최신 상태만 다시 확인한다.
+                viewModel.refresh()
             }
         },
     ) {
