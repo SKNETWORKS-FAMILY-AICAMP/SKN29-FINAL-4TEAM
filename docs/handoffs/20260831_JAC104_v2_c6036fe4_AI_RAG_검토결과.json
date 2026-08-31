@@ -1,0 +1,245 @@
+{
+  "artifact_type": "JAC104_RECOVERY_CONTRACT_REVIEW_AND_EXECUTION_BLOCKER",
+  "review_date": "2026-08-31",
+  "contract_checked_at": "2026-08-31T15:01:53.6656002+09:00",
+  "reviewer": "이동윤 AI/RAG",
+  "full_recovery": "HOLD",
+  "backend_owner_preflight": "PASS_REPORTED_BY_JIYONG",
+  "ai_contract_review": "PASS_FOR_REPORTED_STRUCTURE",
+  "actual_rds_requeried_by_reviewer": false,
+  "input_document": {
+    "filename": "20260831_최지용_to_이동윤_JAC104_v2_Backend_DB_선행검증결과_및_AI_RAG_확인요청.md",
+    "sha256": "101d4cca458bcb0372ebcaf775b09fd9021ad5df374ce3e60d29eb3895f4af08",
+    "owner_reported_at": "2026-08-31T14:39:00+09:00"
+  },
+  "source": {
+    "candidate_sha": "c6036fe413ed94aa8ef2dd621941eea5e5d4f68d",
+    "remote_main_observed_sha": "c6036fe413ed94aa8ef2dd621941eea5e5d4f68d",
+    "remote_main_check": "git ls-remote --heads origin main",
+    "remote_main_check_exit_code": 0,
+    "local_branch": "dongyoon",
+    "local_head": "555c0d9b3f96bc4359bf4790021536369efd25d0",
+    "initial_worktree_clean": true,
+    "recovery_commit": "45d17359f96bf9c369ea6f03d96df27c08ad465b",
+    "recovery_commit_ancestry_exit_code": 0,
+    "relevant_source_diff_exit_code": 0,
+    "compared_paths": [
+      "ai",
+      "data/config/rag/three_model_evaluation_cases.json",
+      "data/processed/structured/rag/expansion/rag_child_chunks_3model_v1.jsonl",
+      "scripts/deployment/production/validate_ai_readonly_runtime.py"
+    ],
+    "checkout_changed": false
+  },
+  "candidate": {
+    "release": "v0.3.6",
+    "ai_image_digest": "sha256:ba889b787808cb72efc564d6688cb05ef7278778d5743e7df4fce8ec5d243976",
+    "digest_source": "OWNER_REPORT",
+    "immutable_registry_reference_provided": false,
+    "image_digest_independently_inspected": false,
+    "runtime_profile": "jac104_v2_recovery",
+    "direct_gate_transport": "direct",
+    "intended_post_deployment_transport": "mcp",
+    "handoff_backend_enabled": false
+  },
+  "code_contract": {
+    "checked_at": "2026-08-31T15:01:53.6656002+09:00",
+    "candidate_sha": "c6036fe413ed94aa8ef2dd621941eea5e5d4f68d",
+    "index_version": "2.0.0",
+    "manifest_count": 53,
+    "identity_count": 53,
+    "unique_child_count": 53,
+    "model_counts": [
+      {
+        "model_code": "WPUIAC425SNW",
+        "count": 19
+      },
+      {
+        "model_code": "WPUIAC606SNW",
+        "count": 19
+      },
+      {
+        "model_code": "WPUJAC104DWH",
+        "count": 15
+      }
+    ],
+    "model_name": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimension": 1024,
+    "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+    "manifest_identity_chunk_set_match": true,
+    "required_probe_ids_present": true,
+    "source_hash_mismatch_count": 0,
+    "unverified_identity_count": 0
+  },
+  "reported_rds": {
+    "source": "OWNER_REPORT_NOT_REVIEWER_DB_QUERY",
+    "postgresql_version": "16.14",
+    "pgvector_version": "0.8.2",
+    "readonly_role": "PASS_REPORTED",
+    "view_rows": 53,
+    "child_rows": 53,
+    "search_candidate_rows": 53,
+    "model_rows": {
+      "WPUJAC104DWH": 15,
+      "WPUIAC425SNW": 19,
+      "WPUIAC606SNW": 19
+    },
+    "canonical_child_set": "PASS_REPORTED",
+    "canonical_identity_hash": "PASS_REPORTED",
+    "active_verified_crosswalk_rows": 53,
+    "jac104_reference_verifier": "PASS_REPORTED",
+    "additional_db_modification_requested": false
+  },
+  "compatibility_findings": {
+    "reported_pgvector_version_allowed": true,
+    "preflight_supported_pgvector_versions": [
+      "0.8.2",
+      "0.8.6"
+    ],
+    "present_child_record_type_allowed": true,
+    "full_53_row_index_retained": true,
+    "only_jac104_publicly_allowed_by_recovery_profile": true,
+    "runtime_image_contains_recovery_cli_by_dockerfile": true,
+    "runtime_image_contains_deployment_readonly_preflight_script_by_dockerfile": false,
+    "readonly_preflight_exact_source_mount_required_for_runtime_image": true,
+    "recovery_cli_accepts_mcp_transport": false,
+    "separate_mcp_execution_required": true
+  },
+  "targeted_unit_execution": {
+    "status": "PASS",
+    "python_version": "3.13.13",
+    "executed_head": "555c0d9b3f96bc4359bf4790021536369efd25d0",
+    "command": ".\\ai\\.venv\\Scripts\\python.exe -m pytest ai/tests/unit/test_rag_runtime_profile.py ai/tests/unit/test_jac104_v2_recovery.py ai/tests/unit/test_jac104_v2_recovery_preflight.py -q --tb=short",
+    "exit_code": 0,
+    "passed": 103,
+    "duration_seconds": 2.04,
+    "source_matches_candidate_for_compared_paths": true,
+    "actual_rds_or_image_evidence": false
+  },
+  "deployment_metadata_independently_observed": {
+    "run_id": 33359719535,
+    "run_url": "https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/33359719535",
+    "run_sha": "c6036fe413ed94aa8ef2dd621941eea5e5d4f68d",
+    "release_tag": "v0.3.6",
+    "conclusion": "failure",
+    "build_publish": {
+      "job_id": 99389385644,
+      "conclusion": "success",
+      "ai_build_push_step": "success",
+      "job_url": "https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/33359719535/job/99389385644"
+    },
+    "ec2_deployment": {
+      "job_id": 99390561352,
+      "conclusion": "failure",
+      "failed_step": "Deploy the immutable release on EC2",
+      "https_smoke": "skipped",
+      "automatic_rollback_step": "skipped",
+      "job_url": "https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/actions/runs/33359719535/job/99390561352"
+    },
+    "ipc_timeout_detail_source": "OWNER_REPORT",
+    "ec2_ssm_root_cause_independently_diagnosed": false
+  },
+  "active_aws_state": {
+    "source": "OWNER_REPORT_NOT_REVIEWER_EC2_QUERY",
+    "release": "v0.3.5",
+    "sha": "2fffbaeb35d6686ab36e0c4ef631e50db4197a59",
+    "runtime_profile": "mvp",
+    "pipeline_runtime": "multi_agent",
+    "retrieval_transport": "mcp",
+    "handoff_backend_enabled": false,
+    "health": "backend/ai/web running, healthy, restart_0 as reported"
+  },
+  "execution_environment": {
+    "approved_rds_execution_route_provided": false,
+    "process_ai_vector_dsn_present": false,
+    "aws_cli_on_path": false,
+    "aws_default_cli_binary_present": false,
+    "aws_profile_or_access_key_environment_present": false,
+    "aws_default_config_or_credentials_files_present": false,
+    "ssh_config_file_present": false,
+    "known_project_candidate_image_found_locally": false,
+    "docker_inventory_query_succeeded_after_sandbox_escalation": true,
+    "local_db_used_as_rds_substitute": false,
+    "blocker": "APPROVED_CANDIDATE_IMAGE_RDS_RUNNER_NOT_CONNECTED"
+  },
+  "provider_free_direct_gate": {
+    "execution_status": "NOT_RUN",
+    "exit_code": null,
+    "rds_identity_check": "NOT_RUN",
+    "readonly_preflight_before": "NOT_RUN",
+    "readonly_preflight_after": "NOT_RUN",
+    "probes": [
+      {
+        "probe_id": "COLD_TEMPERATURE",
+        "expected_any_child_ids": [
+          "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+          "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001"
+        ],
+        "execution_status": "NOT_RUN",
+        "hit_count": null,
+        "expected_evidence_hit": null
+      },
+      {
+        "probe_id": "LOW_FLOW",
+        "expected_any_child_ids": [
+          "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+        ],
+        "execution_status": "NOT_RUN",
+        "hit_count": null,
+        "expected_evidence_hit": null
+      },
+      {
+        "probe_id": "TASTE_ODOR",
+        "expected_any_child_ids": [
+          "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+        ],
+        "execution_status": "NOT_RUN",
+        "hit_count": null,
+        "expected_evidence_hit": null
+      }
+    ],
+    "product_blocks": [
+      {
+        "model_code": "WPUIAC425SNW",
+        "execution_status": "NOT_RUN",
+        "expected_path": "POLICY_BLOCK_UNSUPPORTED_MODEL"
+      },
+      {
+        "model_code": "WPUIAC606SNW",
+        "execution_status": "NOT_RUN",
+        "expected_path": "POLICY_BLOCK_UNSUPPORTED_MODEL"
+      }
+    ],
+    "guidance_provider_calls": null,
+    "database_writes": null
+  },
+  "remaining_gates": {
+    "jac104_15_row_data_signoff": "NOT_PROVIDED",
+    "pm_deployment_approval": "NOT_PROVIDED",
+    "approved_new_image_deployment": "NOT_RUN",
+    "post_deployment_mcp_revalidation": "NOT_RUN",
+    "final_release_image_profile_health_evidence": "NOT_COLLECTED",
+    "backend_synthetic_inquiry_and_provider_canary": "HOLD",
+    "three_model_public_activation": "HOLD"
+  },
+  "requested_inputs": [
+    "An approved one-off runner or CI/SSM verification path that can reach the target RDS without changing the production service.",
+    "An immutable registry/repository image reference using the recorded candidate digest and approved pull access.",
+    "A protected readonly RDS environment/secret reference and certificate/cache/resource setup, without sending credential values in chat.",
+    "Exact candidate-SHA readonly preflight script mounted read-only when using the production runtime image.",
+    "Independent JAC104 15-row Data signoff and separate PM release/rollback approval before deployment."
+  ],
+  "actions_not_taken": [
+    "code edits",
+    "DB/DDL/import/crosswalk changes",
+    "production environment changes",
+    "EC2/SSM restart",
+    "deployment or rollback",
+    "Provider calls",
+    "new inquiries",
+    "external messages",
+    "git commit or push"
+  ],
+  "evidence_limit": "Contract compatibility and local units do not constitute candidate-image RDS retrieval, post-deployment MCP, or full recovery PASS."
+}
