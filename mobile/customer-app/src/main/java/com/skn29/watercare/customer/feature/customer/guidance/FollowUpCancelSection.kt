@@ -19,6 +19,7 @@ import com.skn29.watercare.core.model.InquiryLabels
 import com.skn29.watercare.core.ui.components.ErrorCard
 import com.skn29.watercare.core.ui.components.LiquidGlassButton
 import com.skn29.watercare.core.ui.components.LiquidGlassPill
+import com.skn29.watercare.customer.feature.shared.CustomerSubmittingState
 import com.skn29.watercare.customer.feature.shared.SectionCard
 import com.skn29.watercare.customer.feature.shared.WorkflowActionButton
 
@@ -61,7 +62,21 @@ internal fun FollowUpCancelSection(
         cancelAction != null &&
         cancelState is CancelInquiryUiState.Idle
     ) {
-        SectionCard("문의 취소") {
+        SectionCard("문의 관리") {
+            Text(
+                "작성 내용을 처음부터 다시 시작하고 싶다면 "
+                    + "현재 문의를 취소할 수 있어요.",
+                style =
+                    MaterialTheme.typography
+                        .bodySmall,
+                color =
+                    MaterialTheme.colorScheme
+                        .onSurfaceVariant,
+            )
+
+            // 취소는 현재 Inquiry를 종료하는 행동이므로
+            // 잘 보이도록 표시하되 AlertDialog에서
+            // 다시 한 번 확인해 실수를 방지한다.
             WorkflowActionButton(
                 action = cancelAction,
                 enabled = true,
@@ -71,7 +86,7 @@ internal fun FollowUpCancelSection(
             )
 
             Text(
-                "진행 중인 문의는 상황에 따라 취소할 수 있어요.",
+                "취소 후에는 새로운 문의를 처음부터 작성할 수 있어요.",
                 style =
                     MaterialTheme.typography
                         .bodySmall,
@@ -87,7 +102,10 @@ internal fun FollowUpCancelSection(
             Unit
 
         CancelInquiryUiState.Cancelling ->
-            Unit
+            CustomerSubmittingState(
+                message =
+                    "문의 취소를 처리하고 있어요.",
+            )
 
         is CancelInquiryUiState.Success ->
             SectionCard("문의 취소 완료") {
@@ -191,12 +209,14 @@ internal fun FollowUpCancelSection(
                 "문의 취소를 처리하지 못했어요. 잠시 후 다시 시도해주세요.",
                 if (
                     current.retryable &&
-                    cancelAllowed &&
-                    snapshot != null
+                    cancelAllowed
                 ) {
                     {
+                        val currentSnapshot =
+                            requireNotNull(snapshot)
+
                         onRetryFailure(
-                            snapshot.stateVersion
+                            currentSnapshot.stateVersion
                         )
                     }
                 } else {
@@ -208,10 +228,12 @@ internal fun FollowUpCancelSection(
     if (
         showDialog &&
         cancelAllowed &&
-        snapshot != null &&
         cancelAction != null &&
         cancelState is CancelInquiryUiState.Idle
     ) {
+        val currentSnapshot =
+            requireNotNull(snapshot)
+
         AlertDialog(
             onDismissRequest = {
                 showDialog = false
@@ -237,7 +259,7 @@ internal fun FollowUpCancelSection(
                         showDialog = false
 
                         onConfirmCancel(
-                            snapshot.stateVersion
+                            currentSnapshot.stateVersion
                         )
                     },
                     modifier =
