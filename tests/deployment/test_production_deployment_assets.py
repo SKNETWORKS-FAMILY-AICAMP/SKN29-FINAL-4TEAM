@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import os
 import re
+import shlex
+import shutil
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -37,6 +41,55 @@ WORKER_UNIT = (
 
 
 class ProductionDeploymentAssetTests(unittest.TestCase):
+    def _rollback_health_command(self) -> re.Match[str]:
+        text = ROLLBACK.read_text(encoding="utf-8")
+        match = re.search(r"(?m)^curl\b.*?(?=\n\ncurrent_target=)", text, re.DOTALL)
+        self.assertIsNotNone(match)
+        return match
+
+    def test_rollback_health_uses_public_host_before_switching_release(self) -> None:
+        text = ROLLBACK.read_text(encoding="utf-8")
+        match = self._rollback_health_command()
+        command = shlex.split(match.group().replace("\\\n", " "))
+        self.assertIn("--fail", command)
+        self.assertIn("--max-time", command)
+        self.assertIn("--header", command)
+        self.assertEqual(command[command.index("--header") + 1], "Host: waterbridge.site")
+        self.assertIn("http://127.0.0.1:18080/health", command)
+        self.assertIn("set -euo pipefail", text)
+        self.assertLess(match.start(), text.index('ln -sfn "$previous_target" "${base_dir}/current.next"'))
+
+    def test_rollback_health_command_stops_on_http_failure(self) -> None:
+        bash = shutil.which("bash")
+        if os.name == "nt":
+            # Do not accidentally launch the Windows WSL shim.
+            git = shutil.which("git")
+            candidate = Path(git).resolve().parents[1] / "bin/bash.exe" if git else None
+            bash = str(candidate) if candidate and candidate.is_file() else None
+        if not bash:
+            self.skipTest("Bash is required for the isolated shell regression")
+        command = self._rollback_health_command().group()
+        for status in (0, 22):
+            with self.subTest(curl_exit=status):
+                script = (
+                    "set -euo pipefail\n"
+                    "curl() {\n"
+                    '  printf \'%s\\n\' "$@" >&2\n'
+                    f"  return {status}\n"
+                    "}\n"
+                    f"{command}\n"
+                    "printf 'HEALTH_PROBE_COMPLETED\\n'\n"
+                )
+                # Only the extracted health command runs, with curl replaced by
+                # a shell function. No HTTP, Docker, systemd or release writes.
+                result = subprocess.run(
+                    [bash, "--noprofile", "--norc", "-c", script],
+                    cwd=ROOT, capture_output=True, text=True, timeout=10,
+                )
+                self.assertEqual(status, result.returncode, result.stderr)
+                self.assertIn("Host: waterbridge.site", result.stderr)
+                self.assertEqual(status == 0, "HEALTH_PROBE_COMPLETED" in result.stdout)
+
     def test_compose_has_exactly_four_runtime_services(self) -> None:
         text = COMPOSE.read_text(encoding="utf-8")
         service_block = text.split("services:\n", 1)[1].split("\nnetworks:\n", 1)[0]

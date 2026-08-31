@@ -2,11 +2,18 @@
 
 from __future__ import annotations
 
+import json
 import re
-import uuid
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
+
+from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema.exceptions import SchemaError
+from referencing import Registry
+from referencing.exceptions import Unresolvable
 
 from .config import PipelineConfig
 from .e2e_validation import validate_representative_e2e
@@ -806,81 +813,71 @@ def schema_usage_codes(data_root: Path) -> dict[str, list[str]]:
     return result
 
 
-def _type_matches(value: Any, expected: str) -> bool:
-    return {
-        "object": isinstance(value, dict),
-        "array": isinstance(value, list),
-        "string": isinstance(value, str),
-        "integer": isinstance(value, int) and not isinstance(value, bool),
-        "number": isinstance(value, (int, float)) and not isinstance(value, bool),
-        "boolean": isinstance(value, bool),
-        "null": value is None,
-    }.get(expected, True)
+_SCHEMA_FORMATS = FormatChecker()
 
 
-def _format_valid(value: str, format_name: str) -> bool:
-    try:
-        if format_name == "uuid":
-            uuid.UUID(value)
-        elif format_name == "date-time":
-            datetime.fromisoformat(value.replace("Z", "+00:00"))
-        elif format_name == "uri":
-            return bool(re.match(r"^https?://", value))
-    except (ValueError, TypeError):
+@_SCHEMA_FORMATS.checks("uri", raises=ValueError)
+def _valid_schema_uri(value: Any) -> bool:
+    # Preserve the pipeline's HTTP(S)-source policy without optional URI packages.
+    if not isinstance(value, str):
+        return True
+    if re.search(r"\s", value):
         return False
-    return True
+    parsed = urlsplit(value)
+    return (
+        parsed.scheme in {"http", "https"}
+        and bool(parsed.hostname)
+        and (parsed.port is None or 0 <= parsed.port <= 65535)
+    )
+
+
+@_SCHEMA_FORMATS.checks("date-time", raises=ValueError)
+def _valid_schema_datetime(value: Any) -> bool:
+    # jsonschema's date-time checker otherwise needs an optional dependency.
+    # Keep validation active in the locked environment without choosing one offset.
+    if not isinstance(value, str):
+        return True
+    if re.fullmatch(
+        r"[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt][0-9]{2}:[0-9]{2}:[0-9]{2}"
+        r"(?:\.[0-9]+)?(?:[Zz]|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])",
+        value,
+    ) is None:
+        return False
+    return datetime.fromisoformat(value.upper().replace("Z", "+00:00")).tzinfo is not None
+
+
+@lru_cache(maxsize=128)
+def _schema_validator(serialized_schema: bytes) -> Draft202012Validator:
+    schema = json.loads(serialized_schema)
+    Draft202012Validator.check_schema(schema)
+    # An explicit empty registry resolves in-document refs but never downloads
+    # external schemas. Cache by content so caller mutations cannot reuse old rules.
+    return Draft202012Validator(
+        schema, format_checker=_SCHEMA_FORMATS, registry=Registry(),
+    )
 
 
 def validate_schema(
     value: Any,
-    schema: dict[str, Any],
+    schema: dict[str, Any] | bool,
     *,
     path: str = "$",
 ) -> list[str]:
-    errors: list[str] = []
-    expected = schema.get("type")
-    types = expected if isinstance(expected, list) else [expected] if expected else []
-    if types and not any(_type_matches(value, item) for item in types):
-        return [f"{path}: expected {types}, got {type(value).__name__}"]
-    if "const" in schema and value != schema["const"]:
-        errors.append(f"{path}: const mismatch")
-    if "enum" in schema and value not in schema["enum"]:
-        errors.append(f"{path}: value is not in enum")
-    if isinstance(value, str):
-        if "pattern" in schema and not re.search(schema["pattern"], value):
-            errors.append(f"{path}: pattern mismatch")
-        if len(value) < schema.get("minLength", 0):
-            errors.append(f"{path}: shorter than minLength")
-        if schema.get("format") and not _format_valid(value, schema["format"]):
-            errors.append(f"{path}: invalid {schema['format']}")
-    if isinstance(value, list):
-        if len(value) < schema.get("minItems", 0):
-            errors.append(f"{path}: fewer than minItems")
-        if schema.get("uniqueItems"):
-            markers = [json_bytes(item) for item in value]
-            if len(markers) != len(set(markers)):
-                errors.append(f"{path}: duplicate array items")
-        item_schema = schema.get("items", {})
-        for index, item in enumerate(value):
-            errors.extend(validate_schema(item, item_schema, path=f"{path}[{index}]"))
-    if isinstance(value, dict):
-        if len(value) < schema.get("minProperties", 0):
-            errors.append(f"{path}: fewer than minProperties")
-        required = schema.get("required", [])
-        for key in required:
-            if key not in value:
-                errors.append(f"{path}.{key}: required")
-        properties = schema.get("properties", {})
-        if schema.get("additionalProperties") is False:
-            for key in value:
-                if key not in properties:
-                    errors.append(f"{path}.{key}: additional property")
-        for key, item in value.items():
-            if key in properties:
-                errors.extend(
-                    validate_schema(item, properties[key], path=f"{path}.{key}")
-                )
-    return errors
+    """Validate Draft 2020-12 without including rejected values in QA reports."""
+    try:
+        validator = _schema_validator(json_bytes(schema))
+        errors = []
+        for error in validator.iter_errors(value):
+            location = path + "".join(
+                f"[{part}]" if isinstance(part, int) else f".{part}"
+                for part in error.absolute_path
+            )
+            errors.append(f"{location}: {error.validator or 'false schema'} constraint violated")
+        return sorted(errors)
+    except SchemaError:
+        return [f"{path}: invalid schema"]
+    except Unresolvable:
+        return [f"{path}: unresolved schema reference (external retrieval disabled)"]
 
 
 def _load_dataset(path: Path) -> Any:
