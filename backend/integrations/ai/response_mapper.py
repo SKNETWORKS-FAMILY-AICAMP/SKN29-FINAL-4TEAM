@@ -164,10 +164,17 @@ def map_success_response(
         event_candidate = "DANGER_DETECTED"
     elif is_no_evidence:
         event_candidate = "NO_EVIDENCE"
+    elif payload["followup_questions"]:
+        # A normal, non-danger consultation recommendation may still need
+        # customer clarification first.  Keep the Inquiry in
+        # QUESTIONNAIRE_IN_PROGRESS so the persisted questions remain
+        # actionable; a later AI run can request consultation after answers.
+        event_candidate = None
     elif safety["requires_consultation"]:
         # Any contract-valid, non-danger result that explicitly requests
-        # consultation must leave QUESTIONNAIRE_IN_PROGRESS, including
-        # fail-closed FALLBACK envelopes such as OUTPUT_SCHEMA_INVALID.
+        # consultation and has no customer question left must leave
+        # QUESTIONNAIRE_IN_PROGRESS, including fail-closed FALLBACK
+        # envelopes such as OUTPUT_SCHEMA_INVALID.
         event_candidate = "AI_CONSULTATION_REQUIRED"
     elif (
         status == "SUCCEEDED"

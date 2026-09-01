@@ -225,6 +225,48 @@ def test_success_mapper_allows_missing_fields_when_no_followup_is_needed():
     assert result.event_candidate == "SAFE_GUIDANCE_READY"
 
 
+def test_success_mapper_keeps_consultation_recommendation_in_questionnaire_when_followup_exists():
+    request = request_payload()
+    response = success_payload(request)
+    response["missing_fields"] = [
+        {
+            "field_name": "occurrence_condition",
+            "importance": "medium",
+            "reason": "증상이 시작된 상황을 확인해야 합니다.",
+        }
+    ]
+    response["followup_questions"] = [
+        {
+            "question_id": "Q_OCCURRENCE_CONDITION",
+            "question_text": "어떤 상황 이후 증상이 시작됐나요?",
+            "target_field": "occurrence_condition",
+            "options": ["LONG_ABSENCE", "LONG_NON_USE", "OTHER"],
+        }
+    ]
+    response["safety_assessment"].update(
+        {
+            "risk_level": "caution",
+            "priority": "consultation_recommended",
+            "requires_consultation": True,
+            "matched_safety_rule_ids": [],
+            "detected_risks": ["추가 확인 필요"],
+            "safety_reason": "답변 확인 후 상담 여부를 판단합니다.",
+        }
+    )
+    response["usage_guidance"].update(
+        {
+            "guidance_status": "PENDING_CONSULTATION",
+            "message": "추가 확인이 필요합니다.",
+            "restricted_functions": [],
+            "next_actions": ["추가 질문에 답변해 주세요."],
+        }
+    )
+
+    result = map_success_response(response, expected_request=request)
+
+    assert result.event_candidate is None
+
+
 def test_success_mapper_accepts_approved_hot_water_heater_partial_stop():
     request = request_payload()
     response = danger_payload(request)

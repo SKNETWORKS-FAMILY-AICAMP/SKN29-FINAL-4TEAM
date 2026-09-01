@@ -450,6 +450,62 @@ def test_caution_requiring_consultation_skips_human_review_and_routes_directly()
     http_client.close()
 
 
+def test_caution_consultation_with_followup_waits_for_customer_answer():
+    inquiry = create_inquiry(112)
+
+    def caution_with_followup(response: dict, _request: dict) -> dict:
+        response["missing_fields"] = [
+            {
+                "field_name": "occurrence_condition",
+                "reason": "The starting condition is needed.",
+                "importance": "medium",
+            }
+        ]
+        response["followup_questions"] = [
+            {
+                "question_id": "Q_OCCURRENCE_CONDITION",
+                "question_text": "What happened before the symptom began?",
+                "target_field": "occurrence_condition",
+                "options": ["LONG_ABSENCE", "LONG_NON_USE", "OTHER"],
+            }
+        ]
+        response["safety_assessment"].update(
+            {
+                "risk_level": "caution",
+                "priority": "consultation_recommended",
+                "requires_consultation": True,
+                "matched_safety_rule_ids": [],
+                "detected_risks": ["Additional confirmation required"],
+                "safety_reason": "Consultation may be needed after clarification.",
+            }
+        )
+        response["usage_guidance"].update(
+            {
+                "guidance_status": "PENDING_CONSULTATION",
+                "message": "Please answer the follow-up question.",
+                "restricted_functions": [],
+                "next_actions": ["Answer the follow-up question."],
+            }
+        )
+        return response
+
+    client, http_client, _calls = make_client(transform=caution_with_followup)
+
+    outcome = analyze(inquiry, client)
+
+    assert outcome.event_candidate is None
+    assert outcome.event_applied is None
+    assert outcome.pending_reason == "NO_STATE_EVENT_CANDIDATE"
+    assert outcome.saved_questions == 1
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert inquiry.state_version == 2
+    question = InquiryQA.objects.get(inquiry=inquiry)
+    assert question.question_code == "Q_OCCURRENCE_CONDITION"
+    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    http_client.close()
+
+
 def test_product_runtime_hold_applies_product_validation_failed_once():
     inquiry = create_inquiry(103)
     validator = ContractV4CompatValidator()
