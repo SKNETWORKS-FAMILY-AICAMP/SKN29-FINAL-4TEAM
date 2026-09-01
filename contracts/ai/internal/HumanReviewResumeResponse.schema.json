@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "HumanReviewResumeResponse.schema.json",
+  "x-contract-version": "1.0.0",
+  "title": "HumanReviewResumeResponse",
+  "description": "Prompt, Evidence 본문, Secret을 제외한 보호형 HumanReview 재개 실행 영수증.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "backend_review_id",
+    "inquiry_id",
+    "ai_request_id",
+    "source_inquiry_state_version",
+    "review_state_version",
+    "status",
+    "routing_reason",
+    "escalation_reason",
+    "context_agent_calls",
+    "provider_calls",
+    "context_synthesis_status",
+    "fallback_reason",
+    "handoff_created",
+    "handoff_delivery_scheduled",
+    "idempotent_replay"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": { "const": "1.0.0" },
+    "backend_review_id": { "type": "string", "format": "uuid" },
+    "inquiry_id": { "type": "string", "format": "uuid" },
+    "ai_request_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "source_inquiry_state_version": { "type": "integer", "minimum": 1 },
+    "review_state_version": { "const": 2 },
+    "status": { "const": "RESUMED" },
+    "routing_reason": { "const": "FAIL_CLOSED_CONSULTATION" },
+    "escalation_reason": { "const": "HUMAN_REVIEW_REJECTED" },
+    "context_agent_calls": { "const": 1 },
+    "provider_calls": { "type": "integer", "enum": [0, 1] },
+    "context_synthesis_status": {
+      "type": "string",
+      "enum": ["SUCCEEDED", "FALLBACK", "UNAVAILABLE"]
+    },
+    "fallback_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "CONFIGURATION",
+        "PROVIDER_TIMEOUT",
+        "PROVIDER_UNAVAILABLE",
+        "OUTPUT_INVALID",
+        "REFUSED",
+        "DANGER_BYPASS",
+        "INPUT_TOO_LARGE",
+        "INPUT_NOT_ELIGIBLE",
+        "SAFETY_NOT_VERIFIED",
+        "RUNTIME_PRODUCT_NOT_APPROVED",
+        null
+      ]
+    },
+    "handoff_created": { "const": true },
+    "handoff_delivery_scheduled": { "type": "boolean" },
+    "idempotent_replay": { "type": "boolean" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "context_synthesis_status": { "const": "SUCCEEDED" }
+        }
+      },
+      "then": {
+        "properties": {
+          "provider_calls": { "const": 1 },
+          "fallback_reason": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "context_synthesis_status": { "const": "FALLBACK" }
+        }
+      },
+      "then": {
+        "properties": {
+          "fallback_reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "context_synthesis_status": { "const": "UNAVAILABLE" }
+        }
+      },
+      "then": {
+        "properties": {
+          "provider_calls": { "const": 0 },
+          "fallback_reason": { "type": "null" }
+        }
+      }
+    }
+  ]
+}

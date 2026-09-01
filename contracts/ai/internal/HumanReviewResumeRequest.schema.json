@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "HumanReviewResumeRequest.schema.json",
+  "x-contract-version": "1.0.0",
+  "title": "HumanReviewResumeRequest",
+  "description": "Backend 원장에 확정된 공식 REJECT를 AI가 상태 재구성 방식으로 재개하는 보호형 내부 요청.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "backend_review_id",
+    "review_state_version",
+    "decision",
+    "decision_correlation_id",
+    "source_inquiry_state_version",
+    "current_inquiry_state_version",
+    "checkpoint_thread_id",
+    "analysis_result"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": { "const": "1.0.0" },
+    "backend_review_id": { "type": "string", "format": "uuid" },
+    "review_state_version": { "const": 2 },
+    "decision": { "const": "REJECT" },
+    "decision_correlation_id": { "type": "string", "format": "uuid" },
+    "source_inquiry_state_version": { "type": "integer", "minimum": 1 },
+    "current_inquiry_state_version": { "type": "integer", "minimum": 2 },
+    "checkpoint_thread_id": {
+      "type": "string",
+      "pattern": "^hitl-[0-9a-f]{32}$",
+      "maxLength": 100
+    },
+    "analysis_result": {
+      "allOf": [
+        { "$ref": "../responses/SymptomAnalysisResponse.schema.json" },
+        {
+          "type": "object",
+          "properties": {
+            "evidence_references": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "verification_status": { "const": "official_verified" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

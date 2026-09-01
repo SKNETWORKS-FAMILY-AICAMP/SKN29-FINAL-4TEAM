@@ -9,6 +9,9 @@ from apps.inquiries.models.followup_answer import FollowUpAnswer
 from apps.inquiries.models.guidance import Guidance
 from apps.inquiries.models.guidance_item import GuidanceItem
 from apps.inquiries.models.human_review import HumanReview
+from apps.inquiries.models.human_review_resume_dispatch import (
+    HumanReviewResumeDispatch,
+)
 from apps.inquiries.models.inquiry import Inquiry
 from apps.inquiries.models.inquiry_qa import InquiryQA
 from apps.inquiries.models.symptom_assessment import SymptomAssessment
@@ -23,6 +26,7 @@ __all__ = [
     "Guidance",
     "GuidanceItem",
     "HumanReview",
+    "HumanReviewResumeDispatch",
     "Inquiry",
     "InquiryQA",
     "SymptomAssessment",
