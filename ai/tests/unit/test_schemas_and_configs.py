@@ -6,9 +6,10 @@ import os
 import tomllib
 from pathlib import Path
 
-from jsonschema import Draft202012Validator, FormatChecker, RefResolver
+from jsonschema import Draft202012Validator, FormatChecker
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
+from referencing import Registry, Resource
 import yaml
 import pytest
 from ai.app.schemas.common import RiskLevel, UsageGuidanceStatus, TraceContext
@@ -26,6 +27,10 @@ from ai.app.schemas.common import ModelMetadata, ProcessingTrace, ValidationResu
 from ai.app.schemas.symptom import MissingField, FollowUpQuestion
 from ai.app.orchestration.pipeline_context import PipelineContext
 from ai.app.orchestration.handoff import ConsultationHandoffResult
+from ai.app.schemas.consultation_cause_ledger import (
+    AnalysisConsultationEnvelope,
+    ConsultationCauseLedger,
+)
 
 
 def test_pydantic_common_schemas():
@@ -109,10 +114,21 @@ def test_load_prohibited_expressions_config():
 
 
 def _validator(schema_path: Path) -> Draft202012Validator:
+    contract_root = Path("contracts/ai").resolve()
+    registry = Registry()
+    for path in sorted(contract_root.rglob("*.schema.json")):
+        resource_schema = json.loads(path.read_text(encoding="utf-8"))
+        resource_schema["$id"] = path.resolve().as_uri()
+        registry = registry.with_resource(
+            resource_schema["$id"],
+            Resource.from_contents(resource_schema),
+        )
+    schema_path = schema_path.resolve()
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    schema["$id"] = schema_path.as_uri()
     return Draft202012Validator(
         schema,
-        resolver=RefResolver(base_uri=schema_path.resolve().as_uri(), referrer=schema),
+        registry=registry,
         format_checker=FormatChecker(),
     )
 
@@ -298,11 +314,10 @@ def test_all_ai_contract_schemas_are_versioned_and_well_formed():
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
         Draft202012Validator.check_schema(schema)
         assert schema["$id"]
-        expected_version = (
-            "2.0.0"
-            if schema_path.parent.name == "handoff"
-            else "4.0.0"
-        )
+        expected_version = {
+            "handoff": "2.0.0",
+            "internal": "1.0.0",
+        }.get(schema_path.parent.name, "4.0.0")
         assert schema["x-contract-version"] == expected_version
 
 
@@ -402,6 +417,12 @@ def test_every_ai_contract_has_runtime_valid_and_extra_field_parity():
     handoff_example = json.loads(
         (contract_root / "examples/handoff/v1-request.json").read_text(encoding="utf-8")
     )
+    internal_example = json.loads(
+        (
+            contract_root
+            / "examples/internal/analysis-consultation-envelope-refrigerant.json"
+        ).read_text(encoding="utf-8")
+    )["response"]
     response = symptom_example["response"]
     matrix = {
         "common/AIErrorResponse.schema.json": (ApiErrorResponse, error_example["error_response"]),
@@ -425,6 +446,14 @@ def test_every_ai_contract_has_runtime_valid_and_extra_field_parity():
             "is_valid": True, "schema_valid": True, "grounding_valid": True, "safety_valid": True, "violations": [],
         }),
         "handoff/ConsultationHandoffRequest.schema.json": (ConsultationHandoffResult, handoff_example),
+        "internal/AnalysisConsultationEnvelope.schema.json": (
+            AnalysisConsultationEnvelope,
+            internal_example,
+        ),
+        "internal/ConsultationCauseLedger.schema.json": (
+            ConsultationCauseLedger,
+            internal_example["consultation_cause_ledger"],
+        ),
         "requests/ConsultationSummaryRequest.schema.json": (ConsultationSummaryRequest, consultation_example["request"]),
         "requests/SymptomAnalysisRequest.schema.json": (SymptomAnalysisApiRequest, symptom_example["request"]),
         "requests/TechnicianReportRequest.schema.json": (TechnicianReportRequest, technician_example["request"]),

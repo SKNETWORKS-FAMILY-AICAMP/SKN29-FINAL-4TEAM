@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ConsultationCauseLedger.schema.json",
+  "x-contract-version": "1.0.0",
+  "title": "ConsultationCauseLedger",
+  "description": "AI/Harness가 결정적으로 생성한 상담 필요 원인과 검증 증빙. Backend만 저장 권한을 가진다.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "ledger_id",
+    "inquiry_id",
+    "correlation_id",
+    "ai_request_id",
+    "state_version",
+    "model_code",
+    "producer",
+    "policy_version",
+    "execution_identity",
+    "analysis_result_sha256",
+    "causes",
+    "ledger_sha256"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": { "const": "1.0.0" },
+    "ledger_id": { "type": "string", "format": "uuid" },
+    "inquiry_id": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "ai_request_id": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "state_version": { "type": "integer", "minimum": 1 },
+    "model_code": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "producer": { "const": "AI_HARNESS" },
+    "policy_version": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "execution_identity": {
+      "type": "object",
+      "required": [
+        "execution_commit_sha",
+        "runtime_name",
+        "model_provider",
+        "model_name",
+        "prompt_version",
+        "prompt_sha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "execution_commit_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "runtime_name": { "type": "string", "enum": ["single_rag", "multi_agent"] },
+        "model_provider": { "type": ["string", "null"], "minLength": 1, "maxLength": 100 },
+        "model_name": { "type": ["string", "null"], "minLength": 1, "maxLength": 200 },
+        "prompt_version": { "type": ["string", "null"], "minLength": 1, "maxLength": 100 },
+        "prompt_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-fA-F]{64}$"
+        }
+      }
+    },
+    "analysis_result_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+    "causes": {
+      "type": "array",
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/cause" }
+    },
+    "ledger_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" }
+  },
+  "$defs": {
+    "cause": {
+      "type": "object",
+      "required": [
+        "cause_id",
+        "cause_code",
+        "origin",
+        "lock_class",
+        "verification_code",
+        "matched_safety_rule_ids",
+        "required_fact_codes",
+        "evidence_refs",
+        "status",
+        "supersedes_cause_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cause_id": { "type": "string", "format": "uuid" },
+        "cause_code": {
+          "type": "string",
+          "enum": [
+            "DANGER_ASSESSMENT",
+            "EXPLICIT_SAFETY_RULE",
+            "FAIL_CLOSED_AI_RESULT",
+            "HARNESS_UNSUPPORTED_FUNCTION",
+            "HARNESS_SCOPE_EXCEEDED",
+            "UNCLASSIFIED_AI_SIGNAL"
+          ]
+        },
+        "origin": { "type": "string", "enum": ["AI_SAFETY", "AI_RUNTIME", "HARNESS"] },
+        "lock_class": {
+          "type": "string",
+          "enum": [
+            "SAFETY_LOCKED",
+            "FAIL_CLOSED_LOCKED",
+            "NON_SAFETY_RESOLVABLE",
+            "UNKNOWN_LOCKED"
+          ]
+        },
+        "verification_code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,99}$"
+        },
+        "matched_safety_rule_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 20,
+          "items": { "type": "string", "pattern": "^SAFETY-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]{3}$" }
+        },
+        "required_fact_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 20,
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,99}$" }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/evidenceRef" }
+        },
+        "status": { "type": "string", "enum": ["ACTIVE", "RESOLUTION_PROPOSED"] },
+        "supersedes_cause_id": { "type": ["string", "null"], "format": "uuid" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "cause_code": { "enum": ["DANGER_ASSESSMENT", "EXPLICIT_SAFETY_RULE"] } },
+            "required": ["cause_code"]
+          },
+          "then": { "properties": { "lock_class": { "const": "SAFETY_LOCKED" } } }
+        },
+        {
+          "if": {
+            "properties": { "cause_code": { "const": "FAIL_CLOSED_AI_RESULT" } },
+            "required": ["cause_code"]
+          },
+          "then": { "properties": { "lock_class": { "const": "FAIL_CLOSED_LOCKED" } } }
+        },
+        {
+          "if": {
+            "properties": {
+              "cause_code": {
+                "enum": ["HARNESS_UNSUPPORTED_FUNCTION", "HARNESS_SCOPE_EXCEEDED"]
+              }
+            },
+            "required": ["cause_code"]
+          },
+          "then": { "properties": { "lock_class": { "const": "NON_SAFETY_RESOLVABLE" } } }
+        },
+        {
+          "if": {
+            "properties": { "cause_code": { "const": "UNCLASSIFIED_AI_SIGNAL" } },
+            "required": ["cause_code"]
+          },
+          "then": { "properties": { "lock_class": { "const": "UNKNOWN_LOCKED" } } }
+        },
+        {
+          "if": {
+            "properties": { "lock_class": { "const": "SAFETY_LOCKED" } },
+            "required": ["lock_class"]
+          },
+          "then": { "properties": { "matched_safety_rule_ids": { "minItems": 1 } } }
+        },
+        {
+          "if": {
+            "properties": { "status": { "const": "RESOLUTION_PROPOSED" } },
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "lock_class": { "const": "NON_SAFETY_RESOLVABLE" },
+              "required_fact_codes": { "minItems": 1 },
+              "evidence_refs": { "minItems": 1 }
+            }
+          }
+        }
+      ]
+    },
+    "evidenceRef": {
+      "type": "object",
+      "required": [
+        "chunk_id",
+        "document_id",
+        "model_code",
+        "index_version",
+        "chunk_set_sha256",
+        "source_file_sha256",
+        "content_sha256",
+        "scenario_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "chunk_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "document_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "model_code": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "index_version": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "chunk_set_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+        "source_file_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+        "content_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+        "scenario_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "not": { "pattern": "^REF-" }
+        }
+      }
+    }
+  }
+}

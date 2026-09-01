@@ -1,4 +1,4 @@
-version: 1.2.0
+version: 1.3.0
 status: TEAM_APPROVED
 policy_extension_status: OWNER_PROPOSED_PM_MERGE_REQUIRED
 owner: BACKEND_DATABASE
@@ -15,6 +15,7 @@ codes:
   - SAFETY-ELECTRICAL-001
   - SAFETY-HOT-WATER-001
   - SAFETY-HOT-WATER-HEATER-001
+  - SAFETY-REFRIGERANT-001
   - SAFETY-TEMP-ABNORMAL-001
 rules:
   - rule_id: SAFETY-LEAK-001
@@ -57,6 +58,28 @@ rules:
     next_actions:
       - 온수 기능 사용과 온수 음용을 중단하세요.
       - 제품을 직접 분해하지 말고 전문 상담 및 기사 점검을 요청하세요.
+  - rule_id: SAFETY-REFRIGERANT-001
+    active: true
+    applicability_policy: RUNTIME_APPROVED_PRODUCTS
+    risk_level: danger
+    requires_consultation: true
+    default_guidance_status: TOTAL_STOP
+    allowed_guidance_statuses: [TOTAL_STOP]
+    danger_event_enabled: true
+    next_action_merge_policy: EXCLUSIVE
+    negated_expressions:
+      - 냉매 누출은 없습니다
+      - 냉매가 새지 않습니다
+      - 냉매 배관은 손상되지 않았습니다
+      - 냉매관은 정상입니다
+    restricted_functions:
+      - 제품 전체 기능 사용 중지
+      - 제품 및 전원 코드 접촉 금지
+    next_actions:
+      - 제품이나 전원 코드를 만지지 마세요.
+      - 불꽃이나 스파크를 일으킬 수 있는 행동을 피하세요.
+      - 제품을 만지지 않고 가능한 경우 창문을 열어 충분히 환기하세요.
+      - 안전한 장소로 이동한 뒤 전문 상담 및 기사 점검을 요청하세요.
   - rule_id: SAFETY-TEMP-ABNORMAL-001
     active: true
     risk_level: caution

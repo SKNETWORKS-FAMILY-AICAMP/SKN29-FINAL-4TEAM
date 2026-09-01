@@ -16,6 +16,18 @@ from .common import (
     VerificationStatus,
 )
 from .consultation_summary import ConsultationSummaryRequest, ConsultationSummaryResult
+from .consultation_cause_ledger import (
+    AnalysisConsultationEnvelope,
+    CauseOrigin,
+    CauseStatus,
+    ConsultationCause,
+    ConsultationCauseCode,
+    ConsultationCauseLedger,
+    ConsultationLockClass,
+    LedgerEvidenceReference,
+    LedgerExecutionIdentity,
+    canonical_payload_sha256,
+)
 from .guidance import UsageGuidance
 from .pipeline import FallbackReasonCode, SymptomAnalysisResult
 from .retrieval import EvidenceReference
@@ -49,4 +61,14 @@ __all__ = [
     "TechnicianReportRequest",
     "FallbackReasonCode",
     "SymptomAnalysisResult",
+    "AnalysisConsultationEnvelope",
+    "CauseOrigin",
+    "CauseStatus",
+    "ConsultationCause",
+    "ConsultationCauseCode",
+    "ConsultationCauseLedger",
+    "ConsultationLockClass",
+    "LedgerEvidenceReference",
+    "LedgerExecutionIdentity",
+    "canonical_payload_sha256",
 ]

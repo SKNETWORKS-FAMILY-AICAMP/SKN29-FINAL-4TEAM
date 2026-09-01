@@ -6,6 +6,22 @@ Backend 정책 기준: 95ed453c0484d2fb2c2212116c67ad830e3028ee
 현재 작업 위치: 기존 dongyoon checkout. main 변경 및 선별 AI 수정은 미커밋 상태이며, 추가 원인 ledger 구현 승인을 뜻하지 않습니다.
 PM: 윤승혁, 공동 검수: 최지용(Backend), 이동윤(AI), 독립 QA: 김은진
 
+## 2026-09-01 승인 및 구현 상태
+
+- PM이 원인 증빙·내부 Envelope·Backend 원자 저장 권고안 3개를 모두 A로
+  선택했고, Backend 담당 최지용이 `1-A`와 `3-A`를 승인했다.
+- 내부 `AnalysisConsultationEnvelope`와 `ConsultationCauseLedger` 계약·Pydantic
+  모델 버전 `1.0.0`을 구현했다. 공개 `SymptomAnalysisResponse 4.0.0`은 변경하지
+  않았다.
+- 동일 식별자·분석 결과 Hash·Ledger Hash, 원인 코드별 잠금 분류,
+  Safety 잠금 Rule ID, 검증 없는 해소 제안과 평가 전용 `REF-*` 사용 금지를
+  계약 검증에 반영했다.
+- 같은 Endpoint에서 Envelope를 실제 반환하고 Backend가 분석·원인·초기
+  HumanReview를 한 Transaction으로 저장하는 활성화는 양측 변경을 함께 적용해야
+  하므로 아직 `HOLD`다. 별도 Ledger Endpoint는 만들지 않는다.
+- RDS Write·Migration·Public Runtime 활성은 수행하지 않았고 기존 `HOLD`를
+  유지한다.
+
 ## 이미 확정된 사항 — 재승인 대상 아님
 
 2026-08-31 정정: 기존 HumanReview 계약과 추가 원인 ledger 연동 명세를 구분한다. 아래 정책·코드·합격 기준을 다시 제안하거나 재승인 요청하지 않는다.

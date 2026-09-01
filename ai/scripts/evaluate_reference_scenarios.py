@@ -26,7 +26,7 @@ def main(*, output: Path, expected_sha: str | None, execute: bool = False,
     report = {
         "status": "HOLD", "provenance": provenance, "final_sha_blockers": blockers,
         "executed_case_count": 0, "runtime": runtime,
-        "ledger_contract": "PENDING_PM_APPROVAL_NOT_IMPLEMENTED",
+        "ledger_contract": "V1_APPROVED_CONTRACT_IMPLEMENTED_ACTIVATION_HOLD",
         "independent_qa": "NOT_RUN", "merge_approval": "PENDING_PM",
         "public_runtime_activation": "HOLD", "backend_writes": 0,
         "backend_customer_publication_check": "NOT_RUN",

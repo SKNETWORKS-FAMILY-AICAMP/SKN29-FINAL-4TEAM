@@ -82,6 +82,13 @@ class SafetyRuleLoader:
                 raise ValueError(
                     f"안전 규칙 {rule_key}: 부정 표현 목록이 잘못되었습니다."
                 )
+            next_action_merge_policy = rule.get("next_action_merge_policy")
+            if next_action_merge_policy is not None and (
+                next_action_merge_policy != "EXCLUSIVE"
+            ):
+                raise ValueError(
+                    f"안전 규칙 {rule_key}: 다음 행동 병합 정책이 잘못되었습니다."
+                )
 
         required_no_evidence = {
             "default_risk_level",
