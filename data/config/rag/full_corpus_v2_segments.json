@@ -30,7 +30,7 @@
     },
     "jac104_evidence_registry": {
       "path": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
-      "sha256": "40A1B328F86FF6E57A3EFD1F5EBD63051DCDE06AB32E0A08CC6C6D5BE638F61F"
+      "sha256": "1DCC8E1ECEDF42AF7F669DF54F93E563DC0ED382AF799CB0C4F559A6DAAB7693"
     },
     "three_model_evaluation": {
       "path": "data/config/rag/three_model_evaluation_cases.json",

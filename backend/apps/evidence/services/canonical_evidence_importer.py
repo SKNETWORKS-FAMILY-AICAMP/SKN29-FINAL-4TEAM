@@ -1,4 +1,4 @@
-"""Fail-closed importer for the seven approved Backend-AI evidence rows."""
+"""Fail-closed importer for the eight approved Backend-AI evidence rows."""
 
 from __future__ import annotations
 
@@ -59,7 +59,7 @@ EXPECTED_EMBEDDING_ROW_FIELDS = {
     "embedding",
 }
 APPROVED_CANONICAL_STATUS = "TEXT_AND_VISUAL_VERIFIED"
-EXPECTED_CHUNK_COUNT = 7
+EXPECTED_CHUNK_COUNT = 8
 OFFICIAL_SOURCE_PATH_ENV = "BACKEND_AI_OFFICIAL_SOURCE_PATH"
 EXPECTED_SOURCE_SHA256 = (
     "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
@@ -492,16 +492,16 @@ class CanonicalEvidenceImporter:
             if index.get(key) != index_meta.get(key):
                 raise CommandError(f"Index manifest {key} does not match package.")
         if len(chunks) != EXPECTED_CHUNK_COUNT:
-            raise CommandError("RAG source must contain exactly seven chunks.")
+            raise CommandError("RAG source must contain exactly eight chunks.")
         if identity.get("schema_version") != "1.0.0":
             raise CommandError("Canonical identity schema is unsupported.")
         if identity.get("chunk_set_sha256") != index["chunk_set_sha256"]:
             raise CommandError("Canonical identity chunk-set hash differs.")
         identity_rows = identity.get("chunks")
-        if not isinstance(identity_rows, list) or len(identity_rows) != 7:
-            raise CommandError("Canonical identity must contain seven chunks.")
+        if not isinstance(identity_rows, list) or len(identity_rows) != EXPECTED_CHUNK_COUNT:
+            raise CommandError("Canonical identity must contain eight chunks.")
         identity_by_id = {row.get("chunk_id"): row for row in identity_rows}
-        if len(identity_by_id) != 7:
+        if len(identity_by_id) != EXPECTED_CHUNK_COUNT:
             raise CommandError("Canonical identity chunk IDs must be unique.")
 
         document_code = manifest["source"]["document_code"]
@@ -567,7 +567,7 @@ class CanonicalEvidenceImporter:
                 raise CommandError(f"Embedding fixture {key} does not match.")
         rows = fixture.get("rows")
         if not isinstance(rows, list) or len(rows) != EXPECTED_CHUNK_COUNT:
-            raise CommandError("Embedding fixture must contain exactly seven rows.")
+            raise CommandError("Embedding fixture must contain exactly eight rows.")
         if any(not isinstance(row, dict) for row in rows):
             raise CommandError("Embedding fixture rows must be objects.")
         if any(set(row) != EXPECTED_EMBEDDING_ROW_FIELDS for row in rows):

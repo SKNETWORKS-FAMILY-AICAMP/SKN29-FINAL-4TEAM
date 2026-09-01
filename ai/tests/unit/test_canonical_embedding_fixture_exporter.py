@@ -57,7 +57,7 @@ def _identity_rows() -> list[dict]:
     return exporter._load_json_object(exporter.IDENTITY_PATH)["chunks"]
 
 
-def test_exporter_writes_deterministic_canonical_seven_by_1024_fixture():
+def test_exporter_writes_deterministic_canonical_eight_by_1024_fixture():
     first_path = _runtime_output("canonical_embedding_fixture_exporter_test_1.json")
     second_path = _runtime_output("canonical_embedding_fixture_exporter_test_2.json")
 
@@ -86,7 +86,7 @@ def test_exporter_writes_deterministic_canonical_seven_by_1024_fixture():
     assert payload["index_version"] == "1.0.0"
     assert payload["chunk_set_sha256"] == exporter.CHUNK_SET_SHA256
     assert payload["embedding_dtype"] == "FLOAT32"
-    assert len(payload["rows"]) == 7
+    assert len(payload["rows"]) == 8
     assert {len(row["embedding"]) for row in payload["rows"]} == {1024}
     assert all(
         value == float(np.float32(value))
@@ -109,8 +109,8 @@ def test_exporter_writes_deterministic_canonical_seven_by_1024_fixture():
     )
     assert fixture_bytes == exporter._canonical_bytes(payload)
     assert not fixture_bytes.endswith(b"\n")
-    assert first["nfc_validation"] == "7/7"
-    assert first["rows_dimension"] == "7x1024"
+    assert first["nfc_validation"] == "8/8"
+    assert first["rows_dimension"] == "8x1024"
     assert first["fixture_status"] == payload["status"]
 
 

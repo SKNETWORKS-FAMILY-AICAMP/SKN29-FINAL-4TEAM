@@ -33,7 +33,7 @@ def test_eval_dataset_loader():
     safety_data = loader.load_safety_dataset()
     structuring_data = loader.load_structuring_dataset()
 
-    assert len(rag_data) == 12
+    assert len(rag_data) == 13
     assert {item["case_id"] for item in rag_data}
     assert len(safety_data) == 4
     assert safety_data[0]["raw_symptom"].startswith("정수기 하부")

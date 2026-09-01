@@ -48,7 +48,7 @@ class RagEvaluationContractTests(unittest.TestCase):
         positive = [
             row for row in self.contract["cases"] if row["case_type"] == "POSITIVE"
         ]
-        self.assertEqual(7, len(positive))
+        self.assertEqual(8, len(positive))
         expected = {
             chunk_id
             for row in positive
@@ -159,7 +159,7 @@ class RagEvaluationContractTests(unittest.TestCase):
             report["summary"]["mean_positive_recall_at_5"],
         )
         self.assertAlmostEqual(
-            0.8857142857142858,
+            0.9,
             report["summary"]["mean_positive_mrr"],
         )
         self.assertEqual(

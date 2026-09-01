@@ -176,7 +176,7 @@ def test_local_runtime_gate_verifies_actual_identity_without_exposing_secrets(mo
     assert result["pipeline_runtime"] == "multi_agent"
     assert result["retrieval_transport"] == "direct"
     assert result["runtime_profile"] == "mvp"
-    assert result["identity_chunk_count"] == 7
+    assert result["identity_chunk_count"] == 8
     assert result["identity_chunk_count_source"] == (
         "CANONICAL_IDENTITY_FILE_EXPECTATION"
     )

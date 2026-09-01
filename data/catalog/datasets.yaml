@@ -53,13 +53,13 @@ datasets:
     path: processed/structured/rag/mvp/rag_verified_sample.jsonl
     classification: official
     scope: mvp_search
-    records: 7
+    records: 8
     schema: schemas/processed/ragChunk.schema.json
   - id: jac104_evidence_registry
     path: processed/structured/evidence/jac104_evidence_registry.jsonl
     classification: official
     scope: evidence_policy
-    records: 9
+    records: 10
     schema: schemas/processed/evidenceRegistry.schema.json
   - id: rag_parent_pages_3model_v1
     path: processed/structured/rag/expansion/rag_parent_pages_3model_v1.jsonl

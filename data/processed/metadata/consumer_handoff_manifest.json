@@ -22,16 +22,16 @@
         {
           "path": "processed/structured/rag/mvp/rag_verified_sample.jsonl",
           "role": "INGEST",
-          "records": 7,
-          "size_bytes": 14296,
-          "sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0"
+          "records": 8,
+          "size_bytes": 16343,
+          "sha256": "D08CA231D5F1A75BDB2EC0D60C2AE086CE21BBA35E8F23723BABE263938C736F"
         },
         {
           "path": "processed/structured/evidence/jac104_evidence_registry.jsonl",
           "role": "REFERENCE",
-          "records": 9,
-          "size_bytes": 16261,
-          "sha256": "40A1B328F86FF6E57A3EFD1F5EBD63051DCDE06AB32E0A08CC6C6D5BE638F61F"
+          "records": 10,
+          "size_bytes": 18122,
+          "sha256": "1DCC8E1ECEDF42AF7F669DF54F93E563DC0ED382AF799CB0C4F559A6DAAB7693"
         },
         {
           "path": "processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
@@ -85,23 +85,23 @@
         {
           "path": "config/rag/jac104_retrieval_cases.json",
           "role": "EVALUATION_CONTRACT",
-          "records": 12,
-          "size_bytes": 8840,
-          "sha256": "FCF2B7A391A13216B41DF983061F4672AC266EC9C14BA3274AB7AD377B9B2235"
+          "records": 13,
+          "size_bytes": 9421,
+          "sha256": "36F4D92DE400E2B9B98CEA2E25EC0ED3A79D9E98AE04EE8DCBF64DA9353E75F6"
         },
         {
           "path": "schemas/config/ragEvaluationCases.schema.json",
           "role": "SCHEMA",
           "records": 1,
           "size_bytes": 6443,
-          "sha256": "E2523FDE92DDC84D37B397D87032460BA27DC90F551591830804FCAD2893996B"
+          "sha256": "EB3FA47198F94E25817896FA38A2717FBD9BA52CD8A44383AACC4DD5A8A5E2FE"
         },
         {
           "path": "schemas/processed/ragChunk.schema.json",
           "role": "SCHEMA",
           "records": 1,
-          "size_bytes": 4344,
-          "sha256": "E95F821D71E5026971C8F9074E02A0BEF9B9339F26E2A6649A5FF8635BDF46FA"
+          "size_bytes": 4394,
+          "sha256": "2E981FA9C5BBB9E09A994332AE76B3C82C28F5D58B1F8D8AB94E53700F024A0E"
         },
         {
           "path": "schemas/processed/evidenceRegistry.schema.json",
@@ -541,50 +541,50 @@
           "path": "processed/validation/latest_qa_summary.json",
           "role": "SUMMARY",
           "records": 1,
-          "size_bytes": 8956,
-          "sha256": "1945245A60EEC51710A4137007699000F330E5EBC4F0D2CB4FE67E91B491B426"
+          "size_bytes": 8957,
+          "sha256": "AD74291275071DC5282D738F990BEDA741F00F3C4EFEDEFBDCB272848D8F76AA"
         },
         {
           "path": "processed/validation/schema/latest_schema_report.json",
           "role": "DETAIL",
           "records": 1,
-          "size_bytes": 10420,
-          "sha256": "1E3A47B1858D3598CF64259E3B0EF1AF0179B3247D0473EF0775916714A51124"
+          "size_bytes": 10421,
+          "sha256": "BA295B92D10194AB42A8E4AF2625794E60B037A63576ECA288692DC573BF43AF"
         },
         {
           "path": "processed/validation/integrity/latest_integrity_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1340,
-          "sha256": "DFD6D622007460B81A9ED57454807F53C9ED7A55B0AF59A691F07878C6E45AD2"
+          "sha256": "2964B52182DE74FD13400C7A539D693746B27FA5AEFD1989DADF2C4EF2DD977F"
         },
         {
           "path": "processed/validation/quality/latest_quality_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1246,
-          "sha256": "5F92E0B55B151FB9E289C9CA4D814B27B2D88B5544D7E7CC74824E7035BDCB05"
+          "sha256": "1097BC20B50A643FA77A442DF830A91BC434D18004CBC6629842227480F3A7CB"
         },
         {
           "path": "processed/validation/business/latest_business_rules_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 2322,
-          "sha256": "0DAC9AECEC41DF64DA6BC487CF79E618416EF6411784BF00C3B32939CFAEFD5C"
+          "sha256": "3E16915934163839D3B58E4454AC44DDAA3213C88C3F4E9A89DA2C7CB96CE84C"
         },
         {
           "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
           "role": "DETAIL",
           "records": 1,
           "size_bytes": 1151,
-          "sha256": "65A2AA60BE76610B9EFC4CF5A723B69D5D3EF25DF338DED2E729285B254556E1"
+          "sha256": "1B26BBA014931F5C7CA68DCCDB598160D0F166DA51490155DEA520F899FB8AF0"
         },
         {
           "path": "processed/metadata/dataset_manifest.json",
           "role": "MANIFEST",
           "records": 1,
-          "size_bytes": 13156,
-          "sha256": "3679E32BE468C9B3B5CE67EF5964B6F4AAE21793AF9318AFB3AC8DF1C2CF3F10"
+          "size_bytes": 13158,
+          "sha256": "F6253E20B34CAAEF2960F24F8B83388C96A37A543633F1123D9FAAE7A6475114"
         },
         {
           "path": "processed/metadata/DATA_PROCESSING_SPEC.md",

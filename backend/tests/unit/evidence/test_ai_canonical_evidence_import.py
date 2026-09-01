@@ -1,4 +1,4 @@
-"""Official seven-row Backend evidence importer regression tests."""
+"""Official eight-row Backend evidence importer regression tests."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ RAG_PATH = (
 MODEL_NAME = "BAAI/bge-m3"
 MODEL_REVISION = "5617a9f61b028005a4858fdac845db406aefb181"
 CHUNK_SET_SHA256 = (
-    "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+    "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
 )
 
 
@@ -228,8 +228,8 @@ def test_apply_creates_exact_official_lineage_and_replay_is_noop(
         "documents": 1,
         "pages": 3,
         "scopes": 1,
-        "chunks": 7,
-        "embeddings": 7,
+        "chunks": 8,
+        "embeddings": 8,
     }
     product = ProductModel.objects.get(model_code="WPUJAC104DWH")
     assert product.generation_code == "D"
@@ -293,8 +293,8 @@ def test_apply_creates_exact_official_lineage_and_replay_is_noop(
         "documents": 1,
         "pages": 3,
         "scopes": 1,
-        "chunks": 7,
-        "embeddings": 7,
+        "chunks": 8,
+        "embeddings": 8,
     }
     assert timestamps == {
         model.__name__: list(
@@ -498,7 +498,7 @@ def test_late_persistence_failure_rolls_back_entire_package(
     def fail_on_last_embedding(self, *args, **kwargs):
         nonlocal calls
         calls += 1
-        if calls == 7:
+        if calls == 8:
             raise RuntimeError("forced late fixture failure")
         return original_save(self, *args, **kwargs)
 

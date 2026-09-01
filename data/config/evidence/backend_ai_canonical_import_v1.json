@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0.0",
   "status": "BACKEND_AI_G1B_IMPORT_PACKAGE_FIXED",
-  "package_id": "BACKEND-AI-CANONICAL-EVIDENCE-7-V1",
+  "package_id": "BACKEND-AI-CANONICAL-EVIDENCE-8-V1",
   "dataset_scope": "MVP",
-  "batch_no": "BACKEND-AI-EVIDENCE-7-V1",
+  "batch_no": "BACKEND-AI-EVIDENCE-8-V1",
   "pipeline_version": "backend-ai-canonical-evidence/1.0.0",
   "product": {
     "model_code": "WPUJAC104DWH",
@@ -18,7 +18,7 @@
     "manual_pages_path": "data/processed/documents/manuals/mvp/manual_pages_jac104d.jsonl",
     "manual_pages_sha256": "9E13354A7A0838EF825F1D401A6C999C33A24C2F811523F85B7E29D3C032E29F",
     "rag_chunks_path": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
-    "rag_chunks_sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0",
+    "rag_chunks_sha256": "D08CA231D5F1A75BDB2EC0D60C2AE086CE21BBA35E8F23723BABE263938C736F",
     "document_code": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
     "document_title": "WPU-JAC104, WPU-JCC104 냉온정수기 메뉴얼",
     "document_type_code": "OFFICIAL_MANUAL",
@@ -31,28 +31,28 @@
   },
   "identity": {
     "path": "ai/configs/canonical_evidence_identity.json",
-    "sha256": "925088A352A81180B51E5418EB3152A1244ABA3DA07569712C4D903468220B85"
+    "sha256": "6AD5838877BB5A469619C298346F1C8776C7AEABE114EB2C271F20BCA1D9C2AF"
   },
   "index": {
     "path": "ai/configs/index_manifest.json",
-    "sha256": "91027E88DEC6C3BFF1E590AAF4479CA021AC284EB0BDC8E1EEC6C76473DA667E",
+    "sha256": "04C37AC3D5B3C6C1A610036699EDC53BF15F908B9FFDE901B599D2CBEE53CD2D",
     "model_name": "BAAI/bge-m3",
     "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
     "dimension": 1024,
     "index_version": "1.0.0",
     "index_type": "exact_search",
-    "chunk_count": 7,
-    "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+    "chunk_count": 8,
+    "chunk_set_sha256": "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
   },
   "expected_counts": {
     "ingestion_batches": 1,
     "source_documents": 1,
     "document_pages": 3,
     "document_model_scopes": 1,
-    "document_chunks": 7,
-    "chunk_embeddings": 7,
-    "crosswalks_after_sync": 7,
-    "crosswalk_page_links_after_sync": 8,
-    "readonly_view_rows_after_sync": 7
+    "document_chunks": 8,
+    "chunk_embeddings": 8,
+    "crosswalks_after_sync": 8,
+    "crosswalk_page_links_after_sync": 9,
+    "readonly_view_rows_after_sync": 8
   }
 }

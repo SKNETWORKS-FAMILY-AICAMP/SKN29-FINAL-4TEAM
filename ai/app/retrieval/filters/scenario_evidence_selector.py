@@ -108,6 +108,10 @@ class ScenarioEvidenceSelector:
         segments = self._segments(content)
         if structured_symptom is None or len(segments) < 3:
             return content
+        if structured_symptom.symptom_type == "수질 이물질":
+            # 미세입자 절차는 기포 확인 → 5분 대기 → 컵 흔들기 → 상담의
+            # 연속 단계이므로 문장별 키워드 중복이 없더라도 전체를 보존한다.
+            return content
         context_values = [
             structured_symptom.symptom_type,
             structured_symptom.target_water_type or "",

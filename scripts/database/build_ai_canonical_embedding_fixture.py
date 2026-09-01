@@ -1,4 +1,4 @@
-"""Generate the transient approved seven-row BGE-M3 embedding fixture."""
+"""Generate the transient approved eight-row BGE-M3 embedding fixture."""
 
 from __future__ import annotations
 
@@ -62,22 +62,22 @@ def build_fixture(*, output_path: Path) -> dict:
         for line in chunks_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    if len(chunks) != 7:
-        raise RuntimeError("Approved RAG source must contain exactly seven rows.")
+    if len(chunks) != 8:
+        raise RuntimeError("Approved RAG source must contain exactly eight rows.")
     if any(not isinstance(row, dict) for row in chunks):
         raise RuntimeError("Approved RAG source rows must be objects.")
     for row in chunks:
         _require_nfc(row.get("chunk_text"), label=f"{row.get('chunk_id')}: chunk_text")
     chunks.sort(key=lambda row: _require_nfc(row.get("chunk_id"), label="chunk_id"))
-    if len({row["chunk_id"] for row in chunks}) != 7:
+    if len({row["chunk_id"] for row in chunks}) != 8:
         raise RuntimeError("Approved RAG chunk IDs must be unique.")
 
     client = BgeM3EmbeddingClient(model_revision=index["model_revision"])
     if client.model_name != index["model_name"] or client.dimension != 1024:
         raise RuntimeError("Embedding client does not match the approved baseline.")
     vectors = client.embed_documents(row["chunk_text"] for row in chunks)
-    if len(vectors) != 7 or any(len(vector) != 1024 for vector in vectors):
-        raise RuntimeError("Generated embedding fixture must be 7 x 1024.")
+    if len(vectors) != 8 or any(len(vector) != 1024 for vector in vectors):
+        raise RuntimeError("Generated embedding fixture must be 8 x 1024.")
     if any(
         isinstance(value, bool)
         or not isinstance(value, (int, float))
@@ -134,7 +134,7 @@ def build_fixture(*, output_path: Path) -> dict:
         "dimension": client.dimension,
         "embedding_dtype": EMBEDDING_DTYPE,
         "row_order": "chunk_id_ASC",
-        "nfc_validation": "7/7",
+        "nfc_validation": "8/8",
         "model_name": client.model_name,
         "model_revision": index["model_revision"],
         "chunk_set_sha256": index["chunk_set_sha256"],

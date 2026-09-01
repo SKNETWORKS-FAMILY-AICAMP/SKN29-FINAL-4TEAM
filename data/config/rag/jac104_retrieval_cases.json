@@ -1,7 +1,7 @@
 {
-  "config_version": "1.1.2",
+  "config_version": "1.1.3",
   "status": "DATA_EXPECTATION_AND_AI_EXECUTION_VERIFIED",
-  "approved_chunk_count": 7,
+  "approved_chunk_count": 8,
   "evaluation_policy": {
     "default_top_k": 5,
     "positive_min_expected_hits": 1,
@@ -117,6 +117,20 @@
       "expected_no_evidence": false
     },
     {
+      "case_id": "RAG-POS-PARTICLES",
+      "case_type": "POSITIVE",
+      "scenario_id": null,
+      "query": "정수된 물에 미세한 입자가 발생할 때 확인 방법을 알려주세요.",
+      "product_model_code": "WPUJAC104DWH",
+      "expected_chunk_ids": ["RAG-WPUJAC104DWH-PARTICLES-001"],
+      "expected_document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "expected_page_numbers": [38],
+      "forbidden_model_codes": ["WPU-IAC506", "WPUIAC425SNW"],
+      "forbidden_document_ids": [],
+      "top_k": 5,
+      "expected_no_evidence": false
+    },
+    {
       "case_id": "RAG-NEG-JAC104-S-GENERATION",
       "case_type": "NEGATIVE_SCOPE",
       "scenario_id": null,
@@ -195,30 +209,30 @@
     "evaluated_contract_sha256": "EFE99197B3DE5CC9076BC2BF39BAF46136CE2A669D7899CBA67D74F8CA04BE79",
     "canonical_dataset": {
       "path": "data/processed/structured/rag/mvp/rag_verified_sample.jsonl",
-      "records": 7,
-      "sha256": "2BF3582E42A309D846BC383BE9C3E08874512318DD4046082498DBFBC8584DD0"
+      "records": 8,
+      "sha256": "D08CA231D5F1A75BDB2EC0D60C2AE086CE21BBA35E8F23723BABE263938C736F"
     },
     "result_manifest": {
       "path": "ai/evaluation/reports/pgvector_verification.json",
-      "sha256": "449F8D1A3298FFD5BF945E405F51A4FED5767E6502D1B390BD70FCC06AF27DD1",
+      "sha256": "498E451953DED25905FDEC8A372B81F1EBF0ACEF7F23C15985F9DA760CCC08A1",
       "received_sha256": "0C5EC8431B9DA2689CBEA5218B21AB75E9572FEC8CE308764CC952D41ADBAD13",
       "verification_status": "PASS",
-      "case_count": 12,
-      "passed_count": 12,
+      "case_count": 13,
+      "passed_count": 13,
       "failed_count": 0
     },
     "index_manifest": {
       "path": "ai/configs/index_manifest.json",
-      "sha256": "91027E88DEC6C3BFF1E590AAF4479CA021AC284EB0BDC8E1EEC6C76473DA667E",
+      "sha256": "04C37AC3D5B3C6C1A610036699EDC53BF15F908B9FFDE901B599D2CBEE53CD2D",
       "received_sha256": "928AB09B4357C699C90463F321A4E39C678137FEA8A98C3D4AC9471C26E7ADBF",
       "embedding_model": "BAAI/bge-m3",
       "embedding_model_version": "5617a9f61b028005a4858fdac845db406aefb181",
       "index_version": "1.0.0",
       "dimension": 1024,
-      "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      "chunk_set_sha256": "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
     },
     "limitations": [
-      "JAC104D_D_GENERATION_REV00_PAGES_37_39_SEVEN_TOPICS_ONLY",
+      "JAC104D_D_GENERATION_REV00_PAGES_37_39_EIGHT_TOPICS_ONLY",
       "RAG_POS_LEAK_EXPECTED_CHUNK_RANK_5"
     ]
   }

@@ -32,6 +32,8 @@ CASES = (
     ("물이 약해요", "전체"),
     ("정수된 물에 미세한 입자가 발생해요", None),
     ("물에 이물질이 둥둥 떠다녀요", None),
+    ("정수된 물에 작은 입자가 보여요", None),
+    ("물컵에 뭔가 작은 게 떠다녀요", None),
     ("어제 시킨 치킨이 아직 안 왔어요", None),
 )
 
@@ -140,6 +142,7 @@ def main() -> None:
                 "top_5": [
                     {
                         "chunk_id": chunk.chunk_id,
+                        "page": chunk.page,
                         "score": round(chunk.similarity_score, 6),
                     }
                     for chunk in ranked

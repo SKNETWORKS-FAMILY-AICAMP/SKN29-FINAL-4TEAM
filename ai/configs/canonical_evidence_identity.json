@@ -5,7 +5,7 @@
   "evidence_registry": "data/processed/structured/evidence/jac104_evidence_registry.jsonl",
   "index_manifest": "ai/configs/index_manifest.json",
   "index_version": "1.0.0",
-  "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+  "chunk_set_sha256": "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
   "identity_policy": {
     "ai_canonical_key": "chunk_id",
     "backend_target_key": "knowledge_document_chunk.public_id",
@@ -99,6 +99,17 @@
       "verification_status": "TEXT_AND_VISUAL_VERIFIED",
       "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
       "chunk_text_sha256": "219bfbb732f5b63ebc5467f2f2a36affd77318ac64d93b9ba353711be0a9775e"
+    },
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-PARTICLES-001",
+      "evidence_id": "EVD-WPUJAC104DWH-PARTICLES-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "page_refs": [38],
+      "model_code": "WPUJAC104DWH",
+      "product_generation": "D",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "chunk_text_sha256": "1f0f0effddbebc218382f01f16225815a7815b21a0f277584971739184614b43"
     }
   ]
 }

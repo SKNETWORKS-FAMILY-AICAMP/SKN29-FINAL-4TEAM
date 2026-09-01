@@ -35,7 +35,7 @@ def _load_builder():
     return builder
 
 
-def test_builder_writes_deterministic_seven_by_1024_fixture(monkeypatch):
+def test_builder_writes_deterministic_eight_by_1024_fixture(monkeypatch):
     builder = _load_builder()
     embedded_texts = []
 
@@ -67,16 +67,16 @@ def test_builder_writes_deterministic_seven_by_1024_fixture(monkeypatch):
     fixture_bytes = output_path.read_bytes()
     payload = json.loads(fixture_bytes.decode("utf-8"))
     assert result["status"] == "FIXTURE_READY"
-    assert result["row_count"] == 7
+    assert result["row_count"] == 8
     assert result["dimension"] == 1024
     assert result["embedding_dtype"] == "FLOAT32"
     assert result["row_order"] == "chunk_id_ASC"
-    assert result["nfc_validation"] == "7/7"
+    assert result["nfc_validation"] == "8/8"
     assert result["fixture_sha256"] == sha256(fixture_bytes).hexdigest()
     assert payload["schema_version"] == "1.0.0"
     assert payload["status"] == "GENERATED_FROM_APPROVED_BASELINE_PENDING_DB_IMPORT"
     assert payload["embedding_dtype"] == "FLOAT32"
-    assert len(payload["rows"]) == 7
+    assert len(payload["rows"]) == 8
     assert {len(row["embedding"]) for row in payload["rows"]} == {1024}
     row_ids = [row["chunk_id"] for row in payload["rows"]]
     assert row_ids == sorted(row_ids)

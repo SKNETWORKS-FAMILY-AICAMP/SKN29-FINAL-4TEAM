@@ -68,7 +68,7 @@ class HandoffProfileTests(unittest.TestCase):
         profile = self.definitions["profiles"]["rag"]
         ingest = [item for item in profile["items"] if item["role"] == "INGEST"]
         self.assertEqual(1, len(ingest))
-        self.assertEqual(7, len(read_jsonl(data_path(DATA_ROOT, ingest[0]["path"]))))
+        self.assertEqual(8, len(read_jsonl(data_path(DATA_ROOT, ingest[0]["path"]))))
         faq = next(
             item
             for item in profile["items"]
@@ -81,7 +81,7 @@ class HandoffProfileTests(unittest.TestCase):
             if item["role"] == "EVALUATION_CONTRACT"
         )
         cases = read_json(data_path(DATA_ROOT, evaluation["path"]))
-        self.assertEqual(12, len(cases["cases"]))
+        self.assertEqual(13, len(cases["cases"]))
         self.assertEqual(
             {"POSITIVE", "NEGATIVE_SCOPE", "NEGATIVE_SOURCE"},
             {row["case_type"] for row in cases["cases"]},

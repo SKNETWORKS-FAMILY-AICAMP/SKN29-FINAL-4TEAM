@@ -319,6 +319,50 @@
       "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
       "verification_status": "TEXT_AND_VISUAL_VERIFIED",
       "generated_at": "${generated_at}"
+    },
+    {
+      "chunk_id": "RAG-WPUJAC104DWH-PARTICLES-001",
+      "evidence_id": "EVD-WPUJAC104DWH-PARTICLES-001",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "source_page_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P038"
+      ],
+      "source_type": "official_manual",
+      "provider": "SK매직",
+      "exact_sales_code": "WPUJAC104DWH",
+      "product_model": "WPU-JAC104 (D) / WPU-JCC104 (D)",
+      "model_family": "WPU-JAC104",
+      "product_generation": "D",
+      "scope_role": "mvp",
+      "version": "REV.00",
+      "page_start": 38,
+      "page_end": 38,
+      "page_refs": [
+        38
+      ],
+      "section_title": "고장 신고 전 확인하기",
+      "topic_code": "symptom_particles",
+      "symptom_category": "PARTICLES",
+      "risk_level": "caution",
+      "use_guidance": "PARTIAL_STOP",
+      "requires_consultation": true,
+      "applicability": "MODEL_EXACT",
+      "chunk_text": "정수된 물에 미세한 입자가 발생하면 급수 시 생긴 기포인지 확인합니다. 물컵에 물을 받은 후 5분이 지나도 미세입자가 있으면 물컵을 5~6회 좌우로 흔들어 미세입자가 남아 있는지 확인합니다. 미세입자가 계속 있으면 고객상담센터에 문의해 필터를 교체합니다.",
+      "evidence_summary": "정수된 물의 미세입자가 급수 중 생긴 기포인지 시간 경과와 컵 흔들기로 확인하고, 계속 남으면 상담을 통해 필터를 교체하도록 안내합니다.",
+      "safe_actions": [
+        "물을 컵에 받은 뒤 약 5분 동안 미세입자가 남는지 확인합니다.",
+        "컵을 5~6회 좌우로 흔들어 미세입자가 남는지 확인합니다."
+      ],
+      "escalation_conditions": [
+        "확인 후에도 미세입자가 계속 있으면 고객상담센터에 문의해 필터를 교체합니다."
+      ],
+      "prohibited_actions": [
+        "계속 남는 미세입자를 단순 기포로 단정하거나 출수량 저하 조치로 대신 안내하지 않습니다."
+      ],
+      "source_url": "https://www.skintellixservice.com/web/easy/easyMain.do?inputBasicKeyword=WPUJAC104DWH&tabIndex=3",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "generated_at": "${generated_at}"
     }
   ],
   "evidence": [
@@ -644,6 +688,51 @@
       "allowed_use": "MVP",
       "rag_policy": "INCLUDE",
       "policy_reason": "정확 판매 코드 WPUJAC104DWH와 D세대 REV.00 매뉴얼의 해당 페이지를 텍스트·시각 검증했습니다.",
+      "classification": "official",
+      "generated_at": "${generated_at}"
+    },
+    {
+      "evidence_id": "EVD-WPUJAC104DWH-PARTICLES-001",
+      "evidence_class": "MANUAL",
+      "source_id": "RAG-WPUJAC104DWH-PARTICLES-001",
+      "source_type": "official_manual",
+      "provider": "SK매직",
+      "exact_sales_code": "WPUJAC104DWH",
+      "product_model": "WPU-JAC104 (D) / WPU-JCC104 (D)",
+      "model_family": "WPU-JAC104",
+      "product_generation": "D",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "version": "REV.00",
+      "topic_code": "symptom_particles",
+      "page_start": 38,
+      "page_end": 38,
+      "page_refs": [
+        38
+      ],
+      "risk_level": "caution",
+      "use_guidance": "PARTIAL_STOP",
+      "evidence_summary": "정수된 물의 미세입자가 급수 중 생긴 기포인지 시간 경과와 컵 흔들기로 확인하고, 계속 남으면 상담을 통해 필터를 교체하도록 안내합니다.",
+      "safe_actions": [
+        "물을 컵에 받은 뒤 약 5분 동안 미세입자가 남는지 확인합니다.",
+        "컵을 5~6회 좌우로 흔들어 미세입자가 남는지 확인합니다."
+      ],
+      "requires_consultation": true,
+      "consultation_conditions": [
+        "확인 후에도 미세입자가 계속 있으면 고객상담센터에 문의해 필터를 교체합니다."
+      ],
+      "prohibited_actions": [
+        "계속 남는 미세입자를 단순 기포로 단정하거나 출수량 저하 조치로 대신 안내하지 않습니다."
+      ],
+      "applicability": "MODEL_EXACT",
+      "source_url": "https://www.skintellixservice.com/web/easy/easyMain.do?inputBasicKeyword=WPUJAC104DWH&tabIndex=3",
+      "source_file_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "source_asset_sha256s": [
+        "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C"
+      ],
+      "verification_status": "TEXT_AND_VISUAL_VERIFIED",
+      "allowed_use": "MVP",
+      "rag_policy": "INCLUDE",
+      "policy_reason": "정확 판매 코드 WPUJAC104DWH와 D세대 REV.00 매뉴얼 38쪽의 미세입자 항목을 텍스트·시각 검증했습니다.",
       "classification": "official",
       "generated_at": "${generated_at}"
     },

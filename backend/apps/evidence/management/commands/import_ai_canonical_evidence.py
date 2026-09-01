@@ -1,4 +1,4 @@
-"""Dry-run or atomically import the official seven-row AI evidence package."""
+"""Dry-run or atomically import the official eight-row AI evidence package."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ APPLY_ADVISORY_LOCK_ID = 8_102_026_081_307
 
 
 class Command(BaseCommand):
-    help = "Validate or atomically import the official seven-row AI evidence package."
+    help = "Validate or atomically import the official eight-row AI evidence package."
 
     def add_arguments(self, parser):
         parser.add_argument(

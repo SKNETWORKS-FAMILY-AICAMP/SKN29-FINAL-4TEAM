@@ -1,4 +1,4 @@
-"""추가문진·비제품 입력·미세입자 오검색 회귀 테스트."""
+"""추가문진·비제품 입력·미세입자 공식 근거 검색 회귀 테스트."""
 
 from __future__ import annotations
 
@@ -93,15 +93,23 @@ def test_low_flow_followup_answer_reaches_structuring_query_and_evidence(
     (
         "정수된 물에 미세한 입자가 발생해요",
         "물에 이물질이 둥둥 떠다녀요",
+        "정수된 물에 작은 입자가 보여요",
+        "물컵에 뭔가 작은 게 떠다녀요",
     ),
 )
-def test_particles_are_structured_but_low_flow_evidence_is_rejected(raw_symptom):
+def test_particles_select_official_particle_evidence_and_reject_low_flow(raw_symptom):
+    chunks = ChunkLoader().load_verified_chunks()
     low_flow = next(
         chunk
-        for chunk in ChunkLoader().load_verified_chunks()
+        for chunk in chunks
         if chunk.topic_code == "symptom_low_flow"
     ).model_copy(update={"similarity_score": 0.93})
-    service = RecordingSearchService([low_flow])
+    particles = next(
+        chunk
+        for chunk in chunks
+        if chunk.topic_code == "symptom_particles"
+    ).model_copy(update={"similarity_score": 0.91})
+    service = RecordingSearchService([low_flow, particles])
 
     pipeline_result = _run(raw_symptom=raw_symptom, search_service=service)
     ctx = pipeline_result.context
@@ -109,11 +117,40 @@ def test_particles_are_structured_but_low_flow_evidence_is_rejected(raw_symptom)
 
     assert ctx.structured_symptom.symptom_type == "수질 이물질"
     assert ctx.domain_relevance == "IN_DOMAIN"
-    assert ctx.retrieval_top_k_chunk_ids == [low_flow.chunk_id]
-    assert ctx.retrieval_post_topic_chunk_ids == []
-    assert ctx.retrieval_selected_chunk_ids == []
-    assert ctx.evidence_references == []
+    assert ctx.retrieval_top_k_chunk_ids == [low_flow.chunk_id, particles.chunk_id]
+    assert ctx.retrieval_post_topic_chunk_ids == [particles.chunk_id]
+    assert ctx.retrieval_selected_chunk_ids == [particles.chunk_id]
+    assert [item.chunk_id for item in ctx.evidence_references] == [particles.chunk_id]
     assert ctx.followup_questions == []
+    assert response.status == AiExecutionStatus.SUCCEEDED
+    assert response.fallback_reason_code is None
+    combined_guidance = " ".join(
+        [response.usage_guidance.message, *response.usage_guidance.next_actions]
+    )
+    assert "5분" in combined_guidance
+    assert "5~6회" in combined_guidance
+    assert "고객상담센터" in combined_guidance
+    assert "필터" in combined_guidance
+    assert all(
+        term not in combined_guidance
+        for term in ("순간 온수", "지역 수압", "다른 수전", "출수량이 적")
+    )
+
+
+def test_particle_query_fails_closed_when_only_low_flow_evidence_is_returned():
+    low_flow = next(
+        chunk
+        for chunk in ChunkLoader().load_verified_chunks()
+        if chunk.topic_code == "symptom_low_flow"
+    ).model_copy(update={"similarity_score": 0.93})
+
+    pipeline_result = _run(
+        raw_symptom="정수된 물에 미세한 입자가 발생해요",
+        search_service=RecordingSearchService([low_flow]),
+    )
+    response = pipeline_result.to_analysis_result()
+
+    assert pipeline_result.context.retrieval_post_topic_chunk_ids == []
     assert response.status == AiExecutionStatus.FALLBACK
     assert response.fallback_reason_code == FallbackReasonCode.NO_EVIDENCE
     assert "출수량" not in response.usage_guidance.message

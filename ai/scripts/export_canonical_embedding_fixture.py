@@ -1,4 +1,4 @@
-"""Export the approved seven-row BGE-M3 fixture for Backend import."""
+"""Export the approved eight-row BGE-M3 fixture for Backend import."""
 
 from __future__ import annotations
 
@@ -41,9 +41,9 @@ MODEL_NAME = "BAAI/bge-m3"
 MODEL_REVISION = "5617a9f61b028005a4858fdac845db406aefb181"
 DIMENSION = 1024
 INDEX_VERSION = "1.0.0"
-CHUNK_SET_SHA256 = "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+CHUNK_SET_SHA256 = "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
 EMBEDDING_DTYPE = "FLOAT32"
-ROW_COUNT = 7
+ROW_COUNT = 8
 
 EmbeddingClientFactory = Callable[..., BgeM3EmbeddingClient]
 
@@ -97,7 +97,7 @@ def _validate_and_sort_chunks(
     rows: Sequence[dict], identity_rows: Sequence[dict]
 ) -> list[dict]:
     if len(rows) != ROW_COUNT or len(identity_rows) != ROW_COUNT:
-        raise RuntimeError("Approved source and identity must each contain exactly seven rows.")
+        raise RuntimeError("Approved source and identity must each contain exactly eight rows.")
 
     validated: list[dict] = []
     for row in rows:
@@ -157,7 +157,7 @@ def _load_approved_chunks() -> list[dict]:
 
 def _to_float32_vectors(vectors: Sequence[Sequence[object]]) -> list[list[float]]:
     if len(vectors) != ROW_COUNT or any(len(vector) != DIMENSION for vector in vectors):
-        raise RuntimeError("Generated embedding fixture must be 7 x 1024.")
+        raise RuntimeError("Generated embedding fixture must be 8 x 1024.")
 
     converted: list[list[float]] = []
     for vector in vectors:

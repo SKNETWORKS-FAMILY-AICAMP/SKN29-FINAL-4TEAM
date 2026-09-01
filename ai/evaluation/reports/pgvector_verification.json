@@ -1,6 +1,6 @@
 {
   "verification_status": "PASS",
-  "verified_at": "2026-08-11T05:19:57.795787+00:00",
+  "verified_at": "2026-09-01T06:01:58.290121+00:00",
   "runtime": {
     "python_version": "3.13.13",
     "os": "Windows",
@@ -9,17 +9,17 @@
   "embedding_model": "BAAI/bge-m3",
   "embedding_model_version": "5617a9f61b028005a4858fdac845db406aefb181",
   "index_version": "1.0.0",
-  "chunk_set_sha256": "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
+  "chunk_set_sha256": "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
   "dimension": 1024,
   "search_type": "cosine_exact_search",
   "top_k": 5,
   "score_threshold": 0.4,
   "ann_used": false,
   "database": {
-    "postgres_version": "16.14 (Debian 16.14-1.pgdg12+1)",
+    "postgres_version": "16.15 (Debian 16.15-1.pgdg12+2)",
     "pgvector_version": "0.8.6",
-    "row_count": 7,
-    "distinct_chunk_ids": 7,
+    "row_count": 8,
+    "distinct_chunk_ids": 8,
     "min_dimension": 1024,
     "max_dimension": 1024,
     "source_hash_count": 1,
@@ -30,7 +30,7 @@
       "1.0.0"
     ],
     "chunk_set_sha256_values": [
-      "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+      "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
     ],
     "document_source_hashes": {
       "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C"
@@ -49,13 +49,13 @@
     "invalid_dimension_rejected": true
   },
   "summary": {
-    "case_count": 12,
-    "passed_count": 12,
+    "case_count": 13,
+    "passed_count": 13,
     "failed_count": 0,
     "mean_positive_recall_at_5": 1.0,
-    "mean_positive_mrr": 0.8857142857142858,
+    "mean_positive_mrr": 0.9,
     "forbidden_hit_count": 0,
-    "pgvector_query_case_count": 7,
+    "pgvector_query_case_count": 8,
     "policy_block_case_count": 5
   },
   "cases": [
@@ -130,11 +130,11 @@
         "1.0.0"
       ],
       "ranked_chunk_set_sha256": [
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
       ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
@@ -162,7 +162,7 @@
         "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
         "RAG-WPUJAC104DWH-TASTE-ODOR-001",
         "RAG-WPUJAC104DWH-LOW-FLOW-001",
-        "RAG-WPUJAC104DWH-NO-WATER-001"
+        "RAG-WPUJAC104DWH-PARTICLES-001"
       ],
       "ranked_document_ids": [
         "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
@@ -186,7 +186,7 @@
           38
         ],
         [
-          37
+          38
         ]
       ],
       "ranked_model_codes": [
@@ -225,19 +225,19 @@
         "1.0.0"
       ],
       "ranked_chunk_set_sha256": [
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
       ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.707032,
-        0.645908,
+        0.645907,
         0.634469,
         0.610325,
-        0.559018
+        0.587623
       ],
       "recall_at_5": 1.0,
       "mrr": 1.0,
@@ -255,9 +255,9 @@
       "ranked_chunk_ids": [
         "RAG-WPUJAC104DWH-NOISE-001",
         "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-PARTICLES-001",
         "RAG-WPUJAC104DWH-LEAK-001",
-        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
-        "RAG-WPUJAC104DWH-LOW-FLOW-001"
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001"
       ],
       "ranked_document_ids": [
         "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
@@ -320,19 +320,19 @@
         "1.0.0"
       ],
       "ranked_chunk_set_sha256": [
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
       ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
         0.598631,
         0.580029,
+        0.562492,
         0.558179,
-        0.556432,
-        0.527896
+        0.556432
       ],
       "recall_at_5": 1.0,
       "mrr": 1.0,
@@ -415,18 +415,18 @@
         "1.0.0"
       ],
       "ranked_chunk_set_sha256": [
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
       ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
-        0.59543,
+        0.595429,
         0.578165,
-        0.57133,
-        0.568504,
+        0.571329,
+        0.568503,
         0.56393
       ],
       "recall_at_5": 1.0,
@@ -444,9 +444,293 @@
       "case_type": "POSITIVE",
       "ranked_chunk_ids": [
         "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-PARTICLES-001",
         "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
         "RAG-WPUJAC104DWH-LOW-FLOW-001",
-        "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "ranked_page_refs": [
+        [
+          38
+        ],
+        [
+          38
+        ],
+        [
+          38,
+          39
+        ],
+        [
+          38
+        ],
+        [
+          37
+        ]
+      ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
+      ],
+      "execution_path": "PGVECTOR_QUERY",
+      "scores": [
+        0.632926,
+        0.591229,
+        0.560322,
+        0.529281,
+        0.502228
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "document_metadata_passed": true,
+      "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-LOW-FLOW",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "RAG-WPUJAC104DWH-NO-WATER-001",
+        "RAG-WPUJAC104DWH-PARTICLES-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-LEAK-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "ranked_page_refs": [
+        [
+          38
+        ],
+        [
+          37
+        ],
+        [
+          38
+        ],
+        [
+          38
+        ],
+        [
+          38
+        ]
+      ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
+      ],
+      "execution_path": "PGVECTOR_QUERY",
+      "scores": [
+        0.74717,
+        0.694574,
+        0.644837,
+        0.629062,
+        0.617285
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "document_metadata_passed": true,
+      "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-INSTANT-HOT-WATER-SAFETY",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-PARTICLES-001",
+        "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "ranked_document_ids": [
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
+      ],
+      "ranked_page_refs": [
+        [
+          38,
+          39
+        ],
+        [
+          38
+        ],
+        [
+          38
+        ],
+        [
+          38
+        ],
+        [
+          37
+        ]
+      ],
+      "ranked_model_codes": [
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH",
+        "WPUJAC104DWH"
+      ],
+      "ranked_product_generations": [
+        "D",
+        "D",
+        "D",
+        "D",
+        "D"
+      ],
+      "ranked_document_versions": [
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00",
+        "REV.00"
+      ],
+      "ranked_embedding_revisions": [
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181",
+        "5617a9f61b028005a4858fdac845db406aefb181"
+      ],
+      "ranked_index_versions": [
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0",
+        "1.0.0"
+      ],
+      "ranked_chunk_set_sha256": [
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
+      ],
+      "execution_path": "PGVECTOR_QUERY",
+      "scores": [
+        0.597247,
+        0.495729,
+        0.480108,
+        0.469067,
+        0.45774
+      ],
+      "recall_at_5": 1.0,
+      "mrr": 1.0,
+      "forbidden_hits": [],
+      "expected_no_evidence": false,
+      "document_metadata_passed": true,
+      "page_metadata_passed": true,
+      "model_generation_passed": true,
+      "provenance_passed": true,
+      "passed": true
+    },
+    {
+      "case_id": "RAG-POS-PARTICLES",
+      "case_type": "POSITIVE",
+      "ranked_chunk_ids": [
+        "RAG-WPUJAC104DWH-PARTICLES-001",
+        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
+        "RAG-WPUJAC104DWH-LOW-FLOW-001",
         "RAG-WPUJAC104DWH-NO-WATER-001"
       ],
       "ranked_document_ids": [
@@ -468,7 +752,7 @@
           38
         ],
         [
-          37
+          38
         ],
         [
           37
@@ -510,209 +794,19 @@
         "1.0.0"
       ],
       "ranked_chunk_set_sha256": [
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB",
+        "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
       ],
       "execution_path": "PGVECTOR_QUERY",
       "scores": [
-        0.632927,
-        0.560323,
-        0.529281,
-        0.502228,
-        0.496554
-      ],
-      "recall_at_5": 1.0,
-      "mrr": 1.0,
-      "forbidden_hits": [],
-      "expected_no_evidence": false,
-      "document_metadata_passed": true,
-      "page_metadata_passed": true,
-      "model_generation_passed": true,
-      "provenance_passed": true,
-      "passed": true
-    },
-    {
-      "case_id": "RAG-POS-LOW-FLOW",
-      "case_type": "POSITIVE",
-      "ranked_chunk_ids": [
-        "RAG-WPUJAC104DWH-LOW-FLOW-001",
-        "RAG-WPUJAC104DWH-NO-WATER-001",
-        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
-        "RAG-WPUJAC104DWH-LEAK-001",
-        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
-      ],
-      "ranked_document_ids": [
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
-      ],
-      "ranked_page_refs": [
-        [
-          38
-        ],
-        [
-          37
-        ],
-        [
-          38
-        ],
-        [
-          38
-        ],
-        [
-          38,
-          39
-        ]
-      ],
-      "ranked_model_codes": [
-        "WPUJAC104DWH",
-        "WPUJAC104DWH",
-        "WPUJAC104DWH",
-        "WPUJAC104DWH",
-        "WPUJAC104DWH"
-      ],
-      "ranked_product_generations": [
-        "D",
-        "D",
-        "D",
-        "D",
-        "D"
-      ],
-      "ranked_document_versions": [
-        "REV.00",
-        "REV.00",
-        "REV.00",
-        "REV.00",
-        "REV.00"
-      ],
-      "ranked_embedding_revisions": [
-        "5617a9f61b028005a4858fdac845db406aefb181",
-        "5617a9f61b028005a4858fdac845db406aefb181",
-        "5617a9f61b028005a4858fdac845db406aefb181",
-        "5617a9f61b028005a4858fdac845db406aefb181",
-        "5617a9f61b028005a4858fdac845db406aefb181"
-      ],
-      "ranked_index_versions": [
-        "1.0.0",
-        "1.0.0",
-        "1.0.0",
-        "1.0.0",
-        "1.0.0"
-      ],
-      "ranked_chunk_set_sha256": [
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
-      ],
-      "execution_path": "PGVECTOR_QUERY",
-      "scores": [
-        0.747171,
-        0.694574,
-        0.629062,
-        0.617285,
-        0.61402
-      ],
-      "recall_at_5": 1.0,
-      "mrr": 1.0,
-      "forbidden_hits": [],
-      "expected_no_evidence": false,
-      "document_metadata_passed": true,
-      "page_metadata_passed": true,
-      "model_generation_passed": true,
-      "provenance_passed": true,
-      "passed": true
-    },
-    {
-      "case_id": "RAG-POS-INSTANT-HOT-WATER-SAFETY",
-      "case_type": "POSITIVE",
-      "ranked_chunk_ids": [
-        "RAG-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
-        "RAG-WPUJAC104DWH-LOW-FLOW-001",
-        "RAG-WPUJAC104DWH-TASTE-ODOR-001",
-        "RAG-WPUJAC104DWH-COLD-TEMPERATURE-001",
-        "RAG-WPUJAC104DWH-LEAK-001"
-      ],
-      "ranked_document_ids": [
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
-        "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"
-      ],
-      "ranked_page_refs": [
-        [
-          38,
-          39
-        ],
-        [
-          38
-        ],
-        [
-          38
-        ],
-        [
-          37
-        ],
-        [
-          38
-        ]
-      ],
-      "ranked_model_codes": [
-        "WPUJAC104DWH",
-        "WPUJAC104DWH",
-        "WPUJAC104DWH",
-        "WPUJAC104DWH",
-        "WPUJAC104DWH"
-      ],
-      "ranked_product_generations": [
-        "D",
-        "D",
-        "D",
-        "D",
-        "D"
-      ],
-      "ranked_document_versions": [
-        "REV.00",
-        "REV.00",
-        "REV.00",
-        "REV.00",
-        "REV.00"
-      ],
-      "ranked_embedding_revisions": [
-        "5617a9f61b028005a4858fdac845db406aefb181",
-        "5617a9f61b028005a4858fdac845db406aefb181",
-        "5617a9f61b028005a4858fdac845db406aefb181",
-        "5617a9f61b028005a4858fdac845db406aefb181",
-        "5617a9f61b028005a4858fdac845db406aefb181"
-      ],
-      "ranked_index_versions": [
-        "1.0.0",
-        "1.0.0",
-        "1.0.0",
-        "1.0.0",
-        "1.0.0"
-      ],
-      "ranked_chunk_set_sha256": [
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958",
-        "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
-      ],
-      "execution_path": "PGVECTOR_QUERY",
-      "scores": [
-        0.597247,
-        0.495729,
-        0.480108,
-        0.45774,
-        0.43794
+        0.758733,
+        0.594134,
+        0.590771,
+        0.577299,
+        0.556153
       ],
       "recall_at_5": 1.0,
       "mrr": 1.0,
@@ -832,7 +926,7 @@
       "ranked_embedding_revisions": [],
       "ranked_index_versions": [],
       "ranked_chunk_set_sha256": [],
-      "execution_path": "POLICY_BLOCK_UNSUPPORTED_MODEL",
+      "execution_path": "POLICY_BLOCK_UNREGISTERED_EXACT_SALES_CODE",
       "scores": [],
       "recall_at_5": 1.0,
       "mrr": 1.0,

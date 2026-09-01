@@ -5,23 +5,23 @@
   "reports": [
     {
       "path": "processed/validation/schema/latest_schema_report.json",
-      "sha256": "1E3A47B1858D3598CF64259E3B0EF1AF0179B3247D0473EF0775916714A51124"
+      "sha256": "BA295B92D10194AB42A8E4AF2625794E60B037A63576ECA288692DC573BF43AF"
     },
     {
       "path": "processed/validation/integrity/latest_integrity_report.json",
-      "sha256": "DFD6D622007460B81A9ED57454807F53C9ED7A55B0AF59A691F07878C6E45AD2"
+      "sha256": "2964B52182DE74FD13400C7A539D693746B27FA5AEFD1989DADF2C4EF2DD977F"
     },
     {
       "path": "processed/validation/quality/latest_quality_report.json",
-      "sha256": "5F92E0B55B151FB9E289C9CA4D814B27B2D88B5544D7E7CC74824E7035BDCB05"
+      "sha256": "1097BC20B50A643FA77A442DF830A91BC434D18004CBC6629842227480F3A7CB"
     },
     {
       "path": "processed/validation/business/latest_business_rules_report.json",
-      "sha256": "0DAC9AECEC41DF64DA6BC487CF79E618416EF6411784BF00C3B32939CFAEFD5C"
+      "sha256": "3E16915934163839D3B58E4454AC44DDAA3213C88C3F4E9A89DA2C7CB96CE84C"
     },
     {
       "path": "processed/validation/reproducibility/latest_reproducibility_report.json",
-      "sha256": "65A2AA60BE76610B9EFC4CF5A723B69D5D3EF25DF338DED2E729285B254556E1"
+      "sha256": "1B26BBA014931F5C7CA68DCCDB598160D0F166DA51490155DEA520F899FB8AF0"
     }
   ],
   "totals": {
@@ -45,13 +45,13 @@
       "errors": 0,
       "warnings": 0,
       "files_checked": 60,
-      "records_checked": 990
+      "records_checked": 992
     },
     "counts": {
       "manual_pages": 44,
       "faq_normalized": 119,
-      "rag_chunks": 7,
-      "evidence": 9,
+      "rag_chunks": 8,
+      "evidence": 10,
       "synthetic_inquiries": 22,
       "synthetic_fixture_records": 369,
       "product_expansion_e2e_candidates": 2,
@@ -242,7 +242,7 @@
       "status": "TEAM_APPROVED",
       "data_projection_consumes_contract": true,
       "backend_runtime_verified": true,
-      "pipeline_config_sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74",
+      "pipeline_config_sha256": "C62BC7E6B177F6AA9C1D55608C4A02AE6F8F1FBAB5784AA13FB7438A4DF8581B",
       "contract_mapping_sha256": "274E96443D02862D8E6B7BA13A081EE23BBC2B00E50A80F39B5CBB5E889CF4C3",
       "source_hashes_verified": true
     },
@@ -267,7 +267,7 @@
     "status": "TEAM_APPROVED",
     "data_projection_consumes_contract": true,
     "backend_runtime_verified": true,
-    "pipeline_config_sha256": "DCB4D4BBEDC46CC4F9D227439E77104FE10C52F42631EE6975936B7132F9AD74",
+    "pipeline_config_sha256": "C62BC7E6B177F6AA9C1D55608C4A02AE6F8F1FBAB5784AA13FB7438A4DF8581B",
     "contract_mapping_sha256": "274E96443D02862D8E6B7BA13A081EE23BBC2B00E50A80F39B5CBB5E889CF4C3",
     "source_hashes_verified": true
   },

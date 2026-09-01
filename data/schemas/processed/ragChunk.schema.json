@@ -122,7 +122,8 @@
         "symptom_leak",
         "symptom_taste_odor",
         "symptom_low_flow",
-        "symptom_hot_water_safety"
+        "symptom_hot_water_safety",
+        "symptom_particles"
       ]
     },
     "symptom_category": {
@@ -134,7 +135,8 @@
         "LEAK",
         "TASTE_ODOR",
         "LOW_FLOW",
-        "INSTANT_HOT_WATER_SAFETY"
+        "INSTANT_HOT_WATER_SAFETY",
+        "PARTICLES"
       ]
     },
     "risk_level": {

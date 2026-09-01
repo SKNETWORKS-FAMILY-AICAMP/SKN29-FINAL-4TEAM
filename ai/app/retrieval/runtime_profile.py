@@ -61,9 +61,9 @@ _PROFILES = {
         policy_profile=None,
         approved_model_codes=frozenset({"WPUJAC104DWH"}),
         expected_index_version="1.0.0",
-        expected_chunk_count=7,
+        expected_chunk_count=8,
         expected_chunk_set_sha256=(
-            "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+            "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
         ),
         expected_document_ids=frozenset(
             {"MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00"}

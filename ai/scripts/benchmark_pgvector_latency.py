@@ -123,7 +123,7 @@ def _assert_disposable_database(dsn: str) -> dict:
     facts = _database_facts(dsn)
     if not re.search(r"(verify|test|tmp|disposable)", facts["database_name"], re.IGNORECASE):
         raise RuntimeError("공유 DB 성능 측정을 거부했습니다.")
-    if facts["row_count"] != 7 or facts["minimum_dimension"] != 1024 or facts["maximum_dimension"] != 1024:
+    if facts["row_count"] != 8 or facts["minimum_dimension"] != 1024 or facts["maximum_dimension"] != 1024:
         raise RuntimeError("승인 청크 7개·1024차원 격리 기준선과 DB 상태가 다릅니다.")
     return facts
 

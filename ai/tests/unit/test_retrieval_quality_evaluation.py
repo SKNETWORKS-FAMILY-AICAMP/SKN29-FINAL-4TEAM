@@ -119,8 +119,8 @@ def test_retrieval_runner_reports_not_run_without_search_service():
     report = RetrievalEvaluationRunner().run()
 
     assert report["status"] == "NOT_RUN"
-    assert report["summary"]["case_count"] == 12
-    assert report["summary"]["positive_case_count"] == 7
+    assert report["summary"]["case_count"] == 13
+    assert report["summary"]["positive_case_count"] == 8
     assert report["summary"]["negative_case_count"] == 5
     assert report["summary"]["search_call_count"] == 0
     assert report["mean_recall_at_5"] is None

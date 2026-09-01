@@ -20,11 +20,11 @@ def _manifest(*, three_model: bool) -> IndexManifest:
         dimension=1024,
         index_type="exact_search",
         index_version="2.0.0" if three_model else "1.0.0",
-        chunk_count=53 if three_model else 7,
+        chunk_count=53 if three_model else 8,
         chunk_set_sha256=(
             "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304"
             if three_model
-            else "175065B3A487D73FF5B06F359B018CEA416719C88684EDA58C33C996107C9958"
+            else "D523833B06C2F88C7C028F845D4782B1C1E66F3F5D567F4F3FF40C9DC8B114FB"
         ),
         document_hashes=(
             {
