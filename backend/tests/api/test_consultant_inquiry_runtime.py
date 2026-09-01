@@ -689,12 +689,25 @@ def test_consultant_detail_returns_closed_assigned_projection(
         assert forbidden not in serialized
 
 
-@pytest.mark.parametrize("pair_index", range(1, 7))
+@pytest.mark.parametrize(
+    ("consultant_username", "matched_contract", "mismatched_contract"),
+    [
+        ("SKN-001", "SYN-P1-TEAM-CONTRACT-001", "SYN-P1-TEAM-CONTRACT-002"),
+        ("SKN-002", "SYN-P1-TEAM-CONTRACT-002", "SYN-P1-TEAM-CONTRACT-003"),
+        ("SKN-003", "SYN-P1-TEAM-CONTRACT-003", "SYN-P1-TEAM-CONTRACT-004"),
+        ("SKN-004", "SYN-P1-TEAM-CONTRACT-004", "SYN-P1-TEAM-CONTRACT-005"),
+        ("SKN-005", "SYN-P1-TEAM-CONTRACT-005", "SYN-P1-TEAM-CONTRACT-006"),
+        ("SKN-006", "SYN-P1-TEAM-CONTRACT-006", "SYN-P1-TEAM-CONTRACT-001"),
+        ("SKN-007", "SYN-P1-EXTRA-CONTRACT-001", "SYN-P1-TEAM-CONTRACT-001"),
+    ],
+)
 def test_consultant_detail_exposes_contact_only_for_exact_p1_pair(
-    pair_index,
+    consultant_username,
+    matched_contract,
+    mismatched_contract,
 ):
     consultant = create_user(80, role=User.Role.CONSULTANT)
-    consultant.username = f"SKN-{pair_index:03d}"
+    consultant.username = consultant_username
     consultant.save(update_fields=["username"])
 
     matched_owner = create_user(81, role=User.Role.CUSTOMER)
@@ -704,7 +717,7 @@ def test_consultant_detail_exposes_contact_only_for_exact_p1_pair(
         consultant=consultant,
     )
     CustomerSubscription.objects.filter(pk=matched.subscription_id).update(
-        contract_no=f"SYN-P1-TEAM-CONTRACT-{pair_index:03d}"
+        contract_no=matched_contract
     )
 
     mismatched_owner = create_user(82, role=User.Role.CUSTOMER)
@@ -715,13 +728,7 @@ def test_consultant_detail_exposes_contact_only_for_exact_p1_pair(
     )
     CustomerSubscription.objects.filter(
         pk=mismatched.subscription_id
-    ).update(
-        contract_no=(
-            "SYN-P1-TEAM-CONTRACT-001"
-            if pair_index == 6
-            else f"SYN-P1-TEAM-CONTRACT-{pair_index + 1:03d}"
-        )
-    )
+    ).update(contract_no=mismatched_contract)
 
     client = authenticated_client(consultant)
     matched_response = client.get(

@@ -1,4 +1,4 @@
-"""Fail-closed routing for the six reserved P1 team contracts."""
+"""Fail-closed routing for PM-approved reserved test contracts."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ P1_TEAM_CONSULTANT_CONTRACT_MAP = {
     "SKN-004": "SYN-P1-TEAM-CONTRACT-004",
     "SKN-005": "SYN-P1-TEAM-CONTRACT-005",
     "SKN-006": "SYN-P1-TEAM-CONTRACT-006",
+    "SKN-007": "SYN-P1-EXTRA-CONTRACT-001",
 }
 P1_TEAM_RESERVED_CONTRACTS = frozenset(
     P1_TEAM_CONSULTANT_CONTRACT_MAP.values()
@@ -23,7 +24,7 @@ P1_TEAM_CONTRACT_CONSULTANT_MAP = {
 
 
 class P1TeamConsultantRouting:
-    """Keep reserved P1 work visible only to its numbered consultant."""
+    """Keep reserved test work visible only to its numbered consultant."""
 
     @staticmethod
     def _username(actor: Any) -> str:
@@ -44,7 +45,7 @@ class P1TeamConsultantRouting:
         actor: Any,
         contract_no: str,
     ) -> bool:
-        """Return true only for one of the six exact consultant-contract pairs."""
+        """Return true only for an approved exact consultant-contract pair."""
 
         normalized_contract_no = str(contract_no or "").strip()
         return (
