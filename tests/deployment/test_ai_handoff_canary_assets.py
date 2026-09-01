@@ -70,6 +70,7 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
         self.assertIn("DEPLOYMENT_MUTATION_STARTED", deploy)
         self.assertIn("mutation_started=true", trusted)
         self.assertIn("steps.deploy.outputs.mutation_started == 'true'", trusted)
+        self.assertIn("steps.deploy.outcome == 'success'", trusted)
         self.assertIn("DEPLOYMENT_BLOCKED: active AI Handoff Canary window", trusted)
         self.assertIn("ROLLBACK_BLOCKED: active AI Handoff Canary window", rollback)
 

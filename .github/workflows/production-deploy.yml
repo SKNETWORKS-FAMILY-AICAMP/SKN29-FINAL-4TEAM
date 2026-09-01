@@ -793,7 +793,7 @@ jobs:
         run: python scripts/smoke/check_production_deployment.py --base-url https://waterbridge.site
 
       - name: Roll back after a post-deployment failure
-        if: ${{ failure() && steps.deploy.outputs.command_id != '' && steps.deploy.outputs.mutation_started == 'true' }}
+        if: ${{ failure() && steps.deploy.outcome == 'success' && steps.deploy.outputs.command_id != '' && steps.deploy.outputs.mutation_started == 'true' }}
         shell: bash
         env:
           STORAGE_BUCKET: ${{ needs.build-and-publish.outputs.storage_bucket }}
