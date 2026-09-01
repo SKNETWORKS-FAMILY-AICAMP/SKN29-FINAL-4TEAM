@@ -45,26 +45,26 @@
 
 ## 팀원 소개
 
-<table border="1" cellpadding="16" cellspacing="0" width="100%" rules="all" frame="box">
+<table border="1" cellpadding="18" cellspacing="0" width="1000" rules="all" frame="box">
   <tr>
-    <td align="center" valign="top" width="33%">
-      <img src="docs/assets/readme-profiles/profile-01.png" alt="김은진 프로필" width="120" height="120"><br>
+    <td align="center" valign="top" width="333">
+      <img src="docs/assets/readme-profiles/profile-01.png" alt="김은진 프로필" width="150" height="150"><br>
       <strong>김은진</strong>
       <hr>
       <strong>데이터·QA·DevOps</strong><br>
       <sub>데이터 Pipeline·QA·CI/CD<br>배포·관측성</sub><br>
       <a href="https://github.com/eunjin661">@eunjin661</a>
     </td>
-    <td align="center" valign="top" width="33%">
-      <img src="docs/assets/readme-profiles/profile-02.png" alt="양정현 프로필" width="120" height="120"><br>
+    <td align="center" valign="top" width="333">
+      <img src="docs/assets/readme-profiles/profile-02.png" alt="양정현 프로필" width="150" height="150"><br>
       <strong>양정현</strong>
       <hr>
       <strong>모바일 앱</strong><br>
       <sub>고객·방문기사 Android 앱<br>Mobile 계약 연동</sub><br>
       <a href="https://github.com/didwjdgus90">@didwjdgus90</a>
     </td>
-    <td align="center" valign="top" width="33%">
-      <img src="docs/assets/readme-profiles/profile-06.png" alt="윤승혁 프로필" width="120" height="120"><br>
+    <td align="center" valign="top" width="333">
+      <img src="docs/assets/readme-profiles/profile-06.png" alt="윤승혁 프로필" width="150" height="150"><br>
       <strong>윤승혁</strong>
       <hr>
       <strong>PM·기술 통합</strong><br>
@@ -73,24 +73,24 @@
     </td>
   </tr>
   <tr>
-    <td align="center" valign="top" width="33%">
-      <img src="docs/assets/readme-profiles/profile-05.png" alt="이동윤 프로필" width="120" height="120"><br>
+    <td align="center" valign="top" width="333">
+      <img src="docs/assets/readme-profiles/profile-05.png" alt="이동윤 프로필" width="150" height="150"><br>
       <strong>이동윤</strong>
       <hr>
       <strong>AI·RAG</strong><br>
       <sub>문진 분석·공식 근거 검색<br>생성·안전 검증·AI 평가</sub><br>
       <a href="https://github.com/ldy-99">@ldy-99</a>
     </td>
-    <td align="center" valign="top" width="33%">
-      <img src="docs/assets/readme-profiles/profile-03.png" alt="최지용 프로필" width="120" height="120"><br>
+    <td align="center" valign="top" width="333">
+      <img src="docs/assets/readme-profiles/profile-03.png" alt="최지용 프로필" width="150" height="150"><br>
       <strong>최지용</strong>
       <hr>
       <strong>백엔드·DB</strong><br>
       <sub>인증·권한·REST API<br>DB·Migration·상태 전이 Runtime</sub><br>
       <a href="https://github.com/antisdream">@antisdream</a>
     </td>
-    <td align="center" valign="top" width="33%">
-      <img src="docs/assets/readme-profiles/profile-04.png" alt="한예나 프로필" width="120" height="120"><br>
+    <td align="center" valign="top" width="333">
+      <img src="docs/assets/readme-profiles/profile-04.png" alt="한예나 프로필" width="150" height="150"><br>
       <strong>한예나</strong>
       <hr>
       <strong>웹 프론트엔드</strong><br>
@@ -102,14 +102,19 @@
 
 ## 핵심 사용자와 목표 기능
 
-핵심 MVP는 **고객 ↔ 상담사**의 P0 수직 흐름입니다. 방문 필요 여부와 P1 인계 정보를 상담 기록에 남기는 단계까지는 P0이지만, 실제 기사 배정·일정·현장 처리와 운영 대시보드는 P1입니다. P0·P1은 기획 우선순위이지 Runtime 구현 완료 표시가 아니며, 실제 연동 범위는 [API Runtime 구현 현황](docs/api/runtime_implementation_status.md)과 각 Component README에서 다시 판정합니다.
+핵심 MVP는 **고객 ↔ 상담사**의 P0 수직 흐름입니다.
 
-| 범위 | 사용자 | 주요 기능 | 대표 채널 |
-| --- | --- | --- | --- |
-| **P0 핵심** | 고객 | 합성 계약 고객 인증, 구독·제품 확인, 증상 문진, AI 안전 안내, 상담 요청, 상담 결과·현재 상태·해결 여부 확인 | Android 고객 앱 |
-| **P0 핵심** | 상담사 | 상담 큐, 문의·고객·근거·상태 이력 확인, 상담 시작·기록·요약·완료, 방문 필요 여부와 P1 인계 정보 기록 | React 상담사 웹 |
-| **P1 후속** | 방문기사 | 가상 기사 배정, 방문 일정·사전 점검 정보 조회, 현장 조치와 방문 결과 기록 | Android 기사 앱 |
-| **P1 후속** | 운영 담당자 | 문의 현황, 위험·지연·재문의 예외, 처리 결과와 운영 지표 확인 | React 운영 웹 |
+- **P0:** 방문 필요 여부를 판정하고 P1 인계 정보를 상담 기록에 남기는 단계까지
+- **P1:** 실제 기사 배정·일정·현장 처리와 운영 대시보드
+
+> P0·P1은 기획 우선순위이며 Runtime 구현 완료 표시가 아닙니다. 실제 연동 범위는 [API Runtime 구현 현황](docs/api/runtime_implementation_status.md)과 각 Component README에서 다시 판정합니다.
+
+| 우선순위·사용자 | 주요 기능 | 채널 |
+| --- | --- | --- |
+| **P0 · 고객** | 합성 계약 고객 인증 · 구독·제품 확인 · 증상 문진<br>AI 안전 안내 · 상담 요청 · 상담 결과·해결 여부 확인 | 고객 Android 앱 |
+| **P0 · 상담사** | 상담 큐 · 문의·고객·근거·상태 이력 확인<br>상담 시작·기록·요약·완료 · 방문 필요 여부와 P1 인계 기록 | 상담사 React 웹 |
+| **P1 · 방문기사** | 가상 기사 배정 · 방문 일정·사전 점검 정보 조회<br>현장 조치와 방문 결과 기록 | 기사 Android 앱 |
+| **P1 · 운영 담당자** | 문의 현황 · 위험·지연·재문의 예외 확인<br>처리 결과와 운영 지표 확인 | 운영 React 웹 |
 
 ### P0 핵심 목표
 
@@ -151,9 +156,9 @@ flowchart LR
         OPERATOR["운영 React 웹<br/>현황·예외·지표"]
     end
 
-    BACKEND -. "방문 필요 인계" .-> TECHNICIAN
-    TECHNICIAN -. "방문 처리 결과" .-> BACKEND
-    BACKEND -. "운영 Projection" .-> OPERATOR
+    BACKEND -.->|방문 필요 인계| TECHNICIAN
+    TECHNICIAN -.->|방문 처리 결과| BACKEND
+    BACKEND -.->|운영 현황 전달| OPERATOR
 ```
 
 AI는 안내와 구조화된 결과를 반환하지만 문의 상태를 직접 변경하지 않습니다. 모든 상태 변경은 Backend가 권한, 가드, 상태 버전과 멱등성을 확인한 뒤 기록합니다.
@@ -191,9 +196,10 @@ flowchart LR
 
     CUSTOMER_APP --> BACKEND
     CONSULTANT_WEB --> BACKEND
-    TECH_APP -. "P1" .-> BACKEND
-    OPERATOR_WEB -. "P1" .-> BACKEND
-    BACKEND <--> AI
+    TECH_APP -.->|P1| BACKEND
+    OPERATOR_WEB -.->|P1| BACKEND
+    BACKEND --> AI
+    AI --> BACKEND
     BACKEND --> BUSINESS_DB
     AI --> VECTOR_DB
     DATA --> VECTOR_DB
@@ -294,15 +300,14 @@ git rev-parse HEAD
 
 ### 제출·인계 산출물 현황
 
-아래 표는 현재 공개 Git `main`에서 **정확한 파일명과 대체 가능한 원본**을 나눠 확인한 결과입니다.
+아래 표는 현재 공개 Git `main`에서 확인할 수 있는 제출·인계 자료만 정리합니다.
 
-| 요구 산출물 | 현재 공개 저장소 | 판정과 안전한 처리 |
-| --- | --- | --- |
-| 전체 소스 원본 `project_src_v1.0.zip` | 정확한 ZIP 파일 없음. 이 Git 저장소에 Backend·AI·Web·Android 원본이 있음 | Git 저장소 권한 이양은 가능. ZIP이 필수면 승인된 Release SHA에서 별도로 생성하고 SHA-256을 함께 제공해야 함 |
-| 빌드·배포 매뉴얼 `README.md` 또는 `deploy_guide.docx` | 이 README와 [운영 배포 Runbook](docs/deployment/production-deployment-runbook.md)이 있음. 정확한 DOCX는 없음 | 로컬 Build와 배포 절차의 문서 대체물은 있음. 실제 배포 완료는 배포 후 Smoke·Rollback 증거로 별도 판정 |
-| DB 스크립트 `init_schema.sql` | 정확한 SQL 파일 없음. Django Model·Migration과 [DB 문서](docs/database/README.md)가 기준 | Migration이 Schema SSOT. SQL 제출이 강제되면 승인된 Release의 빈 PostgreSQL에 Migration을 적용한 뒤 생성한 **Schema Snapshot**임을 표시 |
-| API 명세 `api_specification.pdf` 또는 Swagger | 정확한 PDF는 없음. [OpenAPI 3.1](contracts/api/openapi.yaml), [사람용 API 명세](docs/api/waterbridge_api_specification.md), Backend `/api/docs/`가 있음 | 기계 기준은 검증 Script를 통과한 `contracts/api/openapi.yaml`. Runtime Swagger는 현재 Serializer 추론·`operationId` 충돌 경고가 있어 완전성 보완이 필요하며, 계약 존재와 Runtime Route 구현도 별도 확인 |
-| 운영 계정·환경변수 `account_list.xlsx` | 정확한 XLSX와 실제 비밀값은 없음. 공개용 `.env.example` 5종이 있음 | 실제 계정·비밀번호·API Key는 Git에 올리지 않음. 계정명·용도·소유자·보관 위치만 공개 가능한 별도 목록으로 관리 |
+| 제출 항목 | 현재 공개 저장소 기준 |
+| --- | --- |
+| 빌드·배포 매뉴얼 | **대체 자료 있음**<br>이 README와 [운영 배포 Runbook](docs/deployment/production-deployment-runbook.md)을 사용합니다. `deploy_guide.docx`는 없으며, 실제 배포 완료는 배포 후 Smoke·Rollback 증거로 별도 판정합니다. |
+| DB 스키마 | **Django Migration이 기준**<br>`init_schema.sql`은 없습니다. Django Model·Migration과 [DB 문서](docs/database/README.md)가 Schema SSOT이며, SQL 제출이 필수라면 승인된 Release에서 생성한 **Schema Snapshot**임을 명시합니다. |
+| API 명세 | **OpenAPI·Swagger 제공**<br>[OpenAPI 3.1](contracts/api/openapi.yaml), [사람용 API 명세](docs/api/waterbridge_api_specification.md), Backend `/api/docs/`를 사용합니다. Runtime Swagger의 Serializer 추론·`operationId` 충돌 경고는 보완이 필요합니다. |
+| 운영 계정·환경변수 | **공개 예시만 제공**<br>`account_list.xlsx`와 실제 비밀값은 없습니다. 공개용 `.env.example` 5종으로 변수 이름을 확인하고, 실제 계정·비밀번호·API Key는 승인된 비공개 전달 절차로 관리합니다. |
 
 공개 환경변수 이름은 [루트](.env.example), [Backend](backend/.env.example), [AI](ai/.env.example), [Web](web/.env.example), [Production Runtime](infra/docker/compose/production/runtime.env.example) 예시에서 확인합니다. `replace-with-*`는 실제 값이 아니며, 실제 Secret은 승인된 비공개 저장소와 전달 절차에서 관리합니다.
 
@@ -395,15 +400,18 @@ Pop-Location
 
 ## 테스트 및 검증
 
-검증 결과는 다음 단계를 구분합니다. 낮은 단계의 PASS를 높은 단계의 완료 근거로 사용하지 않습니다.
+검증은 아래 단계를 순서대로 구분합니다. 낮은 단계의 PASS를 높은 단계의 완료 근거로 사용하지 않습니다.
 
-| 단계 | 확인 대상 | PASS가 의미하지 않는 것 |
-| --- | --- | --- |
-| 정적·계약 | Markdown 링크, OpenAPI·AI·State·Code 계약, Lint·TypeCheck | 서버 기동, DB 저장, 사용자 흐름 성공 |
-| 단위·컴포넌트 | Backend·AI·Web·Mobile의 영역별 테스트와 Build | 서비스 간 실제 연동, 운영 배포 |
-| 로컬 통합 | 실제 PostgreSQL Migration, Backend·AI Health, API·DB Smoke | AWS·RDS·물리기기·브라우저 전체 E2E |
-| 수직 E2E | 같은 SHA·합성 계정·동일 문의로 고객→AI→상담사→고객 결과 확인 | 독립 QA와 운영 Release 승인 |
-| 배포 Gate | 배포 후 Health·기능 Smoke·관측성·Rollback | PM 최종 승인과 실고객 운영 허가 |
+- **정적·계약:** Markdown 링크, OpenAPI·AI·State·Code 계약, Lint·TypeCheck
+  - 서버 기동, DB 저장, 사용자 흐름 성공을 증명하지 않습니다.
+- **단위·컴포넌트:** Backend·AI·Web·Mobile의 영역별 테스트와 Build
+  - 서비스 간 실제 연동이나 운영 배포를 증명하지 않습니다.
+- **로컬 통합:** 실제 PostgreSQL Migration, Backend·AI Health, API·DB Smoke
+  - AWS·RDS·물리기기·브라우저 전체 E2E를 증명하지 않습니다.
+- **수직 E2E:** 같은 SHA·합성 계정·동일 문의로 고객→AI→상담사→고객 결과 확인
+  - 독립 QA와 운영 Release 승인을 대신하지 않습니다.
+- **배포 Gate:** 배포 후 Health·기능 Smoke·관측성·Rollback
+  - PM 최종 승인과 실고객 운영 허가를 대신하지 않습니다.
 
 - API·AI·상태·코드 경계를 변경할 때는 `contracts/**`와 소비자 구현을 같은 변경 단위에서 정합화합니다.
 - DB Schema는 Django Model과 Migration을 원본으로 관리하며 수동 DDL이나 오래된 SQL Snapshot을 실행 기준으로 삼지 않습니다.
@@ -467,15 +475,26 @@ Browser E2E는 [Web Playwright E2E 안내](web/e2e/README.md)의 Loopback·합�
 
 기준은 `origin/main` Commit `7e1dba84b7d8b7a7a15560f4b1b0350c8dfca77f`입니다. 아래 숫자는 이 SHA·Windows 환경에서 직접 실행한 일회성 증거이며 이후 Commit의 PASS 근거로 재사용하지 않습니다.
 
-| 영역 | 판정 | 직접 확인한 범위와 남은 제한 |
-| --- | --- | --- |
-| Contract | **PASS** | OpenAPI·Example·공통 Code·State Machine·Crosswalk 검증 Script 5종 Exit `0` |
-| Backend 설치·기동 | **PASS_WITH_SCHEMA_WARNING** | 새 Python `3.13.13` venv 설치, Django Check, 빈 PostgreSQL `16`에 전체 Migration과 `migrate --check`, pgvector `0.8.6`, `/health`·`/api/schema/`·`/api/docs/` HTTP `200`. 다만 Runtime Schema 생성 시 여러 `APIView` Serializer 추론 실패와 `operationId` 충돌 경고가 있어 Swagger 완전성은 HOLD |
-| Backend 전체 회귀 | **HOLD** | 최초 전체 실행은 `1716 passed, 8 failed, 47 skipped, 13 errors`. 접근권한이 정상인 Temp에서 영향군을 재실행해 환경성 Error 13건은 재현되지 않았지만 기능성 실패 8건은 유지됨: T-005 준비도 2건, Migration Allowlist 6건 |
-| AI | **PASS** | 새 Lockfile venv에서 Unit `1040 passed`, Subtest `41 passed`, Deprecation Warning 2건. `/health`·`/openapi.json`·`/docs` HTTP `200`; 실제 외부 LLM·Vector 검색 E2E는 범위 밖 |
-| Web 정적·컴포넌트 | **PASS_WITH_ENV_WARNING** | Lint·TypeCheck·Production Build Exit `0`, Vitest `417 passed, 4 skipped`, Production Preview와 상담사 Route HTTP `200`. 실행 PC의 Node `24.14.0`은 `jsdom 30` 최소 `24.15.0`보다 낮아 Engine Warning이 있었으므로 지원 Node에서 재확인 필요 |
-| Android | **PASS_WITH_ENV_WARNING** | 위 Variant 명시 명령으로 Gradle Task 112개와 두 APK Build 성공. 실행 PC는 JDK `26.0.1`이어서 프로젝트 기준 JDK `17`의 동일 재현은 별도 필요. `verify-build.bat`는 Customer Variant 모호성으로 실패 |
-| Web↔Backend↔PostgreSQL Browser E2E | **HOLD** | 공식 팀 Migration Allowlist가 실제 `inquiries.0018` 대신 `0017` leaf를 기대해 Gate가 차단됨. 일회성 합성 DB에서 P1 `visits.0005`만 보류해 Chromium 2개 시나리오를 실행했으나, 현 UI는 `편집 시작`을 먼저 요구하는데 테스트가 즉시 `상담 기록` 입력을 시도해 2건 모두 실패 |
+- **Contract — PASS**
+  - OpenAPI·Example·공통 Code·State Machine·Crosswalk 검증 Script 5종이 Exit `0`으로 완료됐습니다.
+- **Backend 설치·기동 — PASS_WITH_SCHEMA_WARNING**
+  - 새 Python `3.13.13` venv, Django Check, 빈 PostgreSQL `16` 전체 Migration, `migrate --check`, pgvector `0.8.6`, Health·Schema·Swagger HTTP `200`을 확인했습니다.
+  - Runtime Schema의 `APIView` Serializer 추론 실패와 `operationId` 충돌 경고가 있어 Swagger 완전성은 HOLD입니다.
+- **Backend 전체 회귀 — HOLD**
+  - 최초 실행은 `1716 passed, 8 failed, 47 skipped, 13 errors`였습니다.
+  - 권한이 정상인 Temp에서 환경성 Error 13건은 재현되지 않았지만, T-005 준비도 2건과 Migration Allowlist 6건은 계속 실패했습니다.
+- **AI — PASS**
+  - Unit `1040 passed`, Subtest `41 passed`, Deprecation Warning 2건과 Health·OpenAPI·Docs HTTP `200`을 확인했습니다.
+  - 실제 외부 LLM·Vector 검색 E2E는 범위 밖입니다.
+- **Web 정적·컴포넌트 — PASS_WITH_ENV_WARNING**
+  - Lint·TypeCheck·Production Build, Vitest `417 passed, 4 skipped`, Production Preview와 상담사 Route HTTP `200`을 확인했습니다.
+  - 실행 PC의 Node `24.14.0`은 `jsdom 30` 최소 `24.15.0`보다 낮아 지원 Node에서 재확인이 필요합니다.
+- **Android — PASS_WITH_ENV_WARNING**
+  - Variant 명시 명령으로 Gradle Task 112개와 두 APK Build가 성공했습니다.
+  - 실행 PC는 JDK `26.0.1`이므로 프로젝트 기준 JDK `17`에서 재확인이 필요하며, `verify-build.bat`는 Customer Variant 모호성으로 실패합니다.
+- **Web↔Backend↔PostgreSQL Browser E2E — HOLD**
+  - 팀 Migration Allowlist가 실제 `inquiries.0018` 대신 `0017` leaf를 기대해 공식 Gate가 차단됩니다.
+  - P1 `visits.0005`만 보류한 합성 DB의 Chromium 시나리오 2건은 현 UI의 `편집 시작` 단계를 테스트가 반영하지 못해 실패했습니다.
 
 Backend의 8개 회귀 실패와 Browser E2E 2개 실패를 해결하고 같은 SHA에서 재실행하기 전에는 “전체 테스트 PASS”, “수직 E2E 완료”, “배포 가능”으로 보고하지 않습니다. 특히 `inquiries.0018`을 승인 Leaf로 반영할지는 Migration 소유자·DB 담당·PM이 검토해야 하며 README 변경에서 임의 수정하지 않습니다.
 
