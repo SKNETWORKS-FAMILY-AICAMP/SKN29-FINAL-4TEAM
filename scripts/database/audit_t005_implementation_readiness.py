@@ -138,6 +138,11 @@ APPROVED_RUNTIME_SUPPORT_TABLES = {
         "hash and identity verification; internal AI runtime support outside "
         "the immutable 32-table domain contract."
     ),
+    "support_human_review_resume_dispatch": (
+        "Durable one-attempt Backend-to-AI HumanReview resume dispatch ledger; "
+        "fail-closed runtime integration support outside the immutable "
+        "32-table domain contract."
+    ),
     "support_consultation_handoff": (
         "Sanitized AI-to-consultant handoff ledger; Week-6 runtime bridge "
         "outside the immutable 32-table domain contract."
