@@ -54,6 +54,12 @@ describe("ConsultantNoticePage", () => {
     expect(screen.getByRole("tab", { name: "직원 연락처" })).toBeVisible();
     expect(panel).toHaveClass("consultant-directory-panel");
     expect(panel.closest(".consultant-directory-app")).not.toBeNull();
+    expect(
+      within(panel).getByText(/안전 위험 문의는 일반 문의보다 먼저 처리합니다/),
+    ).toBeVisible();
+    expect(
+      within(panel).queryByText(/임의 분해나 수리를 요구하지 마세요/),
+    ).not.toBeInTheDocument();
   });
 
   it("분류와 검색어로 필요한 공지만 찾을 수 있다", async () => {
@@ -107,7 +113,10 @@ describe("ConsultantNoticePage", () => {
     ).toBeVisible();
     expect(within(panel).getByText("SYN-WEB-DASH-NOTICE-001")).toBeVisible();
     expect(
-      within(panel).getByText(/제품 사용 중지를 먼저 안내/),
+      within(panel).getByText(/제품 사용을 즉시 중지/),
+    ).toBeVisible();
+    expect(
+      within(panel).getByText(/임의 분해나 수리를 요구하지 마세요/),
     ).toBeVisible();
 
     await user.click(

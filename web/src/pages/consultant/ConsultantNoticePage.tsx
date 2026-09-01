@@ -79,6 +79,11 @@ function matchesQuery(notice: ConsultantNotice, query: string) {
     .includes(query);
 }
 
+function getNoticeSummary(content: string) {
+  const [firstParagraph = ""] = content.trim().split(/\r?\n\s*\r?\n/);
+  return firstParagraph.replace(/\s+/g, " ");
+}
+
 function getNoticeFailureState(error: unknown): NoticeFailureState {
   if (!(error instanceof ApiClientError)) return "error";
   if (error.status === 401) return "unauthorized";
@@ -454,7 +459,7 @@ export default function ConsultantNoticePage() {
                         <em data-category={notice.category}>{notice.category}</em>
                         <div>
                           <h2>{notice.title}</h2>
-                          <p>{notice.content}</p>
+                          <p>{getNoticeSummary(notice.content)}</p>
                         </div>
                       </div>
                       <div className="consultant-notice-list__meta">
