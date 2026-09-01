@@ -49,53 +49,53 @@
   <tr>
     <td align="center" valign="top" width="333">
       <img src="docs/assets/readme-profiles/profile-01.png" alt="김은진 프로필" width="150" height="150"><br>
-      <strong>김은진</strong>
+      <strong>김은진</strong><br>
+      <a href="https://github.com/eunjin661">@eunjin661</a>
       <hr>
       <strong>데이터·QA·DevOps</strong><br>
-      <sub>데이터 Pipeline·QA·CI/CD<br>배포·관측성</sub><br>
-      <a href="https://github.com/eunjin661">@eunjin661</a>
+      <sub>데이터 Pipeline·QA·CI/CD<br>배포·관측성</sub>
     </td>
     <td align="center" valign="top" width="333">
       <img src="docs/assets/readme-profiles/profile-02.png" alt="양정현 프로필" width="150" height="150"><br>
-      <strong>양정현</strong>
+      <strong>양정현</strong><br>
+      <a href="https://github.com/didwjdgus90">@didwjdgus90</a>
       <hr>
       <strong>모바일 앱</strong><br>
-      <sub>고객·방문기사 Android 앱<br>Mobile 계약 연동</sub><br>
-      <a href="https://github.com/didwjdgus90">@didwjdgus90</a>
+      <sub>고객·방문기사 Android 앱<br>Mobile 계약 연동</sub>
     </td>
     <td align="center" valign="top" width="333">
       <img src="docs/assets/readme-profiles/profile-06.png" alt="윤승혁 프로필" width="150" height="150"><br>
-      <strong>윤승혁</strong>
+      <strong>윤승혁</strong><br>
+      <a href="https://github.com/idenist">@idenist</a>
       <hr>
       <strong>PM·기술 통합</strong><br>
-      <sub>일정·범위·우선순위·공통 계약<br>서비스 통합·발표</sub><br>
-      <a href="https://github.com/idenist">@idenist</a>
+      <sub>일정·범위·우선순위·공통 계약<br>서비스 통합·발표</sub>
     </td>
   </tr>
   <tr>
     <td align="center" valign="top" width="333">
       <img src="docs/assets/readme-profiles/profile-05.png" alt="이동윤 프로필" width="150" height="150"><br>
-      <strong>이동윤</strong>
+      <strong>이동윤</strong><br>
+      <a href="https://github.com/ldy-99">@ldy-99</a>
       <hr>
       <strong>AI·RAG</strong><br>
-      <sub>문진 분석·공식 근거 검색<br>생성·안전 검증·AI 평가</sub><br>
-      <a href="https://github.com/ldy-99">@ldy-99</a>
+      <sub>문진 분석·공식 근거 검색<br>생성·안전 검증·AI 평가</sub>
     </td>
     <td align="center" valign="top" width="333">
       <img src="docs/assets/readme-profiles/profile-03.png" alt="최지용 프로필" width="150" height="150"><br>
-      <strong>최지용</strong>
+      <strong>최지용</strong><br>
+      <a href="https://github.com/antisdream">@antisdream</a>
       <hr>
       <strong>백엔드·DB</strong><br>
-      <sub>인증·권한·REST API<br>DB·Migration·상태 전이 Runtime</sub><br>
-      <a href="https://github.com/antisdream">@antisdream</a>
+      <sub>인증·권한·REST API<br>DB·Migration·상태 전이 Runtime</sub>
     </td>
     <td align="center" valign="top" width="333">
       <img src="docs/assets/readme-profiles/profile-04.png" alt="한예나 프로필" width="150" height="150"><br>
-      <strong>한예나</strong>
+      <strong>한예나</strong><br>
+      <a href="https://github.com/hanyena0830">@hanyena0830</a>
       <hr>
       <strong>웹 프론트엔드</strong><br>
-      <sub>상담사·운영 Web<br>API Wrapper·역할별 화면</sub><br>
-      <a href="https://github.com/hanyena0830">@hanyena0830</a>
+      <sub>상담사·운영 Web<br>API Wrapper·역할별 화면</sub>
     </td>
   </tr>
 </table>
@@ -153,16 +153,16 @@ PostgreSQL 업무 원장과 pgvector 검색 인덱스는 같은 PostgreSQL 계�
 
 ## 기술 스택
 
-| 영역 | 현재 기준 기술 | 핵심 책임 | 버전·구성 기준 |
+| 영역 | 기술 스택 | 핵심 책임 | 버전·구성 기준 |
 | --- | --- | --- | --- |
-| Web | React `19.2.8`, React Router `7.11.0`, TypeScript `6.0.3`, Vite `8.1.5` | 상담사 P0 Web, 운영 P1 Web, API Wrapper와 역할별 화면 | [`web/package.json`](web/package.json), [`web/package-lock.json`](web/package-lock.json) |
-| Mobile | Kotlin/Compose `2.4.10`, Android Gradle Plugin `9.3.0`, Gradle `9.5.0`, JDK `17` | 고객 P0 앱, 방문기사 P1 앱, 공통 계약 모델 | [`mobile/build.gradle.kts`](mobile/build.gradle.kts), [`gradle-wrapper.properties`](mobile/gradle/wrapper/gradle-wrapper.properties) |
-| Backend | Python `3.13.13`, Django `5.2.16`, DRF `3.17.1`, drf-spectacular `0.30.0`, Gunicorn `26.0.0` | 인증·RBAC·REST API·State Machine·감사·DB Transaction | [`backend/.python-version`](backend/.python-version), [`backend/requirements`](backend/requirements/) |
-| AI·RAG | Python `3.13.13`, FastAPI `0.136.3`, Uvicorn `0.48.0`, Pydantic `2.13.4`, LangGraph `1.2.2`, Sentence Transformers `5.5.1`, `BAAI/bge-m3` | 증상 구조화·Safety/HITL·공식 근거 검색·응답 검증 | [`ai/pyproject.toml`](ai/pyproject.toml), [`ai/requirements.lock`](ai/requirements.lock), [`retrieval_policy.yaml`](ai/configs/retrieval_policy.yaml) |
-| Database·Search | PostgreSQL `16`, pgvector `0.8.6` 로컬 기준, Django Migrations | 업무 원장·상태 이력·1024차원 공식 근거 검색 | [`docker-compose.yml`](docker-compose.yml), [`docs/database`](docs/database/) |
-| Contracts | OpenAPI `3.1.0`, JSON Schema, State Machine, 공통 코드·오류 계약 | Backend·AI·Web·Mobile 사이의 기계 판독 경계 | [`contracts`](contracts/), [`openapi.yaml`](contracts/api/openapi.yaml) |
-| Test·Delivery | pytest, Vitest `4.1.10`, Playwright `1.62.1`, Gradle, Docker, GitHub Actions | 단위·계약·통합·E2E, 이미지 Build와 Release Gate | [`.github/workflows`](.github/workflows/), [`tests`](tests/) |
-| Production Infra | AWS ECR·EC2·SSM·RDS, Nginx, Docker Compose, OpenTelemetry·Tempo/S3 | 태그 기반 배포, TLS/Reverse Proxy, 관측성과 Rollback 절차 | [`production-deployment-runbook.md`](docs/deployment/production-deployment-runbook.md), [`infra`](infra/) |
+| Web | ![React 19.2.8](https://img.shields.io/badge/React-19.2.8-61DAFB?logo=react&logoColor=white&style=flat-square) ![React Router 7.11.0](https://img.shields.io/badge/React_Router-7.11.0-CA4245?logo=reactrouter&logoColor=white&style=flat-square) ![TypeScript 6.0.3](https://img.shields.io/badge/TypeScript-6.0.3-3178C6?logo=typescript&logoColor=white&style=flat-square) ![Vite 8.1.5](https://img.shields.io/badge/Vite-8.1.5-646CFF?logo=vite&logoColor=white&style=flat-square) | 상담사 P0 Web, 운영 P1 Web, API Wrapper와 역할별 화면 | [`web/package.json`](web/package.json), [`web/package-lock.json`](web/package-lock.json) |
+| Mobile | ![Kotlin/Compose 2.4.10](https://img.shields.io/badge/Kotlin%2FCompose-2.4.10-7F52FF?logo=kotlin&logoColor=white&style=flat-square) ![Android Gradle Plugin 9.3.0](https://img.shields.io/badge/Android_Gradle_Plugin-9.3.0-3DDC84?logo=android&logoColor=white&style=flat-square) ![Gradle 9.5.0](https://img.shields.io/badge/Gradle-9.5.0-02303A?logo=gradle&logoColor=white&style=flat-square) ![JDK 17](https://img.shields.io/badge/JDK-17-000000?logo=openjdk&logoColor=white&style=flat-square) | 고객 P0 앱, 방문기사 P1 앱, 공통 계약 모델 | [`mobile/build.gradle.kts`](mobile/build.gradle.kts), [`gradle-wrapper.properties`](mobile/gradle/wrapper/gradle-wrapper.properties) |
+| Backend | ![Python 3.13.13](https://img.shields.io/badge/Python-3.13.13-3776AB?logo=python&logoColor=white&style=flat-square) ![Django 5.2.16](https://img.shields.io/badge/Django-5.2.16-092E20?logo=django&logoColor=white&style=flat-square) ![DRF 3.17.1](https://img.shields.io/badge/DRF-3.17.1-A30000?logo=django&logoColor=white&style=flat-square) ![drf-spectacular 0.30.0](https://img.shields.io/badge/drf--spectacular-0.30.0-85EA2D?logo=swagger&logoColor=white&style=flat-square) ![Gunicorn 26.0.0](https://img.shields.io/badge/Gunicorn-26.0.0-499848?logo=gunicorn&logoColor=white&style=flat-square) | 인증·RBAC·REST API·State Machine·감사·DB Transaction | [`backend/.python-version`](backend/.python-version), [`backend/requirements`](backend/requirements/) |
+| AI·RAG | ![Python 3.13.13](https://img.shields.io/badge/Python-3.13.13-3776AB?logo=python&logoColor=white&style=flat-square) ![FastAPI 0.136.3](https://img.shields.io/badge/FastAPI-0.136.3-009688?logo=fastapi&logoColor=white&style=flat-square) ![Uvicorn 0.48.0](https://img.shields.io/badge/Uvicorn-0.48.0-4051B5?logo=python&logoColor=white&style=flat-square) ![Pydantic 2.13.4](https://img.shields.io/badge/Pydantic-2.13.4-E92063?logo=pydantic&logoColor=white&style=flat-square) ![LangGraph 1.2.2](https://img.shields.io/badge/LangGraph-1.2.2-1C3C3C?logo=langchain&logoColor=white&style=flat-square) ![Sentence Transformers 5.5.1](https://img.shields.io/badge/Sentence_Transformers-5.5.1-FFD21E?logo=huggingface&logoColor=black&style=flat-square) ![BAAI/bge-m3](https://img.shields.io/badge/BAAI%2Fbge--m3-Model-FFD21E?logo=huggingface&logoColor=black&style=flat-square) | 증상 구조화·Safety/HITL·공식 근거 검색·응답 검증 | [`ai/pyproject.toml`](ai/pyproject.toml), [`ai/requirements.lock`](ai/requirements.lock), [`retrieval_policy.yaml`](ai/configs/retrieval_policy.yaml) |
+| Database·Search | ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white&style=flat-square) ![pgvector 0.8.6 로컬 기준](https://img.shields.io/badge/pgvector-0.8.6_local-4169E1?logo=postgresql&logoColor=white&style=flat-square) ![Django Migrations](https://img.shields.io/badge/Django_Migrations-Schema-092E20?logo=django&logoColor=white&style=flat-square) | 업무 원장·상태 이력·1024차원 공식 근거 검색 | [`docker-compose.yml`](docker-compose.yml), [`docs/database`](docs/database/) |
+| Contracts | ![OpenAPI 3.1.0](https://img.shields.io/badge/OpenAPI-3.1.0-6BA539?logo=openapiinitiative&logoColor=white&style=flat-square) ![JSON Schema](https://img.shields.io/badge/JSON_Schema-Contract-000000?logo=json&logoColor=white&style=flat-square) ![State Machine](https://img.shields.io/badge/State_Machine-Contract-FF3670?logo=mermaid&logoColor=white&style=flat-square) ![공통 코드·오류 계약](https://img.shields.io/badge/%EA%B3%B5%ED%86%B5_%EC%BD%94%EB%93%9C%C2%B7%EC%98%A4%EB%A5%98_%EA%B3%84%EC%95%BD-Contract-24292F?logo=github&logoColor=white&style=flat-square) | Backend·AI·Web·Mobile 사이의 기계 판독 경계 | [`contracts`](contracts/), [`openapi.yaml`](contracts/api/openapi.yaml) |
+| Test·Delivery | ![pytest](https://img.shields.io/badge/pytest-Test-0A9EDC?logo=pytest&logoColor=white&style=flat-square) ![Vitest 4.1.10](https://img.shields.io/badge/Vitest-4.1.10-6E9F18?logo=vitest&logoColor=white&style=flat-square) <kbd><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/playwright/playwright-original.svg" alt="" height="14"> Playwright 1.62.1</kbd> ![Gradle](https://img.shields.io/badge/Gradle-Build-02303A?logo=gradle&logoColor=white&style=flat-square) ![Docker](https://img.shields.io/badge/Docker-Image-2496ED?logo=docker&logoColor=white&style=flat-square) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?logo=githubactions&logoColor=white&style=flat-square) | 단위·계약·통합·E2E, 이미지 Build와 Release Gate | [`.github/workflows`](.github/workflows/), [`tests`](tests/) |
+| Production Infra | <kbd><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="" height="14"> AWS ECR</kbd> <kbd><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="" height="14"> AWS EC2</kbd> <kbd><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="" height="14"> AWS SSM</kbd> <kbd><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="" height="14"> AWS RDS</kbd> ![Nginx](https://img.shields.io/badge/Nginx-Proxy-009639?logo=nginx&logoColor=white&style=flat-square) ![Docker Compose](https://img.shields.io/badge/Docker_Compose-Deploy-2496ED?logo=docker&logoColor=white&style=flat-square) ![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Observability-000000?logo=opentelemetry&logoColor=white&style=flat-square) ![Tempo](https://img.shields.io/badge/Tempo-Tracing-F46800?logo=grafana&logoColor=white&style=flat-square) <kbd><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" alt="" height="14"> S3</kbd> | 태그 기반 배포, TLS/Reverse Proxy, 관측성과 Rollback 절차 | [`production-deployment-runbook.md`](docs/deployment/production-deployment-runbook.md), [`infra`](infra/) |
 
 버전은 위 Source 파일을 기준으로 하며, 의존성이나 배포 정의가 있다는 사실을 운영 배포·기능 검증 완료로 해석하지 않습니다. AWS 운영 상태와 최종 Release 판정은 배포 후 Health·기능 Smoke·Rollback 증거 및 PM Gate가 함께 있어야 합니다.
 
