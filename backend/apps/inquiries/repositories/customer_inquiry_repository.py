@@ -23,8 +23,8 @@ from apps.workflow.models import TransitionHistory
 class CustomerInquiryRepository:
     """Hide non-owned inquiries before building any public projection."""
 
-    @staticmethod
-    def visible_for_customer(actor: Any) -> QuerySet[Inquiry]:
+    @classmethod
+    def visible_for_customer(cls, actor: Any) -> QuerySet[Inquiry]:
         latest_completed_consultation = Consultation.objects.filter(
             inquiry_id=OuterRef("pk"),
             status=Consultation.Status.COMPLETED,
@@ -39,6 +39,15 @@ class CustomerInquiryRepository:
             inquiry_id=OuterRef("pk"),
             resolution_status_code=FollowupConfirmation.ResolutionStatus.RESOLVED,
         ).order_by("-created_at", "-id")
+        latest_state_change = cls.latest_state_change_event()
+        latest_consultation_required = (
+            TransitionHistory.objects.filter(
+                inquiry_id=OuterRef("pk"),
+                to_state=Inquiry.Status.CONSULTATION_REQUIRED,
+            )
+            .exclude(from_state=F("to_state"))
+            .order_by("-state_version", "-pk")
+        )
         return (
             Inquiry.objects.filter(
                 initiated_by=actor,
@@ -65,6 +74,12 @@ class CustomerInquiryRepository:
                 ),
                 allowed_action_latest_resolved_feedback_at=Subquery(
                     latest_resolved_feedback.values("created_at")[:1]
+                ),
+                latest_state_change_event=Subquery(
+                    latest_state_change.values("event_code")[:1]
+                ),
+                latest_consultation_required_event=Subquery(
+                    latest_consultation_required.values("event_code")[:1]
                 ),
             )
         )
@@ -126,11 +141,6 @@ class CustomerInquiryRepository:
     ) -> Inquiry | None:
         return (
             cls.visible_for_customer(actor)
-            .annotate(
-                latest_state_change_event=Subquery(
-                    cls.latest_state_change_event().values("event_code")[:1]
-                )
-            )
             .prefetch_related(
                 Prefetch(
                     "qa_entries",

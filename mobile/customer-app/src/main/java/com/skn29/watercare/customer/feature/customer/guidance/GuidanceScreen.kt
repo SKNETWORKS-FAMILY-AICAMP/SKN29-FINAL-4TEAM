@@ -234,6 +234,9 @@ fun GuidanceScreen(
                 preferredGuidance?.statusCode
             }
 
+    val effectiveConsultationReason =
+        liveWorkflowSnapshot?.consultationReason
+
     var guidancePollingExhausted by
         remember(inquiryId) {
             mutableStateOf(false)
@@ -567,27 +570,9 @@ fun GuidanceScreen(
                         normalizedStatus ==
                             "CONSULTATION_REQUIRED"
                     ) {
-                        // CONSULTATION_REQUIRED? ?? ??? ???.
-                        // Backend? AI ????? ??????
-                        // ?? ??? ????? ??? ?? workflow ???.
-                        //
-                        // Spinner? ?? ???? ?? ??? ??? ????.
-                        // ?? "?? ??" ??? ?? allowed_actions ??
-                        // ?? ?? Section?? ????.
-                        SectionCard(
-                            "상담이 필요한 상태예요"
-                        ) {
-                            Text(
-                                "현재 내용은 자동 안내만으로 확정하지 않고 "
-                                    + "상담사가 함께 확인하도록 처리됐어요.",
-                                style =
-                                    MaterialTheme.typography
-                                        .bodyMedium,
-                                color =
-                                    MaterialTheme.colorScheme
-                                        .onSurfaceVariant,
-                            )
-                        }
+                        ConsultationReasonContent(
+                            effectiveConsultationReason
+                        )
                     } else if (
                         normalizedStatus ==
                             "QUESTIONNAIRE_IN_PROGRESS" &&
@@ -868,6 +853,105 @@ fun GuidanceScreen(
                 )
             }
         }
+    }
+}
+
+internal data class ConsultationReasonCopy(
+    val title: String,
+    val description: String,
+    val danger: Boolean = false,
+)
+
+internal fun consultationReasonCopy(
+    reason: String?,
+): ConsultationReasonCopy =
+    when (reason?.trim()?.uppercase()) {
+        "DANGER_DETECTED" ->
+            ConsultationReasonCopy(
+                title = "위험 증상이 감지됐어요",
+                description =
+                    "안전을 위해 제품 사용을 중단해주세요. " +
+                        "입력하신 내용에서 안전 확인이 필요한 위험 신호가 감지돼 " +
+                        "추가 질문을 생략하고 바로 상담으로 연결했습니다.",
+                danger = true,
+            )
+
+        "NO_EVIDENCE" ->
+            ConsultationReasonCopy(
+                title = "현재 공식 안내만으로는 정확히 안내하기 어려워요",
+                description =
+                    "관련 공식 근거가 충분하지 않아 비슷한 증상의 해결 방법을 " +
+                        "임의로 적용하지 않았어요. 정확한 확인을 위해 상담으로 연결했습니다.",
+            )
+
+        "PRODUCT_VALIDATION_FAILED" ->
+            ConsultationReasonCopy(
+                title = "제품 정보를 정확히 확인하기 어려워요",
+                description =
+                    "현재 등록된 제품 정보와 공식 안내를 정확히 연결할 수 없어 " +
+                        "자동 안내를 중단했어요. 제품 확인을 위해 상담으로 연결했습니다.",
+            )
+
+        "AI_PROCESSING_TIMEOUT" ->
+            ConsultationReasonCopy(
+                title = "AI 분석이 지연되고 있어요",
+                description =
+                    "안내를 오래 기다리지 않도록 현재 문의를 상담으로 연결했어요. " +
+                        "입력한 내용은 그대로 유지됩니다.",
+            )
+
+        "AI_CONSULTATION_REQUIRED" ->
+            ConsultationReasonCopy(
+                title = "상담사의 추가 확인이 필요해요",
+                description =
+                    "현재 문의는 자동 안내만으로 확정하기 어려운 내용이 있어 " +
+                        "상담사가 함께 확인하도록 연결했어요.",
+            )
+
+        "CUSTOMER_REQUESTED" ->
+            ConsultationReasonCopy(
+                title = "상담 요청이 접수됐어요",
+                description =
+                    "요청하신 대로 지금까지 입력한 증상과 문의 내용을 " +
+                        "상담사에게 전달했어요.",
+            )
+
+        else ->
+            ConsultationReasonCopy(
+                title = "상담이 필요한 상태예요",
+                description =
+                    "현재 내용은 자동 안내만으로 확정하지 않고 " +
+                        "상담사가 함께 확인하도록 처리됐어요.",
+            )
+    }
+
+@Composable
+private fun ConsultationReasonContent(
+    reason: String?,
+) {
+    val copy = consultationReasonCopy(reason)
+    SectionCard(copy.title) {
+        if (copy.danger) {
+            LiquidGlassPill("안전 확인 필요")
+        }
+        Text(
+            copy.description,
+            style = MaterialTheme.typography.bodyMedium,
+            color =
+                if (copy.danger) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            fontWeight =
+                if (copy.danger) FontWeight.SemiBold
+                else FontWeight.Normal,
+        )
+        Text(
+            "지금까지 입력한 증상과 상태는 상담사에게 전달돼요.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

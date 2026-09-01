@@ -61,3 +61,15 @@ properties:
         enum:
           - AI 안내 생성이 지연되어 상담으로 연결합니다.
       - type: "null"
+  consultation_reason:
+    description: Backend가 최근 실제 상담 전환 Event를 고객 공개 코드로 변환한 사유이며 상담 상태가 아니거나 미지원 Event이면 null
+    oneOf:
+      - type: string
+        enum:
+          - DANGER_DETECTED
+          - NO_EVIDENCE
+          - PRODUCT_VALIDATION_FAILED
+          - AI_PROCESSING_TIMEOUT
+          - AI_CONSULTATION_REQUIRED
+          - CUSTOMER_REQUESTED
+      - type: "null"

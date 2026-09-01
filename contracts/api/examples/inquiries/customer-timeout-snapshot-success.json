@@ -19,7 +19,8 @@
       }
     ],
     "updated_at": "2026-08-16T12:00:00+09:00",
-    "system_notice": "AI 안내 생성이 지연되어 상담으로 연결합니다."
+    "system_notice": "AI 안내 생성이 지연되어 상담으로 연결합니다.",
+    "consultation_reason": "AI_PROCESSING_TIMEOUT"
   },
   "error": null,
   "metadata": {

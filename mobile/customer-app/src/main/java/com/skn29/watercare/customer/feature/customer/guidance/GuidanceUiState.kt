@@ -10,6 +10,7 @@ data class CustomerWorkflowUiSnapshot(
     val statusCode: String,
     val stateVersion: Int,
     val allowedActions: List<AllowedAction>,
+    val consultationReason: String? = null,
 )
 
 fun CustomerInquirySnapshot.toWorkflowUiSnapshot() =
@@ -17,6 +18,7 @@ fun CustomerInquirySnapshot.toWorkflowUiSnapshot() =
         statusCode = statusCode,
         stateVersion = stateVersion,
         allowedActions = allowedActions,
+        consultationReason = consultationReason,
     )
 
 fun CustomerInquiryConsultationResult.toWorkflowUiSnapshot() =

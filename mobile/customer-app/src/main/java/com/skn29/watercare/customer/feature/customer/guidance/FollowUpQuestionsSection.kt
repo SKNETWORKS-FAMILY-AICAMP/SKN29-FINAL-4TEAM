@@ -95,6 +95,16 @@ fun FollowUpQuestionsSection(
             )
         }
 
+        is FollowUpUiState.Processing -> {
+            SectionCard("답변이 저장됐어요") {
+                LiquidGlassPill("다음 단계 확인 중")
+                Text(
+                    "입력한 내용을 바탕으로 다음 단계를 확인하고 있어요.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
         is FollowUpUiState.Success -> {
             if (state.questions.isNotEmpty()) {
                 SectionCard("답변을 확인했어요") {

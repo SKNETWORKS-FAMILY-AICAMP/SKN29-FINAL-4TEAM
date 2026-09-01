@@ -324,6 +324,21 @@ def test_customer_read_contracts_are_owner_scoped_and_implemented():
             {"type": "null"},
         ],
     }
+    assert "consultation_reason" not in snapshot_schema["required"]
+    assert snapshot_schema["properties"]["consultation_reason"]["oneOf"] == [
+        {
+            "type": "string",
+            "enum": [
+                "DANGER_DETECTED",
+                "NO_EVIDENCE",
+                "PRODUCT_VALIDATION_FAILED",
+                "AI_PROCESSING_TIMEOUT",
+                "AI_CONSULTATION_REQUIRED",
+                "CUSTOMER_REQUESTED",
+            ],
+        },
+        {"type": "null"},
+    ]
     question_item = questions_schema["properties"]["questions"]["items"]
     assert guidance_schema["additionalProperties"] is False
     assert guidance_schema["properties"]["evidence"]["maxItems"] == 0

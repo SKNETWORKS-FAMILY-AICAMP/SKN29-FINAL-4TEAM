@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.util.logging.Logger
 
 sealed interface FollowUpNavigationEvent {
     data class OpenGuidance(
@@ -37,6 +38,10 @@ class FollowUpQuestionsViewModel(
     private val inquiryRepository: InquiryRepository? = null,
     private val savedStateHandle: SavedStateHandle = SavedStateHandle(),
 ) : ViewModel() {
+    private val logger =
+        Logger.getLogger(
+            FollowUpQuestionsViewModel::class.java.name
+        )
     private val _state =
         MutableStateFlow<FollowUpUiState>(
             FollowUpUiState.Loading
@@ -201,6 +206,7 @@ class FollowUpQuestionsViewModel(
         if (
             current is FollowUpUiState.Loading ||
             current is FollowUpUiState.Submitting ||
+            current is FollowUpUiState.Processing ||
             current is FollowUpUiState.Disabled ||
             current is FollowUpUiState.Empty ||
             current is FollowUpUiState.Conflict ||
@@ -253,6 +259,8 @@ class FollowUpQuestionsViewModel(
         val snapshot =
             contextOrNull(_state.value)
                 ?.snapshot
+                ?: (_state.value as? FollowUpUiState.Processing)
+                    ?.snapshot
                 ?: (_state.value as? FollowUpUiState.Empty)
                     ?.snapshot
                 ?: return
@@ -406,6 +414,7 @@ class FollowUpQuestionsViewModel(
                 is ApiResult.Success ->
                     applySubmitSuccess(
                         result.value,
+                        context,
                     )
 
                 is ApiResult.Failure ->
@@ -419,65 +428,120 @@ class FollowUpQuestionsViewModel(
 
     private suspend fun applySubmitSuccess(
         result: SubmitFollowUpAnswersResult,
+        previous: FollowUpContext,
     ) {
         clearPersistedDrafts()
-        when (
-            val refreshed =
-                fetchContext(
-                    preservedDrafts =
-                        emptyMap(),
-                )
-        ) {
-            is ApiResult.Success -> {
-                val context =
-                    refreshed.value
+        val optimisticSnapshot =
+            previous.snapshot.copy(
+                statusCode = result.statusCode,
+                stateVersion = result.stateVersion,
+                allowedActions = result.allowedActions,
+            )
+        _state.value =
+            FollowUpUiState.Processing(
+                snapshot = optimisticSnapshot,
+                message = result.message,
+                idempotentReplay = result.idempotentReplay,
+            )
+        refreshAfterSuccessfulSubmit(
+            result = result,
+            optimisticSnapshot = optimisticSnapshot,
+        )
+    }
 
-                _state.value =
-                    FollowUpUiState.Success(
-                        snapshot = context.snapshot,
-                        questions = context.questions,
-                        drafts = context.drafts,
-                        message = result.message,
-                        idempotentReplay =
-                            result.idempotentReplay,
+    private suspend fun refreshAfterSuccessfulSubmit(
+        result: SubmitFollowUpAnswersResult,
+        optimisticSnapshot: CustomerInquirySnapshot,
+    ) {
+        val snapshot =
+            when (val refreshed = repository.snapshot(inquiryId)) {
+                is ApiResult.Success -> refreshed.value
+                is ApiResult.Failure -> {
+                    logFollowUpFailure(
+                        "SNAPSHOT_REFRESH_FAILED",
+                        refreshed,
                     )
-
-                val canSubmitMoreAnswers =
-                    context.snapshot.allowedActions.any {
-                        it.normalizedCode ==
-                            InquiryActionLabels
-                                .SUBMIT_ANSWERS
-                    }
-
-                if (
-                    context.questions.isEmpty() &&
-                    !canSubmitMoreAnswers &&
-                    canOpenCustomerGuidance(
-                        context.snapshot.statusCode
-                    )
-                ) {
-                    navigationChannel.send(
-                        FollowUpNavigationEvent
-                            .OpenGuidance(
-                                context.snapshot
-                            )
-                    )
+                    _state.value = FollowUpUiState.Empty(optimisticSnapshot)
+                    return
                 }
             }
 
-            is ApiResult.Failure ->
-                _state.value =
-                    failureState(
-                        failure = refreshed,
-                        previous = null,
-                    )
+        if (snapshot.inquiryId != inquiryId) {
+            logger.warning(
+                "follow_up stage=CUSTOMER_INQUIRY_CONTRACT_MISMATCH"
+            )
+            _state.value = FollowUpUiState.Empty(optimisticSnapshot)
+            return
         }
+
+        if (
+            snapshot.statusCode.trim().uppercase() !=
+                "QUESTIONNAIRE_IN_PROGRESS"
+        ) {
+            _state.value =
+                FollowUpUiState.Success(
+                    snapshot = snapshot,
+                    questions = emptyList(),
+                    drafts = emptyMap(),
+                    message = result.message,
+                    idempotentReplay = result.idempotentReplay,
+                )
+            if (canOpenCustomerGuidance(snapshot.statusCode)) {
+                navigationChannel.send(
+                    FollowUpNavigationEvent.OpenGuidance(snapshot)
+                )
+            }
+            return
+        }
+
+        val questionData =
+            when (val refreshed = repository.questions(inquiryId)) {
+                is ApiResult.Success -> refreshed.value
+                is ApiResult.Failure -> {
+                    logFollowUpFailure(
+                        "QUESTIONS_REFRESH_FAILED",
+                        refreshed,
+                    )
+                    _state.value = FollowUpUiState.Empty(snapshot)
+                    return
+                }
+            }
+
+        if (
+            questionData.inquiryId != inquiryId ||
+            questionData.stateVersion != snapshot.stateVersion
+        ) {
+            logger.info(
+                "follow_up stage=INQUIRY_CHANGED_DURING_LOAD " +
+                    "snapshot_version=${snapshot.stateVersion} " +
+                    "questions_version=${questionData.stateVersion}"
+            )
+            _state.value = FollowUpUiState.Empty(snapshot)
+            return
+        }
+
+        if (questionData.questions.isEmpty()) {
+            _state.value = FollowUpUiState.Empty(snapshot)
+            return
+        }
+
+        _state.value =
+            FollowUpUiState.Success(
+                snapshot = snapshot,
+                questions = questionData.questions,
+                drafts = questionData.questions.associate {
+                    it.questionId to FollowUpDraft()
+                },
+                message = result.message,
+                idempotentReplay = result.idempotentReplay,
+            )
     }
 
     private suspend fun applySubmitFailure(
         failure: ApiResult.Failure,
         previous: FollowUpContext,
     ) {
+        logFollowUpFailure("ANSWER_SUBMIT_FAILED", failure)
         when {
             failure.code ==
                 "STATE-CONFLICT-01" -> {
@@ -555,6 +619,16 @@ class FollowUpQuestionsViewModel(
                         previous = previous,
                     )
         }
+    }
+
+    private fun logFollowUpFailure(
+        stage: String,
+        failure: ApiResult.Failure,
+    ) {
+        logger.warning(
+            "follow_up stage=$stage code=${failure.code} " +
+                "http_status=${failure.httpStatus ?: "none"}"
+        )
     }
 
     private suspend fun fetchContext(
@@ -966,6 +1040,7 @@ class FollowUpQuestionsViewModel(
 
             FollowUpUiState.Disabled,
             FollowUpUiState.Loading,
+            is FollowUpUiState.Processing,
             is FollowUpUiState.Empty ->
                 null
         }

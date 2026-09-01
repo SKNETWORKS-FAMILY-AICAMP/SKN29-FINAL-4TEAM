@@ -34,6 +34,14 @@ class CustomerInquiryService:
     AI_PROCESSING_TIMEOUT_NOTICE = (
         "AI 안내 생성이 지연되어 상담으로 연결합니다."
     )
+    CONSULTATION_REASON_BY_EVENT = {
+        "DANGER_DETECTED": "DANGER_DETECTED",
+        "NO_EVIDENCE": "NO_EVIDENCE",
+        "PRODUCT_VALIDATION_FAILED": "PRODUCT_VALIDATION_FAILED",
+        "AI_PROCESSING_TIMEOUT": "AI_PROCESSING_TIMEOUT",
+        "AI_CONSULTATION_REQUIRED": "AI_CONSULTATION_REQUIRED",
+        "REQUEST_CONSULTATION": "CUSTOMER_REQUESTED",
+    }
 
     PUBLIC_GUIDANCE_STATES = frozenset(
         {
@@ -123,7 +131,18 @@ class CustomerInquiryService:
             },
             "allowed_actions": allowed_actions,
             "updated_at": inquiry.updated_at,
+            "consultation_reason": cls._consultation_reason(inquiry),
         }
+
+    @classmethod
+    def _consultation_reason(cls, inquiry: Inquiry) -> str | None:
+        if inquiry.status_code not in {
+            Inquiry.Status.CONSULTATION_REQUIRED,
+            Inquiry.Status.CONSULTATION_IN_PROGRESS,
+        }:
+            return None
+        event = getattr(inquiry, "latest_consultation_required_event", None)
+        return cls.CONSULTATION_REASON_BY_EVENT.get(event)
 
     @classmethod
     def questions_for_customer(

@@ -53,9 +53,11 @@
       Backend 동적 Resolver가 계산한 allowed_actions를 조회한다. AI가
       미답변 질문을 저장한 뒤 재조회하면 SUBMIT_ANSWERS 노출 여부가 최신
       Guard 결과에 따라 바뀐다. Mobile·Web은 질문 존재만으로 Action을
-      자체 계산하지 않는다. 현재 상태 진입 원인이 AI_PROCESSING_TIMEOUT이면
-      고정 system_notice를 함께 제공하며, 다음 상태로 진행되면 null로
-      해제한다. 타 고객 문의와 없는 문의는 동일한 404로 응답한다.
+      자체 계산하지 않는다. Backend는 최근 실제 CONSULTATION_REQUIRED 전환
+      Event를 고객 공개 consultation_reason으로 제공한다. 현재 상태 진입 원인이
+      AI_PROCESSING_TIMEOUT이면 하위 호환용 고정 system_notice도 함께 제공하며,
+      다음 상태로 진행되면 system_notice는 null로 해제한다. 타 고객 문의와 없는
+      문의는 동일한 404로 응답한다.
     x-contract-status: CONFIRMED
     x-runtime-status: IMPLEMENTED
     x-permission-scope: OWN_INQUIRY

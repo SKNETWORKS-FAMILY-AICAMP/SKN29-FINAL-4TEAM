@@ -92,7 +92,13 @@ class FollowUpQuestionsViewModelTest {
             val remote = QueueRepository(
                 snapshots = mutableListOf(
                     ApiResult.Success(snapshot(2)),
-                    ApiResult.Success(snapshot(3)),
+                    ApiResult.Success(
+                        snapshot(
+                            3,
+                            allowSubmit = false,
+                            statusCode = "AI_GUIDANCE",
+                        )
+                    ),
                 ),
                 questions = mutableListOf(
                     ApiResult.Success(
@@ -139,7 +145,13 @@ class FollowUpQuestionsViewModelTest {
                 snapshots = mutableListOf(
                     ApiResult.Success(snapshot(2)),
                     ApiResult.Success(snapshot(3)),
-                    ApiResult.Success(snapshot(4)),
+                    ApiResult.Success(
+                        snapshot(
+                            4,
+                            allowSubmit = false,
+                            statusCode = "AI_GUIDANCE",
+                        )
+                    ),
                 ),
                 questions = mutableListOf(
                     ApiResult.Success(questions(2, listOf(freeTextQuestion()))),
@@ -296,6 +308,105 @@ class FollowUpQuestionsViewModelTest {
         assertEquals(422, error.httpStatus)
         assertEquals("유지되어야 하는 입력", error.drafts[QUESTION_ID]?.text)
     }
+
+    @Test
+    fun submitSuccess_snapshotRefreshFailure_isPendingInsteadOfSubmitError() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val remote = QueueRepository(
+                snapshots = mutableListOf(
+                    ApiResult.Success(snapshot(2)),
+                    ApiResult.Failure(
+                        code = "NETWORK_ERROR",
+                        message = "temporary",
+                        httpStatus = 503,
+                        retryable = true,
+                    ),
+                ),
+                questions = mutableListOf(
+                    ApiResult.Success(
+                        questions(2, listOf(freeTextQuestion()))
+                    )
+                ),
+                submits = mutableListOf(
+                    ApiResult.Success(submitResult(3))
+                ),
+            )
+            val viewModel = newViewModel(remote)
+            advanceUntilIdle()
+            viewModel.updateText(QUESTION_ID, "저장될 답변")
+
+            viewModel.submitAnswers()
+            advanceUntilIdle()
+
+            val pending = viewModel.state.value as FollowUpUiState.Empty
+            assertEquals(3, pending.snapshot.stateVersion)
+            assertEquals("QUESTIONNAIRE_IN_PROGRESS", pending.snapshot.statusCode)
+        }
+
+    @Test
+    fun submitSuccess_transientVersionMismatch_isPendingInsteadOfSubmitError() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val remote = QueueRepository(
+                snapshots = mutableListOf(
+                    ApiResult.Success(snapshot(2)),
+                    ApiResult.Success(snapshot(3)),
+                ),
+                questions = mutableListOf(
+                    ApiResult.Success(
+                        questions(2, listOf(freeTextQuestion()))
+                    ),
+                    ApiResult.Success(
+                        questions(4, listOf(freeTextQuestion()))
+                    ),
+                ),
+                submits = mutableListOf(
+                    ApiResult.Success(submitResult(3))
+                ),
+            )
+            val viewModel = newViewModel(remote)
+            advanceUntilIdle()
+            viewModel.updateText(QUESTION_ID, "저장될 답변")
+
+            viewModel.submitAnswers()
+            advanceUntilIdle()
+
+            val pending = viewModel.state.value as FollowUpUiState.Empty
+            assertEquals(3, pending.snapshot.stateVersion)
+        }
+
+    @Test
+    fun submitSuccess_newQuestions_areDisplayed() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val nextQuestion = freeTextQuestion().copy(
+                questionId = "00000000-0000-4000-8000-000000000402",
+                prompt = "추가로 확인할 내용이 있나요?",
+            )
+            val remote = QueueRepository(
+                snapshots = mutableListOf(
+                    ApiResult.Success(snapshot(2)),
+                    ApiResult.Success(snapshot(3)),
+                ),
+                questions = mutableListOf(
+                    ApiResult.Success(
+                        questions(2, listOf(freeTextQuestion()))
+                    ),
+                    ApiResult.Success(questions(3, listOf(nextQuestion))),
+                ),
+                submits = mutableListOf(
+                    ApiResult.Success(submitResult(3))
+                ),
+            )
+            val viewModel = newViewModel(remote)
+            advanceUntilIdle()
+            viewModel.updateText(QUESTION_ID, "첫 답변")
+
+            viewModel.submitAnswers()
+            advanceUntilIdle()
+
+            val success = viewModel.state.value as FollowUpUiState.Success
+            assertEquals(nextQuestion.questionId, success.questions.single().questionId)
+            assertEquals(FollowUpDraft(), success.drafts[nextQuestion.questionId])
+        }
 
     private fun newViewModel(remote: CustomerInquiryRepository) = FollowUpQuestionsViewModel(
         inquiryId = INQUIRY_ID,

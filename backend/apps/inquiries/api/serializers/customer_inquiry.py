@@ -26,6 +26,18 @@ class CustomerInquirySnapshotSerializer(serializers.Serializer):
         allow_null=True,
         required=False,
     )
+    consultation_reason = serializers.ChoiceField(
+        choices=(
+            "DANGER_DETECTED",
+            "NO_EVIDENCE",
+            "PRODUCT_VALIDATION_FAILED",
+            "AI_PROCESSING_TIMEOUT",
+            "AI_CONSULTATION_REQUIRED",
+            "CUSTOMER_REQUESTED",
+        ),
+        allow_null=True,
+        required=False,
+    )
 
 
 class CustomerActiveInquirySerializer(serializers.Serializer):

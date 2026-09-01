@@ -27,6 +27,12 @@ sealed interface FollowUpUiState {
         val drafts: Map<String, FollowUpDraft>,
     ) : FollowUpUiState
 
+    data class Processing(
+        val snapshot: CustomerInquirySnapshot,
+        val message: String,
+        val idempotentReplay: Boolean,
+    ) : FollowUpUiState
+
     data class Success(
         val snapshot: CustomerInquirySnapshot,
         val questions: List<CustomerInquiryQuestion>,
@@ -69,6 +75,7 @@ fun FollowUpUiState.snapshotOrNull(): CustomerInquirySnapshot? = when (this) {
     is FollowUpUiState.Empty -> snapshot
     is FollowUpUiState.Form -> snapshot
     is FollowUpUiState.Submitting -> snapshot
+    is FollowUpUiState.Processing -> snapshot
     is FollowUpUiState.Success -> snapshot
     is FollowUpUiState.Conflict -> snapshot
     is FollowUpUiState.DuplicateConflict -> snapshot

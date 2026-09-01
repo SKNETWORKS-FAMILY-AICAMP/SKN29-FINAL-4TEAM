@@ -513,6 +513,7 @@ def test_customer_snapshot_returns_exact_owned_projection(
             }
         ],
         "system_notice": None,
+        "consultation_reason": None,
     }
     assert parse_datetime(updated_at) == inquiry.updated_at
 
@@ -564,6 +565,10 @@ def test_customer_snapshot_projects_timeout_notice_until_next_state_change(
     assert timeout_response.json()["data"]["system_notice"] == (
         "AI 안내 생성이 지연되어 상담으로 연결합니다."
     )
+    assert (
+        timeout_response.json()["data"]["consultation_reason"]
+        == "AI_PROCESSING_TIMEOUT"
+    )
 
     TransitionHistory.objects.create(
         inquiry=inquiry,
@@ -581,6 +586,10 @@ def test_customer_snapshot_projects_timeout_notice_until_next_state_change(
     )
     assert same_state_response.json()["data"]["system_notice"] == (
         "AI 안내 생성이 지연되어 상담으로 연결합니다."
+    )
+    assert (
+        same_state_response.json()["data"]["consultation_reason"]
+        == "AI_PROCESSING_TIMEOUT"
     )
 
     TransitionHistory.objects.create(
@@ -602,6 +611,56 @@ def test_customer_snapshot_projects_timeout_notice_until_next_state_change(
         f"/api/v1/me/inquiries/{inquiry.public_id}"
     )
     assert progressed_response.json()["data"]["system_notice"] is None
+    assert (
+        progressed_response.json()["data"]["consultation_reason"]
+        == "AI_PROCESSING_TIMEOUT"
+    )
+
+
+@pytest.mark.parametrize(
+    ("event_code", "public_reason"),
+    [
+        ("DANGER_DETECTED", "DANGER_DETECTED"),
+        ("NO_EVIDENCE", "NO_EVIDENCE"),
+        ("PRODUCT_VALIDATION_FAILED", "PRODUCT_VALIDATION_FAILED"),
+        ("AI_PROCESSING_TIMEOUT", "AI_PROCESSING_TIMEOUT"),
+        ("AI_CONSULTATION_REQUIRED", "AI_CONSULTATION_REQUIRED"),
+        ("REQUEST_CONSULTATION", "CUSTOMER_REQUESTED"),
+    ],
+)
+def test_customer_snapshot_projects_public_consultation_reason(
+    event_code,
+    public_reason,
+):
+    sequence = 200 + len(event_code)
+    owner = create_user(sequence)
+    inquiry = create_inquiry(owner, sequence)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.CONSULTATION_REQUIRED,
+        state_version=3,
+    )
+    TransitionHistory.objects.create(
+        inquiry=inquiry,
+        actor=owner if event_code == "REQUEST_CONSULTATION" else None,
+        changed_by_type_code=(
+            TransitionHistory.ChangedByType.USER
+            if event_code == "REQUEST_CONSULTATION"
+            else TransitionHistory.ChangedByType.SYSTEM
+        ),
+        event_code=event_code,
+        from_state=Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
+        to_state=Inquiry.Status.CONSULTATION_REQUIRED,
+        state_version=3,
+        correlation_id=uuid4(),
+        idempotency_key=f"consultation-reason-{event_code.lower()}",
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["consultation_reason"] == public_reason
 
 
 def test_customer_active_inquiry_returns_latest_owned_non_terminal_snapshot(

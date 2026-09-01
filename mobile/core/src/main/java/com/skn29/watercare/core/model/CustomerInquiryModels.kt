@@ -22,6 +22,7 @@ data class CustomerInquirySnapshotDto(
     val product: CustomerInquiryProductDto,
     @SerialName("allowed_actions") val allowedActions: List<AllowedAction> = emptyList(),
     @SerialName("updated_at") val updatedAt: String,
+    @SerialName("consultation_reason") val consultationReason: String? = null,
 )
 
 @Serializable
@@ -124,6 +125,7 @@ data class CustomerInquirySnapshot(
     val allowedActions: List<AllowedAction>,
     /** RFC3339 원문. Z / +09:00 표현 모양 자체를 비교하지 않는다. */
     val updatedAtRfc3339: String,
+    val consultationReason: String? = null,
 )
 
 data class CustomerInquiryConsultationResult(
@@ -207,6 +209,7 @@ fun CustomerInquirySnapshotDto.toDomain(): CustomerInquirySnapshot =
         productModelCode = product.modelCode,
         allowedActions = allowedActions,
         updatedAtRfc3339 = updatedAt,
+        consultationReason = consultationReason,
     )
 
 fun CustomerInquiryConsultationResultDto.toDomain():

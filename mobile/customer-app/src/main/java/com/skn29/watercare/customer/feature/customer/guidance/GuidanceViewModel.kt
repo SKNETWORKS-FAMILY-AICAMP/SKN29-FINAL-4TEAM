@@ -635,6 +635,9 @@ class GuidanceViewModel(
                 is FollowUpUiState.Submitting ->
                     current.copy(snapshot = snapshot)
 
+                is FollowUpUiState.Processing ->
+                    current.copy(snapshot = snapshot)
+
                 is FollowUpUiState.Success ->
                     current.copy(snapshot = snapshot)
 
@@ -670,6 +673,7 @@ class GuidanceViewModel(
         if (
             current is FollowUpUiState.Loading ||
             current is FollowUpUiState.Submitting ||
+            current is FollowUpUiState.Processing ||
             current is FollowUpUiState.Disabled ||
             current is FollowUpUiState.Empty ||
             current is FollowUpUiState.Conflict ||
@@ -923,7 +927,10 @@ class GuidanceViewModel(
         is FollowUpUiState.Error -> state.snapshot?.let {
             FollowUpContext(it, state.questions, state.drafts)
         }
-        FollowUpUiState.Disabled, FollowUpUiState.Loading, is FollowUpUiState.Empty -> null
+        FollowUpUiState.Disabled,
+        FollowUpUiState.Loading,
+        is FollowUpUiState.Empty,
+        is FollowUpUiState.Processing -> null
     }
 }
 

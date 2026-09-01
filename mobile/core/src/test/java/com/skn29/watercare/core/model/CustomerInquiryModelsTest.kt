@@ -25,6 +25,7 @@ class CustomerInquiryModelsTest {
                 )
             ),
             updatedAt = "2026-08-11T15:10:00+09:00",
+            consultationReason = "NO_EVIDENCE",
         )
         val mapped = dto.toDomain()
         assertEquals(dto.inquiryId, mapped.inquiryId)
@@ -35,6 +36,7 @@ class CustomerInquiryModelsTest {
             mapped.allowedActions.single().normalizedCode,
         )
         assertEquals("2026-08-11T15:10:00+09:00", mapped.updatedAtRfc3339)
+        assertEquals("NO_EVIDENCE", mapped.consultationReason)
     }
 
     @Test
