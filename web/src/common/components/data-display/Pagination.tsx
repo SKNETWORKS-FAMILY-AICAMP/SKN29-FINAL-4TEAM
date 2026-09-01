@@ -2,6 +2,7 @@ import "./Pagination.css";
 
 interface PaginationProps {
   ariaLabel?: string;
+  compact?: boolean;
   page: number;
   totalItems: number;
   totalPages: number;
@@ -10,6 +11,7 @@ interface PaginationProps {
 
 export default function Pagination({
   ariaLabel = "문의 목록 페이지",
+  compact = false,
   page,
   totalItems,
   totalPages,
@@ -19,10 +21,12 @@ export default function Pagination({
   const canGoNext = page < totalPages;
 
   return (
-    <nav className="common-pagination" aria-label={ariaLabel}>
-      <p className="common-pagination__summary" aria-live="polite">
-        총 {totalItems}건 · {page}/{totalPages}페이지
-      </p>
+    <nav className={`common-pagination${compact ? " common-pagination--compact" : ""}`} aria-label={ariaLabel}>
+      {!compact && (
+        <p className="common-pagination__summary" aria-live="polite">
+          총 {totalItems}건 · {page}/{totalPages}페이지
+        </p>
+      )}
 
       <div className="common-pagination__actions">
         <button
@@ -33,7 +37,9 @@ export default function Pagination({
           이전
         </button>
 
-        <span aria-current="page">{page}</span>
+        <span aria-current="page" aria-live="polite">
+          {compact ? `${page}/${totalPages}` : page}
+        </span>
 
         <button
           type="button"

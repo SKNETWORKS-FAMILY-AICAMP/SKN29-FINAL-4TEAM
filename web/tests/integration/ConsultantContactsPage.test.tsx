@@ -96,6 +96,49 @@ describe("ConsultantContactsPage", () => {
     expect(screen.getByRole("tab", { name: "전체 문의90" })).toBeVisible();
   });
 
+  it("부서와 방문 지점을 조직도로 보여주고 선택한 조직의 연락처로 연결한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const organization = await screen.findByRole("region", { name: "조직도" });
+    expect(within(organization).getByText("고객지원 통합 조직")).toBeVisible();
+    expect(within(organization).getByText(`본사 직원`)).toBeVisible();
+    expect(within(organization).getByText(`방문기사`)).toBeVisible();
+
+    const consultantDepartment = DATA.consultants[0].department;
+    const departmentMembers = DATA.consultants.filter(
+      (person) => person.department === consultantDepartment,
+    );
+    const departmentButton = within(organization).getByRole("button", {
+      name: `${consultantDepartment} 연락처 보기`,
+    });
+    await user.click(departmentButton);
+    expect(departmentButton).toHaveAttribute("aria-pressed", "true");
+    expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(
+      departmentMembers.length + 1,
+    );
+
+    const technicianBranch = DATA.technicians[0].branch;
+    const branchMembers = DATA.technicians.filter(
+      (person) => person.branch === technicianBranch,
+    );
+    await user.click(
+      within(organization).getByRole("button", {
+        name: `${technicianBranch} 연락처 보기`,
+      }),
+    );
+    expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(
+      branchMembers.length + 1,
+    );
+
+    await user.click(
+      within(organization).getByRole("button", { name: "전체 조직 연락처 보기" }),
+    );
+    expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(
+      DATA.consultants.length + DATA.technicians.length + 1,
+    );
+  });
+
   it("방문기사와 부서·지점 필터는 연락처만 필터링한다", async () => {
     const user = userEvent.setup();
     renderPage();
@@ -229,7 +272,14 @@ describe("ConsultantContactsPage", () => {
     const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
     const person = DATA.consultants[0];
     renderPage();
-    await screen.findByRole("table", { name: "전체 직원 연락처" });
+    const table = await screen.findByRole("table", { name: "전체 직원 연락처" });
+
+    expect(
+      within(table).getByRole("link", { name: `${person.name} 연락처 연결` }),
+    ).toHaveAttribute("href", `tel:${person.extension.replace(/[^+\d]/g, "")}`);
+    expect(
+      within(table).getByRole("link", { name: `${person.name} 이메일 연결` }),
+    ).toHaveAttribute("href", `mailto:${person.email}`);
 
     await user.click(screen.getByRole("button", { name: `${person.name} 연락처 복사` }));
     expect(writeText).toHaveBeenLastCalledWith(person.extension);
@@ -299,6 +349,7 @@ describe("ConsultantContactsPage", () => {
     vi.spyOn(consultantNoticeApi, "getSyntheticConsultantDashboardData").mockResolvedValue({ ...DATA, consultants: [], technicians: [] });
     renderPage();
     expect(await screen.findByText("등록된 직원 연락처가 없습니다.")).toBeVisible();
+    expect(screen.queryByRole("region", { name: "조직도" })).not.toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "전체 문의90" })).toBeVisible();
   });

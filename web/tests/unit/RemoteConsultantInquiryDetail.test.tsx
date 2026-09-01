@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import RemoteConsultantInquiryDetail from "../../src/features/consultation/components/RemoteConsultantInquiryDetail";
+import { formatWorkspaceDateTime } from "../../src/features/consultation/model/consultantWorkspaceModel";
 import type { ConsultantInquiryDetailViewModel } from "../../src/features/consultation/model/consultantWorkspaceRemoteMapper";
 
 function createDetail(
@@ -231,7 +232,7 @@ describe("Remote 상담사 문의 상세", () => {
       }),
     );
     expect(screen.getByLabelText("상담 기록")).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.click(screen.getByRole("button", { name: "편집 시작" }));
     await user.type(screen.getByLabelText("상담 기록"), "필터 상태 확인");
     await user.click(
       screen.getByRole("button", {
@@ -536,12 +537,37 @@ describe("Remote 상담사 문의 상세", () => {
     expect(screen.getByText("합성고객 01")).toBeInTheDocument();
   });
 
-  it("처리 완료되어 가능한 작업이 없으면 실행 버튼 대신 완료 안내를 표시한다", async () => {
-    const user = userEvent.setup();
-    const { container } = render(
+  it("처리 완료 문의는 처음부터 완료 결과와 저장된 상담 내용을 표시한다", () => {
+    const completedAt = "2026-08-13T12:30:00+09:00";
+    const confirmedAt = "2026-08-13T11:20:00+09:00";
+    render(
       <RemoteConsultantInquiryDetail
         inquiry={createDetail({
           status: "RESOLVED",
+          stateVersion: 8,
+          updatedAt: "2026-08-13T11:55:00+09:00",
+          consultation: {
+            consultationId: "30000000-0000-4000-8000-000000000301",
+            resultCode: "COMPLETED_NO_VISIT",
+            summary: {
+              aiDraftSummary: "AI 초안",
+              editedSummary: "상담사 수정 내용",
+              confirmedSummary: "필터 교체 방법과 사용 주의사항을 안내함",
+              confirmedAt,
+            },
+            consultationNote: "필터 상태를 확인함",
+            additionalCheck: "추가 누수 없음",
+            customerGuidance: "필터 교체 후 5분간 출수 안내",
+            usageGuidanceStatus: "NORMAL",
+          },
+          stateHistory: [
+            {
+              fromStatus: "COMPLETION_PENDING",
+              toStatus: "RESOLVED",
+              changedAt: completedAt,
+              actorRole: "CONSULTANT",
+            },
+          ],
           workflow: {
             status: "RESOLVED",
             stateVersion: 8,
@@ -554,14 +580,49 @@ describe("Remote 상담사 문의 상세", () => {
     );
 
     expect(screen.queryByLabelText("상담 처리 작업")).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", {
-        name: "상담 3단계: 상담 진행",
-      }),
-    );
     expect(
-      screen.getByText("현재 진행할 상담 작업이 없습니다."),
+      screen.getByRole("button", { name: "상담 3단계: 상담 진행" }),
+    ).toHaveAttribute("aria-current", "step");
+    expect(
+      screen.getByRole("progressbar", { name: "상담 처리 진행률" }),
+    ).toHaveValue(3);
+
+    const summary = within(screen.getByTestId("consultation-completion-summary"));
+    expect(summary.getAllByText("처리 완료").length).toBeGreaterThan(0);
+    expect(summary.getByText("방문 없이 상담 완료")).toBeVisible();
+    expect(
+      summary.getByText("필터 교체 방법과 사용 주의사항을 안내함"),
     ).toBeVisible();
-    expect(container.querySelector(".remote-inquiry-detail__workspace")).toBeNull();
+    expect(summary.getByText("필터 교체 후 5분간 출수 안내")).toBeVisible();
+    expect(summary.getByText(formatWorkspaceDateTime(completedAt))).toBeVisible();
+    expect(summary.getByText(formatWorkspaceDateTime(confirmedAt))).toBeVisible();
+    expect(summary.getByText("백엔드에서 제공되지 않음")).toBeVisible();
+    expect(
+      screen.queryByText("현재 진행할 상담 작업이 없습니다."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("취소 문의의 상세 결과가 누락되어도 상태와 제공 불가 안내를 표시한다", () => {
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          status: "CANCELLED",
+          stateVersion: 9,
+          consultation: null,
+          stateHistory: [],
+          workflow: {
+            status: "CANCELLED",
+            stateVersion: 9,
+            allowedActions: [],
+          },
+        })}
+      />,
+    );
+
+    const summary = within(screen.getByTestId("consultation-completion-summary"));
+    expect(summary.getAllByText("취소").length).toBeGreaterThan(0);
+    expect(
+      summary.getAllByText("백엔드에서 제공되지 않음").length,
+    ).toBeGreaterThanOrEqual(4);
   });
 });

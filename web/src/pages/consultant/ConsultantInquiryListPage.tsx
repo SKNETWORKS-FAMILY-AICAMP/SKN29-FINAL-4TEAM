@@ -164,6 +164,8 @@ export default function ConsultantInquiryListPage() {
     useState<RiskSectionId>("all");
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(() => getSelectedInquiryId(location.search));
+  const [hasUnsavedInquiryChanges, setHasUnsavedInquiryChanges] =
+    useState(false);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [inquiryStateUpdates, setInquiryStateUpdates] = useState<
     Record<
@@ -300,20 +302,38 @@ export default function ConsultantInquiryListPage() {
       ...inquiryStateUpdates[inquiry.inquiryId],
     }));
 
-    if (activeBucket !== "ALL") return inquiries;
+    if (activeBucket !== "ALL" || filters.sort !== "UPDATED_DESC") {
+      return inquiries;
+    }
 
     return [...inquiries].sort((left, right) => {
       const leftIsNew = getCounselorWorkBucket(left.status) === "NEW";
       const rightIsNew = getCounselorWorkBucket(right.status) === "NEW";
       return Number(rightIsNew) - Number(leftIsNew);
     });
-  }, [activeBucket, inquiryStateUpdates, mockState, queryData?.items]);
+  }, [
+    activeBucket,
+    filters.sort,
+    inquiryStateUpdates,
+    mockState,
+    queryData?.items,
+  ]);
 
   const closeSelectedInquiry = useCallback(() => {
+    if (
+      hasUnsavedInquiryChanges &&
+      !window.confirm(
+        "저장하지 않은 상담 내용이 있습니다. 닫으면 작성 내용이 사라집니다. 닫으시겠습니까?",
+      )
+    ) {
+      return false;
+    }
+
+    setHasUnsavedInquiryChanges(false);
     setSelectedInquiryId(null);
 
     const params = new URLSearchParams(location.search);
-    if (!params.has("inquiryId")) return;
+    if (!params.has("inquiryId")) return true;
 
     params.delete("inquiryId");
     const nextSearch = params.toString();
@@ -321,7 +341,13 @@ export default function ConsultantInquiryListPage() {
       `${location.pathname}${nextSearch ? `?${nextSearch}` : ""}`,
       { replace: true },
     );
-  }, [location.pathname, location.search, navigate]);
+    return true;
+  }, [
+    hasUnsavedInquiryChanges,
+    location.pathname,
+    location.search,
+    navigate,
+  ]);
 
   const displayedRiskSection = activeRiskSection;
   const riskSummaryCounts = useMemo(() => {
@@ -395,7 +421,12 @@ export default function ConsultantInquiryListPage() {
 
     document.body.classList.add("consultant-detail-open");
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeSelectedInquiry();
+      if (
+        event.key === "Escape" &&
+        !document.querySelector(".consultation-history-modal")
+      ) {
+        closeSelectedInquiry();
+      }
     };
     window.addEventListener("keydown", closeOnEscape);
 
@@ -404,6 +435,17 @@ export default function ConsultantInquiryListPage() {
       window.removeEventListener("keydown", closeOnEscape);
     };
   }, [closeSelectedInquiry, selectedInquiryId]);
+
+  useEffect(() => {
+    if (!hasUnsavedInquiryChanges) return;
+
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [hasUnsavedInquiryChanges]);
 
   const bucketCounts = useMemo(
     () => {
@@ -443,18 +485,18 @@ export default function ConsultantInquiryListPage() {
     if (filters.page !== 1) setFilters({ ...filters, page: 1 });
   };
   const changeBucket = (bucket: ConsultantInquiryBucket) => {
+    if (!closeSelectedInquiry()) return;
     setActiveBucket(bucket);
     const params = new URLSearchParams(location.search);
     params.set("bucket", bucket);
     params.delete("page");
     params.delete("inquiryId");
     navigate(`${location.pathname}?${params.toString()}`, { replace: true });
-    setSelectedInquiryId(null);
   };
 
   const changeRiskSection = (riskLevel: RiskSectionId) => {
+    if (!closeSelectedInquiry()) return;
     setActiveRiskSection(riskLevel);
-    closeSelectedInquiry();
     resetInquiryListPage();
   };
 
@@ -508,6 +550,13 @@ export default function ConsultantInquiryListPage() {
   const openInquiry = (rawInquiryId: string) => {
     const inquiryId = toInquiryId(rawInquiryId);
     if (!inquiryId) return;
+    if (
+      selectedInquiryId &&
+      selectedInquiryId !== inquiryId &&
+      !closeSelectedInquiry()
+    ) {
+      return;
+    }
 
     if (user?.id) {
       rememberRecentConsultantInquiryId(user.id, inquiryId);
@@ -702,6 +751,8 @@ export default function ConsultantInquiryListPage() {
                         options={[
                           { value: "UPDATED_DESC", label: "최신순" },
                           { value: "UPDATED_ASC", label: "오래된순" },
+                          { value: "RISK_DESC", label: "긴급도순" },
+                          { value: "WAITING_DESC", label: "대기시간순" },
                         ]}
                       />
                     </div>
@@ -866,6 +917,7 @@ export default function ConsultantInquiryListPage() {
                   }
                 }}
                 onSummaryConfirmed={(status) => {
+                  setHasUnsavedInquiryChanges(false);
                   setActiveBucket("COMPLETED");
                   setActiveRiskSection("all");
                   setSelectedInquiryId(null);
@@ -874,6 +926,7 @@ export default function ConsultantInquiryListPage() {
                     state: createConsultantCompletionState("CONSULTATION_CONFIRMED", selectedInquiryId, status),
                   });
                 }}
+                onUnsavedChangesChange={setHasUnsavedInquiryChanges}
               />
             ) : null}
           </section>

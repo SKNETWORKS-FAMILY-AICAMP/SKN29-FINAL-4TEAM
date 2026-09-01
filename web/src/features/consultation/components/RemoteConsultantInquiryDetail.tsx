@@ -26,6 +26,7 @@ interface RemoteConsultantInquiryDetailProps {
   onRefresh?: () => void;
   onStatusChange?: (status: CounselorStatus) => void;
   onSummaryConfirmed?: (status: CounselorStatus) => void;
+  onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
 }
 
 const CONTRACT_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -293,6 +294,7 @@ export default function RemoteConsultantInquiryDetail({
   onRefresh,
   onStatusChange,
   onSummaryConfirmed,
+  onUnsavedChangesChange,
 }: RemoteConsultantInquiryDetailProps) {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const historyTriggerRef = useRef<HTMLButtonElement>(null);
@@ -313,9 +315,8 @@ export default function RemoteConsultantInquiryDetail({
       : null) ||
     "안내 상태 미제공";
   const normalizedRisk = normalizeCounselorRisk(inquiry.riskLevel);
-  const statusLabel = STATUS_LABELS[
-    normalizeCounselorStatus(inquiry.workflow.status)
-  ];
+  const normalizedStatus = normalizeCounselorStatus(inquiry.workflow.status);
+  const statusLabel = STATUS_LABELS[normalizedStatus];
   const riskLabel = RISK_LABELS[normalizedRisk];
   const productName = inquiry.productAndCare
     ? formatProductModelAndName(
@@ -325,9 +326,21 @@ export default function RemoteConsultantInquiryDetail({
     : "제품 정보 확인 필요";
   const hasConsultationHistory =
     inquiry.consultation !== null || inquiry.stateHistory.length > 0;
+  const isCompletedInquiry =
+    normalizedStatus === "RESOLVED" || normalizedStatus === "CANCELLED";
   const showActionPanel = Boolean(
-    onOpenVisit && onRefresh && hasRemoteConsultationAction(inquiry),
+    !isCompletedInquiry &&
+      onOpenVisit &&
+      onRefresh &&
+      hasRemoteConsultationAction(inquiry),
   );
+  const completionHistory = [...inquiry.stateHistory]
+    .reverse()
+    .find(
+      (history) =>
+        normalizeCounselorStatus(history.toStatus) === normalizedStatus,
+    );
+  const unavailableCompletionValue = "백엔드에서 제공되지 않음";
   const closeHistory = () => {
     setIsHistoryOpen(false);
     historyTriggerRef.current?.focus();
@@ -393,6 +406,7 @@ export default function RemoteConsultantInquiryDetail({
 
       <ConsultationStepNavigator
         key={inquiry.inquiryId}
+        initialStepId={isCompletedInquiry ? "action" : undefined}
         steps={[
           {
             id: "inquiry",
@@ -553,7 +567,81 @@ export default function RemoteConsultantInquiryDetail({
                     onRefresh={onRefresh}
                     onStatusChange={onStatusChange}
                     onSummaryConfirmed={onSummaryConfirmed}
+                    onUnsavedChangesChange={onUnsavedChangesChange}
                   />
+                ) : isCompletedInquiry ? (
+                  <section
+                    className="remote-inquiry-detail__completion-summary"
+                    aria-labelledby="consultation-completion-summary-title"
+                    data-testid="consultation-completion-summary"
+                    data-e2e-sensitive="true"
+                  >
+                    <div className="remote-inquiry-detail__completion-heading">
+                      <div>
+                        <small>처리 결과</small>
+                        <h2 id="consultation-completion-summary-title">
+                          {statusLabel}
+                        </h2>
+                      </div>
+                      <span className="remote-inquiry-detail__completion-badge">
+                        완료
+                      </span>
+                    </div>
+                    <dl className="remote-inquiry-detail__completion-list">
+                      <div>
+                        <dt>완료 결과</dt>
+                        <dd>{statusLabel}</dd>
+                      </div>
+                      <div>
+                        <dt>완료 사유</dt>
+                        <dd>
+                          {inquiry.consultation
+                            ? (CONSULTATION_RESULT_LABELS[
+                                inquiry.consultation.resultCode
+                              ] ?? unavailableCompletionValue)
+                            : unavailableCompletionValue}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>고객 최종 선택</dt>
+                        <dd>{unavailableCompletionValue}</dd>
+                      </div>
+                      <div>
+                        <dt>완료 시간</dt>
+                        <dd>
+                          {completionHistory
+                            ? formatWorkspaceDateTime(
+                                completionHistory.changedAt,
+                              )
+                            : unavailableCompletionValue}
+                        </dd>
+                      </div>
+                      <div className="is-wide">
+                        <dt>확정 상담 내용</dt>
+                        <dd>
+                          {inquiry.consultation?.summary.confirmedSummary ??
+                            unavailableCompletionValue}
+                        </dd>
+                      </div>
+                      <div className="is-wide">
+                        <dt>고객 안내 내용</dt>
+                        <dd>
+                          {inquiry.consultation?.customerGuidance ??
+                            unavailableCompletionValue}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>상담 내용 확정 시간</dt>
+                        <dd>
+                          {inquiry.consultation?.summary.confirmedAt
+                            ? formatWorkspaceDateTime(
+                                inquiry.consultation.summary.confirmedAt,
+                              )
+                            : unavailableCompletionValue}
+                        </dd>
+                      </div>
+                    </dl>
+                  </section>
                 ) : (
                   <div className="consultation-stepper__empty-action">
                     <strong>현재 진행할 상담 작업이 없습니다.</strong>

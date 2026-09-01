@@ -40,6 +40,14 @@ interface ContactRow {
   email: string;
 }
 
+interface OrganizationGroup {
+  id: string;
+  kind: ContactKind;
+  department: string;
+  contacts: readonly ContactRow[];
+  roleSummary: string;
+}
+
 const CONTACT_KIND_FILTERS: readonly { value: ContactKindFilter; label: string }[] = [
   { value: "ALL", label: "전체 연락처" },
   { value: "CONSULTANT", label: "직원" },
@@ -50,15 +58,20 @@ function normalizeContactSearch(value: string): string {
   return value.normalize("NFKC").toLocaleLowerCase().replace(/[-\s.()]+/g, "");
 }
 
-function ContactValue({ name, label, value, onCopy }: {
+function ContactValue({ name, label, value, href, onCopy }: {
   name: string;
   label: string;
   value: string;
+  href: string;
   onCopy: (value: string, label: string) => Promise<void>;
 }) {
   return (
     <span className="consultant-contact-value">
-      <span>{value || "미등록"}</span>
+      {value.trim() ? (
+        <a href={href} aria-label={`${name} ${label} 연결`}>{value}</a>
+      ) : (
+        <span>미등록</span>
+      )}
       {value.trim() && (
         <button
           type="button"
@@ -74,6 +87,37 @@ function ContactValue({ name, label, value, onCopy }: {
       )}
     </span>
   );
+}
+
+function summarizeRoles(contacts: readonly ContactRow[]): string {
+  const roleCounts = new Map<string, number>();
+  contacts.forEach((contact) => {
+    roleCounts.set(contact.position, (roleCounts.get(contact.position) ?? 0) + 1);
+  });
+  return [...roleCounts.entries()]
+    .map(([role, count]) => `${role} ${count}`)
+    .join(" · ");
+}
+
+function toOrganizationGroups(contacts: readonly ContactRow[]): OrganizationGroup[] {
+  const groupedContacts = new Map<string, ContactRow[]>();
+  contacts.forEach((contact) => {
+    const key = `${contact.kind}:${contact.department}`;
+    groupedContacts.set(key, [...(groupedContacts.get(key) ?? []), contact]);
+  });
+
+  return [...groupedContacts.entries()]
+    .map(([id, grouped]) => ({
+      id,
+      kind: grouped[0].kind,
+      department: grouped[0].department,
+      contacts: grouped,
+      roleSummary: summarizeRoles(grouped),
+    }))
+    .sort((left, right) =>
+      (left.kind === right.kind ? 0 : left.kind === "CONSULTANT" ? -1 : 1) ||
+      left.department.localeCompare(right.department, "ko"),
+    );
 }
 
 function toContactRows(data: ContactData | null): ContactRow[] {
@@ -142,6 +186,18 @@ export default function ConsultantContactsPage() {
   }, [retryCount]);
 
   const contacts = useMemo(() => toContactRows(data), [data]);
+  const organizationGroups = useMemo(
+    () => toOrganizationGroups(contacts),
+    [contacts],
+  );
+  const consultantGroups = useMemo(
+    () => organizationGroups.filter((group) => group.kind === "CONSULTANT"),
+    [organizationGroups],
+  );
+  const technicianGroups = useMemo(
+    () => organizationGroups.filter((group) => group.kind === "TECHNICIAN"),
+    [organizationGroups],
+  );
   const kindContacts = useMemo(
     () => contacts.filter((contact) => kindFilter === "ALL" || contact.kind === kindFilter),
     [contacts, kindFilter],
@@ -164,6 +220,12 @@ export default function ConsultantContactsPage() {
   const resetFilters = () => {
     setKindFilter("ALL");
     setDepartmentFilter("ALL");
+    setSearchDraft("");
+    setSearchQuery("");
+  };
+  const selectOrganizationGroup = (group: OrganizationGroup) => {
+    setKindFilter(group.kind);
+    setDepartmentFilter(group.department);
     setSearchDraft("");
     setSearchQuery("");
   };
@@ -210,9 +272,75 @@ export default function ConsultantContactsPage() {
             </button>
           </header>
 
-          <div className="consultant-contacts-toolbar">
-            <div className="consultant-contacts-filter-head">
-              <div className="consultant-contacts-kinds" role="group" aria-label="연락처 구분">
+          <div className="consultant-contacts-content">
+            {ready && contacts.length > 0 && (
+              <section
+                className="consultant-contacts-organization"
+                aria-labelledby="consultant-contacts-organization-title"
+              >
+                <header className="consultant-contacts-organization__head">
+                  <div>
+                    <span>WATERBRIDGE DIRECTORY</span>
+                    <h2 id="consultant-contacts-organization-title">조직도</h2>
+                    <p>부서와 방문 서비스 지점을 선택하면 해당 연락처만 바로 확인할 수 있습니다.</p>
+                  </div>
+                  <dl className="consultant-contacts-organization__stats">
+                    <div><dt>본사 직원</dt><dd>{contacts.filter((contact) => contact.kind === "CONSULTANT").length}명</dd></div>
+                    <div><dt>방문기사</dt><dd>{contacts.filter((contact) => contact.kind === "TECHNICIAN").length}명</dd></div>
+                    <div><dt>부서</dt><dd>{consultantGroups.length}개</dd></div>
+                    <div><dt>서비스 지점</dt><dd>{technicianGroups.length}개</dd></div>
+                  </dl>
+                </header>
+
+                <div className="consultant-contacts-organization__root">
+                  <button
+                    type="button"
+                    aria-label="전체 조직 연락처 보기"
+                    aria-pressed={kindFilter === "ALL" && departmentFilter === "ALL" && !searchQuery}
+                    onClick={resetFilters}
+                  >
+                    <span>WATERBRIDGE</span>
+                    <strong>고객지원 통합 조직</strong>
+                    <small>총 {contacts.length}명 · {organizationGroups.length}개 조직</small>
+                  </button>
+                </div>
+
+                <div className="consultant-contacts-organization__divisions">
+                  {[
+                    { id: "office", eyebrow: "본사 조직", title: "고객 지원 부서", groups: consultantGroups },
+                    { id: "field", eyebrow: "현장 조직", title: "방문 서비스 네트워크", groups: technicianGroups },
+                  ].map((division) => (
+                    <section key={division.id} className="consultant-contacts-division" aria-labelledby={`consultant-contacts-${division.id}-title`}>
+                      <header>
+                        <span>{division.eyebrow}</span>
+                        <h3 id={`consultant-contacts-${division.id}-title`}>{division.title}</h3>
+                        <small>{division.groups.length}개 조직</small>
+                      </header>
+                      <div className="consultant-contacts-division__groups">
+                        {division.groups.map((group) => (
+                          <button
+                            key={group.id}
+                            type="button"
+                            aria-label={`${group.department} 연락처 보기`}
+                            aria-pressed={kindFilter === group.kind && departmentFilter === group.department}
+                            onClick={() => selectOrganizationGroup(group)}
+                          >
+                            <span>{group.kind === "CONSULTANT" ? "DEPARTMENT" : "SERVICE BRANCH"}</span>
+                            <strong>{group.department || "미등록 조직"}</strong>
+                            <small>{group.contacts.length}명 · {group.roleSummary}</small>
+                            <em aria-hidden="true">›</em>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <div className="consultant-contacts-toolbar">
+              <div className="consultant-contacts-filter-head">
+                <div className="consultant-contacts-kinds" role="group" aria-label="연락처 구분">
                 {CONTACT_KIND_FILTERS.map((filter) => (
                   <button
                     key={filter.value}
@@ -229,9 +357,9 @@ export default function ConsultantContactsPage() {
                       contacts.filter((contact) => contact.kind === filter.value).length}</span>}
                   </button>
                 ))}
+                </div>
+                <button type="button" className="consultant-contacts-reset" disabled={!ready || !hasFilters} onClick={resetFilters}>필터 초기화</button>
               </div>
-              <button type="button" className="consultant-contacts-reset" disabled={!ready || !hasFilters} onClick={resetFilters}>필터 초기화</button>
-            </div>
 
             <div className="consultant-contacts-filters">
               <form
@@ -276,9 +404,8 @@ export default function ConsultantContactsPage() {
                 />
               </div>
             </div>
-          </div>
+            </div>
 
-          <div className="consultant-contacts-content">
             {loadState === "loading" ? (
               <LoadingState title="직원 연락처를 불러오고 있습니다." />
             ) : loadState === "unauthorized" ? (
@@ -326,8 +453,8 @@ export default function ConsultantContactsPage() {
                       </th>
                       <td><span className="consultant-contact-cell-label" aria-hidden="true">부서·지점</span>{contact.department || "미등록"}</td>
                       <td><span className="consultant-contact-cell-label" aria-hidden="true">직급</span>{contact.position || "미등록"}</td>
-                      <td><span className="consultant-contact-cell-label" aria-hidden="true">내선·전화</span><ContactValue name={contact.name} label="연락처" value={contact.phone} onCopy={copyContact} /></td>
-                      <td><span className="consultant-contact-cell-label" aria-hidden="true">이메일</span><ContactValue name={contact.name} label="이메일" value={contact.email} onCopy={copyContact} /></td>
+                      <td><span className="consultant-contact-cell-label" aria-hidden="true">내선·전화</span><ContactValue name={contact.name} label="연락처" value={contact.phone} href={`tel:${contact.phone.replace(/[^+\d]/g, "")}`} onCopy={copyContact} /></td>
+                      <td><span className="consultant-contact-cell-label" aria-hidden="true">이메일</span><ContactValue name={contact.name} label="이메일" value={contact.email} href={`mailto:${contact.email}`} onCopy={copyContact} /></td>
                     </tr>
                   ))}
                 </tbody>

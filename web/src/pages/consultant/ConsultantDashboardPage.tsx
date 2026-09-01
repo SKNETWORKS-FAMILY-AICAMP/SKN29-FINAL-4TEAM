@@ -1,5 +1,6 @@
 import {
   type KeyboardEvent as ReactKeyboardEvent,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -365,6 +366,8 @@ export default function ConsultantDashboardPage() {
 
   const [selectedInquiryId, setSelectedInquiryId] =
     useState<InquiryId | null>(null);
+  const [hasUnsavedInquiryChanges, setHasUnsavedInquiryChanges] =
+    useState(false);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [inquiryStateUpdates, setInquiryStateUpdates] = useState<
     Record<
@@ -376,6 +379,20 @@ export default function ConsultantDashboardPage() {
       }
     >
   >({});
+  const closeSelectedInquiry = useCallback(() => {
+    if (
+      hasUnsavedInquiryChanges &&
+      !window.confirm(
+        "저장하지 않은 상담 내용이 있습니다. 닫으면 작성 내용이 사라집니다. 닫으시겠습니까?",
+      )
+    ) {
+      return false;
+    }
+
+    setHasUnsavedInquiryChanges(false);
+    setSelectedInquiryId(null);
+    return true;
+  }, [hasUnsavedInquiryChanges]);
 
   const mockState = new URLSearchParams(location.search).get("mockState");
   const repositoryQuery = useMemo<ConsultantInquiryListQuery>(
@@ -503,7 +520,12 @@ export default function ConsultantDashboardPage() {
 
     document.body.classList.add("consultant-detail-open");
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSelectedInquiryId(null);
+      if (
+        event.key === "Escape" &&
+        !document.querySelector(".consultation-history-modal")
+      ) {
+        closeSelectedInquiry();
+      }
     };
     window.addEventListener("keydown", closeOnEscape);
 
@@ -511,7 +533,18 @@ export default function ConsultantDashboardPage() {
       document.body.classList.remove("consultant-detail-open");
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [selectedInquiryId]);
+  }, [closeSelectedInquiry, selectedInquiryId]);
+
+  useEffect(() => {
+    if (!hasUnsavedInquiryChanges) return;
+
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [hasUnsavedInquiryChanges]);
 
   const bucketCounts = useMemo(() => {
     if (!overviewData) return undefined;
@@ -548,11 +581,12 @@ export default function ConsultantDashboardPage() {
       }
     : null;
   const changeRiskSection = (riskLevel: ConsultantRiskLevelDto) => {
+    if (!closeSelectedInquiry()) return;
     setActiveRiskSection(riskLevel);
-    setSelectedInquiryId(null);
   };
 
   const changeWorkFocus = (focus: WorkFocus) => {
+    if (!closeSelectedInquiry()) return;
     if (focus === "NEW") {
       setActiveBucket("NEW");
     } else if (focus === "IN_PROGRESS") {
@@ -560,7 +594,6 @@ export default function ConsultantDashboardPage() {
     }
     setWorkFocus(focus);
     setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
-    setSelectedInquiryId(null);
     if (filters.page !== 1) setFilters({ ...filters, page: 1 });
   };
 
@@ -601,7 +634,7 @@ export default function ConsultantDashboardPage() {
 
   const advanceToNextInquiry = () => {
     if (!selectedInquiry || queuePage.items.length < 2) {
-      setSelectedInquiryId(null);
+      closeSelectedInquiry();
       return;
     }
 
@@ -625,6 +658,13 @@ export default function ConsultantDashboardPage() {
   const openInquiry = (rawInquiryId: string) => {
     const inquiryId = toInquiryId(rawInquiryId);
     if (!inquiryId) return;
+    if (
+      selectedInquiryId &&
+      selectedInquiryId !== inquiryId &&
+      !closeSelectedInquiry()
+    ) {
+      return;
+    }
 
     if (user?.id) {
       setRecentInquiryIds(
@@ -1274,11 +1314,11 @@ export default function ConsultantDashboardPage() {
                                   : []),
                               ]}
                               onChange={(value) => {
+                                if (!closeSelectedInquiry()) return;
                                 setRiskSectionStatusFilters((current) => ({
                                   ...current,
                                   [section.id]: value as RiskSectionStatusFilter,
                                 }));
-                                setSelectedInquiryId(null);
                               }}
                             />
                           </div>
@@ -1396,7 +1436,7 @@ export default function ConsultantDashboardPage() {
             type="button"
             className="consultant-detail-backdrop"
             aria-label="문의 상세 닫기"
-            onClick={() => setSelectedInquiryId(null)}
+            onClick={closeSelectedInquiry}
           />
           <section
             className="consultant-detail-drawer"
@@ -1417,7 +1457,7 @@ export default function ConsultantDashboardPage() {
                   <button
                     type="button"
                     aria-label="문의 상세 닫기"
-                    onClick={() => setSelectedInquiryId(null)}
+                    onClick={closeSelectedInquiry}
                   >
                     <span aria-hidden="true">×</span>
                   </button>
@@ -1453,7 +1493,7 @@ export default function ConsultantDashboardPage() {
                 key={selectedInquiryId}
                 inquiryId={selectedInquiryId}
                 returnTo={`/consultant/dashboard${location.search}`}
-                onClose={() => setSelectedInquiryId(null)}
+                onClose={closeSelectedInquiry}
                 onRefreshWorkspace={() => {
                   listQuery.retry();
                   setDashboardRetryCount((current) => current + 1);
@@ -1463,9 +1503,13 @@ export default function ConsultantDashboardPage() {
                     navigate("/consultant/inquiries?bucket=COMPLETED");
                   }
                 }}
-                onSummaryConfirmed={(status) => navigate(CONSULTANT_COMPLETED_LIST_PATH, {
-                  state: createConsultantCompletionState("CONSULTATION_CONFIRMED", selectedInquiryId, status),
-                })}
+                onSummaryConfirmed={(status) => {
+                  setHasUnsavedInquiryChanges(false);
+                  navigate(CONSULTANT_COMPLETED_LIST_PATH, {
+                    state: createConsultantCompletionState("CONSULTATION_CONFIRMED", selectedInquiryId, status),
+                  });
+                }}
+                onUnsavedChangesChange={setHasUnsavedInquiryChanges}
               />
             ) : null}
           </section>

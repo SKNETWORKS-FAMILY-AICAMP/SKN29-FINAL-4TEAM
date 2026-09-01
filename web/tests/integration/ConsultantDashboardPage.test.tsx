@@ -61,8 +61,13 @@ async function openInquiry(
     UNKNOWN: /일반 문의/,
   }[inquiry.riskLevel];
   await user.click(screen.getByRole("tab", { name: riskTabName }));
+  const inquiryList = within(screen.getByLabelText("상담 문의 목록"));
+  const search = inquiryList.getByRole("searchbox", { name: "문의 검색" });
+  await user.clear(search);
+  await user.type(search, inquiryCode);
+  await user.click(inquiryList.getByRole("button", { name: "검색" }));
   await user.click(
-    within(screen.getByLabelText("상담 문의 목록")).getByRole("button", {
+    inquiryList.getByRole("button", {
       name: new RegExp(`${inquiryCode}.*상세 열기`),
     }),
   );
