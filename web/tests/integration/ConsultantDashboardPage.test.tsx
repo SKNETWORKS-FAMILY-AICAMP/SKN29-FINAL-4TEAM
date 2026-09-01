@@ -281,6 +281,17 @@ describe("ConsultantDashboardPage", () => {
     expect(screen.getByLabelText("조직도")).toBeVisible();
   });
 
+  it("확장된 부서를 대시보드 조직도에서 선택해 연락처를 확인한다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("button", { name: /서비스기획팀/ }));
+
+    expect(screen.getByRole("cell", { name: "홍준서" })).toBeVisible();
+    expect(screen.getByRole("cell", { name: "노아린" })).toBeVisible();
+    expect(screen.getAllByRole("cell", { name: "서비스기획팀" })).toHaveLength(2);
+  });
+
   it("조직도 아래에서 방문기사 연락처 목록을 확인한다", async () => {
     const user = userEvent.setup();
     renderPage();
@@ -294,7 +305,7 @@ describe("ConsultantDashboardPage", () => {
       expect(screen.getByRole("columnheader", { name: column })).toBeVisible(),
     );
     expect(screen.getByRole("cell", { name: "오민석" })).toBeVisible();
-    expect(screen.getByRole("cell", { name: "서울동부지사" })).toBeVisible();
+    expect(screen.getAllByRole("cell", { name: "서울동부지사" })).toHaveLength(2);
     expect(screen.getByRole("cell", { name: "010-2501-5001" })).toBeVisible();
   });
 
