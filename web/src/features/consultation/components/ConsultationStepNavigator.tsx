@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 
 import "./ConsultationStepNavigator.css";
 
@@ -10,13 +10,21 @@ export interface ConsultationStepDefinition {
 }
 
 interface ConsultationStepNavigatorProps {
+  initialStepId?: string;
   steps: readonly ConsultationStepDefinition[];
 }
 
 export default function ConsultationStepNavigator({
+  initialStepId,
   steps,
 }: ConsultationStepNavigatorProps) {
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [activeStepIndex, setActiveStepIndex] = useState(() => {
+    const initialIndex = initialStepId
+      ? steps.findIndex((step) => step.id === initialStepId)
+      : 0;
+    return initialIndex >= 0 ? initialIndex : 0;
+  });
+  const panelsRef = useRef<HTMLDivElement>(null);
   const activeStep = steps[activeStepIndex];
 
   if (!activeStep) return null;
@@ -24,6 +32,7 @@ export default function ConsultationStepNavigator({
   const moveToStep = (nextStepIndex: number) => {
     if (nextStepIndex < 0 || nextStepIndex >= steps.length) return;
     setActiveStepIndex(nextStepIndex);
+    if (panelsRef.current) panelsRef.current.scrollTop = 0;
   };
 
   return (
@@ -74,7 +83,7 @@ export default function ConsultationStepNavigator({
         </ol>
       </nav>
 
-      <div className="consultation-stepper__panels">
+      <div ref={panelsRef} className="consultation-stepper__panels">
         {steps.map((step, index) => {
           const isActive = index === activeStepIndex;
           return (

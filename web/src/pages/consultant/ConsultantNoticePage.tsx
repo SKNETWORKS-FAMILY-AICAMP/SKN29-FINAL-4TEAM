@@ -79,11 +79,6 @@ function matchesQuery(notice: ConsultantNotice, query: string) {
     .includes(query);
 }
 
-function getNoticeSummary(content: string) {
-  const [firstParagraph = ""] = content.trim().split(/\r?\n\s*\r?\n/);
-  return firstParagraph.replace(/\s+/g, " ");
-}
-
 function getNoticeFailureState(error: unknown): NoticeFailureState {
   if (!(error instanceof ApiClientError)) return "error";
   if (error.status === 401) return "unauthorized";
@@ -204,6 +199,17 @@ export default function ConsultantNoticePage() {
   }, [detailRequestKey, isDetailRequested, requestedNoticeId]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
+  const noticeNumberById = useMemo(() => {
+    const newestFirst = [...(data?.notices ?? [])].sort((left, right) =>
+      right.publishedOn.localeCompare(left.publishedOn),
+    );
+    return new Map(
+      newestFirst.map((notice, index) => [
+        notice.noticeId,
+        newestFirst.length - index,
+      ]),
+    );
+  }, [data?.notices]);
   const visibleNotices = useMemo(
     () =>
       [...(data?.notices ?? [])]
@@ -456,10 +462,15 @@ export default function ConsultantNoticePage() {
                       onClick={() => openNoticeDetail(notice.noticeId)}
                     >
                       <div className="consultant-notice-list__main">
+                        <span
+                          className="consultant-notice-list__number"
+                          aria-label={`공지 번호 ${noticeNumberById.get(notice.noticeId) ?? "-"}`}
+                        >
+                          {noticeNumberById.get(notice.noticeId) ?? "-"}
+                        </span>
                         <em data-category={notice.category}>{notice.category}</em>
                         <div>
                           <h2>{notice.title}</h2>
-                          <p>{getNoticeSummary(notice.content)}</p>
                         </div>
                       </div>
                       <div className="consultant-notice-list__meta">
@@ -478,6 +489,7 @@ export default function ConsultantNoticePage() {
           {!isDetailRequested && pageLoadState === "ready" && (
             <Pagination
               ariaLabel="공지사항 목록 페이지"
+              compact
               page={currentNoticePage}
               totalItems={visibleNotices.length}
               totalPages={noticeTotalPages}

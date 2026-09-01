@@ -92,8 +92,29 @@ describe("ConsultantContactsPage", () => {
     expect(within(table).getByText(DATA.technicians[0].name)).toBeVisible();
     expect(within(table).getByText(DATA.consultants[0].extension)).toBeVisible();
     expect(within(table).getByText(DATA.technicians[0].phone)).toBeVisible();
+    expect(screen.queryByRole("region", { name: "조직도" })).not.toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "직원 연락처" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("tab", { name: "전체 문의90" })).toBeVisible();
+  });
+
+  it("확장된 부서를 선택하면 해당 부서 연락처만 표시한다", async () => {
+    const user = userEvent.setup();
+    const department = "서비스기획팀";
+    const departmentMembers = DATA.consultants.filter(
+      (person) => person.department === department,
+    );
+    renderPage();
+    await screen.findByRole("table", { name: "전체 직원 연락처" });
+
+    await user.click(screen.getByRole("combobox", { name: "부서·지점 선택" }));
+    await user.click(screen.getByRole("option", { name: department }));
+
+    expect(within(screen.getByRole("table")).getAllByRole("row")).toHaveLength(
+      departmentMembers.length + 1,
+    );
+    departmentMembers.forEach((person) => {
+      expect(screen.getByText(person.name)).toBeVisible();
+    });
   });
 
   it("방문기사와 부서·지점 필터는 연락처만 필터링한다", async () => {
@@ -107,7 +128,11 @@ describe("ConsultantContactsPage", () => {
     await user.click(screen.getByRole("option", { name: DATA.technicians[0].branch }));
 
     const table = screen.getByRole("table");
-    expect(within(table).getAllByRole("row")).toHaveLength(2);
+    expect(within(table).getAllByRole("row")).toHaveLength(
+      DATA.technicians.filter(
+        (technician) => technician.branch === DATA.technicians[0].branch,
+      ).length + 1,
+    );
     expect(within(table).getByText(DATA.technicians[0].name)).toBeVisible();
     expect(screen.getByRole("tab", { name: "전체 문의90" })).toBeVisible();
     expect(screen.getByRole("tab", { name: "처리 중인 문의30" })).toBeVisible();

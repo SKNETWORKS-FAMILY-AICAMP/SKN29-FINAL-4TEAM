@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import FormSelect from "../../../common/components/form/FormSelect";
 import { useConsultationForm } from "../hooks/useConsultationForm";
@@ -16,6 +16,7 @@ interface Props {
   onRefresh: () => void;
   onStatusChange?: (status: CounselorStatus) => void;
   onSummaryConfirmed?: (status: CounselorStatus) => void;
+  onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
 }
 
 const UNIFIED_CONSULTATION_RECORD_MAX_LENGTH = 2000;
@@ -24,7 +25,7 @@ function presentConsultationAction(
   action: CounselorAllowedAction,
 ): CounselorAllowedAction {
   if (action.code === "UPDATE_CONSULTATION_SUMMARY") {
-    return { ...action, label: "상담 내용 수정" };
+    return { ...action, label: "편집 시작" };
   }
   if (action.code === "CONFIRM_CONSULTATION_SUMMARY") {
     return {
@@ -64,7 +65,13 @@ function buildUnifiedConsultationRecord(
     .join("\n\n");
 }
 
-export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, onRefresh, onStatusChange, onSummaryConfirmed }: Props) {
+interface ConsultationDraftSnapshot {
+  record: string;
+  usageStatus: string;
+  visitRequired: string;
+}
+
+export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, onRefresh, onStatusChange, onSummaryConfirmed, onUnsavedChangesChange }: Props) {
   const actions = useMemo<CounselorAllowedAction[]>(
     () => inquiry.workflow.allowedActions.flatMap((action) =>
       isRemoteConsultationActionCode(action.code)
@@ -88,7 +95,8 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   const [consultationRecord, setConsultationRecord] = useState(() =>
     buildUnifiedConsultationRecord(consultation),
   );
-  const [isSummaryEditing, setIsSummaryEditing] = useState(false);
+  const [editingBaseline, setEditingBaseline] =
+    useState<ConsultationDraftSnapshot | null>(null);
   const [savedSummary, setSavedSummary] = useState<{
     record: string;
     stateVersion: number;
@@ -135,6 +143,22 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
     !showSummaryForm &&
     visibleActions.length === 1 &&
     visibleActions[0]?.code === "START_CONSULTATION";
+  const isSummaryEditing = editingBaseline !== null;
+  const hasUnsavedChanges = Boolean(
+    editingBaseline &&
+      (editingBaseline.record !== consultationRecord ||
+        editingBaseline.visitRequired !== form.values.visitRequired ||
+        editingBaseline.usageStatus !== form.values.usageStatus),
+  );
+
+  useEffect(() => {
+    onUnsavedChangesChange?.(hasUnsavedChanges);
+  }, [hasUnsavedChanges, onUnsavedChangesChange]);
+
+  useEffect(
+    () => () => onUnsavedChangesChange?.(false),
+    [onUnsavedChangesChange],
+  );
 
   const updateUnifiedConsultationRecord = (value: string) => {
     setConsultationRecord(value);
@@ -154,7 +178,11 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
       action.code === "UPDATE_CONSULTATION_SUMMARY" &&
       !isSummaryEditing
     ) {
-      setIsSummaryEditing(true);
+      setEditingBaseline({
+        record: consultationRecord,
+        usageStatus: form.values.usageStatus,
+        visitRequired: form.values.visitRequired,
+      });
       return;
     }
     if (action.code === "VISIT_REVIEW_REQUIRED" || action.code === "VISIT_NEEDED") {
@@ -191,7 +219,7 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
             stateVersion: outcome.result.stateVersion,
           });
         }
-        setIsSummaryEditing(false);
+        setEditingBaseline(null);
       }
       if (action.code === "CONFIRM_CONSULTATION_SUMMARY") {
         form.updateField("summaryConfirmed", true);
@@ -248,7 +276,9 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
               />
               {requiresSummarySave && (
                 <small id="consultation-summary-save-note" className="v6-action-note">
-                  확정 전에 ‘상담 내용 수정’을 눌러 현재 상담 기록을 저장해 주세요.
+                  {isSummaryEditing
+                    ? "수정 내용을 저장한 뒤 상담 내용을 확정할 수 있습니다."
+                    : "‘편집 시작’을 눌러 상담 기록을 확인하고 저장해 주세요."}
                 </small>
               )}
               {form.fieldErrors.consultationNote && (
@@ -274,7 +304,7 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
               <FormSelect
                 aria-label="방문 필요 여부"
                 value={form.values.visitRequired}
-                disabled={save.isSaving}
+                disabled={!isSummaryEditing || save.isSaving}
                 onChange={(value) => form.updateField("visitRequired", value as typeof form.values.visitRequired)}
                 options={[
                   { value: "UNDECIDED", label: "미결정" },
@@ -288,7 +318,7 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
               <FormSelect
                 aria-label="제품 사용 상태"
                 value={form.values.usageStatus}
-                disabled={save.isSaving}
+                disabled={!isSummaryEditing || save.isSaving}
                 onChange={(value) => form.updateField("usageStatus", value as typeof form.values.usageStatus)}
                 options={[
                   { value: "NORMAL", label: "정상 사용 가능" },

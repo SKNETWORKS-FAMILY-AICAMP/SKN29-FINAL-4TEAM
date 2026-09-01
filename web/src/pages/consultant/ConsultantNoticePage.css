@@ -200,9 +200,23 @@
 .consultant-notice-list__main {
   display: grid;
   min-width: 0;
-  grid-template-columns: 66px minmax(0, 1fr);
-  align-items: start;
-  gap: 16px;
+  grid-template-columns: 34px 66px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.consultant-notice-list__number {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c8cdd4;
+  border-radius: 6px;
+  background: #f1f2f4;
+  color: #424b59;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .consultant-notice-list__main em {
@@ -245,21 +259,10 @@
 }
 
 .consultant-notice-list h2 {
-  margin: 0 0 7px;
+  margin: 0;
   color: #16324c;
   font-size: 17px;
   letter-spacing: -0.025em;
-}
-
-.consultant-notice-list p {
-  display: -webkit-box;
-  overflow: hidden;
-  margin: 0;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  color: #63798d;
-  font-size: 13px;
-  line-height: 1.55;
 }
 
 .consultant-notice-list__meta {
@@ -464,12 +467,11 @@ html body #root
   }
 
   .consultant-notice-list__main {
-    grid-template-columns: 58px minmax(0, 1fr);
+    grid-template-columns: 30px 58px minmax(0, 1fr);
     gap: 10px;
   }
 
-  .consultant-notice-list__main h2,
-  .consultant-notice-list__main p {
+  .consultant-notice-list__main h2 {
     overflow-wrap: anywhere;
   }
 }
