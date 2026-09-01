@@ -65,7 +65,7 @@ const NOTICE_CATEGORY_FILTERS: readonly {
   })),
 ];
 
-const NOTICE_PAGE_SIZE = 5;
+const NOTICE_PAGE_SIZE = 10;
 
 function formatNoticeDate(value: string) {
   return value.replaceAll("-", ".");
@@ -461,24 +461,38 @@ export default function ConsultantNoticePage() {
                       className="consultant-notice-list__item"
                       onClick={() => openNoticeDetail(notice.noticeId)}
                     >
-                      <div className="consultant-notice-list__main">
-                        <span
-                          className="consultant-notice-list__number"
-                          aria-label={`공지 번호 ${noticeNumberById.get(notice.noticeId) ?? "-"}`}
-                        >
-                          {noticeNumberById.get(notice.noticeId) ?? "-"}
+                      <span
+                        className="consultant-notice-list__number"
+                        aria-label={`공지 번호 ${noticeNumberById.get(notice.noticeId) ?? "-"}`}
+                      >
+                        {noticeNumberById.get(notice.noticeId) ?? "-"}
+                      </span>
+                      <em
+                        className="consultant-notice-list__category"
+                        data-category={notice.category}
+                      >
+                        {notice.category}
+                      </em>
+                      <h2 className="consultant-notice-list__title">
+                        {notice.title}
+                      </h2>
+                      <span className="consultant-notice-list__byline">
+                        <span className="consultant-notice-list__department">
+                          {notice.department}
                         </span>
-                        <em data-category={notice.category}>{notice.category}</em>
-                        <div>
-                          <h2>{notice.title}</h2>
-                        </div>
-                      </div>
-                      <div className="consultant-notice-list__meta">
-                        <span>{notice.department}</span>
-                        <time dateTime={notice.publishedOn}>
+                        <span
+                          className="consultant-notice-list__divider"
+                          aria-hidden="true"
+                        >
+                          |
+                        </span>
+                        <time
+                          className="consultant-notice-list__date"
+                          dateTime={notice.publishedOn}
+                        >
                           {formatNoticeDate(notice.publishedOn)}
                         </time>
-                      </div>
+                      </span>
                     </button>
                   </li>
                 ))}

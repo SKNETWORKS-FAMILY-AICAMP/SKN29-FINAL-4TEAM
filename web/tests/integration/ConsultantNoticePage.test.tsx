@@ -46,16 +46,41 @@ describe("ConsultantNoticePage", () => {
         "누수·감전·이상 냄새 등 안전 위험 문의는 고객에게 제품 사용 중지를 먼저 안내하고 긴급 상담 절차로 연결해 주세요.",
       ),
     ).not.toBeInTheDocument();
-    expect(within(panel).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(panel).getAllByRole("listitem")).toHaveLength(6);
     const pagination = within(panel).getByRole("navigation", {
       name: "공지사항 목록 페이지",
     });
-    expect(pagination).toHaveTextContent("이전1/2다음");
+    expect(pagination).toHaveTextContent("이전1/1다음");
     expect(pagination).not.toHaveTextContent("총 6건");
     expect(pagination).not.toHaveTextContent("페이지");
     expect(within(panel).getByLabelText("공지 번호 6")).toBeVisible();
     expect(within(panel).getByLabelText("공지 번호 2")).toBeVisible();
-    expect(within(panel).queryByLabelText("공지 번호 1")).not.toBeInTheDocument();
+    expect(within(panel).getByLabelText("공지 번호 1")).toBeVisible();
+    expect(within(panel).getByRole("button", { name: "다음" })).toBeDisabled();
+
+    const firstNoticeRow = within(panel).getByRole("button", {
+      name: /긴급 문의 응대 절차 안내/,
+    });
+    const [number, category, title, byline] = Array.from(
+      firstNoticeRow.children,
+    );
+    expect(number).toHaveClass("consultant-notice-list__number");
+    expect(number).toHaveTextContent(/^6$/);
+    expect(number.children).toHaveLength(0);
+    expect(category).toHaveClass("consultant-notice-list__category");
+    expect(category).toHaveTextContent("긴급");
+    expect(title).toHaveClass("consultant-notice-list__title");
+    expect(title).toHaveTextContent("긴급 문의 응대 절차 안내");
+    expect(byline).toHaveClass("consultant-notice-list__byline");
+    const [department, divider, date] = Array.from(byline.children);
+    expect(department).toHaveClass("consultant-notice-list__department");
+    expect(department).toHaveTextContent("고객케어팀");
+    expect(divider).toHaveClass("consultant-notice-list__divider");
+    expect(divider).toHaveAttribute("aria-hidden", "true");
+    expect(divider).toHaveTextContent("|");
+    expect(date).toHaveClass("consultant-notice-list__date");
+    expect(date).toHaveTextContent("2026.08.18");
+    expect(date).toHaveAttribute("datetime", "2026-08-18");
     expect(screen.getByRole("tab", { name: "공지사항" })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -134,16 +159,31 @@ describe("ConsultantNoticePage", () => {
     );
 
     const listPanel = await screen.findByRole("tabpanel", { name: "공지사항" });
-    expect(within(listPanel).getAllByRole("listitem")).toHaveLength(5);
+    expect(within(listPanel).getAllByRole("listitem")).toHaveLength(6);
   });
 
-  it("공지 목록을 누르면 상세 화면으로 이동하고 페이지를 전환한다", async () => {
+  it("공지 목록을 누르면 상세 화면으로 이동하고 한 페이지에 10건씩 표시한다", async () => {
     const user = userEvent.setup();
+    const baseNotice = MOCK_CONSULTANT_NOTICE_PAGE_DATA.notices[0]!;
+    const notices = Array.from({ length: 11 }, (_, index) => ({
+      ...baseNotice,
+      noticeId: `notice-page-${index + 1}`,
+      noticeCode: `NOTICE-PAGE-${index + 1}`,
+      title: `페이지 공지 ${index + 1}`,
+      publishedOn: `2026-08-${String(index + 1).padStart(2, "0")}`,
+    }));
+    vi.spyOn(consultantNoticeApi, "getConsultantNoticePageData").mockResolvedValue({
+      ...MOCK_CONSULTANT_NOTICE_PAGE_DATA,
+      notices,
+    });
+    vi.spyOn(consultantNoticeApi, "getConsultantNoticeDetail").mockResolvedValue(
+      notices[10]!,
+    );
     renderPage();
 
     const panel = await screen.findByRole("tabpanel", { name: "공지사항" });
     await user.click(
-      within(panel).getByRole("button", { name: /긴급 문의 응대 절차 안내/ }),
+      within(panel).getByRole("button", { name: /페이지 공지 11/ }),
     );
     expect(
       await screen.findByRole("tabpanel", { name: "공지사항 상세" }),
@@ -151,6 +191,7 @@ describe("ConsultantNoticePage", () => {
 
     await user.click(screen.getByRole("button", { name: /공지사항 목록으로/ }));
     const listPanel = await screen.findByRole("tabpanel", { name: "공지사항" });
+    expect(within(listPanel).getAllByRole("listitem")).toHaveLength(10);
     await user.click(within(listPanel).getByRole("button", { name: "다음" }));
     expect(within(listPanel).getAllByRole("listitem")).toHaveLength(1);
     expect(within(listPanel).getByLabelText("공지 번호 1")).toBeVisible();
