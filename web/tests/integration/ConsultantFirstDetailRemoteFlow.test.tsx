@@ -866,7 +866,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       await screen.findByRole("button", { name: "상담 시작" }),
     );
     expect(await screen.findByLabelText("상담 기록")).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "상담 내용 수정" }));
+    await user.click(screen.getByRole("button", { name: "편집 시작" }));
     await user.type(
       screen.getByLabelText("상담 기록"),
       "고객과 출수 상태를 확인하고 필터 상태 및 정상 사용 방법을 안내했습니다.",
@@ -975,6 +975,68 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       expect(remoteMocks.getInquiryDetail).toHaveBeenCalledWith(INQUIRY_ID);
     },
   );
+
+  it("작성 중인 상담 기록은 배경·닫기·ESC로 확인 없이 사라지지 않는다", async () => {
+    const user = userEvent.setup();
+    const editableDetail: ConsultantInquiryDetailViewModel = {
+      ...DETAIL,
+      status: "CONSULTATION_IN_PROGRESS",
+      stateVersion: 5,
+      workflow: {
+        status: "CONSULTATION_IN_PROGRESS",
+        stateVersion: 5,
+        allowedActions: [
+          {
+            code: "UPDATE_CONSULTATION_SUMMARY",
+            label: "상담 내용 저장",
+            operationId: "updateConsultationSummary",
+            style: "PRIMARY",
+            requiresConfirmation: false,
+            confirmationMessage: null,
+          },
+        ],
+      },
+    };
+    remoteMocks.getInquiryDetail.mockResolvedValue({
+      correlationId: "corr-editable-detail",
+      data: editableDetail,
+    });
+    const confirmClose = vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    renderPage("list");
+    await user.click(
+      await screen.findByRole("button", {
+        name: /SYN-INQ-0101.*상세 열기/,
+      }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "상담 3단계: 상담 진행" }),
+    );
+    await user.click(screen.getByRole("button", { name: "편집 시작" }));
+    await user.type(screen.getByLabelText("상담 기록"), "작성 중인 상담 내용");
+
+    const closeButtons = screen.getAllByRole("button", {
+      name: "문의 상세 닫기",
+    });
+    await user.click(closeButtons[0]);
+    expect(screen.getByRole("dialog")).toBeVisible();
+    expect(screen.getByLabelText("상담 기록")).toHaveValue(
+      "작성 중인 상담 내용",
+    );
+
+    await user.click(closeButtons[1]);
+    expect(screen.getByRole("dialog")).toBeVisible();
+
+    await user.keyboard("{Escape}");
+    expect(screen.getByRole("dialog")).toBeVisible();
+    expect(confirmClose).toHaveBeenCalledTimes(3);
+
+    confirmClose.mockReturnValue(true);
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+  });
 
   it("Remote 첫 패널은 별도 전체 기록 화면으로 이동하지 않고 현재 목록 경로를 유지한다", async () => {
     const user = userEvent.setup();

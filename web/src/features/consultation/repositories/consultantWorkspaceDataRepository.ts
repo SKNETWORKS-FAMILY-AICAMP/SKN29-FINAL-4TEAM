@@ -256,6 +256,41 @@ function matchesMockQuery(
   return true;
 }
 
+function sortMockInquiries(
+  inquiries: readonly CounselorInquiry[],
+  sort: ConsultantInquiryListQuery["sort"] = "UPDATED_DESC",
+): CounselorInquiry[] {
+  const riskScore = { DANGER: 3, CAUTION: 2, GENERAL: 1, UNKNOWN: 0 } as const;
+  const compareUpdatedDesc = (
+    left: CounselorInquiry,
+    right: CounselorInquiry,
+  ) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt);
+
+  return [...inquiries].sort((left, right) => {
+    if (sort === "WAITING_DESC") {
+      return (
+        right.waitingMinutes - left.waitingMinutes ||
+        compareUpdatedDesc(left, right) ||
+        left.inquiryId.localeCompare(right.inquiryId)
+      );
+    }
+    if (sort === "RISK_DESC") {
+      return (
+        riskScore[right.riskLevel] - riskScore[left.riskLevel] ||
+        right.waitingMinutes - left.waitingMinutes ||
+        compareUpdatedDesc(left, right) ||
+        left.inquiryId.localeCompare(right.inquiryId)
+      );
+    }
+
+    const updatedDifference = compareUpdatedDesc(left, right);
+    return (
+      (sort === "UPDATED_ASC" ? -updatedDifference : updatedDifference) ||
+      left.inquiryId.localeCompare(right.inquiryId)
+    );
+  });
+}
+
 export function createMockConsultantWorkspaceDataRepository(
   dataset: MockDataset = appEnv.mockDataset,
 ): ConsultantWorkspaceDataRepository {
@@ -350,8 +385,9 @@ export function createMockConsultantInquiryListViewModel(
   dataset: MockDataset = appEnv.mockDataset,
 ): ConsultantInquiryListViewModel {
   const mockInquiries = getMockInquiries(dataset);
-  const filtered = mockInquiries.filter((item) =>
-    matchesMockQuery(item, query),
+  const filtered = sortMockInquiries(
+    mockInquiries.filter((item) => matchesMockQuery(item, query)),
+    query.sort,
   );
   const page = query.page ?? 1;
   const size = query.size ?? 20;
@@ -376,8 +412,9 @@ export function createMockUnassignedConsultationQueueViewModel(
   dataset: MockDataset = appEnv.mockDataset,
 ): UnassignedConsultationQueueViewModel {
   const mockInquiries = getMockUnassignedInquiries(dataset);
-  const filtered = mockInquiries.filter((item) =>
-    matchesMockQuery(item, query),
+  const filtered = sortMockInquiries(
+    mockInquiries.filter((item) => matchesMockQuery(item, query)),
+    query.sort,
   );
   const page = query.page ?? 1;
   const size = query.size ?? 20;

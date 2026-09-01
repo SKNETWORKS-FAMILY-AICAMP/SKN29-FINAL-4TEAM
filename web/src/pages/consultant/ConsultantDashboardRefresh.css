@@ -2222,7 +2222,60 @@ html body
   #root
   .simple-consultant-app.consultant-queue-app
   .consultant-detail-drawer__body--remote {
-  padding: 18px !important;
+  padding: 12px !important;
+  overflow: hidden !important;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body--remote
+  > .remote-inquiry-detail {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body--remote
+  .remote-inquiry-detail__errors {
+  max-height: 72px;
+  flex: 0 0 auto;
+  overflow-y: auto;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body--remote
+  .remote-inquiry-detail__overview {
+  flex: 0 0 auto;
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body--remote
+  .consultation-stepper {
+  min-height: 0;
+  flex: 1 1 auto;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+html body
+  #root
+  .simple-consultant-app.consultant-queue-app
+  .consultant-detail-drawer__body--remote
+  .consultation-stepper__panels {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--consultant-refresh-navy) transparent;
+  scrollbar-width: thin;
 }
 
 html body
@@ -2312,7 +2365,7 @@ html body
   #root
   .simple-consultant-app.consultant-queue-app
   .remote-inquiry-detail__overview {
-  padding: 18px 20px !important;
+  padding: 10px 14px !important;
   background: #fff !important;
 }
 
@@ -2331,9 +2384,9 @@ html body
   .simple-consultant-app.consultant-queue-app
   .remote-inquiry-detail__badge {
   display: inline-flex;
-  min-height: 28px;
+  min-height: 24px;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 8px;
   border: 1px solid #c8c8c8;
   border-radius: 999px;
   background: #f5f5f5;
@@ -2402,7 +2455,7 @@ html body
   h2 {
   margin: 0;
   color: #111 !important;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700 !important;
   -webkit-text-fill-color: #111 !important;
 }
@@ -2411,11 +2464,15 @@ html body
   #root
   .simple-consultant-app.consultant-queue-app
   .remote-inquiry-detail__symptom-summary {
-  margin: 7px 0 0;
+  display: -webkit-box;
+  margin: 4px 0 0;
+  overflow: hidden;
   color: #222 !important;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 500 !important;
-  line-height: 1.55;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   -webkit-text-fill-color: #222 !important;
 }
 
@@ -2425,8 +2482,8 @@ html body
   .remote-inquiry-detail__overview-meta {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 16px 0 0;
+  gap: 8px;
+  margin: 7px 0 0;
 }
 
 html body
@@ -2435,7 +2492,7 @@ html body
   .remote-inquiry-detail__overview-meta
   > div {
   min-width: 0;
-  padding-top: 10px;
+  padding-top: 5px;
   border-top: 1px solid #d6d6d6;
 }
 
@@ -2454,11 +2511,13 @@ html body
   .simple-consultant-app.consultant-queue-app
   .remote-inquiry-detail__overview-meta
   dd {
-  margin: 4px 0 0;
-  overflow-wrap: anywhere;
+  margin: 0;
+  overflow: hidden;
   color: #111 !important;
   font-size: 12px;
   font-weight: 500 !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   -webkit-text-fill-color: #111 !important;
 }
 
@@ -3232,10 +3291,6 @@ html body
     grid-template-columns: 1fr;
   }
 
-  html body
-    #root
-    .simple-consultant-app.consultant-queue-app
-    .remote-inquiry-detail__overview-meta,
   html body
     #root
     .simple-consultant-app.consultant-queue-app

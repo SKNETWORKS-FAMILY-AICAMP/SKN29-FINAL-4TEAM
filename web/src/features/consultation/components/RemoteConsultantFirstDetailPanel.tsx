@@ -16,6 +16,7 @@ interface RemoteConsultantFirstDetailPanelProps {
   onRefreshWorkspace: () => void;
   onStatusChange?: (status: CounselorStatus) => void;
   onSummaryConfirmed?: (status: CounselorStatus) => void;
+  onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
   repository?: ConsultantWorkspaceDataRepository;
   returnTo: string;
 }
@@ -35,6 +36,7 @@ export default function RemoteConsultantFirstDetailPanel({
   onRefreshWorkspace,
   onStatusChange,
   onSummaryConfirmed,
+  onUnsavedChangesChange,
   repository,
   returnTo,
 }: RemoteConsultantFirstDetailPanelProps) {
@@ -136,6 +138,7 @@ export default function RemoteConsultantFirstDetailPanel({
         onRefresh={refreshDetailAndWorkspace}
         onStatusChange={onStatusChange}
         onSummaryConfirmed={onSummaryConfirmed}
+        onUnsavedChangesChange={onUnsavedChangesChange}
       />
     );
   };

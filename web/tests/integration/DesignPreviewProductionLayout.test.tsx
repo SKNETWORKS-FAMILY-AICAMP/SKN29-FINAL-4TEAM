@@ -166,7 +166,7 @@ describe("디자인 미리보기의 배포용 화면 공통 사용", () => {
     expect(within(dialog).getByLabelText("상담 기록")).toBeVisible();
     expect(within(dialog).getByLabelText("상담 기록")).toBeDisabled();
     expect(within(dialog).queryByLabelText("상담 내용 수정본")).not.toBeInTheDocument();
-    await user.click(within(dialog).getByRole("button", { name: "상담 내용 수정" }));
+    await user.click(within(dialog).getByRole("button", { name: "편집 시작" }));
     expect(within(dialog).getByLabelText("상담 기록")).toBeEnabled();
     expect(within(dialog).getByRole("button", { name: "수정 내용 저장" })).toBeVisible();
     expect(observedRequests.every(({ method }) => method === "GET")).toBe(true);

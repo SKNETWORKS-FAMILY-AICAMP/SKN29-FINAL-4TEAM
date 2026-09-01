@@ -20,6 +20,14 @@
   gap: 8px;
 }
 
+.common-pagination--compact {
+  justify-content: center;
+}
+
+.common-pagination--compact .common-pagination__actions {
+  justify-content: center;
+}
+
 .common-pagination__actions button,
 .common-pagination__actions span {
   display: inline-flex;

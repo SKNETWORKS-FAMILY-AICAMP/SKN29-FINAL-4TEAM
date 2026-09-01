@@ -73,12 +73,10 @@ async function openInquiry(
     UNKNOWN: /일반 문의/,
   }[inquiry.riskLevel];
   await user.click(screen.getByRole("tab", { name: riskTabName }));
-  if (bucket === "NEW") {
-    const search = screen.getByRole("searchbox", { name: "문의 검색" });
-    await user.clear(search);
-    await user.type(search, inquiryCode);
-    await user.click(screen.getByRole("button", { name: "검색" }));
-  }
+  const search = screen.getByRole("searchbox", { name: "문의 검색" });
+  await user.clear(search);
+  await user.type(search, inquiryCode);
+  await user.click(screen.getByRole("button", { name: "검색" }));
   await user.click(
     screen.getByRole("button", {
       name: new RegExp(`${inquiryCode}.*상세 열기$`),
@@ -162,7 +160,7 @@ describe("ConsultantInquiryListPage", () => {
     await waitFor(() => assertRows("일"));
   });
 
-  it("문의 검색과 최신순·오래된순 정렬을 제공한다", async () => {
+  it("문의 검색과 최신순·오래된순·긴급도순·대기시간순 정렬을 제공한다", async () => {
     const user = userEvent.setup();
     renderPage();
 
@@ -185,9 +183,39 @@ describe("ConsultantInquiryListPage", () => {
     ).toBeVisible();
 
     await user.click(sort);
+    expect(screen.getByRole("option", { name: "최신순" })).toBeVisible();
     await user.click(screen.getByRole("option", { name: "오래된순" }));
     expect(sort).toHaveTextContent("오래된순");
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+
+    await user.click(sort);
+    await user.click(screen.getByRole("option", { name: "긴급도순" }));
+    expect(sort).toHaveTextContent("긴급도순");
+
+    await user.click(sort);
+    await user.click(screen.getByRole("option", { name: "대기시간순" }));
+    expect(sort).toHaveTextContent("대기시간순");
+  });
+
+  it("대기시간순을 선택하면 전체 문의에서도 서버·Repository 순서를 유지한다", () => {
+    const expectedCodes = [...CONSULTANT_QUEUE_INQUIRIES]
+      .sort(
+        (left, right) =>
+          right.waitingMinutes - left.waitingMinutes ||
+          Date.parse(right.updatedAt) - Date.parse(left.updatedAt) ||
+          left.inquiryId.localeCompare(right.inquiryId),
+      )
+      .slice(0, 5)
+      .map((inquiry) => inquiry.inquiryCode);
+
+    renderPage("/consultant/inquiries?sort=WAITING_DESC");
+
+    const displayedCodes = screen
+      .getAllByRole("button", { name: /상세 열기/ })
+      .map((row) =>
+        expectedCodes.find((code) => row.getAttribute("aria-label")?.includes(code)),
+      );
+    expect(displayedCodes).toEqual(expectedCodes);
   });
 
   it("전체 문의의 위험도별 총합은 90건이며 페이지를 이동해도 유지된다", async () => {

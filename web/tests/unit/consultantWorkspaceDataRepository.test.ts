@@ -205,6 +205,58 @@ describe("상담사 실제 API 전환 Repository", () => {
     expect(detail.data.customer).not.toHaveProperty("serviceAddress");
   });
 
+  it("Mock 문의는 대기시간순으로 정렬한 뒤 페이지를 나눈다", async () => {
+    const repository = createMockConsultantWorkspaceDataRepository(
+      "DESIGN_SCENARIOS",
+    );
+    const expectedIds = [...CONSULTANT_QUEUE_INQUIRIES]
+      .sort(
+        (left, right) =>
+          right.waitingMinutes - left.waitingMinutes ||
+          Date.parse(right.updatedAt) - Date.parse(left.updatedAt) ||
+          left.inquiryId.localeCompare(right.inquiryId),
+      )
+      .slice(0, 5)
+      .map((inquiry) => inquiry.inquiryId);
+
+    const result = await repository.listInquiries({
+      sort: "WAITING_DESC",
+      page: 1,
+      size: 5,
+    });
+
+    expect(result.data.items.map((inquiry) => inquiry.inquiryId)).toEqual(
+      expectedIds,
+    );
+  });
+
+  it("Mock 문의의 긴급도순은 위험도를 우선하고 동률이면 대기시간을 사용한다", async () => {
+    const repository = createMockConsultantWorkspaceDataRepository(
+      "DESIGN_SCENARIOS",
+    );
+    const riskScore = { DANGER: 3, CAUTION: 2, GENERAL: 1, UNKNOWN: 0 } as const;
+    const expectedIds = [...CONSULTANT_QUEUE_INQUIRIES]
+      .sort(
+        (left, right) =>
+          riskScore[right.riskLevel] - riskScore[left.riskLevel] ||
+          right.waitingMinutes - left.waitingMinutes ||
+          Date.parse(right.updatedAt) - Date.parse(left.updatedAt) ||
+          left.inquiryId.localeCompare(right.inquiryId),
+      )
+      .slice(0, 5)
+      .map((inquiry) => inquiry.inquiryId);
+
+    const result = await repository.listInquiries({
+      sort: "RISK_DESC",
+      page: 1,
+      size: 5,
+    });
+
+    expect(result.data.items.map((inquiry) => inquiry.inquiryId)).toEqual(
+      expectedIds,
+    );
+  });
+
   it("명시적 Mock 미배정 대기열은 배정 목록과 겹치지 않는 전용 합성 문의를 쓴다", async () => {
     const repository = createMockConsultantWorkspaceDataRepository(
       "DESIGN_SCENARIOS",
@@ -240,6 +292,30 @@ describe("상담사 실제 API 전환 Repository", () => {
     expect(
       UNASSIGNED_CONSULTANT_INQUIRIES.map((item) => item.manualModel),
     ).toEqual(["WPUJAC104DWH", "WPUIAC425SNW", "WPUIAC606SNW"]);
+  });
+
+  it("Mock 미배정 문의도 대기시간이 긴 순서로 표시한다", async () => {
+    const repository = createMockConsultantWorkspaceDataRepository(
+      "DESIGN_SCENARIOS",
+    );
+    const expectedIds = [...UNASSIGNED_CONSULTANT_INQUIRIES]
+      .sort(
+        (left, right) =>
+          right.waitingMinutes - left.waitingMinutes ||
+          Date.parse(right.updatedAt) - Date.parse(left.updatedAt) ||
+          left.inquiryId.localeCompare(right.inquiryId),
+      )
+      .map((inquiry) => inquiry.inquiryId);
+
+    const result = await repository.listUnassignedConsultations({
+      sort: "WAITING_DESC",
+      page: 1,
+      size: 20,
+    });
+
+    expect(result.data.items.map((inquiry) => inquiry.inquiryId)).toEqual(
+      expectedIds,
+    );
   });
 
   it("디자인 Mock 데이터셋은 상태별 다건 문의를 명시적으로 제공한다", async () => {
