@@ -68,6 +68,7 @@ sealed interface FollowUpUiState {
         val snapshot: CustomerInquirySnapshot? = null,
         val questions: List<CustomerInquiryQuestion> = emptyList(),
         val drafts: Map<String, FollowUpDraft> = emptyMap(),
+        val answerSubmissionFailed: Boolean = false,
     ) : FollowUpUiState
 }
 

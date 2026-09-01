@@ -197,9 +197,17 @@ fun FollowUpQuestionsSection(
         is FollowUpUiState.Error -> {
             CustomerErrorState(
                 title =
-                    "추가 질문을 확인하지 못했어요",
+                    if (state.answerSubmissionFailed) {
+                        "답변을 저장하지 못했어요"
+                    } else {
+                        "추가 질문을 확인하지 못했어요"
+                    },
                 message =
-                    "작성한 답변은 유지했어요. 잠시 후 다시 확인해주세요.",
+                    if (state.answerSubmissionFailed) {
+                        "작성한 답변은 유지했어요. 잠시 후 다시 시도해주세요."
+                    } else {
+                        "잠시 후 다시 확인해주세요."
+                    },
                 onRetry =
                     if (
                         state.retryable &&

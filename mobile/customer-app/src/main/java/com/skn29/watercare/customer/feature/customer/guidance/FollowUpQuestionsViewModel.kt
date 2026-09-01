@@ -521,6 +521,10 @@ class FollowUpQuestionsViewModel(
         }
 
         if (questionData.questions.isEmpty()) {
+            logger.info(
+                "follow_up stage=AI_REEVALUATION_PENDING " +
+                    "state_version=${snapshot.stateVersion}"
+            )
             _state.value = FollowUpUiState.Empty(snapshot)
             return
         }
@@ -541,7 +545,13 @@ class FollowUpQuestionsViewModel(
         failure: ApiResult.Failure,
         previous: FollowUpContext,
     ) {
-        logFollowUpFailure("ANSWER_SUBMIT_FAILED", failure)
+        val failureStage =
+            when (failure.code) {
+                "STATE-CONFLICT-01" -> "STATE_CONFLICT"
+                "DUPLICATE-EVENT-01" -> "DUPLICATE_EVENT"
+                else -> "ANSWER_SUBMIT_FAILED"
+            }
+        logFollowUpFailure(failureStage, failure)
         when {
             failure.code ==
                 "STATE-CONFLICT-01" -> {
@@ -617,6 +627,7 @@ class FollowUpQuestionsViewModel(
                     failureState(
                         failure = failure,
                         previous = previous,
+                        answerSubmissionFailed = true,
                     )
         }
     }
@@ -648,6 +659,31 @@ class FollowUpQuestionsViewModel(
                 is ApiResult.Failure ->
                     return result
             }
+
+        if (
+            snapshot.inquiryId != inquiryId
+        ) {
+            return ApiResult.Failure(
+                code =
+                    "CUSTOMER_INQUIRY_CONTRACT_MISMATCH",
+                message =
+                    "문의 조회 응답의 식별자가 일치하지 않습니다.",
+                retryable = true,
+            )
+        }
+
+        if (
+            snapshot.statusCode.trim().uppercase() !=
+                "QUESTIONNAIRE_IN_PROGRESS"
+        ) {
+            return ApiResult.Success(
+                FollowUpContext(
+                    snapshot = snapshot,
+                    questions = emptyList(),
+                    drafts = emptyMap(),
+                )
+            )
+        }
 
         val questionData =
             when (
@@ -691,6 +727,21 @@ class FollowUpQuestionsViewModel(
                         )
                 ) {
                     is ApiResult.Success -> {
+                        if (
+                            refreshed.value.statusCode
+                                .trim()
+                                .uppercase() !=
+                            "QUESTIONNAIRE_IN_PROGRESS"
+                        ) {
+                            return ApiResult.Success(
+                                FollowUpContext(
+                                    snapshot = refreshed.value,
+                                    questions = emptyList(),
+                                    drafts = emptyMap(),
+                                )
+                            )
+                        }
+
                         if (
                             refreshed.value
                                 .stateVersion !=
@@ -790,6 +841,7 @@ class FollowUpQuestionsViewModel(
     private fun failureState(
         failure: ApiResult.Failure,
         previous: FollowUpContext?,
+        answerSubmissionFailed: Boolean = false,
     ): FollowUpUiState.Error {
         val mayKeepInput =
             failure.httpStatus !in
@@ -802,6 +854,8 @@ class FollowUpQuestionsViewModel(
                 failure.httpStatus,
             retryable =
                 failure.retryable,
+            answerSubmissionFailed =
+                answerSubmissionFailed,
             snapshot =
                 if (mayKeepInput) {
                     previous?.snapshot
