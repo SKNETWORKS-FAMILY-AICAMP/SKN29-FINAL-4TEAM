@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
 
+from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Max
 from django.utils import timezone
@@ -491,7 +492,31 @@ class HumanReviewService:
             response_body=data,
             resource_public_id=review.public_id,
         )
+        if decision == HumanReview.Decision.REJECT:
+            cls._schedule_rejected_review_resume(review.public_id)
         return HumanReviewOutcome(200, data)
+
+    @classmethod
+    def _schedule_rejected_review_resume(
+        cls,
+        review_public_id: UUID,
+    ) -> None:
+        """Persist an Outbox row, then dispatch only after REJECT commit."""
+
+        if not settings.AI_HUMAN_REVIEW_RESUME_ENABLED:
+            return
+        from apps.inquiries.services.human_review_resume_dispatch_service import (
+            HumanReviewResumeDispatchService,
+        )
+
+        review = HumanReview.objects.get(public_id=review_public_id)
+        dispatch = HumanReviewResumeDispatchService.enqueue(review)
+        transaction.on_commit(
+            lambda: HumanReviewResumeDispatchService.process_dispatch(
+                dispatch.public_id
+            ),
+            robust=True,
+        )
 
     @staticmethod
     def _event_code(

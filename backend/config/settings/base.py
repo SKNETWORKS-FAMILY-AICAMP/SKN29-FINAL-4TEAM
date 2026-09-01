@@ -278,6 +278,27 @@ def strict_bool_env(name: str, default: bool = False) -> bool:
     )
 
 
+# Backend-to-AI HumanReview resume remains independently disabled until the
+# protected combined E2E is approved. It intentionally does not reuse the
+# opposite-direction AI Handoff token.
+AI_HUMAN_REVIEW_RESUME_ENABLED = strict_bool_env(
+    "AI_HUMAN_REVIEW_RESUME_ENABLED",
+    False,
+)
+AI_HUMAN_REVIEW_RESUME_TOKEN = os.getenv(
+    "AI_HUMAN_REVIEW_RESUME_TOKEN",
+    "",
+).strip()
+if (
+    AI_HUMAN_REVIEW_RESUME_ENABLED
+    and len(AI_HUMAN_REVIEW_RESUME_TOKEN.encode("utf-8")) < 32
+):
+    raise ImproperlyConfigured(
+        "AI_HUMAN_REVIEW_RESUME_ENABLED=true이면 "
+        "AI_HUMAN_REVIEW_RESUME_TOKEN이 32-byte 이상이어야 합니다."
+    )
+
+
 def sha256_hmac_allowlist_env(
     name: str,
     *,

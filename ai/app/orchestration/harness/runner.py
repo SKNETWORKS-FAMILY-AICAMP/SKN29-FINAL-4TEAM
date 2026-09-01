@@ -29,6 +29,7 @@ from ..handoff import (
     HandoffContextSynthesis,
 )
 from ..hitl import HumanReviewExecutionResult, HumanReviewRequest, HumanReviewResume, HumanReviewWorkflow
+from ..hitl.checkpoint import build_hitl_thread_id
 from .product_match import ProductContext
 from .retry_policy import HarnessRetryPolicy, HarnessRetryState
 from .tool_failure import McpToolFailure
@@ -95,6 +96,14 @@ class HumanReviewResolution(BaseModel):
     review: HumanReviewExecutionResult
     guidance: UsageGuidance | None = None
     handoff: ConsultationHandoffResult | None = None
+
+
+class ReconstructedHumanReviewResolution(BaseModel):
+    """Internal receipt for a Backend-authoritative REJECT reconstruction."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    handoff: ConsultationHandoffResult
 
 
 class HarnessRunner:
@@ -498,6 +507,38 @@ class HarnessRunner:
                 resolution.guidance is not None,
             )
             return resolution
+
+    def resume_rejected_review_from_backend(
+        self,
+        *,
+        ctx: Any,
+        product: ProductContext,
+        checkpoint_thread_id: str,
+        accepted_evidence_chunk_ids: list[str],
+    ) -> ReconstructedHumanReviewResolution:
+        """Execute only a committed REJECT using Backend-owned durable state.
+
+        This method deliberately does not call ``HumanReviewWorkflow.resume``.
+        It cannot approve or modify guidance and therefore does not depend on
+        the process-local LangGraph checkpoint.
+        """
+
+        trace_context = ctx.trace_context
+        expected_thread_id = build_hitl_thread_id(
+            inquiry_id=trace_context.inquiry_id,
+            ai_request_id=trace_context.ai_request_id,
+            state_version=trace_context.state_version,
+        )
+        if checkpoint_thread_id != expected_thread_id:
+            raise ValueError("checkpoint_thread_id does not bind to the AI run")
+        return ReconstructedHumanReviewResolution(
+            handoff=self._create_handoff(
+                ctx=ctx,
+                product=product,
+                reason="HUMAN_REVIEW_REJECTED",
+                accepted_evidence_chunk_ids=accepted_evidence_chunk_ids,
+            )
+        )
 
     def _resume_human_review_untraced(
         self,

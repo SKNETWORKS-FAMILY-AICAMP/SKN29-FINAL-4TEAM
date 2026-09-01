@@ -14,6 +14,7 @@ from ai.app.orchestration.harness import (
 )
 from ai.app.orchestration.harness.runtime import ReliabilityRuntime
 from ai.app.orchestration.hitl import HumanReviewDecision, HumanReviewResume, HumanReviewStatus
+from ai.app.orchestration.hitl.checkpoint import build_hitl_thread_id
 from ai.app.retrieval import RetrievalOutcome
 from ai.app.retrieval.models.retrieved_chunk import RetrievedChunk
 from ai.app.schemas import (
@@ -348,6 +349,50 @@ def test_rejected_review_calls_context_synthesis_with_only_harness_accepted_evid
     assert resolved.handoff is not None
     assert resolved.handoff.context_synthesis is not None
     assert resolved.handoff.source_chunk_ids == ["jac104-1"]
+
+
+def test_backend_reconstructed_reject_is_restart_safe_and_calls_context_once():
+    context_agent = _RecordingContextSynthesisAgent()
+    runner_after_restart = HarnessRunner(
+        context_synthesis_agent=context_agent
+    )
+    ctx = _ctx_with_evidence()
+    trace = ctx.trace_context
+
+    resolved = runner_after_restart.resume_rejected_review_from_backend(
+        ctx=ctx,
+        product=_product(),
+        checkpoint_thread_id=build_hitl_thread_id(
+            inquiry_id=trace.inquiry_id,
+            ai_request_id=trace.ai_request_id,
+            state_version=trace.state_version,
+        ),
+        accepted_evidence_chunk_ids=["jac104-1"],
+    )
+
+    assert len(context_agent.calls) == 1
+    assert resolved.handoff.escalation_reason == "HUMAN_REVIEW_REJECTED"
+    assert resolved.handoff.routing_reason == "FAIL_CLOSED_CONSULTATION"
+    assert resolved.handoff.source_chunk_ids == ["jac104-1"]
+
+
+def test_backend_reconstructed_reject_blocks_mismatched_checkpoint():
+    context_agent = _RecordingContextSynthesisAgent()
+    runner = HarnessRunner(context_synthesis_agent=context_agent)
+
+    try:
+        runner.resume_rejected_review_from_backend(
+            ctx=_ctx_with_evidence(),
+            product=_product(),
+            checkpoint_thread_id=f"hitl-{'0' * 32}",
+            accepted_evidence_chunk_ids=["jac104-1"],
+        )
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("mismatched checkpoint must fail closed")
+
+    assert context_agent.calls == []
 
 
 def test_context_synthesis_failure_does_not_block_existing_handoff():

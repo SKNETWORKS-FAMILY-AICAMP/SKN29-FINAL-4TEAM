@@ -19,6 +19,10 @@ from ai.app.schemas.guidance import UsageGuidance
 from ai.app.schemas.pipeline import FallbackReasonCode, SymptomAnalysisResult
 from pydantic import ValidationError
 from ai.app.interfaces.http.request_models import SymptomAnalysisApiRequest
+from ai.app.interfaces.http.human_review_resume_models import (
+    HumanReviewResumeApiRequest,
+    HumanReviewResumeApiResponse,
+)
 from ai.app.interfaces.http.response_models import ApiErrorResponse
 from ai.app.schemas.retrieval import EvidenceReference
 from ai.app.schemas.consultation_summary import ConsultationSummaryRequest, ConsultationSummaryResult
@@ -31,6 +35,7 @@ from ai.app.schemas.consultation_cause_ledger import (
     AnalysisConsultationEnvelope,
     ConsultationCauseLedger,
 )
+from ai.app.orchestration.hitl.checkpoint import build_hitl_thread_id
 
 
 def test_pydantic_common_schemas():
@@ -424,6 +429,40 @@ def test_every_ai_contract_has_runtime_valid_and_extra_field_parity():
         ).read_text(encoding="utf-8")
     )["response"]
     response = symptom_example["response"]
+    resume_review_id = "018f2f9b-7c30-7981-b541-1a987c88b777"
+    resume_request = {
+        "contract_version": "1.0.0",
+        "backend_review_id": resume_review_id,
+        "review_state_version": 2,
+        "decision": "REJECT",
+        "decision_correlation_id": response["correlation_id"],
+        "source_inquiry_state_version": response["state_version"],
+        "current_inquiry_state_version": response["state_version"] + 1,
+        "checkpoint_thread_id": build_hitl_thread_id(
+            inquiry_id=response["inquiry_id"],
+            ai_request_id=response["ai_request_id"],
+            state_version=response["state_version"],
+        ),
+        "analysis_result": response,
+    }
+    resume_response = {
+        "contract_version": "1.0.0",
+        "backend_review_id": resume_review_id,
+        "inquiry_id": response["inquiry_id"],
+        "ai_request_id": response["ai_request_id"],
+        "source_inquiry_state_version": response["state_version"],
+        "review_state_version": 2,
+        "status": "RESUMED",
+        "routing_reason": "FAIL_CLOSED_CONSULTATION",
+        "escalation_reason": "HUMAN_REVIEW_REJECTED",
+        "context_agent_calls": 1,
+        "provider_calls": 1,
+        "context_synthesis_status": "SUCCEEDED",
+        "fallback_reason": None,
+        "handoff_created": True,
+        "handoff_delivery_scheduled": False,
+        "idempotent_replay": False,
+    }
     matrix = {
         "common/AIErrorResponse.schema.json": (ApiErrorResponse, error_example["error_response"]),
         "common/EvidenceReference.schema.json": (EvidenceReference, response["evidence_references"][0]),
@@ -453,6 +492,14 @@ def test_every_ai_contract_has_runtime_valid_and_extra_field_parity():
         "internal/ConsultationCauseLedger.schema.json": (
             ConsultationCauseLedger,
             internal_example["consultation_cause_ledger"],
+        ),
+        "internal/HumanReviewResumeRequest.schema.json": (
+            HumanReviewResumeApiRequest,
+            resume_request,
+        ),
+        "internal/HumanReviewResumeResponse.schema.json": (
+            HumanReviewResumeApiResponse,
+            resume_response,
         ),
         "requests/ConsultationSummaryRequest.schema.json": (ConsultationSummaryRequest, consultation_example["request"]),
         "requests/SymptomAnalysisRequest.schema.json": (SymptomAnalysisApiRequest, symptom_example["request"]),
