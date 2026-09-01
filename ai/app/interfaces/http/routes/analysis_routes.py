@@ -28,6 +28,11 @@ from ....generation.customer_guidance.guidance_generator import (
 from ....retrieval import RetrievalConfigurationError, RetrievalExecutionError
 from ....common.timeout import CancellationToken, PipelineStageTimeoutError
 from ....schemas.common import AiStage, RiskLevel, UsageGuidanceStatus
+from ....schemas.consultation_cause_ledger import (
+    AnalysisConsultationEnvelope,
+    ConsultationCauseLedgerBuildError,
+    build_analysis_consultation_envelope,
+)
 from ....schemas.guidance import UsageGuidance
 from ....schemas.pipeline import SymptomAnalysisResult
 from ....schemas.safety import SafetyAssessment
@@ -72,6 +77,63 @@ def _schedule_handoff_delivery(background_tasks, pipeline_result) -> bool:
     return True
 
 
+def _optional_environment(name: str) -> str | None:
+    value = os.getenv(name, "").strip()
+    return value or None
+
+
+def _build_runtime_envelope(
+    result: SymptomAnalysisResult,
+    pipeline_result,
+) -> AnalysisConsultationEnvelope:
+    """Bind the public 4.0.0 result to deterministic internal Ledger v1."""
+
+    reliability = getattr(pipeline_result, "reliability_runtime", None)
+    harness_runtime = getattr(reliability, "harness_runtime", None)
+    harness = getattr(harness_runtime, "harness", None)
+    verification = getattr(harness, "verification", None)
+    issues = getattr(verification, "issues", []) or []
+    issue_codes = [
+        getattr(getattr(issue, "code", None), "value", "")
+        for issue in issues
+    ]
+    context = getattr(pipeline_result, "context", None)
+    metadata = getattr(context, "model_metadata", None)
+    return build_analysis_consultation_envelope(
+        result,
+        runtime_name=pipeline_result.runtime_name,
+        harness_issue_codes=issue_codes,
+        execution_commit_sha=_optional_environment("RELEASE_SHA"),
+        model_provider=_optional_environment("AI_MODEL_PROVIDER"),
+        model_name=(
+            _optional_environment("AI_MODEL_NAME")
+            or getattr(metadata, "model_name", None)
+        ),
+        prompt_version=(
+            _optional_environment("AI_PROMPT_VERSION")
+            or getattr(metadata, "prompt_version", None)
+        ),
+        prompt_sha256=_optional_environment("AI_PROMPT_SHA256"),
+    )
+
+
+def _ledger_build_error(
+    req: SymptomAnalysisApiRequest,
+) -> AiServiceError:
+    return AiServiceError(
+        code="AI-FAILED-01",
+        http_status=503,
+        message="AI 내부 분석 Envelope를 안전하게 생성하지 못했습니다.",
+        retryable=False,
+        failure_stage=AiStage.VALIDATING,
+        correlation_id=req.correlation_id,
+        inquiry_id=req.inquiry_id,
+        ai_request_id=req.ai_request_id,
+        state_version=req.state_version,
+        retry_count=0,
+    )
+
+
 def _worker_limit() -> int:
     raw = os.getenv("AI_MAX_IN_FLIGHT_WORKERS", "2")
     try:
@@ -95,7 +157,11 @@ def _release_worker_slot(task: asyncio.Task, slots: BoundedSemaphore) -> None:
         slots.release()
 
 
-@router.post("/analyze", response_model=SymptomAnalysisResult, summary="증상 분석 및 사용 안내 통합 API")
+@router.post(
+    "/analyze",
+    response_model=AnalysisConsultationEnvelope | SymptomAnalysisResult,
+    summary="증상 분석 및 사용 안내 통합 API",
+)
 async def analyze_symptom(
     req: SymptomAnalysisApiRequest,
     request: Request,
@@ -176,6 +242,8 @@ async def analyze_symptom(
             latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
             **log_fields,
         )
+        # Mock remains the unchanged public 4.0.0 contract fixture. The actual
+        # local Runtime below returns the internal 1.0.0 Envelope.
         return result
 
     # 2. Local 모드 (단일 RAG LangGraph/파이프라인 오케스트레이터 가동)
@@ -312,6 +380,10 @@ async def analyze_symptom(
         raise
 
     result = pipeline_result.to_analysis_result()
+    try:
+        envelope = _build_runtime_envelope(result, pipeline_result)
+    except ConsultationCauseLedgerBuildError as exc:
+        raise _ledger_build_error(req) from exc
     _schedule_handoff_delivery(background_tasks, pipeline_result)
     log_fields["retry_count"] = result.retry_count
     log_analysis_event(
@@ -321,4 +393,4 @@ async def analyze_symptom(
         latency_ms=round((time.perf_counter() - started_at) * 1000, 2),
         **log_fields,
     )
-    return result
+    return envelope

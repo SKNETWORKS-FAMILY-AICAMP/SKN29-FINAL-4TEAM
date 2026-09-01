@@ -127,8 +127,22 @@ def _configure_driver(monkeypatch, driver: str) -> None:
 
 def _assert_expected(case: dict, response, request_body: dict) -> None:
     expected = case["expected"]
-    body = response.json()
+    wire_body = response.json()
     assert response.status_code == expected["http_status"]
+    if response.status_code == 200 and case["mode"] == "local":
+        assert wire_body["contract_version"] == "1.0.0"
+        body = wire_body["analysis_result"]
+        ledger = wire_body["consultation_cause_ledger"]
+        for identity in (
+            "inquiry_id",
+            "correlation_id",
+            "ai_request_id",
+            "state_version",
+            "model_code",
+        ):
+            assert ledger[identity] == body[identity]
+    else:
+        body = wire_body
     if expected.get("correlation_id", request_body["correlation_id"]) is None:
         assert body["correlation_id"] is None
         assert "X-Correlation-ID" not in response.headers
