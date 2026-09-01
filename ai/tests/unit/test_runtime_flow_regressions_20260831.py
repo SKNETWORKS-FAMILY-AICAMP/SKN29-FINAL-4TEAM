@@ -589,6 +589,29 @@ def test_semantic_safety_signal_is_wired_through_runtime_without_public_schema_c
     assert result.usage_guidance.guidance_status.value == "TOTAL_STOP"
 
 
+@pytest.mark.parametrize("runtime_name", ["single_rag", "multi_agent"])
+def test_refrigerant_signal_survives_structuring_and_short_circuits_runtime(
+    runtime_name,
+):
+    result = PipelineRouter(search_service=None).run_pipeline(
+        inquiry_id="018f2f9b-7c30-7981-b541-1a987c88b811",
+        correlation_id="018f2f9b-7c30-7981-b541-1a987c88b812",
+        ai_request_id=f"ai-req-refrigerant-{runtime_name}",
+        state_version=1,
+        raw_symptom="제품을 옮기다가 냉매 배관이 손상됐고 가스가 새는 것 같아요.",
+        model_code="WPUJAC104DWH",
+        runtime_name=runtime_name,
+    ).to_analysis_result()
+
+    assert result.safety_assessment.risk_level == RiskLevel.DANGER
+    assert result.safety_assessment.requires_consultation is True
+    assert result.safety_assessment.matched_safety_rule_ids == [
+        "SAFETY-REFRIGERANT-001"
+    ]
+    assert result.usage_guidance.guidance_status.value == "TOTAL_STOP"
+    assert all("뽑" not in action for action in result.usage_guidance.next_actions)
+
+
 def test_safety_signal_without_evidence_is_rejected_before_policy():
     structurer = SymptomStructurer(
         llm_client=_SemanticSymptomClient(

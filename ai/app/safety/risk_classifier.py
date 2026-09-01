@@ -64,7 +64,7 @@ class RiskClassifier:
         detected = {name for name, _ in detect_safety_evidence(source_text)}
 
         def has_signal(name):
-            return getattr(signals, name) or name in detected
+            return getattr(signals, name, False) or name in detected
 
         feature_rule_ids = []
         if has_signal("water_near_electrical_part") or has_signal("water_leak"):
@@ -85,6 +85,10 @@ class RiskClassifier:
             feature_rule_ids.append("SAFETY-ELECTRICAL-001")
             detected_risks.append("전기 부품 손상·노출 위험")
             reasons.append("[Safety] 전기 위험 관측 신호 감지")
+        if has_signal("refrigerant_leak_or_line_damage"):
+            feature_rule_ids.append("SAFETY-REFRIGERANT-001")
+            detected_risks.append("냉매 누출·냉매 배관 손상 위험")
+            reasons.append("[Safety] 냉매 누출 또는 냉매 배관 손상 관측 신호 감지")
         heater_alert = has_asserted_hot_water_panel_alert(source_text)
         if heater_alert:
             feature_rule_ids.append("SAFETY-HOT-WATER-HEATER-001")

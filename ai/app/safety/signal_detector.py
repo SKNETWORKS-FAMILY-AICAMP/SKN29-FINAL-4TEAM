@@ -8,6 +8,12 @@ import unicodedata
 _PART = r"(?:전선|전원선|전원\s*코드|케이블|플러그|콘센트)"
 _DAMAGE = r"(?:벗겨|손상|찢어|끊어|파손)"
 _WATER = r"물(?:이|가|은|도)?(?=$|\s|[.!?])"
+_REFRIGERANT = r"(?:냉매|r\s*600a|이소부탄)"
+_REFRIGERANT_CONTEXT = rf"(?:{_REFRIGERANT}|냉매\s*(?:배관|관|파이프)|냉매관)"
+_REFRIGERANT_HAZARD = (
+    r"(?:누출|새(?:요|네요|어|고|는|는\s*것|는\s*듯|는\s*것\s*같)|"
+    r"샙|샜|손상|파손|찢어|깨져|구멍|가스(?:가|는)?\s*새)"
+)
 _PATTERNS = {
     "electrical_component_damage": re.compile(rf"{_PART}.{{0,16}}?{_DAMAGE}|{_DAMAGE}.{{0,12}}?{_PART}"),
     "exposed_wire": re.compile(rf"(?:구리선|도체).{{0,8}}?(?:노출|보이|드러)|{_PART}.{{0,12}}?(?:피복.{{0,6}}?벗겨|노출|속이\s*보)"),
@@ -22,6 +28,10 @@ _PATTERNS = {
     ),
     "smoke_or_burn": re.compile(r"연기|화재|불이\s*남|탄\s*냄새|타는\s*냄새|그을"),
     "shock_or_spark": re.compile(r"감전|스파크|불꽃|찌릿"),
+    "refrigerant_leak_or_line_damage": re.compile(
+        rf"{_REFRIGERANT_CONTEXT}.{{0,36}}?{_REFRIGERANT_HAZARD}"
+        rf"|{_REFRIGERANT_HAZARD}.{{0,28}}?{_REFRIGERANT_CONTEXT}"
+    ),
 }
 _BOUNDARY = re.compile(
     r"[.!?\n;,]|하지만|그런데|다만|(?:없|아니|않)[가-힣]{0,3}(?:고|지만)"
@@ -36,7 +46,10 @@ _DENIAL = re.compile(
 _HYPOTHETICAL = re.compile(
     r"라면|다면|일\s*경우|가정|(?:나|발생하|튀|새|벗겨지|노출되|손상되|들어가|들어오|잠기|침수되)면|젖으면"
 )
-_MENTION = re.compile(rf"{_PART}|연기|화재|스파크|불꽃|누수|감전|히터|온수\s*모듈|물(?:이|가|은|도)?")
+_MENTION = re.compile(
+    rf"{_PART}|{_REFRIGERANT_CONTEXT}|가스|연기|화재|스파크|불꽃|누수|감전|"
+    r"히터|온수\s*모듈|물(?:이|가|은|도)?"
+)
 _BUTTON_ALERT = re.compile(
     r"(?P<controls>(?:온수|정수|냉수)[^.!?\n]{0,48}?)(?:버튼|선택\s*표시등)"
     r"(?:들)?(?:이|은|는|도|가)?\s*"

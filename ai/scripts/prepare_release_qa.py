@@ -22,7 +22,8 @@ def prepare(expected_sha: str) -> dict:
         "final_sha_eligible": False, "database_queries": 0,
         "provider_requests": 0, "executed_45_cases": 0, "executed_50_cases": 0,
         "public_runtime_activation": "HOLD", "rds_writes": 0,
-        "independent_qa": "NOT_RUN", "ledger_implementation": "HOLD_PENDING_ADDITIONAL_CONTRACT",
+        "independent_qa": "NOT_RUN",
+        "ledger_implementation": "V1_CONTRACT_IMPLEMENTED_TRANSPORT_AND_STORAGE_HOLD",
     }
     stage = "REFERENCE_45_INPUTS"
     try:

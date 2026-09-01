@@ -652,6 +652,7 @@ class SymptomStructurer:
             "water_leak": False,
             "smoke_or_burn": False,
             "shock_or_spark": False,
+            "refrigerant_leak_or_line_damage": False,
         }
         accepted_evidence = []
         for evidence in signals.evidence:

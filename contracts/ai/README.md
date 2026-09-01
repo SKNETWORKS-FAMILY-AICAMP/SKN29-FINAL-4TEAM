@@ -6,6 +6,7 @@ Backend와 AI 서비스 사이의 요청·응답 JSON Schema 단일 진실원칙
 
 - 계약 버전: `4.0.0`
 - 상담 Handoff Envelope: `2.0.0` — 분석 계약과 별도 버전
+- 분석·상담 원인 내부 Envelope: `1.0.0` — 공개 분석 계약과 별도 버전
 - `SafetyAssessment.matched_safety_rule_ids`는 위험 규칙의 안정적인 ID 배열이며
   필수 필드다. 자연어 `detected_risks`를 규칙 ID로 재해석하지 않는다.
 - JSON Schema: Draft 2020-12
@@ -42,6 +43,35 @@ v1과 v2는 독립 객체 Schema다. v1의 선택 배열, 최대 개수 제한 �
 Handoff Background Delivery 재시도는 분석 API의 Backend 자동 재시도 `0회`와
 별도다. Handoff는 최초 1회와 재시도 1회로 최대 2번 시도하지만, Outbox와
 Reconciliation이 없으므로 영구 전달을 보장하지 않는다.
+
+## 분석·상담 원인 내부 Envelope
+
+PM·Backend가 승인한 추가 원인 Ledger는 공개 `SymptomAnalysisResponse 4.0.0`을
+변경하지 않고 다음 별도 내부 계약으로 전달한다.
+
+- Envelope Schema: `internal/AnalysisConsultationEnvelope.schema.json`
+- Cause Ledger Schema: `internal/ConsultationCauseLedger.schema.json`
+- Envelope/Cause Ledger 버전: `1.0.0`
+- 전송 경로: 기존 `POST /api/v1/ai/analyze`
+- 별도 Ledger Endpoint: 만들지 않음
+
+Envelope의 `analysis_result`는 기존 4.0.0 응답 본문이며,
+`consultation_cause_ledger`는 결정적 AI/Harness 검사에서 생성한 원인만 담는다.
+두 객체의 `inquiry_id`, `correlation_id`, `ai_request_id`, `state_version`,
+`model_code`와 `analysis_result_sha256`가 모두 일치해야 한다. Backend는 검증된
+Envelope만 분석 결과·원인 Ledger·초기 HumanReview와 한 Transaction에서
+저장한다. 누락, 미지원 버전, Hash·식별자 불일치, 저장 실패는
+`UNKNOWN_LOCKED`로 Fail-closed한다.
+
+`SAFETY_LOCKED`, `FAIL_CLOSED_LOCKED`, `UNKNOWN_LOCKED`는 자동 해소할 수 없다.
+`NON_SAFETY_RESOLVABLE`만 같은 제품·세대·기능·시나리오의 검증 Evidence가
+모두 일치할 때 해소를 제안할 수 있으며 최종 변경 권한은 Backend와 상담사에게
+있다. 평가 전용 `REF-*` 시나리오 ID, 고객 원문, 자유 LLM 설명, PII와 Secret은
+Ledger에 저장하지 않는다.
+
+같은 Endpoint의 응답 최상위 객체가 Envelope로 바뀌므로 AI Router와 Backend
+Client·Schema Validator·저장 Transaction은 같은 통합 변경으로 활성화한다.
+한쪽만 먼저 배포하지 않으며 활성화 전에는 기존 4.0.0 응답을 유지한다.
 
 ## 추적·멱등·상태 버전
 
@@ -135,6 +165,7 @@ Stack Trace, Secret, 개인정보는 오류 상세에 포함하지 않는다.
 - `requests/`: Backend → AI
 - `responses/`: AI → Backend
 - `handoff/`: AI → Backend 내부 상담 Handoff Envelope
+- `internal/`: Backend가 원자 저장하는 분석·상담 원인 내부 Envelope
 - `common/`: 공통 하위 객체 및 오류 응답
 - `examples/`: 정상·위험·근거 없음·검증 오류·Timeout·요약 예시
 
