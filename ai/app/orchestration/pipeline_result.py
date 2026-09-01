@@ -14,6 +14,7 @@ from ..schemas import (
 from .agents.contracts import MultiAgentRunMetadata
 from .harness.runtime import ReliabilityRuntimeResult
 from .pipeline_context import PipelineContext
+from .clarification_policy import unresolved_answered_required_fields
 from ..validation.routing import (
     ResponseRoutingDisposition,
     ResponseRoutingPolicy,
@@ -46,6 +47,8 @@ class PipelineResult(BaseModel):
     def to_analysis_result(self) -> SymptomAnalysisResult:
         """SymptomAnalysisResult DTO 변환"""
         ctx = self.context
+        clarification_fallback = bool(ctx.awaiting_customer_input and not ctx.followup_questions
+                                      and unresolved_answered_required_fields(ctx))
         is_no_evidence_fallback = (
             ctx.retrieval_outcome == RetrievalOutcome.NO_MATCH
             and not ctx.evidence_references
@@ -60,16 +63,21 @@ class PipelineResult(BaseModel):
         is_reliability_fallback = (
             reliability_decision is not None and reliability_decision != "PASS"
         )
-        is_fallback = is_no_evidence_fallback or is_reliability_fallback
+        is_fallback = is_no_evidence_fallback or is_reliability_fallback or clarification_fallback
         fallback_reason_code = self._resolve_fallback_reason_code(
             is_no_evidence_fallback=is_no_evidence_fallback,
             is_reliability_fallback=is_reliability_fallback,
         )
-        failure_stage = (
-            AiStage.RETRIEVING
-            if is_no_evidence_fallback
-            else AiStage.VALIDATING if is_reliability_fallback else None
-        )
+        if clarification_fallback and fallback_reason_code is None:
+            fallback_reason_code = FallbackReasonCode.UNSPECIFIED_FALLBACK
+        if is_no_evidence_fallback:
+            failure_stage = AiStage.RETRIEVING
+        elif is_reliability_fallback:
+            failure_stage = AiStage.VALIDATING
+        elif clarification_fallback:
+            failure_stage = AiStage.CHECKING_MISSING_FIELDS
+        else:
+            failure_stage = None
         analysis_result = SymptomAnalysisResult(
             inquiry_id=ctx.trace_context.inquiry_id,
             correlation_id=ctx.trace_context.correlation_id,

@@ -1,0 +1,115 @@
+{
+  "request": {
+    "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b301",
+    "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c301",
+    "ai_request_id": "ai-req-refrigerant-001",
+    "state_version": 4,
+    "raw_symptom": "제품을 옮기다가 냉매 배관이 손상됐고 가스가 새는 것 같아요.",
+    "model_code": "WPUJAC104DWH",
+    "selected_symptoms": [],
+    "previous_answers": []
+  },
+  "response": {
+    "contract_version": "1.0.0",
+    "analysis_result": {
+      "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b301",
+      "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c301",
+      "ai_request_id": "ai-req-refrigerant-001",
+      "state_version": 4,
+      "model_code": "WPUJAC104DWH",
+      "status": "SUCCEEDED",
+      "fallback_reason_code": null,
+      "failure_stage": null,
+      "retry_count": 0,
+      "structured_symptom": {
+        "symptom_type": "기타 증상",
+        "occurrence_time": null,
+        "target_water_type": null,
+        "occurrence_condition": "제품 이동 중 냉매 배관 손상과 가스 누출 의심",
+        "error_code": null,
+        "accompanying_symptoms": [],
+        "actions_taken": []
+      },
+      "missing_fields": [],
+      "followup_questions": [],
+      "safety_assessment": {
+        "risk_level": "danger",
+        "priority": "priority_consultation",
+        "requires_consultation": true,
+        "matched_safety_rule_ids": [
+          "SAFETY-REFRIGERANT-001"
+        ],
+        "detected_risks": [
+          "냉매 누출·냉매 배관 손상 위험"
+        ],
+        "safety_reason": "[Safety] 냉매 누출 또는 냉매 배관 손상 관측 신호 감지"
+      },
+      "usage_guidance": {
+        "guidance_status": "TOTAL_STOP",
+        "message": "위험 신호가 감지되어 정수기 사용 제한 및 안전 조치가 필요합니다.",
+        "restricted_functions": [
+          "제품 전체 기능 사용 중지",
+          "제품 및 전원 코드 접촉 금지"
+        ],
+        "next_actions": [
+          "제품이나 전원 코드를 만지지 마세요.",
+          "불꽃이나 스파크를 일으킬 수 있는 행동을 피하세요.",
+          "제품을 만지지 않고 가능한 경우 창문을 열어 충분히 환기하세요.",
+          "안전한 장소로 이동한 뒤 전문 상담 및 기사 점검을 요청하세요."
+        ]
+      },
+      "evidence_references": []
+    },
+    "consultation_cause_ledger": {
+      "contract_version": "1.0.0",
+      "ledger_id": "018f2f9b-7c30-7981-b541-1a987c88d301",
+      "inquiry_id": "018f2f9b-7c30-7981-b541-1a987c88b301",
+      "correlation_id": "018f2f9b-7c30-7981-b541-1a987c88c301",
+      "ai_request_id": "ai-req-refrigerant-001",
+      "state_version": 4,
+      "model_code": "WPUJAC104DWH",
+      "producer": "AI_HARNESS",
+      "policy_version": "consultation-cause-ledger/1.0.0",
+      "execution_identity": {
+        "execution_commit_sha": "3dd8b369e2ea1bb2f2f6778a95f4976a92e9d37d",
+        "runtime_name": "single_rag",
+        "model_provider": null,
+        "model_name": null,
+        "prompt_version": null,
+        "prompt_sha256": null
+      },
+      "analysis_result_sha256": "b7275c36ce5205e8323e945f41f92cf3be2c24e344dab9cf815720e62e769a2a",
+      "causes": [
+        {
+          "cause_id": "018f2f9b-7c30-7981-b541-1a987c88e301",
+          "cause_code": "DANGER_ASSESSMENT",
+          "origin": "AI_SAFETY",
+          "lock_class": "SAFETY_LOCKED",
+          "verification_code": "DETERMINISTIC_DANGER_ASSESSMENT",
+          "matched_safety_rule_ids": [
+            "SAFETY-REFRIGERANT-001"
+          ],
+          "required_fact_codes": [],
+          "evidence_refs": [],
+          "status": "ACTIVE",
+          "supersedes_cause_id": null
+        },
+        {
+          "cause_id": "018f2f9b-7c30-7981-b541-1a987c88e302",
+          "cause_code": "EXPLICIT_SAFETY_RULE",
+          "origin": "AI_SAFETY",
+          "lock_class": "SAFETY_LOCKED",
+          "verification_code": "APPROVED_SAFETY_RULE_MATCH",
+          "matched_safety_rule_ids": [
+            "SAFETY-REFRIGERANT-001"
+          ],
+          "required_fact_codes": [],
+          "evidence_refs": [],
+          "status": "ACTIVE",
+          "supersedes_cause_id": null
+        }
+      ],
+      "ledger_sha256": "71e9d3be891fa4059d542bb639a848bb4129f52067e1e094ec7bb4281faa8422"
+    }
+  }
+}

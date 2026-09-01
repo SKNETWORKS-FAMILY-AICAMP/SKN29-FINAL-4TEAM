@@ -1,0 +1,63 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 16%]
+........................................................................ [ 21%]
+..........s..ss.........................s................s.............. [ 25%]
+....................s......................s............................ [ 29%]
+........sss............................................................. [ 33%]
+........................................................................ [ 37%]
+........................................................................ [ 42%]
+.......................sss.............................................. [ 46%]
+........................................................................ [ 50%]
+........................................................................ [ 54%]
+........................................................................ [ 59%]
+........................................................................ [ 63%]
+......................sss....sssssssssssssssssss........................ [ 67%]
+........................................................................ [ 71%]
+........................................................................ [ 75%]
+........................................................................ [ 80%]
+........................................................................ [ 84%]
+........................................................................ [ 88%]
+........................................................................ [ 92%]
+........................................................................ [ 97%]
+..................................................                       [100%]
+=========================== short test summary info ===========================
+SKIPPED [1] tests\unit\reference_cases\test_import_reference_scenarios.py:14: requires the isolated reference_cases_test settings profile
+SKIPPED [1] tests\unit\reference_cases\test_models.py:13: requires the isolated reference_cases_test settings profile
+SKIPPED [1] tests\unit\evidence\test_chunk_embedding_model.py:287: PostgreSQL constraint-validation assertion
+SKIPPED [1] tests\unit\evidence\test_chunk_embedding_model.py:332: PostgreSQL exact-vector search assertion
+SKIPPED [1] tests\unit\evidence\test_chunk_embedding_model.py:370: PostgreSQL pgvector catalog assertion
+SKIPPED [1] tests\unit\evidence\test_data_quality_issue_model.py:432: PostgreSQL catalog assertion
+SKIPPED [1] tests\unit\evidence\test_document_chunk_model.py:256: PostgreSQL structural assertion
+SKIPPED [1] tests\unit\evidence\test_document_page_model.py:325: PostgreSQL catalog assertion
+SKIPPED [1] tests\unit\evidence\test_evidence_link_model.py:572: PostgreSQL constraint-validation assertion
+SKIPPED [1] tests\unit\evidence\test_source_document_model.py:383: PostgreSQL structural assertion
+SKIPPED [1] tests\unit\evidence\test_source_document_model.py:447: PostgreSQL composite FK assertion
+SKIPPED [1] tests\unit\evidence\test_source_document_model.py:470: PostgreSQL composite FK assertion
+SKIPPED [1] tests\unit\visits\test_visit_result.py:321: PostgreSQL structural assertion
+SKIPPED [1] tests\unit\visits\test_visit_result.py:386: PostgreSQL submitter guard assertion
+SKIPPED [1] tests\unit\visits\test_visit_result.py:399: PostgreSQL submitter guard assertion
+SKIPPED [1] tests\unit\visits\test_migration_0005_visit_result_assignment.py:48: PostgreSQL migration symmetry assertion
+SKIPPED [1] tests\unit\visits\test_visit_result.py:445: PostgreSQL submitter guard concurrency assertion
+SKIPPED [1] tests\unit\visits\test_visit_result.py:486: PostgreSQL submitter guard concurrency assertion
+SKIPPED [1] tests\api\test_ai_consultation_handoff_runtime.py:1318: PostgreSQL row-lock evidence
+SKIPPED [1] tests\api\test_ai_consultation_handoff_runtime.py:1354: PostgreSQL v2 row-lock evidence
+SKIPPED [1] tests\api\test_consultation_visit_runtime.py:994: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t018_subscription_write_runtime.py:564: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t018_subscription_write_runtime.py:616: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t018_subscription_write_runtime.py:685: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t018_subscription_write_runtime.py:733: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t018_subscription_write_runtime.py:791: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t018_subscription_write_runtime.py:856: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t019_care_history_runtime.py:293: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t019_care_history_runtime.py:340: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t019_care_history_runtime.py:401: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t022_submit_symptom.py:769: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t022_submit_symptom.py:810: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t023_cancel_inquiry.py:879: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t023_cancel_inquiry.py:921: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t023_resolution_runtime.py:261: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t023_resolution_runtime.py:315: PostgreSQL row-lock verification only
+SKIPPED [1] tests\api\test_t023_resolution_runtime.py:371: PostgreSQL row-lock verification only
+1671 passed, 37 skipped in 269.18s (0:04:29)

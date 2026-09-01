@@ -5,6 +5,8 @@ from .filters import (
     EvidenceApplicability,
     EvidenceApplicabilityGate,
     EvidenceTopicFilter,
+    ScenarioEvidenceSelector,
+    ScenarioSelectionResult,
     ProductFilter,
 )
 from .indexing import ChunkLoader, IndexManifest
@@ -31,6 +33,8 @@ __all__ = [
     "EvidenceApplicability",
     "EvidenceApplicabilityGate",
     "EvidenceTopicFilter",
+    "ScenarioEvidenceSelector",
+    "ScenarioSelectionResult",
     "IndexManifest",
     "ChunkLoader",
     "RetrievalConfigurationError",

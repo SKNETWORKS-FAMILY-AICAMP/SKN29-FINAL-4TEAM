@@ -1,0 +1,11 @@
+{
+  "path": "ai/evaluation/indexes/playground_bge_m3_page_v1.npz",
+  "attributes": [
+    "ai/evaluation/indexes/playground_bge_m3_page_v1.npz: text: set",
+    "ai/evaluation/indexes/playground_bge_m3_page_v1.npz: eol: lf"
+  ],
+  "raw_matches_commit_blob": true,
+  "raw_blob_oid": "7e733018c8f92959f9009fe8d9490a23e08f0346",
+  "filtered_blob_oid": "3732e8803bde2797639c13d642bacea62d5b09b6",
+  "crlf_sequences": 4
+}

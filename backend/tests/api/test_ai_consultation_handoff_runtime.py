@@ -452,6 +452,13 @@ def create_rejected_review(*, inquiry, ai_run, state_version, sequence=1):
     review.decided_at = timezone.now()
     review.decision_idempotency_key = f"handoff-review-reject-{sequence}"
     review.decision_correlation_id = uuid4()
+    review.effective_requires_consultation = True
+    review.consultation_disposition_code = (
+        HumanReview.ConsultationDisposition.REQUIRE
+    )
+    review.consultation_reason_code = (
+        HumanReview.ConsultationChangeReason.HUMAN_REVIEW_REJECTED
+    )
     review.full_clean()
     review.save()
     guidance.review_status_code = "REJECTED"

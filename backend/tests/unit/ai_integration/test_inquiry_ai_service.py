@@ -18,8 +18,10 @@ from apps.audit.models import AIRun
 from apps.consultations.models import Consultation
 from apps.evidence.models import EvidenceLink
 from apps.inquiries.models import (
+    ConsultationCauseLedger,
     FollowUpAnswer,
     Guidance,
+    HumanReview,
     Inquiry,
     InquiryQA,
     SymptomAssessment,
@@ -35,6 +37,7 @@ from integrations.ai.schema_validator import (
     DEFAULT_CONTRACT_ROOT,
     AIContractValidator,
 )
+from common.json_integrity import canonical_json_sha256
 
 
 pytestmark = pytest.mark.django_db
@@ -93,6 +96,34 @@ def success_payload(request_payload: dict) -> dict:
     if "model_code" in response:
         response["model_code"] = request_payload["model_code"]
     return response
+
+
+def internal_envelope_payload(request_payload: dict) -> dict:
+    example_path = (
+        DEFAULT_CONTRACT_ROOT
+        / "examples"
+        / "internal"
+        / "analysis-consultation-envelope-refrigerant.json"
+    )
+    envelope = json.loads(example_path.read_text(encoding="utf-8"))[
+        "response"
+    ]
+    analysis = envelope["analysis_result"]
+    ledger = envelope["consultation_cause_ledger"]
+    for field in (
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "state_version",
+        "model_code",
+    ):
+        analysis[field] = request_payload[field]
+        ledger[field] = request_payload[field]
+    ledger["analysis_result_sha256"] = canonical_json_sha256(analysis)
+    ledger["ledger_sha256"] = canonical_json_sha256(
+        {key: value for key, value in ledger.items() if key != "ledger_sha256"}
+    )
+    return envelope
 
 
 class ContractV4CompatValidator:
@@ -204,7 +235,7 @@ def cancel_inquiry(inquiry: Inquiry, *, key: str) -> None:
     )
 
 
-def test_safe_result_is_persisted_but_held_without_verified_evidence():
+def test_safe_result_is_audited_but_has_no_guidance_without_verified_evidence():
     inquiry = create_inquiry(1)
     client, http_client, calls = make_client()
 
@@ -215,13 +246,12 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     assert outcome.event_applied is None
     assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
     assert outcome.saved_assessment is True
-    assert outcome.saved_guidance is True
+    assert outcome.saved_guidance is False
     assert len(calls) == 1
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
-    guidance = Guidance.objects.get(inquiry=inquiry)
-    assert guidance.items.count() == 2
-    assert guidance.review_status_code == "CONFIRMED"
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
 
     inquiry.refresh_from_db()
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
@@ -234,11 +264,148 @@ def test_safe_result_is_persisted_but_held_without_verified_evidence():
     http_client.close()
 
 
-def test_evidence_verifier_failure_is_fail_closed_without_losing_ai_result():
+def test_internal_envelope_persists_analysis_and_cause_ledger_atomically():
+    inquiry = create_inquiry(201)
+
+    def envelope(_response: dict, request: dict) -> dict:
+        return internal_envelope_payload(request)
+
+    client, http_client, calls = make_client(transform=envelope)
+
+    outcome = analyze(inquiry, client)
+
+    assert outcome.status == AIRun.Status.SUCCEEDED
+    assert outcome.saved_assessment is True
+    assert outcome.saved_cause_ledger is True
+    assert outcome.event_candidate == "DANGER_DETECTED"
+    assert outcome.event_applied == "DANGER_DETECTED"
+    assert len(calls) == 1
+
+    run = AIRun.objects.get(inquiry=inquiry)
+    ledger = ConsultationCauseLedger.objects.get(inquiry=inquiry, ai_run=run)
+    assessment = SymptomAssessment.objects.get(inquiry=inquiry, ai_run=run)
+    assert "analysis_result" not in run.validated_output_payload
+    assert run.validated_output_payload["safety_assessment"][
+        "matched_safety_rule_ids"
+    ] == ["SAFETY-REFRIGERANT-001"]
+    assert ledger.contract_version == "1.0.0"
+    assert ledger.ai_request_id == run.idempotency_key
+    assert ledger.analysis_result_sha256 == canonical_json_sha256(
+        run.validated_output_payload
+    )
+    assert ledger.causes[0]["lock_class"] == "SAFETY_LOCKED"
+    assert assessment.risk_level_code == SymptomAssessment.RiskLevel.DANGER
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
+
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert Consultation.objects.filter(inquiry=inquiry).count() == 1
+    http_client.close()
+
+
+def test_invalid_internal_envelope_is_redacted_and_stores_no_domain_rows():
+    inquiry = create_inquiry(202)
+
+    def invalid_envelope(_response: dict, request: dict) -> dict:
+        envelope = internal_envelope_payload(request)
+        envelope["consultation_cause_ledger"][
+            "analysis_result_sha256"
+        ] = "f" * 64
+        return envelope
+
+    client, http_client, _calls = make_client(transform=invalid_envelope)
+
+    outcome = analyze(inquiry, client)
+
+    run = AIRun.objects.get(inquiry=inquiry)
+    assert outcome.status == AIRun.Status.FAILED
+    assert outcome.pending_reason == "AI-RESPONSE-SCHEMA-01"
+    assert run.raw_output_text == "[REDACTED_INVALID_AI_RESPONSE]"
+    assert run.validated_output_payload is None
+    assert not SymptomAssessment.objects.filter(inquiry=inquiry).exists()
+    assert not ConsultationCauseLedger.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
+    http_client.close()
+
+
+def test_cause_ledger_verifier_failure_rolls_back_entire_domain_bundle():
+    inquiry = create_inquiry(203)
+
+    def envelope(_response: dict, request: dict) -> dict:
+        return internal_envelope_payload(request)
+
+    client, http_client, _calls = make_client(transform=envelope)
+
+    outcome = analyze(
+        inquiry,
+        client,
+        cause_ledger_verifier=lambda _ledger, _inquiry: [
+            "synthetic canonical mismatch"
+        ],
+    )
+
+    run = AIRun.objects.get(inquiry=inquiry)
+    inquiry.refresh_from_db()
+    assert outcome.status == AIRun.Status.FAILED
+    assert outcome.pending_reason == "AI-LEDGER-PERSIST-01"
+    assert run.error_code == "AI-LEDGER-PERSIST-01"
+    assert run.validated_output_payload is None
+    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert inquiry.state_version == 2
+    assert not SymptomAssessment.objects.filter(inquiry=inquiry).exists()
+    assert not ConsultationCauseLedger.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
+    assert not Consultation.objects.filter(inquiry=inquiry).exists()
+    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    http_client.close()
+
+
+def test_internal_envelope_replay_does_not_duplicate_ledger_or_http_call():
+    inquiry = create_inquiry(204)
+
+    def envelope(_response: dict, request: dict) -> dict:
+        return internal_envelope_payload(request)
+
+    client, http_client, calls = make_client(transform=envelope)
+    correlation_id = uuid4()
+    ai_request_id = uuid4()
+
+    first = analyze(
+        inquiry,
+        client,
+        correlation_id=correlation_id,
+        ai_request_id=ai_request_id,
+    )
+    run = AIRun.objects.get(public_id=first.ai_run_id)
+    replay = InquiryAIService._replay_or_conflict(
+        run,
+        input_digest=run.input_sha256,
+        request_payload=run.input_payload,
+        validator=AIContractValidator(),
+    )
+
+    assert first.saved_cause_ledger is True
+    assert replay.idempotent_replay is True
+    assert replay.ai_run_id == first.ai_run_id
+    assert len(calls) == 1
+    assert ConsultationCauseLedger.objects.filter(inquiry=inquiry).count() == 1
+    assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
+    assert Consultation.objects.filter(inquiry=inquiry).count() == 1
+    http_client.close()
+
+
+def test_evidence_verifier_failure_is_fail_closed_without_publication_bundle():
     inquiry = create_inquiry(101)
     client, http_client, _calls = make_client()
+    publication_state_seen_by_verifier = []
 
     def unavailable_verifier(_references, _inquiry):
+        publication_state_seen_by_verifier.append(
+            (
+                Guidance.objects.filter(inquiry=inquiry).exists(),
+                HumanReview.objects.filter(inquiry=inquiry).exists(),
+            )
+        )
         raise RuntimeError("synthetic verifier unavailable")
 
     outcome = analyze(
@@ -253,8 +420,10 @@ def test_evidence_verifier_failure_is_fail_closed_without_losing_ai_result():
     assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
     assert inquiry.evidence_ids == []
     assert inquiry.requires_fallback is True
+    assert publication_state_seen_by_verifier == [(False, False)]
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
-    assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
     assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
     http_client.close()
 
@@ -351,6 +520,8 @@ def test_injected_evidence_id_cannot_bypass_backend_mapping():
     assert inquiry.state_version == 2
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
     assert inquiry.evidence_ids == []
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
     assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 0
     http_client.close()
@@ -390,7 +561,7 @@ def test_no_evidence_result_routes_to_consultation_required():
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
     assert inquiry.requires_fallback is True
     assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
-    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
 
@@ -458,7 +629,7 @@ def test_product_runtime_hold_applies_product_validation_failed_once():
     )
     assert inquiry.requires_fallback is True
     assert inquiry.evidence_ids == []
-    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
 
     history = TransitionHistory.objects.get(inquiry=inquiry)
     assert history.event_code == "PRODUCT_VALIDATION_FAILED"
@@ -494,7 +665,7 @@ def test_product_runtime_hold_applies_product_validation_failed_once():
     assert len(calls) == 1
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
-    assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
     assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 1
     http_client.close()
 
@@ -583,7 +754,7 @@ def test_other_contract_v4_fallback_stays_fail_closed_without_state_event():
     assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
     assert inquiry.state_version == 2
     assert inquiry.requires_fallback is True
-    assert Guidance.objects.get(inquiry=inquiry).review_status_code == "REJECTED"
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
     assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
@@ -852,7 +1023,7 @@ def test_duplicate_request_replays_without_second_http_call_or_rows():
     assert len(calls) == 1
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
-    assert Guidance.objects.filter(inquiry=inquiry).count() == 1
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 
 

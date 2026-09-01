@@ -1,0 +1,20 @@
+scope=RUNNING_AI_CONTAINER_READONLY_PREFLIGHT
+container_id=43fd908192b3525948b2faa717774ae64f35875dc551790e0d3601908e5b59e3
+source_sha=ce22601bf4f21b0c11d7626fb3bd1b905464d1da
+script_sha256=b248c249f43dd232c4c804ab188344f1e308a247cd5c5338701c1d13ebedc316
+capture_note=SSM terminal accessibility text; whitespace flattened; no secret values
+
+BEFORE
+b248c249f43dd232c4c804ab188344f1e308a247cd5c5338701c1d13ebedc316 /opt/waterbridge/releases/ce22601bf4f21b0c11d7626fb3bd1b905464d1da/payload/scripts/deployment/production/validate_ai_readonly_runtime.py AI_READONLY_RUNTIME_PREFLIGHT_PASS pgvector=0.8.2 view_select=ONLY_APPROVED_VIEW view_rows=53 complete_lineage=53 vector_dimensions=1024 base_table_access=DENIED transaction=READ_ONLY MCP_PREFLIGHT_BEFORE_EXIT=0 $
+
+AFTER
+AI_READONLY_RUNTIME_PREFLIGHT_PASS pgvector=0.8.2 view_select=ONLY_APPROVED_VIEW view_rows=53 complete_lineage=53 vector_dimensions=1024 base_table_access=DENIED transaction=READ_ONLY MCP_PREFLIGHT_AFTER_EXIT=0 $
+
+FINAL_IDENTITY
+observed_at_utc=2026-08-31T10:18:52Z AI_IMAGE_DIGEST=sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2 RELEASE_SHA=ce22601bf4f21b0c11d7626fb3bd1b905464d1da container=43fd908192b3525948b2faa717774ae64f35875dc551790e0d3601908e5b59e3 image=sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2 state=running health=healthy restart=0 started=2026-08-31T08:48:52.285476335Z $
+
+FINAL_HEALTH
+"{\"runtime\": {\"AI_RAG_RUNTIME_PROFILE\": \"jac104_v2_recovery\", \"AI_PIPELINE_RUNTIME\": \"multi_agent\", \"AI_RETRIEVAL_TRANSPORT\": \"mcp\", \"AI_HANDOFF_BACKEND_ENABLED\": \"false\"}, \"ai_http_health\": 200, \"diagnostic_pid_exists\": false, \"diagnostic_mcp_pid_exists\": false} backend_to_ai_http_health=200 Filesystem Size Used Avail Use% Mounted on /dev/root 77G 22G 56G 28% / $"
+
+DIAGNOSTIC_SHELL_MEMORY_CLEANUP
+JAC_MCP_DIAGNOSTIC_MEMORY_CLEARED $

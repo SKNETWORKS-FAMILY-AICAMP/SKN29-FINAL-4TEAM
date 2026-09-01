@@ -79,8 +79,18 @@ def merge_rule_list_field(
 ) -> list[str]:
     """여러 Rule의 문자열 목록 필드를 중복 없이 안정적으로 합친다."""
 
+    selected_rules = list(rules)
+    if field_name == "next_actions":
+        exclusive_rules = [
+            rule
+            for rule in selected_rules
+            if rule.get("next_action_merge_policy") == "EXCLUSIVE"
+        ]
+        if exclusive_rules:
+            selected_rules = exclusive_rules
+
     merged: list[str] = []
-    for rule in rules:
+    for rule in selected_rules:
         for item in rule.get(field_name, []):
             if item not in merged:
                 merged.append(item)

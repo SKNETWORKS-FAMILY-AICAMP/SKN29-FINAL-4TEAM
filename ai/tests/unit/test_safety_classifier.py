@@ -95,6 +95,87 @@ def test_electrical_danger_classification(risk_classifier, guidance_classifier):
     assert guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
 
 
+@pytest.mark.parametrize(
+    "raw_text",
+    [
+        "제품을 옮기다가 관이 손상된 것 같고 냉매가 새는 듯한 냄새가 나요.",
+        "제품을 옮기다 냉매 관을 건드렸고 가스가 새는 것 같아요.",
+        "냉매 배관이 파손되어 냉매 누출이 의심됩니다.",
+    ],
+)
+def test_refrigerant_hazard_uses_dedicated_total_stop_rule(
+    risk_classifier,
+    guidance_classifier,
+    raw_text,
+):
+    assessment = risk_classifier.classify(raw_text)
+    guidance = guidance_classifier.determine_guidance(
+        assessment,
+        raw_text,
+        has_evidence=False,
+    )
+
+    assert assessment.risk_level == RiskLevel.DANGER
+    assert assessment.requires_consultation is True
+    assert assessment.matched_safety_rule_ids == [
+        "SAFETY-REFRIGERANT-001"
+    ]
+    assert guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert guidance.restricted_functions == [
+        "제품 전체 기능 사용 중지",
+        "제품 및 전원 코드 접촉 금지",
+    ]
+    assert all("뽑" not in action for action in guidance.next_actions)
+    assert any("환기" in action for action in guidance.next_actions)
+
+
+@pytest.mark.parametrize(
+    "raw_text",
+    [
+        "냉매가 순환하는 소리가 들리지만 정상 소음 안내를 받았습니다.",
+        "냉매 누출은 없습니다. 소리만 확인해 주세요.",
+        "냉매가 새지 않습니다. 필터 교체 주기만 궁금합니다.",
+        "냉매가 샌다면 어떻게 해야 하나요?",
+    ],
+)
+def test_refrigerant_noise_negation_and_hypothetical_are_not_danger(
+    risk_classifier,
+    raw_text,
+):
+    assessment = risk_classifier.classify(raw_text)
+
+    assert "SAFETY-REFRIGERANT-001" not in assessment.matched_safety_rule_ids
+    assert assessment.risk_level != RiskLevel.DANGER
+
+
+def test_refrigerant_rule_exclusively_controls_conflicting_next_actions(
+    risk_classifier,
+    guidance_classifier,
+):
+    raw_text = "냉매가 새고 전원 코드에서 스파크도 발생했습니다."
+
+    assessment = risk_classifier.classify(raw_text)
+    guidance = guidance_classifier.determine_guidance(
+        assessment,
+        raw_text,
+        has_evidence=False,
+    )
+
+    assert assessment.matched_safety_rule_ids == [
+        "SAFETY-ELECTRICAL-001",
+        "SAFETY-REFRIGERANT-001",
+    ]
+    assert guidance.guidance_status == UsageGuidanceStatus.TOTAL_STOP
+    assert all("플러그를 뽑" not in action for action in guidance.next_actions)
+    assert guidance.next_actions == [
+        "제품이나 전원 코드를 만지지 마세요.",
+        "불꽃이나 스파크를 일으킬 수 있는 행동을 피하세요.",
+        "제품을 만지지 않고 가능한 경우 창문을 열어 충분히 환기하세요.",
+        "안전한 장소로 이동한 뒤 전문 상담 및 기사 점검을 요청하세요.",
+    ]
+    SafetyRuleAlignmentValidator().validate(assessment, guidance)
+
+
 def test_caution_classification(risk_classifier, guidance_classifier):
     """출수량 저하 및 미지근한 물 일반 주의 단계 테스트"""
     raw_text = "냉수가 안 차갑고 물이 졸졸 나옵니다."

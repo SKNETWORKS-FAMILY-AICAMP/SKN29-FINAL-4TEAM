@@ -133,6 +133,11 @@ APPROVED_RUNTIME_SUPPORT_TABLES = {
         "AI Guidance review; HITL runtime support outside the immutable "
         "32-table domain contract."
     ),
+    "support_consultation_cause_ledger": (
+        "Versioned Backend-owned AI consultation cause ledger with canonical "
+        "hash and identity verification; internal AI runtime support outside "
+        "the immutable 32-table domain contract."
+    ),
     "support_consultation_handoff": (
         "Sanitized AI-to-consultant handoff ledger; Week-6 runtime bridge "
         "outside the immutable 32-table domain contract."

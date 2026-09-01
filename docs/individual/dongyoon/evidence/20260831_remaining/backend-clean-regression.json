@@ -1,0 +1,43 @@
+{
+  "scope": "backend_local_unit_contract_api_regression",
+  "started_at_utc": "2026-08-31T11:31:43.246166+00:00",
+  "finished_at_utc": "2026-08-31T11:36:14.260927+00:00",
+  "duration_seconds": 271.015,
+  "python_version": "3.13.13",
+  "source_before": {
+    "commit_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+    "branch": "dongyoon",
+    "dirty": false
+  },
+  "source_after": {
+    "commit_sha": "521c1d1d0a372ad29dc7ff627b195dfd1a8666c8",
+    "branch": "dongyoon",
+    "dirty": false
+  },
+  "unchanged_clean_source": true,
+  "command": [
+    "backend/.venv/Scripts/python.exe",
+    "-m",
+    "pytest",
+    "tests/unit",
+    "tests/api",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    ".codex_tmp/qa-remaining-20260831/backend-pytest-966c5b903e594a1c9a6e65a3c15d2aae"
+  ],
+  "working_directory": "backend",
+  "exit_code": 0,
+  "status": "PASS",
+  "result_summary": [
+    "1671 passed, 37 skipped in 269.18s (0:04:29)"
+  ],
+  "log_sha256": "ffb23d739f4297ae5931ce5e617ba1c4010cb75a40bc7dcc0faa5fb08900bc8b",
+  "limitations": [
+    "LOCAL_TESTS_ONLY",
+    "NOT_INDEPENDENT_QA",
+    "NOT_PROVIDER_OR_RDS_E2E",
+    "NOT_FINAL_LEDGER_RELEASE"
+  ]
+}

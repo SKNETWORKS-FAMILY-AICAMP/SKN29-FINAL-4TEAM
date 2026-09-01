@@ -5,6 +5,12 @@ from typing import List, Optional
 from ..schemas import RiskLevel, SafetyAssessment
 from .rule_precedence import select_effective_safety_rule
 from .rule_loader import SafetyRuleLoader
+from .signal_detector import (
+    detect_safety_evidence,
+    has_asserted_hot_water_panel_alert,
+    has_asserted_keyword,
+)
+from ..structuring.llm_contracts import SafetySignals
 
 
 class RiskClassifier:
@@ -14,13 +20,6 @@ class RiskClassifier:
         r"누수(?:는|가)?\s*(?:아니(?:에요|예요|고|라|며)?|없(?:어요|습니다|고)?)",
         r"물(?:이)?\s*(?:안\s*새|새지\s*않)",
     )
-    _NEGATED_DANGER_PATTERNS = _NEGATED_LEAK_PATTERNS + (
-        r"연기(?:는|가)?\s*(?:안\s*나|없)",
-        r"스파크(?:는|가)?\s*(?:안\s*튀|없)",
-        r"화재(?:\s*위험)?(?:은|는|이|가)?\s*(?:아니(?:에요|예요|고|라|며)?|없(?:어요|습니다|고)?)",
-        r"(?:온수\s*)?히터\s*(?:고장|이상)(?:은|는|이|가)?\s*(?:아니(?:에요|예요|고|라|며|다)?|아닙니다|아님|없(?:어요|습니다|고)?|정상)",
-        r"(?:순간\s*)?온수\s*모듈(?:은|는|이|가)?\s*(?:정상|이상(?:은|는|이|가)?\s*없(?:어요|습니다|고)?)",
-    )
     _LEAK_SELECTED_SIGNAL_ALIASES = frozenset(
         {"symptom_leak", "leak", "누수", "제품 누수"}
     )
@@ -29,21 +28,29 @@ class RiskClassifier:
         self.loader = rule_loader or SafetyRuleLoader()
         self.rules_config = self.loader.get_safety_rules().get("rules", {})
 
-    def classify(self, raw_text: str, selected_symptoms: Optional[List[str]] = None) -> SafetyAssessment:
+    def classify(
+        self,
+        raw_text: str,
+        selected_symptoms: Optional[List[str]] = None,
+        safety_signals: SafetySignals | None = None,
+        *,
+        previous_answers: Optional[List[dict[str, str]]] = None,
+    ) -> SafetyAssessment:
         """자연어 증상 및 대표 선택 증상을 분석하여 위험도 판정"""
         leak_is_explicitly_negated = any(
             re.search(pattern, raw_text)
             for pattern in self._NEGATED_LEAK_PATTERNS
         )
-        normalized_text = raw_text
-        for pattern in self._NEGATED_DANGER_PATTERNS:
-            normalized_text = re.sub(pattern, " ", normalized_text)
+        source_text = "\n".join([raw_text, *[
+            str(answer.get("answer_text", "")) for answer in previous_answers or []
+            if isinstance(answer, dict)
+        ]])
         selected_signals = self._normalize_selected_signals(
             selected_symptoms or [],
             leak_is_explicitly_negated=leak_is_explicitly_negated,
         )
         text_to_search = (
-            normalized_text + " " + " ".join(selected_signals)
+            source_text + "\n" + "\n".join(selected_signals)
         ).strip()
 
         matched_rule_ids = []
@@ -53,11 +60,50 @@ class RiskClassifier:
         requires_consultation = False
         reasons = []
 
+        signals = safety_signals or SafetySignals()
+        detected = {name for name, _ in detect_safety_evidence(source_text)}
+
+        def has_signal(name):
+            return getattr(signals, name, False) or name in detected
+
+        feature_rule_ids = []
+        if has_signal("water_near_electrical_part") or has_signal("water_leak"):
+            feature_rule_ids.append("SAFETY-LEAK-001")
+            if has_signal("water_near_electrical_part"):
+                detected_risks.append("전기 부품 주변 물기")
+                reasons.append("[Safety] 전기 부품 주변 물기 감지")
+            else:
+                detected_risks.append("제품 누수")
+                reasons.append("[Safety] 고객 입력에서 누수 감지")
+        electrical_features = (
+            has_signal("electrical_component_damage")
+            or has_signal("exposed_wire")
+            or has_signal("smoke_or_burn")
+            or has_signal("shock_or_spark")
+        )
+        if electrical_features:
+            feature_rule_ids.append("SAFETY-ELECTRICAL-001")
+            detected_risks.append("전기 부품 손상·노출 위험")
+            reasons.append("[Safety] 전기 위험 관측 신호 감지")
+        if has_signal("refrigerant_leak_or_line_damage"):
+            feature_rule_ids.append("SAFETY-REFRIGERANT-001")
+            detected_risks.append("냉매 누출·냉매 배관 손상 위험")
+            reasons.append("[Safety] 냉매 누출 또는 냉매 배관 손상 관측 신호 감지")
+        heater_alert = has_asserted_hot_water_panel_alert(source_text)
+        if heater_alert:
+            feature_rule_ids.append("SAFETY-HOT-WATER-HEATER-001")
+            detected_risks.append("온수·정수·냉수 버튼 동시 점멸 및 빨간 표시창")
+            reasons.append("[Safety] 공식 매뉴얼의 온수 히터 경고 표시 조합 감지")
+        if signals.requires_danger_policy or detected or heater_alert:
+            highest_risk = RiskLevel.DANGER
+            highest_priority = "priority_consultation"
+            requires_consultation = True
+
         # 명시적 위험 규칙 탐색
         for rule_key, rule_def in self.rules_config.items():
             keywords = rule_def.get("keywords", [])
             for kw in keywords:
-                if kw in text_to_search:
+                if has_asserted_keyword(text_to_search, kw):
                     matched_rule_ids.append(rule_def["rule_id"])
                     detected_risks.append(rule_def.get("name", rule_key))
                     reasons.append(f"[{rule_def.get('name')}] 키워드('{kw}') 감지")
@@ -74,6 +120,7 @@ class RiskClassifier:
                         requires_consultation = rule_def.get("requires_consultation", False)
                     break
 
+        matched_rule_ids.extend(feature_rule_ids)
         if highest_risk == RiskLevel.DANGER:
             effective_rule = select_effective_safety_rule(
                 self.rules_config,

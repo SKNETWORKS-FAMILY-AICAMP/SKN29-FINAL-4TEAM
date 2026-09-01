@@ -1,0 +1,505 @@
+{
+  "schema": "JAC104_OPERATING_MCP_SIX_STEP_REVIEW_V1",
+  "date": "2026-08-31",
+  "review_owner": "이동윤 / AI·RAG",
+  "decision": {
+    "six_step_status": "PASS",
+    "full_recovery": "PASS",
+    "full_recovery_scope": "JAC104-only approved Profile deployment and Provider-free MCP retrieval recovery, limited to the six requested gates",
+    "whole_service_e2e": "NOT_RUN",
+    "three_model_public_activation": "HOLD",
+    "iac425_public_activation": "HOLD",
+    "iac606_public_activation": "HOLD",
+    "provider_canary": "NOT_RUN",
+    "backend_followup_prerequisites": "SATISFIED",
+    "provider_canary_executed_by_this_task": false
+  },
+  "authorization_and_owner_evidence": {
+    "data": {
+      "owner": "김은진",
+      "status": "JAC104_DATA_PASS",
+      "source": "User-forwarded Data owner reply in this conversation",
+      "scope": "JAC104 official Child 15, three symptom expected evidence appropriate, full 53-row chunk-set hash identical"
+    },
+    "pm": {
+      "owner": "윤승혁",
+      "status": "APPROVED_USER_REPORTED",
+      "source": "User explicitly reported PM approval and deployment owner 김은진",
+      "scope": "Previously requested ce22601b / image 6df3057e... / jac104_v2_recovery only"
+    },
+    "deployment": {
+      "owner": "김은진",
+      "status": "JAC104_PROFILE_DEPLOYMENT_PASS",
+      "completed_at_kst": "2026-08-31T17:49:20+09:00",
+      "source": "User-forwarded deployment owner reply",
+      "reported_image_unchanged": true,
+      "reported_change": "AI Profile changed and AI service recreated only",
+      "reported_backup_preserved": true,
+      "reported_other_services_db_unchanged": true,
+      "directly_confirmed_in_this_run": [
+        "Actual Release SHA, Image ID and Container ID",
+        "Effective Profile/Pipeline/Transport/Handoff flag",
+        "Running/healthy/restart 0",
+        "AI and Backend-to-AI health 200",
+        "Readonly Preflight and Canonical state"
+      ],
+      "not_independently_audited": [
+        "Backup file contents",
+        "Historical changes to other services",
+        "CI end-to-end success or rollback rehearsal"
+      ]
+    }
+  },
+  "approved_target": {
+    "release_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+    "image_digest": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+    "runtime_profile": "jac104_v2_recovery",
+    "approved_model_codes": [
+      "WPUJAC104DWH"
+    ],
+    "approved_child_count": 15,
+    "index_version": "2.0.0",
+    "whole_index_count": 53,
+    "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304"
+  },
+  "local_provenance": {
+    "branch": "dongyoon",
+    "head": "40a59a539035ba91c3df0491bc021a7f20153011",
+    "initial_worktree": "clean",
+    "execution_worktree": "Diagnostic payload identified by its exact SHA-256; local worktree changes were not deployed",
+    "final_worktree": "dirty: additional staged/unstaged AI, Backend, Infra, Data and Mobile changes from concurrent work; left untouched",
+    "source_equivalence_scope": "Approved ce22601b and local HEAD 40a59a53 commit trees, not the concurrently changing local working tree",
+    "approved_image_ai_source_vs_local_head_diff": "No differences in ai or official Readonly Preflight",
+    "approved_git_blob_hashes": {
+      "ai/app/orchestration/pipeline_router.py": "af0f14dd89db627e89e055b1fb2993a8baac69447f0d1a148f01f45f2bc7f3d3",
+      "ai/app/integrations/mcp/client.py": "da04772170d91f8ecac300764beb954c15bf1456253496764b08fcfdb023fcec",
+      "ai/app/integrations/mcp/session_manager.py": "3c9791ed565faf4d0ed55e8195c78e4469d51ec8825a1917e9d41995aed9ebe5",
+      "ai/app/integrations/mcp/search_service.py": "667f34933c5f93e091d0ef9566d1715c1698d6f23c3c2f6a6a9d9be8be444af8",
+      "ai/app/integrations/mcp/server.py": "edd52aa6db11199f116f640a6b76a4cc3599a706a58d3141072395689984ec1d",
+      "ai/app/integrations/mcp/tools/search_official_evidence.py": "7ce8cca939906609bde99cec8c116713eb5e4edaecf5921d18c77309827abb27",
+      "ai/scripts/verify_jac104_v2_recovery.py": "cc62f6cb6ec6dcea99a4fdec7e33af6acea8fa2bd3f1275419bb0bc48f1826ab",
+      "ai/app/retrieval/runtime_profile.py": "da2e89df19396162f5cc390892cdc7c73bc0fa907a8de2811b5d00d3cdcc49f3",
+      "ai/app/retrieval/verification/index_readiness.py": "18fefb9ff62057d90391f6fc4af1c525fd760ea74243a57373aba17f79148c37",
+      "ai/configs/index_manifest_3model.json": "3fa0f26c0c2c2628f9d4410c061ff17dd8d6ce9c6e0b76358cbb0bb0a9c28a1e",
+      "ai/configs/canonical_evidence_identity_3model.json": "ab98aa6cfe839366cb13ecc3839d72ee0ae99419af85f702f0c2f1d05bdca169",
+      "scripts/deployment/production/validate_ai_readonly_runtime.py": "b248c249f43dd232c4c804ab188344f1e308a247cd5c5338701c1d13ebedc316"
+    },
+    "hash_basis": "Exact approved ce22601b Git blob bytes; Windows checkout CRLF not used",
+    "diagnostic_script": "20260831_JAC104_v2_operating_mcp_probe.py",
+    "diagnostic_script_sha256": "4b174c1487d01f8bc2dbe2105cc1bd5c317889500c6deaee6e13399381315424",
+    "diagnostic_syntax_check": "PASS",
+    "diagnostic_pure_validator_selfchecks": {
+      "python_version": "3.13.13",
+      "passed": 13,
+      "scope": "Synthetic selfchecks only; not 13 additional real DB cases"
+    },
+    "ai_full_unit_tests_rerun": false,
+    "production_code_edited": false
+  },
+  "operating_execution": {
+    "container_id": "43fd908192b3525948b2faa717774ae64f35875dc551790e0d3601908e5b59e3",
+    "image_id": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+    "container_started_at_utc": "2026-08-31T08:48:52.285476335Z",
+    "started_at_utc": "2026-08-31T10:15:49.755547+00:00",
+    "finished_at_utc": "2026-08-31T10:16:11.073901+00:00",
+    "exit_code": 0,
+    "python_version": "3.13.13",
+    "probe_pid": 2160,
+    "mcp_server_process_ids": [
+      2167
+    ],
+    "scope": "RUNNING_CONTAINER_MCP_RETRIEVAL_ONLY",
+    "entrypoint": "docker exec into the approved already-running AI container; stdin gzip/base64 decoded with exact probe SHA-256 validation",
+    "diagnostic_file_written_to_ec2": false,
+    "asgi_existing_session_used": false,
+    "asgi_full_pipeline_called": false,
+    "backend_context_called": false,
+    "production_facade": "ai.app.orchestration.pipeline_router._create_mcp_evidence_search_service -> McpEvidenceSearchService.search",
+    "real_transport": "McpStdioSessionManager -> WaterBridgeMCPClient -> ai.app.integrations.mcp.server -> search_official_evidence -> production VectorSearchService/PgVectorStore",
+    "direct_vector_search_in_diagnostic_process": false,
+    "readonly_index_snapshot_in_diagnostic_process": true,
+    "logical_search_tool_calls": 10,
+    "case_count": 5,
+    "per_case_calls": "One raw MCP call plus one actual production-facade search, both through the same MCP server process",
+    "other_mcp_tools": [
+      "health_check",
+      "warmup_search_runtime"
+    ],
+    "mcp_server_core_env_matches_parent": true,
+    "same_server_reused": true,
+    "resource_controls": {
+      "host_mem_available_kib_at_start": 5910868,
+      "cpu_affinity": [
+        0
+      ],
+      "nice": 10,
+      "cpu_time_limit_seconds": 90,
+      "wall_time_limit_seconds": 150
+    },
+    "diagnostic_only_environment_overrides": {
+      "OPENAI_API_KEY": "empty",
+      "AI_HANDOFF_INTERNAL_TOKEN": "empty",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "PYTHONOPTIMIZE": "0",
+      "AI_OTEL_ENABLED": "false"
+    },
+    "production_environment_file_modified": false
+  },
+  "preflight": {
+    "script_source": "Approved release-payload official validate_ai_readonly_runtime.py, streamed into the running AI container without remote file writes",
+    "script_sha256": "b248c249f43dd232c4c804ab188344f1e308a247cd5c5338701c1d13ebedc316",
+    "before": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "after": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "postgresql_version_asserted": "16.14",
+    "pgvector_version": "0.8.2",
+    "view": "backend_ai_rag_chunks_v1",
+    "view_rows": 53,
+    "distinct_chunk_ids": 53,
+    "complete_lineage": 53,
+    "dimensions": 1024,
+    "model_counts": {
+      "WPUJAC104DWH": 15,
+      "WPUIAC425SNW": 19,
+      "WPUIAC606SNW": 19
+    },
+    "approved_view_select_only": true,
+    "base_table_access": "DENIED",
+    "schema_create": "DENIED",
+    "default_transaction_read_only": "on"
+  },
+  "canonical_before_after": {
+    "status": "PASS",
+    "index_before": {
+      "approved_model_codes": [
+        "WPUJAC104DWH"
+      ],
+      "approved_model_row_count": 15,
+      "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+      "index_row_count": 53,
+      "index_version": "2.0.0",
+      "model_row_counts": {
+        "WPUIAC425SNW": 19,
+        "WPUIAC606SNW": 19,
+        "WPUJAC104DWH": 15
+      }
+    },
+    "index_after": {
+      "approved_model_codes": [
+        "WPUJAC104DWH"
+      ],
+      "approved_model_row_count": 15,
+      "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+      "index_row_count": 53,
+      "index_version": "2.0.0",
+      "model_row_counts": {
+        "WPUIAC425SNW": 19,
+        "WPUIAC606SNW": 19,
+        "WPUJAC104DWH": 15
+      }
+    },
+    "metadata_sha256_before": "4bb4dd3943154ae5d6753e5fc116c6c79d2dc5fbe87210f9f04c152e00856ae1",
+    "metadata_sha256_after": "4bb4dd3943154ae5d6753e5fc116c6c79d2dc5fbe87210f9f04c152e00856ae1",
+    "hash_scope": "53 approved-view identity/eligibility/lineage metadata rows plus DB-computed content hashes; not all DB tables or sequences"
+  },
+  "mcp_results": {
+    "status": "PASS",
+    "positive_pass": 3,
+    "negative_policy_block_pass": 2,
+    "raw_and_production_facade_parity": "PASS",
+    "cross_model_hits": 0,
+    "direct_parent_hits": 0,
+    "noncanonical_hits": 0,
+    "unverified_hits": 0,
+    "ineligible_hits": 0,
+    "content_hash_mismatches": 0,
+    "page_mismatches": 0,
+    "mcp_warmup_seconds": 10.122665,
+    "cases": [
+      {
+        "evidence_found": true,
+        "model_code": "WPUJAC104DWH",
+        "pass": true,
+        "policy_blocked": false,
+        "policy_execution_path": "PGVECTOR_QUERY",
+        "probe_id": "COLD_TEMPERATURE",
+        "production_facade_evidence": {
+          "content_hash_mismatches": 0,
+          "cross_model_hits": 0,
+          "direct_parent_hits": 0,
+          "evidence_ids_in_returned_order": [
+            "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001",
+            "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+            "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001",
+            "CHILD-WPUJAC104DWH-P037-NOISE-001",
+            "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+          ],
+          "expected_evidence_hit": true,
+          "hit_count": 5,
+          "ineligible_hits": 0,
+          "noncanonical_hits": 0,
+          "page_mismatches": 0,
+          "pass": true,
+          "unverified_hits": 0
+        },
+        "production_facade_seconds": 0.552385,
+        "raw_evidence": {
+          "content_hash_mismatches": 0,
+          "cross_model_hits": 0,
+          "direct_parent_hits": 0,
+          "evidence_ids_in_returned_order": [
+            "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001",
+            "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+            "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001",
+            "CHILD-WPUJAC104DWH-P037-NOISE-001",
+            "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+          ],
+          "expected_evidence_hit": true,
+          "hit_count": 5,
+          "ineligible_hits": 0,
+          "noncanonical_hits": 0,
+          "page_mismatches": 0,
+          "pass": true,
+          "unverified_hits": 0
+        },
+        "raw_tool_seconds": 0.619885,
+        "same_mcp_server_process": true,
+        "search_result_found": true,
+        "search_tool_calls": 2,
+        "vector_search_executed": true
+      },
+      {
+        "evidence_found": true,
+        "model_code": "WPUJAC104DWH",
+        "pass": true,
+        "policy_blocked": false,
+        "policy_execution_path": "PGVECTOR_QUERY",
+        "probe_id": "LOW_FLOW",
+        "production_facade_evidence": {
+          "content_hash_mismatches": 0,
+          "cross_model_hits": 0,
+          "direct_parent_hits": 0,
+          "evidence_ids_in_returned_order": [
+            "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+            "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+            "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+            "CHILD-WPUJAC104DWH-P037-NOISE-001",
+            "CHILD-WPUJAC104DWH-P007-LEAK-001"
+          ],
+          "expected_evidence_hit": true,
+          "hit_count": 5,
+          "ineligible_hits": 0,
+          "noncanonical_hits": 0,
+          "page_mismatches": 0,
+          "pass": true,
+          "unverified_hits": 0
+        },
+        "production_facade_seconds": 0.569053,
+        "raw_evidence": {
+          "content_hash_mismatches": 0,
+          "cross_model_hits": 0,
+          "direct_parent_hits": 0,
+          "evidence_ids_in_returned_order": [
+            "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001",
+            "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+            "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+            "CHILD-WPUJAC104DWH-P037-NOISE-001",
+            "CHILD-WPUJAC104DWH-P007-LEAK-001"
+          ],
+          "expected_evidence_hit": true,
+          "hit_count": 5,
+          "ineligible_hits": 0,
+          "noncanonical_hits": 0,
+          "page_mismatches": 0,
+          "pass": true,
+          "unverified_hits": 0
+        },
+        "raw_tool_seconds": 0.562591,
+        "same_mcp_server_process": true,
+        "search_result_found": true,
+        "search_tool_calls": 2,
+        "vector_search_executed": true
+      },
+      {
+        "evidence_found": true,
+        "model_code": "WPUJAC104DWH",
+        "pass": true,
+        "policy_blocked": false,
+        "policy_execution_path": "PGVECTOR_QUERY",
+        "probe_id": "TASTE_ODOR",
+        "production_facade_evidence": {
+          "content_hash_mismatches": 0,
+          "cross_model_hits": 0,
+          "direct_parent_hits": 0,
+          "evidence_ids_in_returned_order": [
+            "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001",
+            "CHILD-WPUJAC104DWH-P037-NOISE-001",
+            "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+            "CHILD-WPUJAC104DWH-P005-LEAK-001",
+            "CHILD-WPUJAC104DWH-P007-LEAK-001"
+          ],
+          "expected_evidence_hit": true,
+          "hit_count": 5,
+          "ineligible_hits": 0,
+          "noncanonical_hits": 0,
+          "page_mismatches": 0,
+          "pass": true,
+          "unverified_hits": 0
+        },
+        "production_facade_seconds": 0.530564,
+        "raw_evidence": {
+          "content_hash_mismatches": 0,
+          "cross_model_hits": 0,
+          "direct_parent_hits": 0,
+          "evidence_ids_in_returned_order": [
+            "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001",
+            "CHILD-WPUJAC104DWH-P037-NOISE-001",
+            "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+            "CHILD-WPUJAC104DWH-P005-LEAK-001",
+            "CHILD-WPUJAC104DWH-P007-LEAK-001"
+          ],
+          "expected_evidence_hit": true,
+          "hit_count": 5,
+          "ineligible_hits": 0,
+          "noncanonical_hits": 0,
+          "page_mismatches": 0,
+          "pass": true,
+          "unverified_hits": 0
+        },
+        "raw_tool_seconds": 0.521224,
+        "same_mcp_server_process": true,
+        "search_result_found": true,
+        "search_tool_calls": 2,
+        "vector_search_executed": true
+      },
+      {
+        "evidence_count": 0,
+        "evidence_found": false,
+        "facade_evidence_count": 0,
+        "model_code": "WPUIAC425SNW",
+        "pass": true,
+        "policy_blocked": true,
+        "policy_execution_path": "POLICY_BLOCK_UNSUPPORTED_MODEL",
+        "probe_id": "BLOCK_IAC425",
+        "production_facade_seconds": 0.002667,
+        "raw_tool_seconds": 0.003176,
+        "same_mcp_server_process": true,
+        "search_result_found": false,
+        "search_tool_calls": 2,
+        "vector_search_executed": false
+      },
+      {
+        "evidence_count": 0,
+        "evidence_found": false,
+        "facade_evidence_count": 0,
+        "model_code": "WPUIAC606SNW",
+        "pass": true,
+        "policy_blocked": true,
+        "policy_execution_path": "POLICY_BLOCK_UNSUPPORTED_MODEL",
+        "probe_id": "BLOCK_IAC606",
+        "production_facade_seconds": 0.002589,
+        "raw_tool_seconds": 0.002684,
+        "same_mcp_server_process": true,
+        "search_result_found": false,
+        "search_tool_calls": 2,
+        "vector_search_executed": false
+      }
+    ],
+    "raw_file": "20260831_JAC104_v2_ce22601b_operating_MCP_stdout.json",
+    "raw_sha256": "a43e81ccba6f2325aa38c11b1adb6312321825e01b8e88763bcb27f2761155d1",
+    "raw_capture": "Four gzip/base64 chunks; total 2304 encoded chars; CRC-validated decode; local LF newline"
+  },
+  "final_runtime": {
+    "observed_at_utc": "2026-08-31T10:18:52Z",
+    "release_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+    "image_digest": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+    "image_id": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+    "container_id": "43fd908192b3525948b2faa717774ae64f35875dc551790e0d3601908e5b59e3",
+    "runtime_profile": "jac104_v2_recovery",
+    "pipeline_runtime": "multi_agent",
+    "retrieval_transport": "mcp",
+    "handoff_backend_enabled": false,
+    "state": "running",
+    "health": "healthy",
+    "restart_count_before": 0,
+    "restart_count_after": 0,
+    "ai_http_health": 200,
+    "backend_to_ai_http_health": 200,
+    "disk": {
+      "size": "77G",
+      "used": "22G",
+      "available": "56G",
+      "used_percent": 28
+    }
+  },
+  "six_steps": [
+    {
+      "step": 1,
+      "status": "PASS",
+      "basis": "Actual RDS role/view preflight and complete canonical index checked again before and after MCP calls"
+    },
+    {
+      "step": 2,
+      "status": "PASS",
+      "basis": "Previously recorded candidate-image Provider-free Direct Gate remains valid for exact approved ce22601b / image 6df3057e..."
+    },
+    {
+      "step": 3,
+      "status": "PASS",
+      "basis": "Original Direct 3 symptoms / 2 blocks passed; actual MCP raw and production facade also passed"
+    },
+    {
+      "step": 4,
+      "status": "PASS",
+      "basis": "Data PASS and PM approval received; deployment owner completed the Profile switch; actual deployed identity/profile/healthy state and free disk independently confirmed"
+    },
+    {
+      "step": 5,
+      "status": "PASS",
+      "basis": "Approved running AI container's actual production MCP facade/stdio server queried RDS; 3 expected-evidence hits and 2 pre-search product blocks; new diagnostic MCP session, not the ASGI session"
+    },
+    {
+      "step": 6,
+      "status": "PASS",
+      "basis": "Final approved Release/Image/Container/Profile/Health captured after MCP and readonly checks; production restart count unchanged"
+    }
+  ],
+  "remaining_scope_limits": [
+    "No positive Provider generation was executed",
+    "No Backend inquiry/context lookup, new inquiry, persistence or replay was executed",
+    "No full multi-agent or ASGI analysis request was executed",
+    "No cross-service customer UI E2E, latency SLA, full 50-case QA or global DB hash comparison was executed",
+    "MCP code owner 양정현 did not jointly execute or separately sign off in this conversation; the existing owned production code was only read and exercised without edits",
+    "Top-5 expected evidence inclusion, not perfect relevance of every returned hit or general product accuracy"
+  ],
+  "cleanup": {
+    "diagnostic_ssm_memory_variables_cleared": true,
+    "diagnostic_mcp_session_closed": true,
+    "diagnostic_pid_absent_after": true,
+    "diagnostic_mcp_pid_absent_after": true,
+    "production_restart_performed": false,
+    "new_docker_containers_created": false,
+    "images_deleted": false,
+    "volumes_deleted": false,
+    "remote_script_files_created": false
+  },
+  "next_owner": {
+    "owner": "최지용 / Backend",
+    "action": "Receive the scoped six-step PASS package and proceed with the separately managed Backend synthetic-inquiry/Provider Canary verification",
+    "canary_already_executed": false,
+    "broader_activation_authorized_by_this_task": false
+  },
+  "previous_gate_evidence": [
+    "20260831_JAC104_v2_EC2_Direct_Gate_실행결과.json",
+    "20260831_JAC104_v2_ce22601b_EC2_Direct_Gate_stdout.txt",
+    "20260831_JAC104_v2_EC2_Direct_Gate_SHA256SUMS.txt",
+    "20260831_이동윤_to_김은진_JAC104_PM승인후_AI운영전환_실행요청.md"
+  ],
+  "external_handoff_sent": false
+}

@@ -35,6 +35,10 @@ from ai.app.schemas.common import RiskLevel, UsageGuidanceStatus
 
 INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b321"
 CORRELATION_ID = "018f2f9b-7c30-7981-b541-1a987c88b421"
+TASTE_WITHIN = "단기(10일 이내) : 냉수, 정수, 온수를 1L씩 각각 1회 이상 출수하여 버린 후 사용해 주세요."
+TASTE_OVER = "장기(10일 이상) : 필요 시 고객상담센터에 점검을 요구해 주세요."
+TASTE_UNUSED = "부적합한 장소 및 제품을 장시간 사용하지 않음. 필터를 모두 교체 후 사용해 주세요."
+TASTE_SOURCE = " ".join((TASTE_WITHIN, TASTE_OVER, TASTE_UNUSED))
 
 
 class EvidenceSearchService:
@@ -84,7 +88,7 @@ class MixedTasteEvidenceSearchService:
                 manual_model="WPUJAC104DWH",
                 model_code="WPUJAC104DWH",
                 product_generation="D",
-                content="물맛과 냄새 관련 공식 근거",
+                content=TASTE_SOURCE,
                 similarity_score=0.91,
                 verification_status="official_verified",
                 allowed_use=True,
@@ -207,7 +211,7 @@ def test_earthy_taste_waits_for_context_before_retrieval_or_llm():
 
 
 def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
-    taste_message = "물맛과 냄새 관련 공식 근거"
+    taste_message = TASTE_WITHIN
     client = SequenceLLMClient(
         llm_response(
             message=taste_message,
@@ -228,7 +232,7 @@ def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
         taste_message
     ]
     assert client.requests[0].symptom_summary == (
-        "물맛/냄새 이상 | 정수 | 10일 이내 부재 후"
+        "물맛/냄새 이상 | 정수 | 오늘부터 | 10일 이내 부재 후 | 아직 조치하지 않음"
     )
     assert client.requests[0].evidence_summaries == [taste_message]
 
@@ -236,7 +240,6 @@ def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
 @pytest.mark.parametrize(
     ("answer_text", "expected_code", "expected_condition"),
     [
-        ("해당 없음", "NOT_APPLICABLE", "해당 없음"),
         ("10일 이상 부재 후", "ABSENCE_OVER_10_DAYS", "10일 이상 부재 후"),
         ("장시간 미사용 후", "LONG_UNUSED", "장시간 미사용 후"),
         (
@@ -246,12 +249,17 @@ def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
         ),
     ],
 )
-def test_earthy_taste_context_without_safe_self_guidance_routes_to_no_evidence(
+def test_earthy_taste_applicability_preserves_matching_official_evidence(
     answer_text,
     expected_code,
     expected_condition,
 ):
-    client = SequenceLLMClient(llm_response())
+    client = SequenceLLMClient(
+        llm_response(
+            message=TASTE_OVER if expected_code == "ABSENCE_OVER_10_DAYS" else TASTE_UNUSED,
+            actions=["기본 필터 및 사용 환경 유지"],
+        )
+    )
     previous_answers = [
         *COMPLETE_TASTE_ANSWERS[:-1],
         {
@@ -268,14 +276,16 @@ def test_earthy_taste_context_without_safe_self_guidance_routes_to_no_evidence(
     )
     result = pipeline_result.to_analysis_result()
 
-    assert client.calls == 0
+    assert client.calls == 1
     assert pipeline_result.context.evidence_applicability.value == expected_code
     assert result.structured_symptom.occurrence_condition == expected_condition
-    assert pipeline_result.context.retrieval_outcome.value == "NO_MATCH"
-    assert result.status.value == "FALLBACK"
-    assert result.failure_stage.value == "RETRIEVING"
-    assert result.evidence_references == []
-    assert result.usage_guidance.guidance_status.value == "PENDING_CONSULTATION"
+    assert pipeline_result.context.retrieval_outcome.value == "AVAILABLE"
+    assert result.evidence_references
+    assert result.evidence_references[0].summary == (
+        TASTE_OVER if expected_code == "ABSENCE_OVER_10_DAYS" else TASTE_UNUSED
+    )
+    assert "1L" not in result.evidence_references[0].summary
+    assert result.usage_guidance.guidance_status.value == "NORMAL"
 
 
 def test_earthy_taste_with_only_unrelated_evidence_fails_closed_without_llm():
@@ -342,8 +352,10 @@ def test_openai_adapter_sends_guidance_only_strict_schema():
     assert captured["payload"]["max_output_tokens"] == 500
     assert captured["payload"]["text"]["format"]["strict"] is True
     assert set(output_schema["properties"]) == {"message", "next_actions"}
-    assert output_schema["properties"]["message"]["enum"] == (
-        request.evidence_summaries
+    assert "enum" not in output_schema["properties"]["message"]
+    assert (
+        "evidence_summaries"
+        in output_schema["properties"]["message"]["description"]
     )
     assert output_schema["properties"]["next_actions"]["items"]["enum"] == (
         request.allowed_next_actions
@@ -632,7 +644,7 @@ def test_exact_official_directive_message_is_allowed_without_rewriting():
     assert result.usage_guidance.message == official_message
 
 
-def test_rewritten_official_directive_message_fails_closed():
+def test_grounded_rewrite_of_official_directive_is_allowed():
     class DirectiveEvidenceSearchService:
         def search(self, *args, **kwargs):
             chunk = EvidenceSearchService().search(*args, **kwargs)[0]
@@ -642,16 +654,42 @@ def test_rewritten_official_directive_message_fails_closed():
                 )
             ]
 
-    with pytest.raises(GuidanceGenerationExecutionError):
-        run_pipeline(
-            search_service=DirectiveEvidenceSearchService(),
-            llm_client=SequenceLLMClient(
-                llm_response(
-                    message="원수 상태를 반드시 확인해 주세요.",
-                    actions=accepted_actions(),
+    result = run_pipeline(
+        search_service=DirectiveEvidenceSearchService(),
+        llm_client=SequenceLLMClient(
+            llm_response(
+                message="먼저 원수 상태를 확인해 주세요.",
+                actions=accepted_actions(),
+            )
+        ),
+    ).to_analysis_result()
+
+    assert result.usage_guidance.message == "먼저 원수 상태를 확인해 주세요."
+
+
+def test_official_do_not_drink_guidance_is_not_rejected_by_word_only_guard():
+    class DoNotDrinkEvidenceSearchService:
+        def search(self, *args, **kwargs):
+            chunk = EvidenceSearchService().search(*args, **kwargs)[0]
+            return [
+                chunk.model_copy(
+                    update={
+                        "content": "점검 문구가 표시되면 출수된 물은 음용하지 않습니다."
+                    }
                 )
-            ),
-        )
+            ]
+
+    result = run_pipeline(
+        search_service=DoNotDrinkEvidenceSearchService(),
+        llm_client=SequenceLLMClient(
+            llm_response(
+                message="점검 문구가 표시되면 해당 물은 음용하지 마세요.",
+                actions=accepted_actions(),
+            )
+        ),
+    ).to_analysis_result()
+
+    assert "음용하지" in result.usage_guidance.message
 
 
 def test_provider_request_redacts_pii_and_excludes_raw_occurrence_condition():
@@ -675,7 +713,7 @@ def test_provider_request_redacts_pii_and_excludes_raw_occurrence_condition():
     assert phone_number not in serialized
     assert "서울시 고객동" not in serialized
     assert raw_symptom not in serialized
-    assert provider_request.symptom_summary.startswith("기타 증상")
+    assert provider_request.symptom_summary.startswith("출수량 저하")
     assert provider_request.model_code == "WPUJAC104DWH"
 
 

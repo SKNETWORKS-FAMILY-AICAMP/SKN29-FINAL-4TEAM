@@ -45,12 +45,59 @@ def test_shared_registry_loads_unique_known_rules():
         "SAFETY-ELECTRICAL-001",
         "SAFETY-HOT-WATER-001",
         "SAFETY-HOT-WATER-HEATER-001",
+        "SAFETY-REFRIGERANT-001",
         "SAFETY-TEMP-ABNORMAL-001",
     }
 
 
 def test_registered_total_stop_danger_assessment_is_valid():
     assert danger_assessment_is_valid(danger_payload()) is True
+
+
+def test_registered_refrigerant_danger_assessment_is_valid():
+    payload = danger_payload()
+    payload["safety_assessment"]["matched_safety_rule_ids"] = [
+        "SAFETY-REFRIGERANT-001"
+    ]
+    payload["usage_guidance"]["next_actions"] = [
+        "제품이나 전원 코드를 만지지 마세요.",
+        "불꽃이나 스파크를 일으킬 수 있는 행동을 피하세요.",
+        "제품을 만지지 않고 가능한 경우 창문을 열어 충분히 환기하세요.",
+        "안전한 장소로 이동한 뒤 전문 상담 및 기사 점검을 요청하세요.",
+    ]
+
+    assert danger_assessment_is_valid(payload) is True
+
+    payload["usage_guidance"]["next_actions"] = ["플러그를 뽑으세요."]
+
+    assert danger_assessment_is_valid(payload) is False
+
+
+def test_approved_refrigerant_contract_matches_ai_rule():
+    registry_rule = load_safety_rule_registry()["SAFETY-REFRIGERANT-001"]
+    ai_payload = yaml.safe_load(
+        AI_SAFETY_RULES_PATH.read_text(encoding="utf-8")
+    )
+    ai_rule = next(
+        rule
+        for rule in ai_payload["rules"].values()
+        if rule.get("rule_id") == "SAFETY-REFRIGERANT-001"
+    )
+
+    assert ai_rule["risk_level"] == registry_rule["risk_level"] == "danger"
+    assert ai_rule["usage_guidance_status"] == registry_rule[
+        "default_guidance_status"
+    ] == "TOTAL_STOP"
+    assert ai_rule["requires_consultation"] is registry_rule[
+        "requires_consultation"
+    ] is True
+    assert ai_rule["restricted_functions"] == registry_rule[
+        "restricted_functions"
+    ]
+    assert ai_rule["next_actions"] == registry_rule["next_actions"]
+    assert ai_rule["next_action_merge_policy"] == registry_rule[
+        "next_action_merge_policy"
+    ] == "EXCLUSIVE"
 
 
 def test_unknown_or_mixed_rule_ids_fail_closed():

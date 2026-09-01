@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from ...common.timeout import CancellationToken
 from ...integrations.llm import GuidanceLLMClient
-from ...retrieval import (
-    EvidenceApplicabilityGate,
-    RetrievalConfigurationError,
-    RetrievalOutcome,
+from ...structuring.llm_contracts import (
+    FollowUpWordingLLMClient,
+    SymptomStructuringLLMClient,
 )
+from ...retrieval import RetrievalConfigurationError, RetrievalOutcome
 from ...schemas import RiskLevel
 from ..agents import (
     AgentRole,
@@ -20,6 +20,7 @@ from ..agents import (
 )
 from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
+from ..clarification_policy import should_wait_for_customer_input
 
 
 class MultiAgentPipeline:
@@ -31,11 +32,15 @@ class MultiAgentPipeline:
         *,
         retrieval_configuration_error: RetrievalConfigurationError | None = None,
         llm_client: GuidanceLLMClient | None = None,
+        symptom_llm_client: SymptomStructuringLLMClient | None = None,
+        followup_llm_client: FollowUpWordingLLMClient | None = None,
         max_hops: int = 8,
     ) -> None:
         self.search_service = search_service
         self.retrieval_configuration_error = retrieval_configuration_error
         self.llm_client = llm_client
+        self.symptom_llm_client = symptom_llm_client
+        self.followup_llm_client = followup_llm_client
         self.max_hops = max_hops
 
     def run(
@@ -47,7 +52,11 @@ class MultiAgentPipeline:
         token = cancellation_token or CancellationToken()
         token.raise_if_cancelled()
         shared = MultiAgentSharedState(context=ctx, max_hops=self.max_hops)
-        symptom_agent = SymptomAnalysisAgent(token)
+        symptom_agent = SymptomAnalysisAgent(
+            token,
+            symptom_llm_client=self.symptom_llm_client,
+            followup_llm_client=self.followup_llm_client,
+        )
         evidence_agent = EvidenceAnalysisAgent(
             self.search_service,
             token,
@@ -61,13 +70,7 @@ class MultiAgentPipeline:
         if symptom_output.safety_assessment.risk_level == RiskLevel.DANGER:
             shared.handoff(AgentRole.CARE_DECISION, HandoffReason.DANGER_PRIORITY)
             care_agent.run(ctx)
-        elif EvidenceApplicabilityGate().requires_more_information(
-            symptom_type=symptom_output.structured_symptom.symptom_type,
-            missing_field_names=(
-                item.field_name for item in symptom_output.missing_fields
-            ),
-            previous_answers=ctx.previous_answers,
-        ):
+        elif should_wait_for_customer_input(ctx):
             shared.awaiting_customer_input = True
             shared.handoff(
                 AgentRole.CARE_DECISION,

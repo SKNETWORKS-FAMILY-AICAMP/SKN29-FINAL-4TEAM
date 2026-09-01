@@ -502,6 +502,10 @@ private fun FinalDashboardProblemCheck(
             "작성 중인 문진이 있어요"
         normalized == "AI_GUIDANCE" ->
             "해결 방법이 준비됐어요"
+        normalized == "CONSULTATION_REQUIRED" ->
+            "상담 연결 단계예요"
+        normalized == "CONSULTATION_IN_PROGRESS" ->
+            "상담이 진행 중이에요"
         normalized == "COMPLETION_PENDING" ->
             "처리 결과를 확인해주세요"
         normalized == "RESOLVED" ->
@@ -523,6 +527,10 @@ private fun FinalDashboardProblemCheck(
             "작성하던 내용부터 이어서 진행하세요."
         normalized == "AI_GUIDANCE" ->
             "확인된 내용을 바탕으로 해결 방법을 확인해보세요."
+        normalized == "CONSULTATION_REQUIRED" ->
+            "상담 요청 여부와 진행 상태를 문의 화면에서 확인해 주세요."
+        normalized == "CONSULTATION_IN_PROGRESS" ->
+            "상담사가 문의 내용을 확인하며 상담을 진행하고 있어요."
         normalized == "COMPLETION_PENDING" ->
             "상담 또는 방문 처리가 끝났어요. 문제가 해결됐는지 확인해주세요."
         normalized == "RESOLVED" ->
@@ -548,6 +556,10 @@ private fun FinalDashboardProblemCheck(
             "이어서 작성"
         normalized == "AI_GUIDANCE" ->
             "해결 방법 보기"
+        normalized == "CONSULTATION_REQUIRED" ->
+            "상담 상태 확인하기"
+        normalized == "CONSULTATION_IN_PROGRESS" ->
+            "상담 진행 상태 보기"
         normalized == "COMPLETION_PENDING" ->
             "처리 결과 보기"
         normalized == "RESOLVED" ->

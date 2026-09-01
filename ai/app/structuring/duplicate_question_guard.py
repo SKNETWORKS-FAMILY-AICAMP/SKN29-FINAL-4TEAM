@@ -11,7 +11,18 @@ class DuplicateQuestionGuard:
         "followup-target-water-type": "target_water_type",
         "followup-occurrence-condition": "occurrence_condition",
         "followup-actions-taken": "actions_taken",
+        "followup-taste-odor-applicability": "taste_odor_applicability",
     }
+
+    @classmethod
+    def answered_target_fields(cls, previous_answers):
+        return {
+            cls._QUESTION_FIELD_MAP[answer["question_id"]]
+            for answer in previous_answers or []
+            if isinstance(answer, dict)
+            and answer.get("question_id") in cls._QUESTION_FIELD_MAP
+            and str(answer.get("answer_text", "")).strip()
+        }
 
     def filter(
         self,

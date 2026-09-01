@@ -6,7 +6,11 @@ from ..pipeline_context import PipelineContext
 from ..pipeline_result import PipelineResult
 from ...common.timeout import CancellationToken, get_stage_timeout_policy
 from ...integrations.llm import GuidanceLLMClient
-from ...retrieval import EvidenceApplicabilityGate, RetrievalConfigurationError
+from ...structuring.llm_contracts import (
+    FollowUpWordingLLMClient,
+    SymptomStructuringLLMClient,
+)
+from ...retrieval import RetrievalConfigurationError
 from ...schemas import AiStage
 from ..stages import (
     execute_generation_stage,
@@ -17,6 +21,7 @@ from ..stages import (
     execute_structuring_stage,
     execute_validation_stage,
 )
+from ..clarification_policy import should_wait_for_customer_input
 
 
 class SingleRAGPipeline:
@@ -28,10 +33,14 @@ class SingleRAGPipeline:
         *,
         retrieval_configuration_error: RetrievalConfigurationError | None = None,
         llm_client: GuidanceLLMClient | None = None,
+        symptom_llm_client: SymptomStructuringLLMClient | None = None,
+        followup_llm_client: FollowUpWordingLLMClient | None = None,
     ) -> None:
         self.search_service = search_service
         self.retrieval_configuration_error = retrieval_configuration_error
         self.llm_client = llm_client
+        self.symptom_llm_client = symptom_llm_client
+        self.followup_llm_client = followup_llm_client
         self.cancellation_token = CancellationToken()
         self.timeout_policy = get_stage_timeout_policy()
         graph = StateGraph(dict)
@@ -64,7 +73,16 @@ class SingleRAGPipeline:
         self.graph = graph.compile()
 
     def _structuring(self, state):
-        self._run_stage(AiStage.STRUCTURING, execute_structuring_stage, state["ctx"])
+        timeout_seconds = self.timeout_policy.for_stage(AiStage.STRUCTURING.value)
+        self._run_stage(
+            AiStage.STRUCTURING,
+            lambda ctx: execute_structuring_stage(
+                ctx,
+                self.symptom_llm_client,
+                timeout_seconds=min(4.0, timeout_seconds),
+            ),
+            state["ctx"],
+        )
         return state
 
     def _safety(self, state):
@@ -73,25 +91,34 @@ class SingleRAGPipeline:
 
     @staticmethod
     def _route_after_safety(state):
-        return "danger" if state["ctx"].safety_assessment.risk_level.value == "danger" else "questionnaire"
+        return (
+            "danger"
+            if state["ctx"].safety_assessment.risk_level.value == "danger"
+            else "questionnaire"
+        )
 
     def _missing_fields(self, state):
-        self._run_stage(AiStage.CHECKING_MISSING_FIELDS, execute_missing_fields_stage, state["ctx"])
+        timeout_seconds = self.timeout_policy.for_stage(
+            AiStage.CHECKING_MISSING_FIELDS.value
+        )
+        self._run_stage(
+            AiStage.CHECKING_MISSING_FIELDS,
+            lambda ctx: execute_missing_fields_stage(
+                ctx,
+                self.followup_llm_client,
+                timeout_seconds=min(4.0, timeout_seconds),
+            ),
+            state["ctx"],
+        )
         return state
 
     @staticmethod
     def _route_after_missing_fields(state):
-        ctx = state["ctx"]
-        requires_more_information = EvidenceApplicabilityGate().requires_more_information(
-            symptom_type=(
-                ctx.structured_symptom.symptom_type
-                if ctx.structured_symptom is not None
-                else None
-            ),
-            missing_field_names=(item.field_name for item in ctx.missing_fields),
-            previous_answers=ctx.previous_answers,
+        return (
+            "questionnaire_pending"
+            if should_wait_for_customer_input(state["ctx"])
+            else "retrieval"
         )
-        return "questionnaire_pending" if requires_more_information else "retrieval"
 
     def _questionnaire_pending(self, state):
         self._run_stage(

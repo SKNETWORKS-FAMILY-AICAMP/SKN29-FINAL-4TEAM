@@ -1,0 +1,19 @@
+CANDIDATE_CODE_IDENTITY_PASS
+AI_READONLY_RUNTIME_PREFLIGHT_PASS
+pgvector=0.8.2
+view_select=ONLY_APPROVED_VIEW
+view_rows=53
+complete_lineage=53
+vector_dimensions=1024
+base_table_access=DENIED
+transaction=READ_ONLY
+{"status": "PASS", "gate_scope": "JAC104_RETRIEVAL_ONLY", "runtime_profile": "jac104_v2_recovery", "activation_scope": "JAC104_ONLY_RECOVERY", "python_version": "3.13.13", "index_version": "2.0.0", "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304", "index_row_count": 53, "model_row_counts": {"WPUIAC425SNW": 19, "WPUIAC606SNW": 19, "WPUJAC104DWH": 15}, "approved_model_codes": ["WPUJAC104DWH"], "approved_model_row_count": 15, "retrieval_probes": [{"probe_id": "COLD_TEMPERATURE", "hit_count": 5, "expected_evidence_hit": true, "chunk_ids": ["CHILD-WPUJAC104DWH-P037-COLD-FAULT-001", "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001", "CHILD-WPUJAC104DWH-P037-NOISE-001", "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001", "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"]}, {"probe_id": "LOW_FLOW", "hit_count": 5, "expected_evidence_hit": true, "chunk_ids": ["CHILD-WPUJAC104DWH-P007-LEAK-001", "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001", "CHILD-WPUJAC104DWH-P037-NO-WATER-001", "CHILD-WPUJAC104DWH-P037-NOISE-001", "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"]}, {"probe_id": "TASTE_ODOR", "hit_count": 5, "expected_evidence_hit": true, "chunk_ids": ["CHILD-WPUJAC104DWH-P005-LEAK-001", "CHILD-WPUJAC104DWH-P007-LEAK-001", "CHILD-WPUJAC104DWH-P037-NO-WATER-001", "CHILD-WPUJAC104DWH-P037-NOISE-001", "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"]}], "blocked_product_count": 2, "guidance_provider_calls": 0, "backend_writes": 0, "schema_ddl_executed": false, "three_model_public_activation": "HOLD", "operation_activation": "HOLD_PENDING_QA_AND_RELEASE_APPROVAL"}
+AI_READONLY_RUNTIME_PREFLIGHT_PASS
+pgvector=0.8.2
+view_select=ONLY_APPROVED_VIEW
+view_rows=53
+complete_lineage=53
+vector_dimensions=1024
+base_table_access=DENIED
+transaction=READ_ONLY
+JAC104_RUN_STATUS identity=0 preflight_before=0 gate=0 preflight_after=0

@@ -82,7 +82,9 @@ else
   deactivate_worker
   worker_status=STOPPED_UNSUPPORTED_RELEASE
 fi
-curl --fail --silent --show-error --max-time 10 http://127.0.0.1:18080/health >/dev/null
+curl --fail --silent --show-error --max-time 10 \
+  --header 'Host: waterbridge.site' \
+  http://127.0.0.1:18080/health >/dev/null
 
 current_target=""
 if [[ -L "$current_link" ]]; then

@@ -14,6 +14,7 @@ from rest_framework.test import APIClient
 from apps.accounts.models import CustomerProfile, User
 from apps.audit.models import AIRun
 from apps.consultations.models import Consultation
+from apps.evidence.models import EvidenceLink
 from apps.inquiries.models import (
     FollowUpAnswer,
     Guidance,
@@ -26,6 +27,8 @@ from apps.inquiries.services.human_review_service import HumanReviewService
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.models import TransitionHistory
+from tests.unit.evidence.test_document_chunk_model import create_chunk
+from tests.unit.evidence.test_evidence_link_model import link_values
 
 
 pytestmark = pytest.mark.django_db
@@ -713,10 +716,13 @@ def test_customer_guidance_returns_latest_safe_projection_without_evidence(
     django_assert_num_queries,
 ):
     owner = create_user(50)
+    consultant = create_user(149, role=User.Role.CONSULTANT)
     inquiry = create_inquiry(owner, 50)
     Inquiry.objects.filter(pk=inquiry.pk).update(
-        status_code=Inquiry.Status.AI_GUIDANCE,
-        state_version=3,
+        assigned_user=consultant,
+        assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+        status_code=Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
+        state_version=2,
         risk_level_code=Inquiry.RiskLevel.CAUTION,
         usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
     )
@@ -726,15 +732,47 @@ def test_customer_guidance_returns_latest_safe_projection_without_evidence(
         50,
         guidance_version=1,
         payload=guidance_payload(message="이전 안내"),
+        review_status="REJECTED",
     )
-    create_ai_guidance(
+    latest = create_ai_guidance(
         inquiry,
         51,
         guidance_version=2,
         payload=guidance_payload(),
+        review_status="PENDING",
     )
+    latest.evidence_sufficiency_code = "VERIFIED"
+    latest.save(update_fields=["evidence_sufficiency_code", "updated_at"])
+    EvidenceLink.objects.create(
+        **link_values(
+            3051,
+            inquiry=inquiry,
+            chunk=create_chunk(3051),
+            target=latest,
+            ai_run=latest.generated_by_ai_run,
+            is_verified=True,
+            verified_by=consultant,
+            verified_at=timezone.now(),
+        )
+    )
+    review = HumanReviewService.create_pending(
+        guidance=latest,
+        ai_request_id="customer-guidance-human-review-051",
+        source_inquiry_state_version=inquiry.state_version,
+    )
+    approved = authenticated_client(consultant).post(
+        f"/api/v1/inquiries/human-reviews/{review.public_id}/decision",
+        {
+            "decision": HumanReview.Decision.APPROVE,
+            "review_state_version": 1,
+        },
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="customer-guidance-human-review-051",
+        HTTP_X_CORRELATION_ID=str(uuid4()),
+    )
+    assert approved.status_code == 200
 
-    with django_assert_num_queries(4):
+    with django_assert_num_queries(6):
         response = authenticated_client(owner).get(
             f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
         )
@@ -783,7 +821,7 @@ def test_customer_guidance_uses_human_review_modified_public_copy():
     Inquiry.objects.filter(pk=inquiry.pk).update(
         assigned_user=consultant,
         assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
-        status_code=Inquiry.Status.AI_GUIDANCE,
+        status_code=Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
         state_version=3,
         risk_level_code=Inquiry.RiskLevel.CAUTION,
         usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
@@ -794,6 +832,20 @@ def test_customer_guidance_uses_human_review_modified_public_copy():
         158,
         review_status="PENDING",
         payload=guidance_payload(message="상담사 수정 전 AI 안내"),
+    )
+    draft.evidence_sufficiency_code = "VERIFIED"
+    draft.save(update_fields=["evidence_sufficiency_code", "updated_at"])
+    EvidenceLink.objects.create(
+        **link_values(
+            3158,
+            inquiry=inquiry,
+            chunk=create_chunk(3158),
+            target=draft,
+            ai_run=draft.generated_by_ai_run,
+            is_verified=True,
+            verified_by=consultant,
+            verified_at=timezone.now(),
+        )
     )
     review = HumanReviewService.create_pending(
         guidance=draft,
@@ -840,10 +892,255 @@ def test_customer_guidance_uses_human_review_modified_public_copy():
     assert "냉수 출수량을 확인해 주세요." not in str(data)
 
 
+def test_consultation_waiting_exposes_only_human_approved_caution_guidance():
+    owner = create_user(160)
+    consultant = create_user(161, role=User.Role.CONSULTANT)
+    inquiry = create_inquiry(owner, 160)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        assigned_user=consultant,
+        assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+        status_code=Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+    inquiry.refresh_from_db()
+    payload = guidance_payload(message="온수 기능 사용을 중단해 주세요.")
+    payload["safety_assessment"]["requires_consultation"] = True
+    draft = create_ai_guidance(
+        inquiry,
+        160,
+        review_status="PENDING",
+        payload=payload,
+    )
+    draft.evidence_sufficiency_code = "VERIFIED"
+    draft.save(update_fields=["evidence_sufficiency_code", "updated_at"])
+    EvidenceLink.objects.create(
+        **link_values(
+            3160,
+            inquiry=inquiry,
+            chunk=create_chunk(3160),
+            target=draft,
+            ai_run=draft.generated_by_ai_run,
+            is_verified=True,
+            verified_by=consultant,
+            verified_at=timezone.now(),
+        )
+    )
+    review = HumanReviewService.create_pending(
+        guidance=draft,
+        ai_request_id="customer-guidance-human-review-160",
+        source_inquiry_state_version=inquiry.state_version,
+    )
+
+    pending = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+    decided = authenticated_client(consultant).post(
+        f"/api/v1/inquiries/human-reviews/{review.public_id}/decision",
+        {
+            "decision": HumanReview.Decision.APPROVE,
+            "review_state_version": 1,
+        },
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="customer-guidance-human-review-160",
+        HTTP_X_CORRELATION_ID=str(uuid4()),
+    )
+    published = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert pending.status_code == 409
+    assert "온수 기능 사용을 중단해 주세요." not in str(pending.json())
+    assert decided.status_code == 200
+    assert published.status_code == 200
+    data = published.json()["data"]
+    assert data["status_code"] == Inquiry.Status.CONSULTATION_REQUIRED
+    assert data["requires_consultation"] is True
+    assert data["usage_guidance_message"] == (
+        "온수 기능 사용을 중단해 주세요."
+    )
+    assert Consultation.objects.filter(
+        inquiry=inquiry,
+        status=Consultation.Status.WAITING,
+    ).count() == 1
+
+
+def test_customer_guidance_accepts_audited_false_to_true_review_override():
+    owner = create_user(162)
+    consultant = create_user(163, role=User.Role.CONSULTANT)
+    inquiry = create_inquiry(owner, 162)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        assigned_user=consultant,
+        assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+        status_code=Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+    inquiry.refresh_from_db()
+    draft = create_ai_guidance(
+        inquiry,
+        162,
+        review_status="PENDING",
+    )
+    draft.evidence_sufficiency_code = "VERIFIED"
+    draft.save(update_fields=["evidence_sufficiency_code", "updated_at"])
+    EvidenceLink.objects.create(
+        **link_values(
+            3162,
+            inquiry=inquiry,
+            chunk=create_chunk(3162),
+            target=draft,
+            ai_run=draft.generated_by_ai_run,
+            is_verified=True,
+            verified_by=consultant,
+            verified_at=timezone.now(),
+        )
+    )
+    review = HumanReviewService.create_pending(
+        guidance=draft,
+        ai_request_id="customer-guidance-human-review-162",
+        source_inquiry_state_version=inquiry.state_version,
+    )
+
+    decided = authenticated_client(consultant).post(
+        f"/api/v1/inquiries/human-reviews/{review.public_id}/decision",
+        {
+            "decision": HumanReview.Decision.APPROVE,
+            "review_state_version": 1,
+            "consultation_disposition": (
+                HumanReview.ConsultationDisposition.REQUIRE
+            ),
+            "consultation_reason_code": (
+                HumanReview.ConsultationChangeReason.PRODUCT_FUNCTION_UNCERTAIN
+            ),
+        },
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="customer-guidance-human-review-162",
+        HTTP_X_CORRELATION_ID=str(uuid4()),
+    )
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert decided.status_code == 200
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["status_code"] == Inquiry.Status.CONSULTATION_REQUIRED
+    assert data["requires_consultation"] is True
+
+
+def test_customer_guidance_accepts_audited_non_safety_true_to_false_override():
+    owner = create_user(164)
+    consultant = create_user(165, role=User.Role.CONSULTANT)
+    inquiry = create_inquiry(owner, 164)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        assigned_user=consultant,
+        assigned_role_code=Inquiry.AssignedRole.CONSULTANT,
+        status_code=Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+    inquiry.refresh_from_db()
+    payload = guidance_payload(message="검증된 제한 사용 안내")
+    payload["safety_assessment"]["requires_consultation"] = True
+    draft = create_ai_guidance(
+        inquiry,
+        164,
+        review_status="PENDING",
+        payload=payload,
+    )
+    draft.evidence_sufficiency_code = "VERIFIED"
+    draft.save(update_fields=["evidence_sufficiency_code", "updated_at"])
+    evidence = EvidenceLink.objects.create(
+        **link_values(
+            3164,
+            inquiry=inquiry,
+            chunk=create_chunk(3164),
+            target=draft,
+            ai_run=draft.generated_by_ai_run,
+            is_verified=True,
+            verified_by=consultant,
+            verified_at=timezone.now(),
+        )
+    )
+    review = HumanReviewService.create_pending(
+        guidance=draft,
+        ai_request_id="customer-guidance-human-review-164",
+        source_inquiry_state_version=inquiry.state_version,
+    )
+    # The public decision payload cannot claim this origin. This persisted row
+    # represents the future Backend-owned Harness classification contract.
+    HumanReview.objects.filter(pk=review.pk).update(
+        consultation_origin_code=(
+            HumanReview.ConsultationOrigin.NON_SAFETY_RESOLVABLE
+        ),
+        consultation_origin_reason_code=(
+            HumanReview.ConsultationOriginReason.HARNESS_UNSUPPORTED_FUNCTION
+        ),
+    )
+    review.refresh_from_db()
+
+    decided = authenticated_client(consultant).post(
+        f"/api/v1/inquiries/human-reviews/{review.public_id}/decision",
+        {
+            "decision": HumanReview.Decision.APPROVE,
+            "review_state_version": 1,
+            "consultation_disposition": (
+                HumanReview.ConsultationDisposition.RESOLVE_NON_SAFETY
+            ),
+            "consultation_reason_code": (
+                HumanReview.ConsultationChangeReason.PRODUCT_CAPABILITY_VERIFIED
+            ),
+            "consultation_evidence_ids": [str(evidence.public_id)],
+        },
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="customer-guidance-human-review-164",
+        HTTP_X_CORRELATION_ID=str(uuid4()),
+    )
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert decided.status_code == 200
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["status_code"] == Inquiry.Status.AI_GUIDANCE
+    assert data["requires_consultation"] is False
+    assert data["usage_guidance_status"] == "PARTIAL_STOP"
+
+    review.refresh_from_db()
+    corrupted_snapshot = [
+        dict(item) for item in review.consultation_evidence_snapshot
+    ]
+    corrupted_snapshot[0]["chunk_id"] = str(uuid4())
+    HumanReview.objects.filter(pk=review.pk).update(
+        consultation_evidence_snapshot=corrupted_snapshot
+    )
+    corrupted = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+    assert corrupted.status_code == 409
+    assert "검증된 제한 사용 안내" not in str(corrupted.json())
+
+
 def test_customer_guidance_uses_latest_workflow_state_after_completion():
     owner = create_user(52)
     inquiry = create_inquiry(owner, 52)
-    create_ai_guidance(inquiry, 52)
+    payload = guidance_payload(message="완료 후에도 확인 가능한 일반 안내")
+    payload["safety_assessment"].update(
+        risk_level="general",
+        requires_consultation=False,
+    )
+    payload["usage_guidance"].update(guidance_status="NORMAL")
+    create_ai_guidance(
+        inquiry,
+        52,
+        payload=payload,
+        review_status="CONFIRMED",
+    )
     Inquiry.objects.filter(pk=inquiry.pk).update(
         status_code=Inquiry.Status.RESOLVED,
         state_version=9,
@@ -860,7 +1157,7 @@ def test_customer_guidance_uses_latest_workflow_state_after_completion():
     assert data["allowed_actions"] == []
 
 
-def test_customer_guidance_accepts_valid_no_evidence_fallback():
+def test_customer_guidance_rejects_no_evidence_without_human_approval():
     owner = create_user(56)
     inquiry = create_inquiry(owner, 56)
     payload = guidance_payload(message="공식 근거가 없어 상담이 필요합니다.")
@@ -890,15 +1187,9 @@ def test_customer_guidance_accepts_valid_no_evidence_fallback():
         f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
     )
 
-    assert response.status_code == 200
-    data = response.json()["data"]
-    assert data["requires_consultation"] is True
-    assert data["usage_guidance_status"] == "PENDING_CONSULTATION"
-    assert data["evidence"] == []
-    assert [action["code"] for action in data["allowed_actions"]] == [
-        "REQUEST_CONSULTATION",
-        "CANCEL_INQUIRY",
-    ]
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "AI_GUIDANCE_NOT_READY"
+    assert "공식 근거가 없어 상담이 필요합니다." not in str(response.json())
 
 
 def test_customer_guidance_rejects_provisional_guidance_before_state_event():
@@ -941,6 +1232,138 @@ def test_customer_guidance_never_exposes_pending_caution_draft():
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "AI_GUIDANCE_NOT_READY"
     assert "상담사 검토 전 AI 초안" not in str(response.json())
+
+
+def test_customer_guidance_rejects_confirmed_caution_without_human_approval():
+    owner = create_user(257)
+    inquiry = create_inquiry(owner, 257)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+    create_ai_guidance(
+        inquiry,
+        257,
+        payload=guidance_payload(message="사람이 승인하지 않은 주의 안내"),
+        review_status="CONFIRMED",
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "AI_GUIDANCE_NOT_READY"
+    assert "사람이 승인하지 않은 주의 안내" not in str(response.json())
+
+
+def test_customer_guidance_rejects_bare_approved_caution_without_review_ledger():
+    owner = create_user(357)
+    verifier = create_user(358, role=User.Role.OPERATOR)
+    inquiry = create_inquiry(owner, 357)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+    guidance = create_ai_guidance(
+        inquiry,
+        357,
+        payload=guidance_payload(message="원장 없는 승인 문자열 안내"),
+        review_status="APPROVED",
+    )
+    guidance.evidence_sufficiency_code = "VERIFIED"
+    guidance.save(update_fields=["evidence_sufficiency_code", "updated_at"])
+    EvidenceLink.objects.create(
+        **link_values(
+            3357,
+            inquiry=inquiry,
+            chunk=create_chunk(3357),
+            target=guidance,
+            ai_run=guidance.generated_by_ai_run,
+            is_verified=True,
+            verified_by=verifier,
+            verified_at=timezone.now(),
+        )
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "AI_GUIDANCE_NOT_READY"
+    assert "원장 없는 승인 문자열 안내" not in str(response.json())
+
+
+def test_customer_guidance_does_not_fall_back_to_older_approved_version():
+    owner = create_user(258)
+    inquiry = create_inquiry(owner, 258)
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.CAUTION,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.PARTIAL_STOP,
+    )
+    create_ai_guidance(
+        inquiry,
+        258,
+        guidance_version=1,
+        payload=guidance_payload(message="폐기되어야 할 이전 승인 안내"),
+        review_status="APPROVED",
+    )
+    create_ai_guidance(
+        inquiry,
+        259,
+        guidance_version=2,
+        payload=guidance_payload(message="상담사 검토 중인 최신 안내"),
+        review_status="PENDING",
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert response.status_code == 409
+    serialized = str(response.json())
+    assert "폐기되어야 할 이전 승인 안내" not in serialized
+    assert "상담사 검토 중인 최신 안내" not in serialized
+
+
+def test_customer_guidance_keeps_confirmed_general_auto_publication():
+    owner = create_user(260)
+    inquiry = create_inquiry(owner, 260)
+    payload = guidance_payload(message="검증된 일반 안내")
+    payload["safety_assessment"].update(
+        risk_level="general",
+        requires_consultation=False,
+    )
+    payload["usage_guidance"].update(guidance_status="NORMAL")
+    Inquiry.objects.filter(pk=inquiry.pk).update(
+        status_code=Inquiry.Status.AI_GUIDANCE,
+        state_version=3,
+        risk_level_code=Inquiry.RiskLevel.GENERAL,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.NORMAL,
+    )
+    create_ai_guidance(
+        inquiry,
+        260,
+        payload=payload,
+        review_status="CONFIRMED",
+    )
+
+    response = authenticated_client(owner).get(
+        f"/api/v1/me/inquiries/{inquiry.public_id}/guidance"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["risk_level"] == "general"
+    assert response.json()["data"]["usage_guidance_message"] == (
+        "검증된 일반 안내"
+    )
 
 
 def test_customer_guidance_rejects_evidence_verification_fallback():
@@ -1495,6 +1918,8 @@ def test_customer_reads_are_side_effect_free():
     Inquiry.objects.filter(pk=inquiry.pk).update(
         status_code=Inquiry.Status.AI_GUIDANCE,
         state_version=3,
+        risk_level_code=Inquiry.RiskLevel.GENERAL,
+        usage_guidance_status=Inquiry.UsageGuidanceStatus.NORMAL,
     )
     inquiry.refresh_from_db()
     InquiryQA.objects.create(
@@ -1504,7 +1929,18 @@ def test_customer_reads_are_side_effect_free():
         question_text="읽기 전용 확인 질문",
         asked_by_type_code="RULE",
     )
-    guidance = create_ai_guidance(inquiry, 140)
+    payload = guidance_payload(message="읽기 전용 일반 안내")
+    payload["safety_assessment"].update(
+        risk_level="general",
+        requires_consultation=False,
+    )
+    payload["usage_guidance"].update(guidance_status="NORMAL")
+    guidance = create_ai_guidance(
+        inquiry,
+        140,
+        payload=payload,
+        review_status="CONFIRMED",
+    )
     before_inquiry = Inquiry.objects.values(
         "status_code",
         "state_version",

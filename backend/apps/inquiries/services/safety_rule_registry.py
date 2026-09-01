@@ -22,9 +22,10 @@ ALLOWED_GUIDANCE_STATUSES = {
     "PENDING_CONSULTATION",
 }
 ACTIVE_REGISTRY_STATUSES = {"OWNER_BASELINE", "TEAM_APPROVED"}
-SUPPORTED_REGISTRY_VERSIONS = {"1.0.0", "1.1.0", "1.2.0"}
+SUPPORTED_REGISTRY_VERSIONS = {"1.0.0", "1.1.0", "1.2.0", "1.3.0"}
 DANGER_GUIDANCE_STATUSES = {"PARTIAL_STOP", "TOTAL_STOP"}
 ALLOWED_APPLICABILITY_POLICIES = {"RUNTIME_APPROVED_PRODUCTS"}
+ALLOWED_NEXT_ACTION_MERGE_POLICIES = {"EXCLUSIVE"}
 
 
 class SafetyRuleRegistryError(RuntimeError):
@@ -98,6 +99,21 @@ def load_safety_rule_registry() -> dict[str, dict[str, Any]]:
         ):
             raise SafetyRuleRegistryError(
                 f"{rule_id}: the applicability policy is invalid."
+            )
+        next_action_merge_policy = rule.get("next_action_merge_policy")
+        if next_action_merge_policy is not None and (
+            next_action_merge_policy not in ALLOWED_NEXT_ACTION_MERGE_POLICIES
+        ):
+            raise SafetyRuleRegistryError(
+                f"{rule_id}: the next-action merge policy is invalid."
+            )
+        if next_action_merge_policy == "EXCLUSIVE" and (
+            default_status != "TOTAL_STOP"
+            or not _is_non_empty_string_list(rule.get("restricted_functions"))
+            or not _is_non_empty_string_list(rule.get("next_actions"))
+        ):
+            raise SafetyRuleRegistryError(
+                f"{rule_id}: exclusive actions require exact total-stop guidance."
             )
         if rule_id == "SAFETY-HOT-WATER-HEATER-001" and (
             applicability_policy != "RUNTIME_APPROVED_PRODUCTS"
@@ -176,6 +192,24 @@ def danger_assessment_validation_errors(
         return [
             "danger guidance is not allowed by every matched Safety Rule"
         ]
+
+    exclusive_rules = [
+        rule
+        for rule in matched_rules
+        if rule.get("next_action_merge_policy") == "EXCLUSIVE"
+    ]
+    if exclusive_rules and require_guidance_details:
+        expected_actions = list(
+            dict.fromkeys(
+                action
+                for rule in exclusive_rules
+                for action in rule.get("next_actions", [])
+            )
+        )
+        if guidance.get("next_actions") != expected_actions:
+            return [
+                "danger next_actions differ from the exclusive approved rule"
+            ]
 
     if expected_status == "PARTIAL_STOP" and require_guidance_details:
         if len(matched_rules) != 1:

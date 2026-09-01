@@ -1,0 +1,463 @@
+{
+  "schema": "JAC104_V2_EC2_DIRECT_GATE_EVIDENCE_V1",
+  "date": "2026-08-31",
+  "owner": "이동윤 / AI·RAG",
+  "scope": "EC2 one-off containers, actual RDS readonly Direct retrieval only",
+  "latest_health_observed_at_utc": "2026-08-31T07:47:21Z",
+  "outcome": {
+    "step_1": "PASS",
+    "step_2": "PASS",
+    "step_3": "PASS",
+    "step_4": "HOLD",
+    "step_5": "NOT_RUN",
+    "step_6": "NOT_COMPLETE",
+    "full_recovery": "HOLD",
+    "provider_canary": "HOLD",
+    "three_model_public_activation": "HOLD"
+  },
+  "source_workspace": {
+    "branch": "dongyoon",
+    "head": "c6036fe413ed94aa8ef2dd621941eea5e5d4f68d",
+    "status": "Untracked task evidence documents; production source unchanged by this task",
+    "python_version": "3.13.13"
+  },
+  "source_identity": {
+    "original_candidate_sha": "c6036fe413ed94aa8ef2dd621941eea5e5d4f68d",
+    "new_production_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+    "git_diff_paths": [
+      "ai",
+      "scripts/deployment/production/validate_ai_readonly_runtime.py"
+    ],
+    "git_diff_exit_code": 0,
+    "hashes_checked_in_each_image": {
+      "ai/scripts/verify_jac104_v2_recovery.py": "cc62f6cb6ec6dcea99a4fdec7e33af6acea8fa2bd3f1275419bb0bc48f1826ab",
+      "ai/app/retrieval/runtime_profile.py": "da2e89df19396162f5cc390892cdc7c73bc0fa907a8de2811b5d00d3cdcc49f3",
+      "ai/app/retrieval/verification/index_readiness.py": "18fefb9ff62057d90391f6fc4af1c525fd760ea74243a57373aba17f79148c37",
+      "scripts/deployment/production/validate_ai_readonly_runtime.py": "b248c249f43dd232c4c804ab188344f1e308a247cd5c5338701c1d13ebedc316"
+    },
+    "oci_revision_label": "Not available on original candidate; not used as source evidence",
+    "limitations": "Four executed source files were hash-checked inside each image. This is not a full image-to-Git reproducible-build attestation."
+  },
+  "capacity": {
+    "before_this_request": {
+      "filesystem_size_human": "77G",
+      "used_human": "75G",
+      "available_human": "1.8G",
+      "used_percent": 98
+    },
+    "resume_observed_at_utc": "2026-08-31T07:21:17Z",
+    "resume": {
+      "filesystem_size_human": "77G",
+      "used_human": "20G",
+      "available_human": "57G",
+      "used_percent": 27
+    },
+    "final": {
+      "filesystem_size_human": "77G",
+      "used_human": "22G",
+      "available_human": "56G",
+      "used_percent": 28
+    },
+    "old_image_cleanup_performed_by_this_task": false
+  },
+  "isolation": {
+    "platform": "linux/amd64",
+    "user": "waterbridge",
+    "memory_bytes": 4294967296,
+    "memory_swap_bytes": 4294967296,
+    "nano_cpus": 1000000000,
+    "pids_limit": 256,
+    "read_only_rootfs": true,
+    "no_new_privileges": true,
+    "cap_drop": [
+      "ALL"
+    ],
+    "network": "bridge",
+    "read_only_mounts": [
+      "/home/waterbridge/.cache",
+      "/run/secrets/rds-ca.pem",
+      "/gate/readonly_preflight.py"
+    ],
+    "tmpfs": {
+      "path": "/tmp",
+      "size": "256m"
+    },
+    "protected_environment_source": "existing EC2 /etc/waterbridge/ai.env (values not exported)",
+    "overrides": {
+      "AI_RAG_RUNTIME_PROFILE": "jac104_v2_recovery",
+      "AI_RETRIEVAL_TRANSPORT": "direct",
+      "AI_HANDOFF_BACKEND_ENABLED": "false",
+      "AI_OTEL_ENABLED": "false",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "PYTHONOPTIMIZE": "0"
+    },
+    "provider_api_key_cleared": true,
+    "handoff_token_cleared": true,
+    "model_cache_downloads": false,
+    "operational_env_file_modified": false,
+    "full_multi_agent_pipeline_executed": false
+  },
+  "execution_sequence": [
+    "candidate source SHA-256 and Python 3.13.13 verification",
+    "python -B /gate/readonly_preflight.py",
+    "python -B -m ai.scripts.verify_jac104_v2_recovery",
+    "python -B /gate/readonly_preflight.py"
+  ],
+  "runs": [
+    {
+      "run_id": "c6036fe4-20260831-r1",
+      "role": "original_requested_candidate",
+      "release_sha": "c6036fe413ed94aa8ef2dd621941eea5e5d4f68d",
+      "release_tag": "v0.3.6",
+      "release_tag_basis": "Previously verified candidate CI build metadata",
+      "image_id": "sha256:ba889b787808cb72efc564d6688cb05ef7278778d5743e7df4fce8ec5d243976",
+      "platform_manifest_digest": "sha256:2721463c007099c8f02d6f780a78fc69e1a4c3b6606e018b701ed3d34aa5f62a",
+      "container_name": "waterbridge-jac104-gate-c6036fe4-20260831-r1",
+      "container_id": "1792deb03af5b02118c07eded3049786591c1dc93a71758e8aaadfe59c39b478",
+      "started_at_utc": "2026-08-31T07:28:38.469476325Z",
+      "finished_at_utc": "2026-08-31T07:29:01.925521309Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "code_identity_check": "PASS",
+      "preflight": {
+        "before": {
+          "status": "PASS",
+          "exit_code": 0
+        },
+        "after": {
+          "status": "PASS",
+          "exit_code": 0
+        },
+        "postgresql_version": "16.14",
+        "pgvector_version": "0.8.2",
+        "view": "backend_ai_rag_chunks_v1",
+        "view_rows": 53,
+        "distinct_chunk_ids": 53,
+        "complete_lineage": 53,
+        "vector_dimensions": 1024,
+        "model_rows": {
+          "WPUJAC104DWH": 15,
+          "WPUIAC425SNW": 19,
+          "WPUIAC606SNW": 19
+        },
+        "default_transaction_read_only": "on",
+        "approved_view_select": true,
+        "approved_view_write": false,
+        "base_table_access": false,
+        "public_schema_create": false
+      },
+      "gate_result": {
+        "status": "PASS",
+        "gate_scope": "JAC104_RETRIEVAL_ONLY",
+        "runtime_profile": "jac104_v2_recovery",
+        "activation_scope": "JAC104_ONLY_RECOVERY",
+        "python_version": "3.13.13",
+        "index_version": "2.0.0",
+        "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+        "index_row_count": 53,
+        "model_row_counts": {
+          "WPUIAC425SNW": 19,
+          "WPUIAC606SNW": 19,
+          "WPUJAC104DWH": 15
+        },
+        "approved_model_codes": [
+          "WPUJAC104DWH"
+        ],
+        "approved_model_row_count": 15,
+        "retrieval_probes": [
+          {
+            "probe_id": "COLD_TEMPERATURE",
+            "hit_count": 5,
+            "expected_evidence_hit": true,
+            "chunk_ids": [
+              "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001",
+              "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+              "CHILD-WPUJAC104DWH-P037-NOISE-001",
+              "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001",
+              "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+            ]
+          },
+          {
+            "probe_id": "LOW_FLOW",
+            "hit_count": 5,
+            "expected_evidence_hit": true,
+            "chunk_ids": [
+              "CHILD-WPUJAC104DWH-P007-LEAK-001",
+              "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+              "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+              "CHILD-WPUJAC104DWH-P037-NOISE-001",
+              "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+            ]
+          },
+          {
+            "probe_id": "TASTE_ODOR",
+            "hit_count": 5,
+            "expected_evidence_hit": true,
+            "chunk_ids": [
+              "CHILD-WPUJAC104DWH-P005-LEAK-001",
+              "CHILD-WPUJAC104DWH-P007-LEAK-001",
+              "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+              "CHILD-WPUJAC104DWH-P037-NOISE-001",
+              "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+            ]
+          }
+        ],
+        "blocked_product_count": 2,
+        "guidance_provider_calls": 0,
+        "backend_writes": 0,
+        "schema_ddl_executed": false,
+        "three_model_public_activation": "HOLD",
+        "operation_activation": "HOLD_PENDING_QA_AND_RELEASE_APPROVAL"
+      },
+      "stdout_file": "20260831_JAC104_v2_c6036fe4_EC2_Direct_Gate_stdout.txt",
+      "stdout_sha256": "7d412e2489c22604115613ba67d8af2dd1088d2c9a1578eabd8591f39d43178d",
+      "preflight_mount_source_release_sha": "2fffbaeb35d6686ab36e0c4ef631e50db4197a59",
+      "preflight_mount_bytes_match_candidate": true
+    },
+    {
+      "run_id": "ce22601b-20260831-r1",
+      "role": "separately_retested_newly_observed_production_image",
+      "release_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+      "release_tag": "v0.3.8",
+      "release_tag_basis": "Local git tag --points-at; EC2 release.env supplied SHA and digest, not this tag",
+      "image_id": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+      "container_name": "waterbridge-jac104-gate-ce22601b-20260831-r1",
+      "container_id": "eec93b94f2d20734fa099f9f47f006bc43d026d430561b91f664ff907802ce6c",
+      "started_at_utc": "2026-08-31T07:39:47.704989963Z",
+      "finished_at_utc": "2026-08-31T07:40:10.340128204Z",
+      "exit_code": 0,
+      "oom_killed": false,
+      "code_identity_check": "PASS",
+      "preflight": {
+        "before": {
+          "status": "PASS",
+          "exit_code": 0
+        },
+        "after": {
+          "status": "PASS",
+          "exit_code": 0
+        },
+        "postgresql_version": "16.14",
+        "pgvector_version": "0.8.2",
+        "view": "backend_ai_rag_chunks_v1",
+        "view_rows": 53,
+        "distinct_chunk_ids": 53,
+        "complete_lineage": 53,
+        "vector_dimensions": 1024,
+        "model_rows": {
+          "WPUJAC104DWH": 15,
+          "WPUIAC425SNW": 19,
+          "WPUIAC606SNW": 19
+        },
+        "default_transaction_read_only": "on",
+        "approved_view_select": true,
+        "approved_view_write": false,
+        "base_table_access": false,
+        "public_schema_create": false
+      },
+      "gate_result": {
+        "status": "PASS",
+        "gate_scope": "JAC104_RETRIEVAL_ONLY",
+        "runtime_profile": "jac104_v2_recovery",
+        "activation_scope": "JAC104_ONLY_RECOVERY",
+        "python_version": "3.13.13",
+        "index_version": "2.0.0",
+        "chunk_set_sha256": "5B022EA8F00B22FE8CF9E386D2FFE91A1A136E2C6237ED4B64BA9EDCB181A304",
+        "index_row_count": 53,
+        "model_row_counts": {
+          "WPUIAC425SNW": 19,
+          "WPUIAC606SNW": 19,
+          "WPUJAC104DWH": 15
+        },
+        "approved_model_codes": [
+          "WPUJAC104DWH"
+        ],
+        "approved_model_row_count": 15,
+        "retrieval_probes": [
+          {
+            "probe_id": "COLD_TEMPERATURE",
+            "hit_count": 5,
+            "expected_evidence_hit": true,
+            "chunk_ids": [
+              "CHILD-WPUJAC104DWH-P037-COLD-FAULT-001",
+              "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+              "CHILD-WPUJAC104DWH-P037-NOISE-001",
+              "CHILD-WPUJAC104DWH-P039-HOT-LUKEWARM-001",
+              "CHILD-WPUJAC104DWH-P039-HOT-NO-OUTPUT-001"
+            ]
+          },
+          {
+            "probe_id": "LOW_FLOW",
+            "hit_count": 5,
+            "expected_evidence_hit": true,
+            "chunk_ids": [
+              "CHILD-WPUJAC104DWH-P007-LEAK-001",
+              "CHILD-WPUJAC104DWH-P037-COLD-NORMAL-001",
+              "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+              "CHILD-WPUJAC104DWH-P037-NOISE-001",
+              "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+            ]
+          },
+          {
+            "probe_id": "TASTE_ODOR",
+            "hit_count": 5,
+            "expected_evidence_hit": true,
+            "chunk_ids": [
+              "CHILD-WPUJAC104DWH-P005-LEAK-001",
+              "CHILD-WPUJAC104DWH-P007-LEAK-001",
+              "CHILD-WPUJAC104DWH-P037-NO-WATER-001",
+              "CHILD-WPUJAC104DWH-P037-NOISE-001",
+              "CHILD-WPUJAC104DWH-P038-TASTE-ODOR-001"
+            ]
+          }
+        ],
+        "blocked_product_count": 2,
+        "guidance_provider_calls": 0,
+        "backend_writes": 0,
+        "schema_ddl_executed": false,
+        "three_model_public_activation": "HOLD",
+        "operation_activation": "HOLD_PENDING_QA_AND_RELEASE_APPROVAL"
+      },
+      "stdout_file": "20260831_JAC104_v2_ce22601b_EC2_Direct_Gate_stdout.txt",
+      "stdout_sha256": "7d412e2489c22604115613ba67d8af2dd1088d2c9a1578eabd8591f39d43178d",
+      "preflight_mount_source_release_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+      "preflight_mount_bytes_match_candidate": true
+    }
+  ],
+  "stdout_capture": {
+    "method": "docker logs captured via existing SSM terminal as two gzip/base64 chunks per run, CRC-validated and decoded with local Python 3.13.13",
+    "local_normalization": "LF line endings",
+    "equal_stdout_hashes_explanation": "Two independent image/container executions produced identical deterministic stdout; results contain no timestamp or container ID. Docker IDs and start/finish times were captured separately."
+  },
+  "derived_retrieval_checks": {
+    "scope": "Each run's three JAC104 Top-5 probes only",
+    "cross_model_hits": 0,
+    "direct_parent_hits": 0,
+    "unverified_hits": 0,
+    "basis": "Every returned ID belongs to canonical child identity; model_code must be WPUJAC104DWH; each result passes the production _is_valid_result check. The Gate fails if these checks fail.",
+    "not_raw_cli_counter_fields": true,
+    "limitations": [
+      "Expected evidence present in Top-5, not Top-1 or perfect relevance of every returned hit",
+      "chunk_ids are sorted identifiers, not ranking order",
+      "No new 50-case QA, Provider, Backend same-inquiry persistence/replay, or production MCP call performed",
+      "Provider/write/DDL zero fields are based on this retrieval-only program and readonly permissions, not system-wide telemetry or a before/after hash of every DB table"
+    ]
+  },
+  "production_change": {
+    "deployed_by_this_task": false,
+    "baseline_release_sha": "2fffbaeb35d6686ab36e0c4ef631e50db4197a59",
+    "baseline_image_id": "sha256:811ca1c4762c4bff3eee60db488f9fd3d0fe1304c169fa118068c7a374982cda",
+    "baseline_container_id": "d7d0c2efc83e870c33d30d955575dc0edcc634d62ba824367d0d4f5b3c41c59a",
+    "observed_new_release_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+    "observed_new_image_id": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+    "observed_new_container_id": "44b24890320258070da176bd79303a9a4c99a8d15fb831352bc656fe0c037038",
+    "observed_new_container_started_at_utc": "2026-08-31T07:22:26.659052229Z",
+    "note": "An external production deployment was discovered during verification. Its image received a separate Direct Gate; the old candidate PASS was not copied across images.",
+    "ci_deployment_completion_independently_reviewed_in_this_resumed_run": false
+  },
+  "current_production": {
+    "release_sha": "ce22601bf4f21b0c11d7626fb3bd1b905464d1da",
+    "image_id": "sha256:6df3057e8f698dd613a3ed920bf9edb8ddf0d06593eacc356147dcf9053303c2",
+    "container_id": "44b24890320258070da176bd79303a9a4c99a8d15fb831352bc656fe0c037038",
+    "runtime_profile": "mvp",
+    "pipeline_runtime": "multi_agent",
+    "retrieval_transport": "mcp",
+    "handoff_backend_enabled": false,
+    "state": "running",
+    "health": "healthy",
+    "http_health_status": 200,
+    "restart_count": 0,
+    "health_scope": "Process liveness/warmup only; does not prove a JAC104 MCP search",
+    "jac104_production_activation": false
+  },
+  "six_step_review": [
+    {
+      "step": 1,
+      "status": "PASS",
+      "basis": "Previous EC2 canonical metadata audit plus actual readonly identity checks and preflights repeated in both images"
+    },
+    {
+      "step": 2,
+      "status": "PASS",
+      "basis": "Both original c6036fe4 candidate and newly observed ce22601b image executed the Provider-free Direct Gate, exit 0"
+    },
+    {
+      "step": 3,
+      "status": "PASS",
+      "basis": "Each run: COLD_TEMPERATURE, LOW_FLOW, TASTE_ODOR expected evidence in Top-5; IAC425 and IAC606 policy-blocked"
+    },
+    {
+      "step": 4,
+      "status": "HOLD",
+      "basis": "Disk space restored and new production image observed running; explicit JAC104 15-child Data acceptance, PM target/profile approval and deployment-owner closeout not received"
+    },
+    {
+      "step": 5,
+      "status": "NOT_RUN",
+      "basis": "Actual production is still mvp. Approved jac104_v2_recovery production activation and actual MCP retrieval verification remain pending"
+    },
+    {
+      "step": 6,
+      "status": "NOT_COMPLETE",
+      "basis": "Current release/image/profile/health evidence captured, but final approved JAC104 profile and successful production MCP evidence do not exist"
+    }
+  ],
+  "required_followups": [
+    {
+      "order": 1,
+      "owner": "김은진 / Data·QA",
+      "request": "Review JAC104 15 official child evidence and three symptom Top-5 results, acknowledge Data PASS or list failures against the attached image and dataset identities"
+    },
+    {
+      "order": 2,
+      "owner": "윤승혁 / PM, 배포 담당",
+      "request": "Confirm final target SHA/digest (currently ce22601b / image 6df3057e...) and explicitly approve jac104_v2_recovery JAC104-only production activation or hold"
+    },
+    {
+      "order": 3,
+      "owner": "배포 담당",
+      "request": "After approval, finalize deployment incident closeout and apply only the approved production image/profile; protect rollback identity"
+    },
+    {
+      "order": 4,
+      "owner": "이동윤 / AI·RAG, 양정현 / MCP",
+      "request": "After the approved production profile is active, validate actual MCP retrieval with 3 JAC104 probes and IAC product blocks without Provider/Backend writes, then capture final identity and health"
+    },
+    {
+      "order": 5,
+      "owner": "최지용 / Backend",
+      "request": "Keep new synthetic inquiries and Provider Canary on HOLD until all six gates and final release evidence are received"
+    }
+  ],
+  "cleanup": {
+    "candidate_pull_completed": true,
+    "temporary_ecr_auth_directory_removed": true,
+    "verification_containers_removed": true,
+    "removed_container_ids": [
+      "1792deb03af5b02118c07eded3049786591c1dc93a71758e8aaadfe59c39b478",
+      "eec93b94f2d20734fa099f9f47f006bc43d026d430561b91f664ff907802ce6c"
+    ],
+    "container_state_before_removal": "Both exited with code 0, OOM=false; exact name/image/ID checked",
+    "forced_removal": false,
+    "images_removed": false,
+    "volumes_removed": false,
+    "production_containers_removed": false,
+    "stdout_and_identity_evidence_preserved": true,
+    "recovery_note": "Only the two disposable verification containers were removed after stdout capture; image and model cache remain available for a new run."
+  },
+  "approval_or_operations_not_performed": [
+    "Data owner signoff",
+    "PM release/profile approval",
+    "Production deployment or restart by this task",
+    "Production env modification",
+    "Provider Canary or new backend inquiries",
+    "DB writes, DDL, migration, importer changes",
+    "External handoff message transmission",
+    "Git commit or push"
+  ],
+  "historical_evidence": [
+    "20260831_JAC104_v2_6단계_재점검_실행증거.json",
+    "20260831_JAC104_v2_6단계_재점검_정정.md"
+  ]
+}

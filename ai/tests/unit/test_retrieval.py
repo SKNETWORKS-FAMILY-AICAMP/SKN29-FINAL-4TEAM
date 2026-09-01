@@ -256,13 +256,17 @@ def test_taste_or_odor_conditional_evidence_is_removed_when_not_applicable():
         EvidenceApplicability.ABSENCE_OVER_10_DAYS,
         EvidenceApplicability.LONG_UNUSED,
         EvidenceApplicability.UNSUITABLE_INSTALLATION,
-        EvidenceApplicability.UNKNOWN,
     ):
         assert gate.filter_chunks(
             [taste_chunk],
             symptom_type="물맛/냄새 이상",
             applicability=consultation_context,
-        ) == []
+        ) == [taste_chunk]
+    assert gate.filter_chunks(
+        [taste_chunk],
+        symptom_type="물맛/냄새 이상",
+        applicability=EvidenceApplicability.UNKNOWN,
+    ) == []
 
 
 def test_index_manifest_save_and_load(tmp_path):

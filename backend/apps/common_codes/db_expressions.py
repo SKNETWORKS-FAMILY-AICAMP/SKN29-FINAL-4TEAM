@@ -35,3 +35,35 @@ class IsJSONObject(models.Func):
             template="JSON_TYPE(%(expressions)s) = 'object'",
             **extra_context,
         )
+
+
+class IsJSONArray(models.Func):
+    """Check that the top-level JSON value is an array on supported DBs."""
+
+    output_field = models.BooleanField()
+
+    def as_postgresql(
+        self,
+        compiler,
+        connection,
+        **extra_context,
+    ):
+        return super().as_sql(
+            compiler,
+            connection,
+            template="jsonb_typeof(%(expressions)s) = 'array'",
+            **extra_context,
+        )
+
+    def as_sqlite(
+        self,
+        compiler,
+        connection,
+        **extra_context,
+    ):
+        return super().as_sql(
+            compiler,
+            connection,
+            template="JSON_TYPE(%(expressions)s) = 'array'",
+            **extra_context,
+        )

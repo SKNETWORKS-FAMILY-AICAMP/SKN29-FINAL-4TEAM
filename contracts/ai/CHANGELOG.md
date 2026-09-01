@@ -1,5 +1,20 @@
 # AI Contract Changelog
 
+## Internal Analysis + Consultation Cause Envelope 1.0.0 - 2026-09-01
+
+- 공개 `SymptomAnalysisResponse 4.0.0`을 변경하지 않고 중첩하는
+  `internal/AnalysisConsultationEnvelope.schema.json` 추가
+- 결정적 AI/Harness 원인 코드, 잠금 분류, Safety Rule, 검증 Evidence와
+  실행·결과 Hash를 보존하는 `ConsultationCauseLedger` 1.0.0 추가
+- 기존 `POST /api/v1/ai/analyze` 경로를 유지하고 별도 Ledger Endpoint를
+  만들지 않는 전송 정책 확정
+- 동일 식별자·결과 Hash 검증 후 분석·Ledger·초기 HumanReview를 Backend가
+  한 Transaction에서 저장하도록 원자성 경계 고정
+- Safety/Fail-closed/Unknown 잠금 유지, `NON_SAFETY_RESOLVABLE`만 검증
+  Evidence로 해소 제안 가능, 평가 전용 `REF-*` Runtime 사용 금지
+- AI와 Backend의 Envelope 소비 경로가 함께 준비되기 전까지 기존 4.0.0 응답과
+  RDS/Public Runtime 활성 상태를 변경하지 않음
+
 ## Consultation Handoff 2.0.0 v1 compatibility correction - 2026-08-27
 
 - Contract Freeze 전 검수에서 발견된 v1 호환성 축소를 수정하고, v1과 v2를

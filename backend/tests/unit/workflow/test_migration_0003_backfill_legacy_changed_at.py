@@ -20,7 +20,7 @@ from apps.workflow.models import TransitionHistory
 pytestmark = pytest.mark.django_db
 INQUIRY_LATEST = (
     "inquiries",
-    "0015_humanreview",
+    "0016_humanreview_consultation_policy",
 )
 LATEST_SCHEMA = [
     ("workflow", "0005_status_history_contract_names_indexes"),

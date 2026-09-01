@@ -45,6 +45,12 @@ class FollowUpQuestionsViewModel(
     val state: StateFlow<FollowUpUiState> =
         _state.asStateFlow()
 
+    private val _refreshing =
+        MutableStateFlow(false)
+
+    val refreshing: StateFlow<Boolean> =
+        _refreshing.asStateFlow()
+
     private val _authExpired =
         MutableStateFlow(false)
 
@@ -116,7 +122,15 @@ class FollowUpQuestionsViewModel(
         }
     }
 
-    fun refreshSilently() {
+    fun refresh() {
+        refreshSilently(
+            showIndicator = true
+        )
+    }
+
+    fun refreshSilently(
+        showIndicator: Boolean = false,
+    ) {
         if (silentRefreshInProgress) {
             return
         }
@@ -129,6 +143,10 @@ class FollowUpQuestionsViewModel(
                 ?: restoreDrafts()
 
         silentRefreshInProgress = true
+
+        if (showIndicator) {
+            _refreshing.value = true
+        }
 
         viewModelScope.launch {
             try {
@@ -155,6 +173,10 @@ class FollowUpQuestionsViewModel(
                     }
                 }
             } finally {
+                if (showIndicator) {
+                    _refreshing.value = false
+                }
+
                 silentRefreshInProgress =
                     false
             }

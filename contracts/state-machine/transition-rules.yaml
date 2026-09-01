@@ -227,6 +227,64 @@ transitions:
   - STORE_VALIDATED_GUIDANCE
   - STORE_VALIDATED_EVIDENCE_REFERENCES
   description: 공식 근거와 안전 검증을 통과한 안내를 고객에게 제공한다.
+- id: TR-INQ-040
+  event: HUMAN_REVIEW_GUIDANCE_APPROVED
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: AI_GUIDANCE
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-HUMAN-REVIEW-GUIDANCE-APPROVED
+  effects:
+  - STORE_HUMAN_APPROVED_GUIDANCE
+  - STORE_VALIDATED_EVIDENCE_REFERENCES
+  - SET_EFFECTIVE_REQUIRES_CONSULTATION_FALSE
+  description: HumanReview 승인·수정 결과가 상담 불필요이면 승인 Guidance를 고객 안내 상태로 전환한다.
+- id: TR-INQ-041
+  event: HUMAN_REVIEW_CONSULTATION_REQUIRED
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-HUMAN-REVIEW-CONSULTATION-REQUIRED
+  effects:
+  - STORE_HUMAN_APPROVED_GUIDANCE
+  - STORE_VALIDATED_EVIDENCE_REFERENCES
+  - SET_EFFECTIVE_REQUIRES_CONSULTATION_TRUE
+  - UPSERT_CONSULTATION_REQUEST
+  description: HumanReview 승인·수정 결과가 상담 필요이면 승인 안전 안내를 보존하고 상담 대기로 전환한다.
+- id: TR-INQ-042
+  event: HUMAN_REVIEW_REJECTED
+  from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS
+  to_inquiry_state: CONSULTATION_REQUIRED
+  visit:
+    mode: REQUIRE_ABSENT
+  history:
+    record_inquiry_state_history: true
+    record_visit_state_history: false
+    record_business_event: true
+  guard_refs:
+  - G-ACTOR-SYSTEM
+  - G-STATE-VERSION
+  - G-HUMAN-REVIEW-REJECTED
+  effects:
+  - HIDE_REJECTED_GUIDANCE
+  - SET_EFFECTIVE_REQUIRES_CONSULTATION_TRUE
+  - UPSERT_CONSULTATION_REQUEST
+  description: HumanReview 거절 결과를 고객에게 숨기고 상담 대기로 전환한다.
 - id: TR-INQ-009
   event: DANGER_DETECTED
   from_inquiry_state: QUESTIONNAIRE_IN_PROGRESS

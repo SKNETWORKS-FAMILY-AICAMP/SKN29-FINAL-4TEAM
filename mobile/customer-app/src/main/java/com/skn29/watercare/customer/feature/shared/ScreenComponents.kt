@@ -431,7 +431,10 @@ fun WorkflowActionButton(
 ) {
     when (action.normalizedCode) {
         InquiryActionLabels.REQUEST_CONSULTATION -> LiquidGlassButton(
-            text = action.displayLabel,
+            // 상담 가능 여부는 Backend allowed_actions을 따르지만
+            // 고객에게 보여주는 문구는 실제 행동을
+            // 쉽게 이해할 수 있도록 Mobile UX 용어로 표시한다.
+            text = "상담사 연결 요청하기",
             onClick = onClick,
             enabled = enabled,
             accent = true,
@@ -441,7 +444,10 @@ fun WorkflowActionButton(
         )
 
         InquiryActionLabels.CANCEL_INQUIRY -> LiquidGlassButton(
-            text = action.displayLabel,
+            // 취소 가능 여부도 Backend allowed_actions이 최종 기준이다.
+            // "취소"만 표시하면 무엇을 취소하는지 애매할 수 있어
+            // 현재 문의 전체를 취소한다는 의미를 명확하게 보여준다.
+            text = "현재 문의 취소하기",
             onClick = onClick,
             enabled = enabled,
             accent = false,

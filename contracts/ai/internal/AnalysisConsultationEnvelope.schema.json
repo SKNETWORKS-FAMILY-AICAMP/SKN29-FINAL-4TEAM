@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "AnalysisConsultationEnvelope.schema.json",
+  "x-contract-version": "1.0.0",
+  "title": "AnalysisConsultationEnvelope",
+  "description": "POST /api/v1/ai/analyze 내부 응답용 Envelope. 공개 SymptomAnalysisResponse 4.0.0 본문은 변경하지 않고 중첩한다.",
+  "type": "object",
+  "required": ["contract_version", "analysis_result", "consultation_cause_ledger"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": { "const": "1.0.0" },
+    "analysis_result": { "$ref": "../responses/SymptomAnalysisResponse.schema.json" },
+    "consultation_cause_ledger": { "$ref": "ConsultationCauseLedger.schema.json" }
+  }
+}

@@ -95,6 +95,12 @@ jobs:
           [[ "$EC2_INSTANCE_ID" =~ ^i-[0-9a-f]{8,17}$ ]]
           [[ "$AWS_ROLE_ARN" =~ ^arn:aws:iam::${AWS_ACCOUNT_ID}:role/[A-Za-z0-9+=,.@_/-]+$ ]]
 
+      - name: Checkout trusted main caller for SSM transport helper
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          sparse-checkout: scripts/deployment/production
+
       - uses: aws-actions/configure-aws-credentials@v6.2.3
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
@@ -115,9 +121,8 @@ jobs:
           printf -v canary_command '%q %q %q %q %q' \
             "$script_path" "$CANARY_ACTION" "$RELEASE_SHA" \
             "$CANARY_INQUIRY_ID" "$CANARY_OPERATOR_IP"
-          commands_json="$(jq -cn \
-            --arg canary_command "$canary_command" \
-            '{commands:["set -euo pipefail",$canary_command]}')"
+          commands_json="$(python3 scripts/deployment/production/build_ssm_bash_parameters.py \
+            "$canary_command")"
           command_id="$(aws ssm send-command \
             --region "$AWS_REGION" \
             --instance-ids "$EC2_INSTANCE_ID" \
@@ -322,6 +327,8 @@ jobs:
         run: >-
           python -B -m unittest
           tests.deployment.test_production_deployment_assets
+          tests.deployment.test_release_image_maintenance
+          tests.deployment.test_ssm_bash_parameters
           tests.deployment.test_backend_email_auth_secret_sync
           tests.deployment.test_github_oidc_trust
           tests.deployment.test_backend_ci_workflow
@@ -659,6 +666,7 @@ jobs:
           cp infra/systemd/waterbridge-p1-auth-email-worker.service \
             "$release_root/infra/systemd/"
           cp scripts/deployment/production/deploy-release.sh \
+            scripts/deployment/production/maintain_release_images.py \
             scripts/deployment/production/rollback-release.sh \
             scripts/deployment/production/manage-ai-handoff-canary.sh \
             scripts/deployment/production/prepare_ai_handoff_nginx.py \
@@ -728,19 +736,10 @@ jobs:
             "$deploy_target" "$RELEASE_SHA" "$STORAGE_BUCKET" "$AWS_REGION" \
             "/etc/waterbridge/backend.env" "/etc/waterbridge/ai.env" \
             "/etc/waterbridge/certs/rds-ca.pem" "$BACKEND_EMAIL_AUTH_SECRET_ID"
-          commands_json="$(jq -cn \
-            --arg canary_guard "if [[ -f /opt/waterbridge/shared/ai-handoff-canary.state ]]; then echo 'DEPLOYMENT_BLOCKED: active AI Handoff Canary window' >&2; exit 1; fi" \
-            --arg copy_command "$copy_command" \
-            --arg chmod_command "$chmod_command" \
-            --arg deploy_command "$deploy_command" \
-            '{commands:[
-              "set -euo pipefail",
-              "install -d -m 0750 /opt/waterbridge/shared",
-              $canary_guard,
-              $copy_command,
-              $chmod_command,
-              $deploy_command
-            ]}')"
+          commands_json="$(python3 scripts/deployment/production/build_ssm_bash_parameters.py \
+            "if [[ -f /opt/waterbridge/shared/ai-handoff-canary.state ]]; then echo 'DEPLOYMENT_BLOCKED: active AI Handoff Canary window' >&2; exit 1; fi" \
+            "install -d -m 0750 /opt/waterbridge/shared" \
+            "$copy_command" "$chmod_command" "$deploy_command")"
           command_id="$(aws ssm send-command \
             --instance-ids "$EC2_INSTANCE_ID" \
             --document-name AWS-RunShellScript \
@@ -806,16 +805,8 @@ jobs:
             "$rollback_source" "$rollback_target"
           printf -v chmod_command 'chmod 0750 %q' "$rollback_target"
           printf -v rollback_command '%q' "$rollback_target"
-          commands_json="$(jq -cn \
-            --arg copy_command "$copy_command" \
-            --arg chmod_command "$chmod_command" \
-            --arg rollback_command "$rollback_command" \
-            '{commands:[
-              "set -euo pipefail",
-              $copy_command,
-              $chmod_command,
-              $rollback_command
-            ]}')"
+          commands_json="$(python3 scripts/deployment/production/build_ssm_bash_parameters.py \
+            "$copy_command" "$chmod_command" "$rollback_command")"
           rollback_id="$(aws ssm send-command \
             --instance-ids "$EC2_INSTANCE_ID" \
             --document-name AWS-RunShellScript \

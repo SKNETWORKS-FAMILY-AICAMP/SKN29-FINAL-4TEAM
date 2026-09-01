@@ -7,6 +7,10 @@ from .evidence_applicability_gate import (
 )
 from .evidence_topic_filter import EvidenceTopicFilter
 from .product_filter import ProductFilter
+from .scenario_evidence_selector import (
+    ScenarioEvidenceSelector,
+    ScenarioSelectionResult,
+)
 
 __all__ = [
     "ProductFilter",
@@ -14,4 +18,6 @@ __all__ = [
     "EvidenceApplicability",
     "EvidenceApplicabilityGate",
     "EvidenceTopicFilter",
+    "ScenarioEvidenceSelector",
+    "ScenarioSelectionResult",
 ]

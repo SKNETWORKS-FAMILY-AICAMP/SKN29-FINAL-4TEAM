@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 import os
 import sys
+from pathlib import Path
 
 from ai.app.integrations.embedding.embedding_client import BgeM3EmbeddingClient
 from ai.app.integrations.vector_store.vector_store import PgVectorStore
@@ -27,6 +29,13 @@ from ai.evaluation.three_model_rag import (
     product_generation_by_model,
 )
 from ai.scripts.export_three_model_canonical_identity import IDENTITY_PATH
+from ai.scripts.verify_jac104_v2_recovery import _read_index_rows
+from ai.app.retrieval.verification.index_readiness import validate_readonly_index
+from ai.evaluation.release_evidence import (
+    execution_blockers, execution_provenance, execution_source_changed,
+    json_sha256, text_file_sha256, write_report,
+)
+from ai.evaluation.readonly_environment import read_database_versions
 
 
 EXPECTED_TABLE = "backend_ai_rag_chunks_v1"
@@ -66,7 +75,7 @@ def _load_identity_and_manifest(
     return identity, manifest
 
 
-def _verify_runtime() -> None:
+def _verify_runtime() -> dict:
     runtime_profile = resolve_rag_runtime_profile()
     if runtime_profile.name != "three_model_integration":
         raise RuntimeError(
@@ -93,10 +102,12 @@ def _verify_runtime() -> None:
         model_code: sum(chunk.model_code == model_code for chunk in chunks)
         for model_code in generations
     }
+    rows = _read_index_rows(dsn, maximum_rows=manifest.chunk_count + 1)
+    index_identity = validate_readonly_index(runtime_profile, manifest, identity, rows)
+    database_versions = read_database_versions(dsn)
     embedding = BgeM3EmbeddingClient(model_revision=model_revision)
     store = PgVectorStore(dsn, table_name=table_name)
-    if store.count(expected_ids) != len(expected_ids):
-        raise RuntimeError("The readonly View does not expose all 53 canonical Child rows")
+    embedding.warmup()
     service = VectorSearchService(
         embedding,
         store,
@@ -104,6 +115,8 @@ def _verify_runtime() -> None:
         answerability_gate=build_candidate_answerability_gate(chunks),
         product_filter=_integration_product_filter(runtime_profile),
     )
+
+    evidence_runs = []
 
     def search(query: str, exact_sales_code: str, top_k: int):
         candidates = service.search(
@@ -115,9 +128,19 @@ def _verify_runtime() -> None:
                 require_official_verified=True,
             )
         )
-        return diversify_evidence_groups(candidates, top_k=top_k)
+        selected = diversify_evidence_groups(candidates, top_k=top_k)
+        evidence_runs.append([
+            {"chunk_id": chunk.chunk_id, "evidence_group_id": chunk.evidence_group_id,
+             "source_hash": chunk.source_hash, "index_version": chunk.index_version,
+             "chunk_set_sha256": chunk.chunk_set_sha256,
+             "content_sha256": sha256(chunk.content.encode("utf-8")).hexdigest()} for chunk in selected
+        ])
+        return selected
 
     results = evaluate_three_model_cases(cases, groups, search, top_k=TOP_K)
+    for result, evidence in zip(results, evidence_runs, strict=True):
+        result["evidence"] = evidence
+        result["result_sha256"] = json_sha256(result)
     summary = {
         "case_count": len(results),
         "passed_count": sum(result["passed"] for result in results),
@@ -144,39 +167,55 @@ def _verify_runtime() -> None:
         "direct_parent_hit_count": 0,
         "unverified_evidence_hit_count": 0,
     }
-    print(
-        json.dumps(
-            {
-                "status": "PASS" if passed else "FAIL",
-                "activation_scope": "INTEGRATION_VERIFICATION_ONLY",
-                "public_runtime_activation": "HOLD",
-                **summary,
-            },
-            ensure_ascii=False,
-        )
-    )
-    if not passed:
-        raise RuntimeError("The official readonly three-model Runtime gate failed")
+    return {
+        "status": "PASS" if passed else "FAIL",
+        "activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+        "public_runtime_activation": "HOLD", "backend_writes": 0,
+        "runtime_profile": runtime_profile.name,
+        "embedding_model": manifest.model_name, "embedding_revision": model_revision,
+        "database_versions": database_versions,
+        "generation_model": None, "prompt_version": None,
+        "evaluation_file_sha256": text_file_sha256(handoff_profile.evaluation_path),
+        "index_identity": index_identity, "case_results": results, **summary,
+    }
 
 
-def main() -> int:
+def main(output_path: Path | None = None, expected_sha: str | None = None) -> int:
+    provenance = execution_provenance()
+    blockers = execution_blockers(provenance, expected_sha)
     try:
-        _verify_runtime()
+        if expected_sha and blockers:
+            raise RuntimeError("Final execution provenance requirements not met")
+        report = _verify_runtime()
+        after = execution_provenance()
+        report["end_provenance"] = after
+        report["end_final_sha_blockers"] = execution_blockers(after, expected_sha)
+        source_changed = execution_source_changed(provenance, after)
+        if source_changed or (expected_sha and report["end_final_sha_blockers"]):
+            report.update(status="HOLD", reason_code="EXECUTION_SOURCE_CHANGED")
     except Exception:
-        print(
-            json.dumps(
-                {
-                    "status": "BLOCKED",
-                    "activation_scope": "INTEGRATION_VERIFICATION_ONLY",
-                    "public_runtime_activation": "HOLD",
-                    "reason_code": "THREE_MODEL_READONLY_RUNTIME_REQUIREMENTS_NOT_MET",
-                },
-                ensure_ascii=False,
-            )
-        )
-        return 1
-    return 0
+        report = {
+            "status": "HOLD", "case_count": 50, "executed_case_count": None,
+            "activation_scope": "INTEGRATION_VERIFICATION_ONLY",
+            "public_runtime_activation": "HOLD", "backend_writes": 0,
+            "reason_code": "THREE_MODEL_READONLY_RUNTIME_REQUIREMENTS_NOT_MET",
+        }
+    report.update(provenance=provenance, final_sha_blockers=blockers)
+    report["final_sha_eligible"] = (
+        report["status"] == "PASS" and not blockers
+        and not report.get("end_final_sha_blockers", ["EXECUTION_NOT_COMPLETED"])
+    )
+    if output_path is not None:
+        write_report(output_path, report)
+    print(json.dumps({key: value for key, value in report.items()
+                      if key not in {"case_results", "provenance", "end_provenance"}}, ensure_ascii=False))
+    return 0 if report["status"] == "PASS" else 1
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--expected-sha")
+    args = parser.parse_args()
+    sys.exit(main(args.output, args.expected_sha))
