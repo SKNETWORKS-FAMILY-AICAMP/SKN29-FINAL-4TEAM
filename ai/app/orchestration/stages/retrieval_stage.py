@@ -46,6 +46,21 @@ def execute_retrieval_stage(
         require_official_verified=True
     )
 
+    if ctx.domain_relevance == "OFF_DOMAIN":
+        ctx.evidence_references = []
+        ctx.retrieval_outcome = RetrievalOutcome.NO_MATCH
+        ctx.evidence_clarification_allowed = False
+        elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+        ctx.processing_traces.append(
+            ProcessingTrace(
+                stage=AiStage.RETRIEVING,
+                status="SUCCEEDED",
+                latency_ms=round(elapsed_ms, 2),
+                retry_count=0,
+            )
+        )
+        return
+
     if search_service is None:
         raise RetrievalConfigurationError(
             "Vector Store가 설정되지 않아 검색을 시작할 수 없습니다."
@@ -61,6 +76,10 @@ def execute_retrieval_stage(
                 query,
                 cancellation_token=cancellation_token,
             )
+            ctx.retrieval_top_k_chunk_ids = [chunk.chunk_id for chunk in chunks]
+            ctx.retrieval_top_k_scores = [
+                round(chunk.similarity_score, 6) for chunk in chunks
+            ]
             chunks = [
                 chunk
                 for chunk in chunks
@@ -82,6 +101,9 @@ def execute_retrieval_stage(
                     else None
                 ),
             )
+            ctx.retrieval_post_topic_chunk_ids = [
+                chunk.chunk_id for chunk in chunks
+            ]
             applicability_gate = EvidenceApplicabilityGate()
             symptom_type = (
                 ctx.structured_symptom.symptom_type
@@ -97,6 +119,9 @@ def execute_retrieval_stage(
                 symptom_type=symptom_type,
                 applicability=ctx.evidence_applicability,
             )
+            ctx.retrieval_post_applicability_chunk_ids = [
+                chunk.chunk_id for chunk in chunks
+            ]
             selection = ScenarioEvidenceSelector().select_chunks(
                 chunks,
                 structured_symptom=ctx.structured_symptom,
@@ -104,7 +129,17 @@ def execute_retrieval_stage(
                 applicability=ctx.evidence_applicability,
             )
             chunks = list(selection.chunks)
+            ctx.retrieval_selected_chunk_ids = [chunk.chunk_id for chunk in chunks]
             ctx.evidence_selection_reasons = list(selection.reasons)
+
+            if (
+                ctx.structured_symptom is not None
+                and ctx.structured_symptom.symptom_type == "수질 이물질"
+                and not chunks
+            ):
+                # 추가 문진으로 운영 Corpus의 부재를 메울 수 없으므로 즉시
+                # 기존 NO_EVIDENCE/상담 흐름으로 보낸다.
+                ctx.evidence_clarification_allowed = False
 
             # RetrievedChunk -> EvidenceReference 변환
             evidence_list = []

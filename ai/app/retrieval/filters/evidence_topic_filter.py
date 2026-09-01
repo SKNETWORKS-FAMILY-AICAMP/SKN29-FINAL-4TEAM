@@ -28,6 +28,9 @@ class EvidenceTopicFilter:
         "출수량 저하": "symptom_low_flow",
         "물맛/냄새 이상": "symptom_taste_odor",
         "소음 이상": "symptom_noise",
+        # 공개 MVP 7청크에는 아직 이 주제의 검증 청크가 없다. 따라서
+        # 같은 P38의 LOW_FLOW 청크를 대신 사용하지 않고 NO_MATCH로 닫는다.
+        "수질 이물질": "symptom_particles",
     }
     _TEMPERATURE_TOPIC_BY_WATER_TYPE = {
         "냉수": "symptom_cold_temperature",

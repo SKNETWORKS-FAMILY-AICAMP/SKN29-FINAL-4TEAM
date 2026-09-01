@@ -26,7 +26,9 @@ def execute_synthetic_clarification_stage(
     with _TRACER.start_as_current_span(
         "waterbridge.evidence.synthetic_clarification"
     ) as span:
-        if (
+        if ctx.domain_relevance == "OFF_DOMAIN":
+            result = SyntheticScenarioSearchResult(reason="OFF_DOMAIN")
+        elif (
             ctx.safety_assessment is not None
             and ctx.safety_assessment.risk_level == RiskLevel.DANGER
         ):

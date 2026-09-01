@@ -50,6 +50,7 @@ class CustomerGuidanceGenerator:
             "물맛/냄새 이상",
             "소음 이상",
             "필터/관리 문의",
+            "수질 이물질",
             "기타 증상",
         }
     )

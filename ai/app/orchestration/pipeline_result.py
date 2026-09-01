@@ -97,6 +97,24 @@ class PipelineResult(BaseModel):
             analysis_result,
             accepted_evidence_chunk_ids=accepted_evidence_chunk_ids,
         )
+        if ctx.domain_relevance == "OFF_DOMAIN":
+            analysis_result = analysis_result.model_copy(
+                update={
+                    "usage_guidance": analysis_result.usage_guidance.model_copy(
+                        update={
+                            "message": (
+                                "입력하신 내용은 정수기 사용 중 발생한 증상으로 "
+                                "확인되지 않았어요. 정수기 사용 중 발생한 불편한 "
+                                "점을 입력해 주세요."
+                            ),
+                            "restricted_functions": ["정수기 자가조치 안내"],
+                            "next_actions": [
+                                "정수기 사용 중 발생한 증상을 다시 입력해 주세요."
+                            ],
+                        }
+                    )
+                }
+            )
         return analysis_result
 
     def _resolve_fallback_reason_code(

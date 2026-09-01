@@ -1,6 +1,6 @@
 """파이프라인 단계 간 데이터 공유 Context 모듈."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 from ..retrieval import EvidenceApplicability, RetrievalOutcome
 from ..schemas import (
@@ -24,6 +24,14 @@ class PipelineContext(BaseModel):
     model_code: str = Field("WPUJAC104DWH", description="문의 정수기 모델 코드")
     selected_symptoms: List[str] = Field(default_factory=list, description="선택된 대표 증상 목록")
     previous_answers: List[Dict[str, str]] = Field(default_factory=list, description="이전 문진 답변 목록")
+    domain_relevance: Literal["IN_DOMAIN", "OFF_DOMAIN", "UNDETERMINED"] = Field(
+        "UNDETERMINED",
+        description="제품 증상 문맥의 결정적 내부 판정",
+    )
+    domain_relevance_reason: Optional[str] = Field(
+        None,
+        description="원문을 남기지 않는 도메인 판정 사유 코드",
+    )
 
     # 중간 실행 결과
     structured_symptom: Optional[StructuredSymptom] = Field(None, description="구조화 증상")
@@ -53,6 +61,11 @@ class PipelineContext(BaseModel):
         None,
         description="PII 제거 후 구조화 문맥을 결합한 내부 검색 질의",
     )
+    retrieval_top_k_chunk_ids: List[str] = Field(default_factory=list)
+    retrieval_top_k_scores: List[float] = Field(default_factory=list)
+    retrieval_post_topic_chunk_ids: List[str] = Field(default_factory=list)
+    retrieval_post_applicability_chunk_ids: List[str] = Field(default_factory=list)
+    retrieval_selected_chunk_ids: List[str] = Field(default_factory=list)
     evidence_selection_reasons: List[str] = Field(
         default_factory=list,
         description="고객 원문을 제외한 scenario 근거 선택 내부 trace",

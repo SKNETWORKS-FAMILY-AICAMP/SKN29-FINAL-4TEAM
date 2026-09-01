@@ -2,7 +2,7 @@
 
 import time
 from ...schemas import AiStage, ProcessingTrace
-from ...structuring import SymptomStructurer
+from ...structuring import ProductSymptomDomainGuard, SymptomStructurer
 from ...structuring.llm_contracts import SymptomStructuringLLMClient
 from ..pipeline_context import PipelineContext
 
@@ -26,6 +26,15 @@ def execute_structuring_stage(
         timeout_seconds=timeout_seconds,
     )
     ctx.safety_signals = structurer.last_safety_signals
+    domain_decision = ProductSymptomDomainGuard().evaluate(
+        raw_symptom=ctx.raw_symptom,
+        selected_symptoms=ctx.selected_symptoms,
+        structured_symptom=ctx.structured_symptom,
+    )
+    ctx.domain_relevance = domain_decision.relevance
+    ctx.domain_relevance_reason = domain_decision.reason
+    if ctx.domain_relevance == "OFF_DOMAIN":
+        ctx.evidence_clarification_allowed = False
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000.0
     ctx.processing_traces.append(

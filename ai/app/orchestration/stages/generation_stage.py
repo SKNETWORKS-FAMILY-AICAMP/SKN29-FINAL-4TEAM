@@ -32,6 +32,18 @@ def execute_generation_stage(
         )
     )
 
+    if ctx.domain_relevance == "OFF_DOMAIN" and not has_evidence:
+        deterministic_guidance = deterministic_guidance.model_copy(
+            update={
+                "message": (
+                    "입력하신 내용은 정수기 사용 중 발생한 증상으로 확인되지 "
+                    "않았어요. 정수기 사용 중 발생한 불편한 점을 입력해 주세요."
+                ),
+                "restricted_functions": ["정수기 자가조치 안내"],
+                "next_actions": ["정수기 사용 중 발생한 증상을 다시 입력해 주세요."],
+            }
+        )
+
     if ctx.safety_assessment.risk_level.value == "danger" or not has_evidence:
         ctx.usage_guidance = deterministic_guidance
     else:
