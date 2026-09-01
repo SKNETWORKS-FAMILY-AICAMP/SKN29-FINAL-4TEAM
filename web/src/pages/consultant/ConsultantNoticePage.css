@@ -162,23 +162,24 @@
   display: grid;
   margin: 0;
   padding: 0;
-  gap: 12px;
+  gap: 6px;
   list-style: none;
 }
 
 .consultant-notice-list__item {
   display: grid;
   width: 100%;
-  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 50px;
+  grid-template-columns: 42px 72px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 24px;
-  padding: 19px 22px;
+  gap: 14px;
+  padding: 9px 18px;
   border: 1px solid #d7e7ef;
-  border-radius: 14px;
+  border-radius: 10px;
   background: #fff;
   color: inherit;
   cursor: pointer;
-  box-shadow: 0 7px 20px rgb(33 95 126 / 6%);
+  box-shadow: 0 4px 12px rgb(33 95 126 / 5%);
   text-align: left;
 }
 
@@ -197,86 +198,103 @@
   background: #f9fcfe;
 }
 
-.consultant-notice-list__main {
-  display: grid;
-  min-width: 0;
-  grid-template-columns: 34px 66px minmax(0, 1fr);
-  align-items: center;
-  gap: 14px;
-}
-
 .consultant-notice-list__number {
-  display: inline-flex;
-  width: 30px;
-  height: 30px;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #c8cdd4;
-  border-radius: 6px;
-  background: #f1f2f4;
+  display: block;
+  min-width: 0;
+  border: 0;
+  background: transparent;
   color: #424b59;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
 }
 
-.consultant-notice-list__main em {
+.consultant-notice-list__category {
   display: inline-flex;
-  min-height: 30px;
+  min-height: 26px;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px;
-  border-radius: 7px;
+  justify-self: start;
+  padding: 4px 9px;
+  border-radius: 6px;
   background: #e8f5fb;
   color: #197ba5;
   font-size: 12px;
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.consultant-notice-list__main em[data-category="긴급"] {
+.consultant-notice-list__category[data-category="긴급"] {
   background: #fff0f0;
   color: #d33f49;
 }
 
-.consultant-notice-list__main em[data-category="이벤트"] {
+.consultant-notice-list__category[data-category="이벤트"] {
   background: #fff5e7;
   color: #bf7417;
 }
 
-.consultant-notice-list__main em[data-category="시스템"] {
+.consultant-notice-list__category[data-category="시스템"] {
   background: #ebf5ff;
   color: #2d77b5;
 }
 
-.consultant-notice-list__main em[data-category="근무"] {
+.consultant-notice-list__category[data-category="근무"] {
   background: #eef2ff;
   color: #5368bd;
 }
 
-.consultant-notice-list__main em[data-category="복지"] {
+.consultant-notice-list__category[data-category="복지"] {
   background: #edf8f2;
   color: #378760;
 }
 
-.consultant-notice-list h2 {
+.consultant-notice-list__title {
+  min-width: 0;
   margin: 0;
+  overflow: hidden;
   color: #16324c;
-  font-size: 17px;
+  font-size: 15px;
+  font-weight: 600;
   letter-spacing: -0.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.consultant-notice-list__meta {
-  display: grid;
-  min-width: 112px;
-  justify-items: end;
-  gap: 7px;
+.consultant-notice-list__byline {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-self: end;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.consultant-notice-list__department,
+.consultant-notice-list__date {
+  min-width: 0;
+  overflow: hidden;
   color: #7b8fa1;
   font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.consultant-notice-list__meta span {
+.consultant-notice-list__department {
+  max-width: 128px;
   color: #506a80;
-  font-weight: 700;
+  font-weight: 600;
+}
+
+.consultant-notice-list__date {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.consultant-notice-list__divider {
+  color: #c1c6cc;
+  font-weight: 400;
 }
 
 .consultant-notice-detail {
@@ -461,17 +479,28 @@ html body #root
   html body #root
     .consultant-notice-app.consultant-directory-app
     .consultant-notice-list__item {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-    padding: 16px;
+    grid-template-columns: 24px 48px minmax(0, 1fr) auto;
+    gap: 6px;
+    padding: 8px 10px;
   }
 
-  .consultant-notice-list__main {
-    grid-template-columns: 30px 58px minmax(0, 1fr);
-    gap: 10px;
+  .consultant-notice-list__category {
+    min-height: 24px;
+    padding: 3px 6px;
+    font-size: 11px;
   }
 
-  .consultant-notice-list__main h2 {
-    overflow-wrap: anywhere;
+  .consultant-notice-list__title,
+  .consultant-notice-list__department,
+  .consultant-notice-list__date {
+    font-size: 11px;
+  }
+
+  .consultant-notice-list__byline {
+    gap: 4px;
+  }
+
+  .consultant-notice-list__department {
+    max-width: 68px;
   }
 }
