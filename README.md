@@ -18,7 +18,7 @@
 
 > **교육용 팀 프로젝트입니다.** 실제 SK매직 운영 서비스나 공식 고객지원 채널이 아니며, 실제 개인정보 대신 공개 가능한 구조화 데이터와 합성 시나리오를 사용합니다.
 
-## 프로젝트 소개
+## 프로젝트 한눈에 보기
 
 정수기 구독 고객의 문의는 고객, 상담사, 방문기사, 운영 담당자를 거치며 같은 증상과 조치 내역이 반복 전달되기 쉽습니다. 워터브릿지는 문의 ID를 중심으로 문진, 공식 근거 기반 AI 안내, 상담·방문 인계, 처리 결과와 고객 피드백을 하나의 이력으로 연결합니다.
 
@@ -33,10 +33,6 @@
 | 제외 모델 | `WPU-IAC506` · `removed_legacy` 정책에 따라 신규 DB·RAG·화면·시연에서 사용 금지 |
 | 핵심 가치 | 안전한 자가조치 안내, 근거 기반 상담, 끊김 없는 업무 인계, 처리 결과 추적 |
 
-Backend·PostgreSQL의 상세 실행 기준은 [Backend README](backend/README.md)와
-[Django·PostgreSQL 로컬 개발환경 설치·실행·복구 가이드](docs/individual/jiyong/개발환경/Django_PostgreSQL_로컬개발환경_설치_실행_복구_가이드.md)를
-따릅니다.
-
 ### 해결하려는 문제
 
 | 문제 | 워터브릿지의 접근 |
@@ -45,6 +41,63 @@ Backend·PostgreSQL의 상세 실행 기준은 [Backend README](backend/README.m
 | 일반적인 답변이 위험 징후나 제품별 차이를 놓칠 수 있음 | 제품 검증, 위험 감지, 공식 문서 근거를 거친 AI 안내 |
 | 상담사와 방문기사 사이에 맥락이 손실됨 | 역할별 화면과 구조화된 상담·방문 인계 정보 제공 |
 | 상담·방문 종료가 실제 해결을 보장하지 않음 | `COMPLETION_PENDING`에서 고객 피드백을 확인한 뒤 최종 완료 |
+
+## 팀원 소개
+
+<table border="1" cellpadding="16" cellspacing="0" width="100%" rules="all" frame="box">
+  <tr>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/assets/readme-profiles/profile-01.png" alt="김은진 프로필" width="120" height="120"><br>
+      <strong>김은진</strong>
+      <hr>
+      <strong>데이터·QA·DevOps</strong><br>
+      <sub>데이터 Pipeline, QA, CI/CD, 배포·관측성</sub><br>
+      <a href="https://github.com/eunjin661">@eunjin661</a>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/assets/readme-profiles/profile-02.png" alt="양정현 프로필" width="120" height="120"><br>
+      <strong>양정현</strong>
+      <hr>
+      <strong>모바일 앱</strong><br>
+      <sub>고객·방문기사 Android 앱, Mobile 계약 연동</sub><br>
+      <a href="https://github.com/didwjdgus90">@didwjdgus90</a>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/assets/readme-profiles/profile-03.png" alt="최지용 프로필" width="120" height="120"><br>
+      <strong>최지용</strong>
+      <hr>
+      <strong>백엔드·DB</strong><br>
+      <sub>인증·권한, REST API, DB·Migration, 상태 전이 Runtime</sub><br>
+      <a href="https://github.com/antisdream">@antisdream</a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/assets/readme-profiles/profile-04.png" alt="한예나 프로필" width="120" height="120"><br>
+      <strong>한예나</strong>
+      <hr>
+      <strong>웹 프론트엔드</strong><br>
+      <sub>상담사·운영 웹, API Wrapper, 역할별 화면</sub><br>
+      <a href="https://github.com/hanyena0830">@hanyena0830</a>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/assets/readme-profiles/profile-05.png" alt="이동윤 프로필" width="120" height="120"><br>
+      <strong>이동윤</strong>
+      <hr>
+      <strong>AI·RAG</strong><br>
+      <sub>문진 분석, 공식 근거 검색, 생성·안전 검증, AI 평가</sub><br>
+      <a href="https://github.com/ldy-99">@ldy-99</a>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/assets/readme-profiles/profile-06.png" alt="윤승혁 프로필" width="120" height="120"><br>
+      <strong>윤승혁</strong>
+      <hr>
+      <strong>PM·기술 통합</strong><br>
+      <sub>일정·범위·우선순위, 공통 계약, 서비스 통합, 발표</sub><br>
+      <a href="https://github.com/idenist">@idenist</a>
+    </td>
+  </tr>
+</table>
 
 ## 핵심 사용자와 목표 기능
 
@@ -68,19 +121,9 @@ P0·P1은 기획 우선순위이며 Runtime 구현 완료 표시가 아닙니다
 
 ## 서비스 흐름
 
-```mermaid
-flowchart LR
-    CUSTOMER["고객<br/>증상 입력·문진"] --> SAFETY["제품·위험·근거 검증"]
-    SAFETY -->|안전한 안내 가능| AI_GUIDE["AI 셀프케어 안내<br/>공식 근거 표시"]
-    SAFETY -->|위험·근거 부족| CONSULT["상담사 인계"]
-    AI_GUIDE -->|자가 해결| DONE["처리 완료"]
-    AI_GUIDE -->|상담 요청| CONSULT
-    CONSULT -->|원격 처리| FEEDBACK["고객 해결 확인"]
-    CONSULT -->|방문 필요| VISIT["방문기사 일정·현장 조치"]
-    VISIT --> FEEDBACK
-    FEEDBACK -->|해결 확인| DONE
-    FEEDBACK -->|미해결·추가 문의| CONSULT
-```
+<p align="center">
+  <img src="docs/assets/readme-diagrams/service-flow.png" alt="WaterBridge 서비스 흐름" width="900">
+</p>
 
 AI는 안내와 구조화된 결과를 반환하지만 문의 상태를 직접 변경하지 않습니다. 모든 상태 변경은 Backend가 권한, 가드, 상태 버전과 멱등성을 확인한 뒤 기록합니다.
 상태·이벤트·가드·완료 정책의 상세 기준은 [State Machine 계약](contracts/state-machine/README.md)에서 관리합니다. 계약 승인은 개별 기능의 Runtime 구현 완료를 의미하지 않습니다.
@@ -124,15 +167,7 @@ flowchart LR
     OPS -.-> DB
 ```
 
-### 책임 경계
-
-- Web과 Mobile은 Backend REST API만 호출하며 DB와 AI 내부 API에 직접 접근하지 않습니다.
-- AI는 분석·검색·생성·검증 결과를 반환하고, 상태·권한·업무 원장을 직접 변경하지 않습니다.
-- Backend가 인증, 권한, 상태 전이, 트랜잭션, 감사 이력의 최종 권위입니다.
-- `contracts/**`가 서비스 간 요청·응답, 상태, 이벤트, 코드값의 공통 기준입니다.
-- DB 변경은 Django Model과 Migration으로만 수행합니다.
-
-## 기술 구성
+## 기술 스택
 
 | 영역 | 핵심 기술 | 책임 |
 | --- | --- | --- |
@@ -146,7 +181,7 @@ flowchart LR
 
 정확한 버전은 각 영역의 lockfile·requirements·Gradle 설정·Container image를 기준으로 합니다. Kubernetes와 전체 CI/CD는 확장 방향이며 현재 완료 범위로 간주하지 않습니다.
 
-## 저장소 구조와 책임 경계
+## 저장소 구조
 
 ```text
 SKN29-FINAL-4TEAM/
@@ -174,22 +209,9 @@ SKN29-FINAL-4TEAM/
 
 > 현재 Django 실행·Migration 기준은 `backend/**`, 기계 계약 기준은 `contracts/**`입니다. 실제 테스트 코드는 각 영역 내에 있으며, 루트 `tests/**`와 `infra/**`의 일부는 통합·배포 확장 구조입니다.
 
-목표 구조와 영역 경계는 [프로젝트 디렉토리 구조 v2](docs/architecture/프로젝트%20디렉토리%20구조%20v2.md), 편집 관할은 [팀원별 관할 영역 v2](docs/planning/md/팀원별%20관할%20영역%20v2.md)를 참고합니다. 문서의 예시 트리는 구현 완료 표시가 아니므로 실제 파일·Route·Migration·테스트로 다시 판정합니다.
+목표 구조와 영역 경계는 [프로젝트 디렉토리 구조 v3](docs/architecture/프로젝트%20디렉토리%20구조%20v3.md), 편집 관할은 [팀원별 관할 영역 v2](docs/planning/md/팀원별%20관할%20영역%20v2.md)를 참고합니다. 문서의 예시 트리는 구현 완료 표시가 아니므로 실제 파일·Route·Migration·테스트로 다시 판정합니다.
 
 `com.skn29.watercare`, `watercare_` 등이 남은 일부 패키지·Docker 식별자와 루트의 구형 BAT는 기존 링크·데이터 호환 또는 참고용 Legacy입니다. 현재 프로젝트 표시명은 WaterBridge입니다.
-
-## 팀 구성과 관할
-
-| 팀원 | 역할 | 주관할 | 주요 책임 | GitHub |
-| :---: | --- | --- | --- | :---: |
-| 윤승혁 | PM·기술 통합 | 저장소 Root, `contracts/state-machine/**` | 일정·범위·우선순위, 공통 계약, 서비스 통합, 발표 | [@idenist](https://github.com/idenist) |
-| 양정현 | 모바일 앱 | `mobile/**` | 고객·방문기사 Android 앱, Mobile 계약 연동 | [@didwjdgus90](https://github.com/didwjdgus90) |
-| 한예나 | 웹 프론트엔드 | `web/**` | 상담사·운영 웹, API Wrapper, 역할별 화면 | [@hanyena0830](https://github.com/hanyena0830) |
-| 최지용 | 백엔드·DB | `backend/**`, `contracts/api/**`, `contracts/codes/**` | 인증·권한, REST API, DB·Migration, 상태 전이 Runtime | [@antisdream](https://github.com/antisdream) |
-| 이동윤 | AI·RAG | `ai/**`, `contracts/ai/**` | 문진 분석, 공식 근거 검색, 생성·안전 검증, AI 평가 | [@ldy-99](https://github.com/ldy-99) |
-| 김은진 | 데이터·QA·DevOps | `data/**`, `infra/**`, `tests/**`, `.github/**` | 데이터 Pipeline, QA, CI/CD, 배포·관측성 | [@eunjin661](https://github.com/eunjin661) |
-
-`docs/**`는 공동 편집 영역입니다. API, 상태 머신, AI, 데이터 등 경계 파일은 주관할과 부관할이 함께 검토합니다.
 
 ## 빠른 시작
 
@@ -220,33 +242,7 @@ Pop-Location
 
 상세한 최초 설치, 일상 실행, Seed와 Smoke 검증은 [Backend README](backend/README.md)를 확인합니다.
 
-### 2. Web
-
-Node.js `20.19+` 또는 `22.12+` 환경에서 실행합니다.
-
-```powershell
-Push-Location .\web
-npm.cmd ci
-npm.cmd run dev
-Pop-Location
-```
-
-기본 개발 설정은 합성 Mock을 사용합니다. 브라우저에서 `http://localhost:5173/consultant/inquiries`를 열고, 환경변수와 실제 연동 범위는 [Web README](web/README.md)를 확인합니다.
-
-### 3. Android
-
-JDK `17`과 Android SDK가 준비된 환경에서 실행합니다.
-
-```powershell
-Push-Location .\mobile
-.\setup-local-properties.bat
-.\verify-build.bat
-Pop-Location
-```
-
-`verify-build.bat`는 공통 모듈 단위 테스트와 두 앱의 Assemble을 검증합니다.
-
-### 4. AI
+### 2. AI
 
 Python `3.13.13`에서 Backend와 분리된 `ai/.venv`를 사용합니다.
 
@@ -263,7 +259,33 @@ AI의 공식 설치 SSOT는 `ai/requirements.lock`이며 위 명령은 저장소
 
 실행 모드, pgvector 연결과 평가 절차는 [AI README](ai/README.md), 입출력 기계 계약은 [`contracts/ai`](contracts/ai/)를 확인합니다.
 
-## 개발과 검증 원칙
+### 3. Web
+
+Node.js `20.19+` 또는 `22.12+` 환경에서 실행합니다.
+
+```powershell
+Push-Location .\web
+npm.cmd ci
+npm.cmd run dev
+Pop-Location
+```
+
+기본 개발 설정은 합성 Mock을 사용합니다. 브라우저에서 `http://localhost:5173/consultant/inquiries`를 열고, 환경변수와 실제 연동 범위는 [Web README](web/README.md)를 확인합니다.
+
+### 4. Android
+
+JDK `17`과 Android SDK가 준비된 환경에서 실행합니다.
+
+```powershell
+Push-Location .\mobile
+.\setup-local-properties.bat
+.\verify-build.bat
+Pop-Location
+```
+
+`verify-build.bat`는 공통 모듈 단위 테스트와 두 앱의 Assemble을 검증합니다.
+
+## 테스트 및 검증
 
 - API·AI·상태·코드 경계를 바꿀 때는 `contracts/**`와 소비자 구현을 같은 변경 단위에서 정합화합니다.
 - DB Schema는 Django Model과 Migration으로만 변경하며 수동 DDL을 기준으로 삼지 않습니다.
@@ -299,25 +321,16 @@ Pop-Location
 
 검증 건수는 코드 변경에 따라 달라지므로 README에 고정하지 않습니다. 현재 실행 증거와 미연동 범위는 [Runtime 구현 현황](docs/api/runtime_implementation_status.md)과 [통합 인계 허브](docs/handoffs/README.md)에서 확인합니다.
 
-## 문서 안내
+## 관련 문서
 
 | 분류 | 문서 | 내용 |
 | --- | --- | --- |
 | 문서 Hub | [docs/README.md](docs/README.md) | 전체 문서 탐색과 판정 우선순위 |
 | 기획 | [요구사항정의서](docs/planning/md/요구사항정의서.md) | P0·P1 기능, 비기능, 제외 범위 |
 | 일정 | [WBS](docs/planning/md/WBS.md) | 역할, 작업, 일정과 완료 기준 |
-| 구조 | [프로젝트 디렉토리 구조 v2](docs/architecture/프로젝트%20디렉토리%20구조%20v2.md) | Monorepo 목표 구조와 책임 경계 |
+| 구조 | [프로젝트 디렉토리 구조 v3](docs/architecture/프로젝트%20디렉토리%20구조%20v3.md) | Monorepo 목표 구조와 책임 경계 |
 | API | [WaterBridge API 문서](docs/api/README.md) | 기계 계약, 사람용 명세와 Runtime 구분 |
 | Runtime | [API Runtime 구현 현황](docs/api/runtime_implementation_status.md) | OpenAPI와 실제 Django Route 대조 |
 | Database | [WaterBridge Database 문서](docs/database/README.md) | 물리 계약, ERD, Table Dictionary |
 | State | [State Machine 계약](contracts/state-machine/README.md) | 상태·이벤트·가드·완료 정책 |
 | Handoff | [팀 통합 인계 허브](docs/handoffs/README.md) | 영역 간 인계와 검토 Gate |
-
-## 구현 상태와 범위
-
-- 요구사항, 기계 계약, Runtime, WBS 완료 상태는 서로 다른 판정 축입니다. 실제 API 지원 범위는 [API Runtime 구현 현황](docs/api/runtime_implementation_status.md)을 기준으로 합니다.
-- 현재 Web의 주요 업무 화면은 Mock, Mobile 고객 흐름은 Fake Repository, 기사 앱은 Demo·후속 구현 경계가 있습니다. Backend↔AI 전체 E2E 연동도 완료 기능으로 간주하지 않습니다.
-- `docker-compose.yml`은 `pgvector/pgvector:0.8.6-pg16-bookworm` 기반 PostgreSQL만 실행합니다. Web·Backend·AI Container 배포와 Kubernetes는 확장 범위입니다.
-- GitHub Actions에는 Data CI가 구현되어 있으며, 앱 전체의 Build·Deploy CI/CD는 추가 구현 범위입니다.
-- 실제 사내 시스템 API, 기사 자동 배정·예약·경로 최적화, 외부 알림, 결제·해지·환불은 MVP 제외 범위입니다.
-- 저장소에 공유하는 고객·문의·상담·방문 데이터는 합성 데이터입니다. 공식 원문은 저작권·배포 범위를 확인하고 Git 추적 대상에서 제외합니다.
