@@ -28,6 +28,9 @@ class AIContractValidator:
     schema_paths = {
         "request": "requests/SymptomAnalysisRequest.schema.json",
         "success": "responses/SymptomAnalysisResponse.schema.json",
+        "internal_success": (
+            "internal/AnalysisConsultationEnvelope.schema.json"
+        ),
         "error": "common/AIErrorResponse.schema.json",
     }
 
@@ -58,6 +61,20 @@ class AIContractValidator:
         if errors:
             raise AIResponseValidationError(
                 "AI 성공 응답 계약 검증에 실패했습니다.",
+                payload=payload,
+                validation_errors=errors,
+            )
+
+    def validate_internal_success_response(
+        self,
+        payload: dict[str, Any],
+    ) -> None:
+        """Validate the private analysis + cause-ledger Envelope."""
+
+        errors = self._validation_errors("internal_success", payload)
+        if errors:
+            raise AIResponseValidationError(
+                "AI 내부 Envelope 계약 검증에 실패했습니다.",
                 payload=payload,
                 validation_errors=errors,
             )

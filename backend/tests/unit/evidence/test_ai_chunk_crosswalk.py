@@ -7,6 +7,7 @@ import json
 from datetime import date
 from decimal import Decimal
 from importlib import import_module
+from unittest.mock import patch
 from uuid import UUID, uuid4
 
 import httpx
@@ -30,14 +31,24 @@ from apps.evidence.models import (
     IngestionBatch,
     SourceDocument,
 )
-from apps.evidence.services import EvidenceReferenceVerifier
-from apps.inquiries.models import Guidance, HumanReview, Inquiry
+from apps.evidence.services import (
+    ConsultationCauseLedgerEvidenceVerifier,
+    EvidenceReferenceVerifier,
+)
+from apps.inquiries.models import (
+    ConsultationCauseLedger,
+    Guidance,
+    HumanReview,
+    Inquiry,
+    SymptomAssessment,
+)
 from apps.inquiries.services.inquiry_ai_service import InquiryAIService
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
 from apps.workflow.models import TransitionHistory
 from integrations.ai.client import AIClient
 from integrations.ai.schema_validator import DEFAULT_CONTRACT_ROOT, AIContractValidator
+from common.json_integrity import canonical_json_sha256
 
 
 pytestmark = pytest.mark.django_db
@@ -203,6 +214,47 @@ def evidence_reference(mapping: AIChunkCrosswalk) -> dict:
     }
 
 
+def cause_ledger_evidence_reference(mapping: AIChunkCrosswalk) -> dict:
+    document = mapping.chunk.page.document
+    return {
+        "chunk_id": mapping.canonical_chunk_id,
+        "document_id": document.document_code,
+        "model_code": mapping.model_scope.product_model.model_code,
+        "index_version": mapping.index_version,
+        "chunk_set_sha256": mapping.chunk_set_sha256,
+        "source_file_sha256": mapping.source_file_sha256,
+        "content_sha256": mapping.chunk_text_sha256,
+        "scenario_id": "SYNTHETIC_CANONICAL_SCENARIO",
+    }
+
+
+def internal_envelope(response: dict, request_payload: dict) -> dict:
+    example_path = (
+        DEFAULT_CONTRACT_ROOT
+        / "examples"
+        / "internal"
+        / "analysis-consultation-envelope-refrigerant.json"
+    )
+    envelope = json.loads(example_path.read_text(encoding="utf-8"))["response"]
+    envelope["analysis_result"] = response
+    ledger = envelope["consultation_cause_ledger"]
+    ledger["ledger_id"] = str(uuid4())
+    for field in (
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "state_version",
+        "model_code",
+    ):
+        ledger[field] = request_payload[field]
+    ledger["causes"] = []
+    ledger["analysis_result_sha256"] = canonical_json_sha256(response)
+    ledger["ledger_sha256"] = canonical_json_sha256(
+        {key: value for key, value in ledger.items() if key != "ledger_sha256"}
+    )
+    return envelope
+
+
 def test_crosswalk_uses_public_uuid_and_one_to_one_backend_chunk():
     mapping, _inquiry = create_verified_mapping()
 
@@ -245,6 +297,31 @@ def test_verifier_returns_backend_public_id_for_fully_approved_mapping():
 
     assert result == [str(mapping.chunk.public_id)]
     assert mapping.canonical_chunk_id not in result
+
+
+def test_cause_ledger_verifier_accepts_only_current_canonical_evidence():
+    mapping, inquiry = create_verified_mapping(sequence=124)
+    reference = cause_ledger_evidence_reference(mapping)
+
+    errors = ConsultationCauseLedgerEvidenceVerifier.validation_errors(
+        {"causes": [{"evidence_refs": [reference]}]},
+        inquiry,
+    )
+
+    assert errors == []
+
+
+def test_cause_ledger_verifier_rejects_content_hash_mismatch():
+    mapping, inquiry = create_verified_mapping(sequence=125)
+    reference = cause_ledger_evidence_reference(mapping)
+    reference["content_sha256"] = "f" * 64
+
+    errors = ConsultationCauseLedgerEvidenceVerifier.validation_errors(
+        {"causes": [{"evidence_refs": [reference]}]},
+        inquiry,
+    )
+
+    assert errors == ["cause ledger evidence 0 is not canonical"]
 
 
 def test_verifier_rejects_cross_model_evidence_for_owned_subscription():
@@ -793,6 +870,129 @@ def test_verified_caution_creates_pending_review_without_safe_event():
         guidance=guidance,
         is_verified=True,
     ).count() == 1
+    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    http_client.close()
+
+
+def test_internal_envelope_saves_initial_review_and_ledger_in_one_transaction():
+    mapping, inquiry = create_verified_mapping(sequence=126)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        request_payload = json.loads(request.content.decode("utf-8"))
+        example_path = (
+            DEFAULT_CONTRACT_ROOT
+            / "examples"
+            / "symptom-analysis"
+            / "caution-pre-send-human-review.json"
+        )
+        response = json.loads(example_path.read_text(encoding="utf-8"))[
+            "response"
+        ]
+        for field in (
+            "inquiry_id",
+            "correlation_id",
+            "ai_request_id",
+            "state_version",
+        ):
+            response[field] = request_payload[field]
+        response["model_code"] = request_payload["model_code"]
+        response["evidence_references"] = [evidence_reference(mapping)]
+        return httpx.Response(
+            200,
+            json=internal_envelope(response, request_payload),
+        )
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    outcome = InquiryAIService.analyze_inquiry(
+        inquiry_public_id=inquiry.public_id,
+        correlation_id=uuid4(),
+        ai_request_id=uuid4(),
+        client=AIClient(
+            base_url="http://ai.test",
+            mode="local",
+            http_client=http_client,
+        ),
+    )
+
+    run = AIRun.objects.get(inquiry=inquiry)
+    assert outcome.status == AIRun.Status.SUCCEEDED, (
+        outcome.pending_reason,
+        run.error_code,
+        run.error_message,
+    )
+    assert outcome.saved_assessment is True
+    assert outcome.saved_cause_ledger is True
+    assert outcome.saved_guidance is True
+    guidance = Guidance.objects.get(inquiry=inquiry)
+    ledger = ConsultationCauseLedger.objects.get(inquiry=inquiry, ai_run=run)
+    review = HumanReview.objects.get(inquiry=inquiry, guidance=guidance)
+    assert ledger.causes == []
+    assert review.consultation_origin_code == (
+        HumanReview.ConsultationOrigin.NOT_REQUIRED
+    )
+    assert EvidenceLink.objects.filter(
+        inquiry=inquiry,
+        guidance=guidance,
+        is_verified=True,
+    ).count() == 1
+    http_client.close()
+
+
+def test_internal_envelope_review_failure_rolls_back_complete_business_bundle():
+    mapping, inquiry = create_verified_mapping(sequence=127)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        request_payload = json.loads(request.content.decode("utf-8"))
+        example_path = (
+            DEFAULT_CONTRACT_ROOT
+            / "examples"
+            / "symptom-analysis"
+            / "caution-pre-send-human-review.json"
+        )
+        response = json.loads(example_path.read_text(encoding="utf-8"))[
+            "response"
+        ]
+        for field in (
+            "inquiry_id",
+            "correlation_id",
+            "ai_request_id",
+            "state_version",
+        ):
+            response[field] = request_payload[field]
+        response["model_code"] = request_payload["model_code"]
+        response["evidence_references"] = [evidence_reference(mapping)]
+        return httpx.Response(
+            200,
+            json=internal_envelope(response, request_payload),
+        )
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    with patch(
+        "apps.inquiries.services.human_review_service."
+        "HumanReviewService.create_pending",
+        side_effect=RuntimeError("synthetic review write failure"),
+    ):
+        outcome = InquiryAIService.analyze_inquiry(
+            inquiry_public_id=inquiry.public_id,
+            correlation_id=uuid4(),
+            ai_request_id=uuid4(),
+            client=AIClient(
+                base_url="http://ai.test",
+                mode="local",
+                http_client=http_client,
+            ),
+        )
+
+    run = AIRun.objects.get(inquiry=inquiry)
+    assert outcome.status == AIRun.Status.FAILED
+    assert outcome.pending_reason == "AI-LEDGER-PERSIST-01"
+    assert run.error_code == "AI-LEDGER-PERSIST-01"
+    assert run.validated_output_payload is None
+    assert not SymptomAssessment.objects.filter(inquiry=inquiry).exists()
+    assert not ConsultationCauseLedger.objects.filter(inquiry=inquiry).exists()
+    assert not Guidance.objects.filter(inquiry=inquiry).exists()
+    assert not EvidenceLink.objects.filter(inquiry=inquiry).exists()
+    assert not HumanReview.objects.filter(inquiry=inquiry).exists()
     assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
     http_client.close()
 

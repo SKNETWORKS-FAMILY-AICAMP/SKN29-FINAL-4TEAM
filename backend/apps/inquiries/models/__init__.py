@@ -1,6 +1,9 @@
 """Public inquiry model exports."""
 
 from apps.inquiries.models.customer_action_result import CustomerActionResult
+from apps.inquiries.models.consultation_cause_ledger import (
+    ConsultationCauseLedger,
+)
 from apps.inquiries.models.followup_confirmation import FollowupConfirmation
 from apps.inquiries.models.followup_answer import FollowUpAnswer
 from apps.inquiries.models.guidance import Guidance
@@ -14,6 +17,7 @@ from apps.inquiries.models.symptom_entry import SymptomEntry
 
 __all__ = [
     "CustomerActionResult",
+    "ConsultationCauseLedger",
     "FollowupConfirmation",
     "FollowUpAnswer",
     "Guidance",

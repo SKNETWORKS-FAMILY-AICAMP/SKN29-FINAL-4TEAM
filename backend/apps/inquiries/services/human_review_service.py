@@ -67,6 +67,34 @@ CONSULTATION_RESOLUTION_REASONS = frozenset(
 REJECTED_CONSULTATION_REASON = (
     HumanReview.ConsultationChangeReason.HUMAN_REVIEW_REJECTED
 )
+LEDGER_CAUSE_PRIORITY = {
+    "DANGER_ASSESSMENT": 0,
+    "EXPLICIT_SAFETY_RULE": 1,
+    "FAIL_CLOSED_AI_RESULT": 2,
+    "UNCLASSIFIED_AI_SIGNAL": 3,
+    "HARNESS_UNSUPPORTED_FUNCTION": 4,
+    "HARNESS_SCOPE_EXCEEDED": 5,
+}
+LEDGER_ORIGIN_BY_CAUSE = {
+    "DANGER_ASSESSMENT": HumanReview.ConsultationOrigin.SAFETY_LOCKED,
+    "EXPLICIT_SAFETY_RULE": HumanReview.ConsultationOrigin.SAFETY_LOCKED,
+    "FAIL_CLOSED_AI_RESULT": HumanReview.ConsultationOrigin.FAIL_CLOSED_LOCKED,
+    "UNCLASSIFIED_AI_SIGNAL": HumanReview.ConsultationOrigin.UNKNOWN_LOCKED,
+    "HARNESS_UNSUPPORTED_FUNCTION": (
+        HumanReview.ConsultationOrigin.NON_SAFETY_RESOLVABLE
+    ),
+    "HARNESS_SCOPE_EXCEEDED": (
+        HumanReview.ConsultationOrigin.NON_SAFETY_RESOLVABLE
+    ),
+}
+LEDGER_LOCK_BY_CAUSE = {
+    "DANGER_ASSESSMENT": "SAFETY_LOCKED",
+    "EXPLICIT_SAFETY_RULE": "SAFETY_LOCKED",
+    "FAIL_CLOSED_AI_RESULT": "FAIL_CLOSED_LOCKED",
+    "UNCLASSIFIED_AI_SIGNAL": "UNKNOWN_LOCKED",
+    "HARNESS_UNSUPPORTED_FUNCTION": "NON_SAFETY_RESOLVABLE",
+    "HARNESS_SCOPE_EXCEEDED": "NON_SAFETY_RESOLVABLE",
+}
 
 
 @dataclass(frozen=True)
@@ -132,6 +160,14 @@ class HumanReviewService:
             )
 
         run = guidance.generated_by_ai_run
+        ledger = (
+            getattr(run, "consultation_cause_ledger", None)
+            if run is not None
+            else None
+        )
+        if ledger is not None:
+            return cls._consultation_origin_from_ledger(ledger.causes)
+
         payload = (
             run.validated_output_payload
             if run is not None
@@ -177,14 +213,51 @@ class HumanReviewService:
                 HumanReview.ConsultationOriginReason.FAIL_CLOSED_AI_RESULT,
             )
 
-        # No Backend-owned durable Harness classification ledger exists yet.
-        # Do not turn an internal caller string or an LLM-authored explanation
-        # into authority to downgrade consultation. A later AI/Backend contract
-        # may populate NON_SAFETY_RESOLVABLE only from such a durable ledger.
+        # Legacy 4.0.0 responses have no durable cause Ledger. Do not turn an
+        # internal caller string or LLM-authored explanation into authority to
+        # downgrade consultation.
         return (
             HumanReview.ConsultationOrigin.UNKNOWN_LOCKED,
             HumanReview.ConsultationOriginReason.UNCLASSIFIED_AI_SIGNAL,
         )
+
+    @staticmethod
+    def _consultation_origin_from_ledger(
+        causes: list[dict[str, Any]],
+    ) -> tuple[str, str]:
+        """Select the strictest durable consultation authority."""
+
+        cause_codes = [
+            cause.get("cause_code")
+            for cause in causes
+            if isinstance(cause, dict)
+        ]
+        supported_codes = [
+            code for code in cause_codes if code in LEDGER_CAUSE_PRIORITY
+        ]
+        if (
+            not supported_codes
+            or len(cause_codes) != len(causes)
+            or len(supported_codes) != len(cause_codes)
+        ):
+            return (
+                HumanReview.ConsultationOrigin.UNKNOWN_LOCKED,
+                HumanReview.ConsultationOriginReason.UNCLASSIFIED_AI_SIGNAL,
+            )
+        if any(
+            cause.get("lock_class")
+            != LEDGER_LOCK_BY_CAUSE.get(cause.get("cause_code"))
+            for cause in causes
+        ):
+            return (
+                HumanReview.ConsultationOrigin.UNKNOWN_LOCKED,
+                HumanReview.ConsultationOriginReason.UNCLASSIFIED_AI_SIGNAL,
+            )
+        selected = min(
+            supported_codes,
+            key=LEDGER_CAUSE_PRIORITY.__getitem__,
+        )
+        return LEDGER_ORIGIN_BY_CAUSE[selected], selected
 
     @staticmethod
     def _checkpoint_thread_id(

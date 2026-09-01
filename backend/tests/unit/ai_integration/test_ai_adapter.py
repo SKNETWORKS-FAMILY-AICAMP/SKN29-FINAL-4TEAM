@@ -23,6 +23,7 @@ from integrations.ai.schema_validator import (
     AIContractValidator,
     DEFAULT_CONTRACT_ROOT,
 )
+from common.json_integrity import canonical_json_sha256
 
 
 def request_payload() -> dict:
@@ -96,6 +97,34 @@ def caution_payload(request: dict) -> dict:
     if "model_code" in payload:
         payload["model_code"] = request["model_code"]
     return payload
+
+
+def internal_envelope_payload(request: dict) -> dict:
+    example_path = (
+        DEFAULT_CONTRACT_ROOT
+        / "examples"
+        / "internal"
+        / "analysis-consultation-envelope-refrigerant.json"
+    )
+    envelope = json.loads(example_path.read_text(encoding="utf-8"))[
+        "response"
+    ]
+    analysis = envelope["analysis_result"]
+    ledger = envelope["consultation_cause_ledger"]
+    for field in (
+        "inquiry_id",
+        "correlation_id",
+        "ai_request_id",
+        "state_version",
+        "model_code",
+    ):
+        analysis[field] = request[field]
+        ledger[field] = request[field]
+    ledger["analysis_result_sha256"] = canonical_json_sha256(analysis)
+    ledger["ledger_sha256"] = canonical_json_sha256(
+        {key: value for key, value in ledger.items() if key != "ledger_sha256"}
+    )
+    return envelope
 
 
 class ContractV4ResponseValidator:
@@ -195,6 +224,148 @@ def test_success_mapper_rejects_contract_v4_model_code_mismatch():
         )
 
     assert "identifier mismatch: model_code" in exc_info.value.validation_errors
+
+
+def test_success_mapper_accepts_internal_envelope_and_preserves_public_result():
+    request = request_payload()
+    envelope = internal_envelope_payload(request)
+
+    result = map_success_response(envelope, expected_request=request)
+
+    assert result.envelope_contract_version == "1.0.0"
+    assert result.has_consultation_cause_ledger is True
+    assert result.event_candidate == "DANGER_DETECTED"
+    assert result.payload == envelope["analysis_result"]
+    assert result.consultation_cause_ledger == envelope[
+        "consultation_cause_ledger"
+    ]
+
+
+@pytest.mark.parametrize(
+    "mutation, expected_error",
+    [
+        (
+            lambda envelope: envelope["consultation_cause_ledger"].update(
+                {"analysis_result_sha256": "f" * 64}
+            ),
+            "analysis_result_sha256",
+        ),
+        (
+            lambda envelope: envelope.update({"contract_version": "2.0.0"}),
+            "contract_version",
+        ),
+    ],
+)
+def test_success_mapper_rejects_invalid_internal_envelope(
+    mutation,
+    expected_error,
+):
+    request = request_payload()
+    envelope = internal_envelope_payload(request)
+    mutation(envelope)
+
+    with pytest.raises(AIResponseValidationError) as exc_info:
+        map_success_response(envelope, expected_request=request)
+
+    assert expected_error in " ".join(exc_info.value.validation_errors)
+
+
+def test_success_mapper_rejects_ledger_identity_mismatch_after_valid_hash():
+    request = request_payload()
+    envelope = internal_envelope_payload(request)
+    ledger = envelope["consultation_cause_ledger"]
+    ledger["model_code"] = "WPUIAC425SNW"
+    ledger["ledger_sha256"] = canonical_json_sha256(
+        {key: value for key, value in ledger.items() if key != "ledger_sha256"}
+    )
+
+    with pytest.raises(AIResponseValidationError) as exc_info:
+        map_success_response(envelope, expected_request=request)
+
+    assert "model_code" in " ".join(exc_info.value.validation_errors)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_error"),
+    [
+        (
+            lambda ledger: ledger.update(
+                {
+                    "causes": [
+                        cause
+                        for cause in ledger["causes"]
+                        if cause["cause_code"] != "DANGER_ASSESSMENT"
+                    ]
+                }
+            ),
+            "danger assessment cause is required",
+        ),
+        (
+            lambda ledger: ledger["causes"][0].update(
+                {"matched_safety_rule_ids": ["SAFETY-LEAK-001"]}
+            ),
+            "matched_safety_rule_ids: analysis mismatch",
+        ),
+    ],
+)
+def test_success_mapper_rejects_ledger_safety_semantic_mismatch(
+    mutation,
+    expected_error,
+):
+    request = request_payload()
+    envelope = internal_envelope_payload(request)
+    ledger = envelope["consultation_cause_ledger"]
+    mutation(ledger)
+    ledger["ledger_sha256"] = canonical_json_sha256(
+        {key: value for key, value in ledger.items() if key != "ledger_sha256"}
+    )
+
+    with pytest.raises(AIResponseValidationError) as exc_info:
+        map_success_response(envelope, expected_request=request)
+
+    assert expected_error in " ".join(exc_info.value.validation_errors)
+
+
+def test_success_mapper_rejects_sensitive_ledger_value_without_echoing_it():
+    request = request_payload()
+    envelope = internal_envelope_payload(request)
+    ledger = envelope["consultation_cause_ledger"]
+    ledger["causes"][0]["evidence_refs"] = [
+        {
+            "chunk_id": "customer@example.com",
+            "document_id": "MANUAL-001",
+            "model_code": request["model_code"],
+            "index_version": "2.0.0",
+            "chunk_set_sha256": "a" * 64,
+            "source_file_sha256": "b" * 64,
+            "content_sha256": "c" * 64,
+            "scenario_id": "RUNTIME-JAC104-DANGER-001",
+        }
+    ]
+    ledger["ledger_sha256"] = canonical_json_sha256(
+        {key: value for key, value in ledger.items() if key != "ledger_sha256"}
+    )
+
+    with pytest.raises(AIResponseValidationError) as exc_info:
+        map_success_response(envelope, expected_request=request)
+
+    assert exc_info.value.payload == {
+        "contract_version": "1.0.0",
+        "redacted": True,
+    }
+    assert "customer@example.com" not in " ".join(
+        exc_info.value.validation_errors
+    )
+
+
+def test_success_mapper_rejects_partial_envelope_instead_of_legacy_fallback():
+    request = request_payload()
+
+    with pytest.raises(AIResponseValidationError):
+        map_success_response(
+            {"contract_version": "1.0.0"},
+            expected_request=request,
+        )
 
 
 def test_success_mapper_classifies_safe_and_no_evidence_results():
@@ -371,6 +542,29 @@ def test_client_sends_matching_header_and_calls_once():
     ).analyze(request)
 
     assert result.event_candidate == "SAFE_GUIDANCE_READY"
+    assert len(calls) == 1
+    http_client.close()
+
+
+def test_client_accepts_internal_envelope_on_existing_analysis_endpoint():
+    request = request_payload()
+    calls = []
+
+    def handler(http_request: httpx.Request) -> httpx.Response:
+        calls.append(http_request)
+        return httpx.Response(
+            200,
+            json=internal_envelope_payload(request),
+        )
+
+    http_client = httpx.Client(transport=httpx.MockTransport(handler))
+    result = AIClient(
+        base_url="http://ai.test",
+        http_client=http_client,
+    ).analyze(request)
+
+    assert result.has_consultation_cause_ledger is True
+    assert result.event_candidate == "DANGER_DETECTED"
     assert len(calls) == 1
     http_client.close()
 

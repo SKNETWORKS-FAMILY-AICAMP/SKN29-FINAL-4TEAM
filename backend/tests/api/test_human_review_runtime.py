@@ -31,6 +31,71 @@ pytestmark = pytest.mark.django_db
 LIST_PATH = "/api/v1/inquiries/human-reviews"
 
 
+@pytest.mark.parametrize(
+    ("cause_code", "lock_class", "expected_origin"),
+    [
+        (
+            "DANGER_ASSESSMENT",
+            "SAFETY_LOCKED",
+            HumanReview.ConsultationOrigin.SAFETY_LOCKED,
+        ),
+        (
+            "FAIL_CLOSED_AI_RESULT",
+            "FAIL_CLOSED_LOCKED",
+            HumanReview.ConsultationOrigin.FAIL_CLOSED_LOCKED,
+        ),
+        (
+            "HARNESS_UNSUPPORTED_FUNCTION",
+            "NON_SAFETY_RESOLVABLE",
+            HumanReview.ConsultationOrigin.NON_SAFETY_RESOLVABLE,
+        ),
+    ],
+)
+def test_durable_cause_ledger_maps_consultation_authority(
+    cause_code: str,
+    lock_class: str,
+    expected_origin: str,
+):
+    origin, reason = HumanReviewService._consultation_origin_from_ledger(
+        [{"cause_code": cause_code, "lock_class": lock_class}]
+    )
+
+    assert origin == expected_origin
+    assert reason == cause_code
+
+
+def test_durable_cause_ledger_uses_strictest_cause():
+    origin, reason = HumanReviewService._consultation_origin_from_ledger(
+        [
+            {
+                "cause_code": "HARNESS_SCOPE_EXCEEDED",
+                "lock_class": "NON_SAFETY_RESOLVABLE",
+            },
+            {
+                "cause_code": "EXPLICIT_SAFETY_RULE",
+                "lock_class": "SAFETY_LOCKED",
+            },
+        ]
+    )
+
+    assert origin == HumanReview.ConsultationOrigin.SAFETY_LOCKED
+    assert reason == "EXPLICIT_SAFETY_RULE"
+
+
+def test_durable_cause_ledger_lock_mismatch_fails_closed():
+    origin, reason = HumanReviewService._consultation_origin_from_ledger(
+        [
+            {
+                "cause_code": "DANGER_ASSESSMENT",
+                "lock_class": "NON_SAFETY_RESOLVABLE",
+            }
+        ]
+    )
+
+    assert origin == HumanReview.ConsultationOrigin.UNKNOWN_LOCKED
+    assert reason == HumanReview.ConsultationOriginReason.UNCLASSIFIED_AI_SIGNAL
+
+
 def create_user(sequence: int, *, role: str, synthetic: bool = True) -> User:
     user = User.objects.create_user(
         username=f"HREVIEW-{role}-{sequence:03d}",

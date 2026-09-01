@@ -7,6 +7,7 @@ import json
 import logging
 import time
 from collections.abc import Callable
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -23,6 +24,7 @@ from apps.consultations.repositories.consultation_repository import (
 )
 from apps.evidence.models import AIChunkCrosswalk, EvidenceLink
 from apps.inquiries.models import (
+    ConsultationCauseLedger,
     Guidance,
     GuidanceItem,
     Inquiry,
@@ -59,6 +61,7 @@ from integrations.ai.schema_validator import AIContractValidator
 
 
 EvidenceVerifier = Callable[[list[dict[str, Any]], Inquiry], list[str]]
+CauseLedgerVerifier = Callable[[dict[str, Any], Inquiry], list[str]]
 ai_trace_logger = logging.getLogger("watercare.ai")
 
 
@@ -74,6 +77,7 @@ class InquiryAIOutcome:
     event_applied: str | None
     pending_reason: str | None
     saved_assessment: bool = False
+    saved_cause_ledger: bool = False
     saved_guidance: bool = False
     saved_questions: int = 0
 
@@ -85,6 +89,7 @@ class InquiryAIService:
     """HTTP 호출은 Transaction 밖, 결과 적용은 잠금 Transaction 안에서 수행."""
 
     AI_PROCESSING_TIMEOUT_EVENT = "AI_PROCESSING_TIMEOUT"
+    AI_LEDGER_PERSISTENCE_FAILURE_CODE = "AI-LEDGER-PERSIST-01"
 
     @classmethod
     def analyze_inquiry(
@@ -96,11 +101,20 @@ class InquiryAIService:
         client: AIClient | None = None,
         validator: AIContractValidator | None = None,
         evidence_verifier: EvidenceVerifier | None = None,
+        cause_ledger_verifier: CauseLedgerVerifier | None = None,
     ) -> InquiryAIOutcome:
         if evidence_verifier is None:
             from apps.evidence.services import EvidenceReferenceVerifier
 
             evidence_verifier = EvidenceReferenceVerifier.verify
+        if cause_ledger_verifier is None:
+            from apps.evidence.services import (
+                ConsultationCauseLedgerEvidenceVerifier,
+            )
+
+            cause_ledger_verifier = (
+                ConsultationCauseLedgerEvidenceVerifier.validation_errors
+            )
         contract_validator = validator or AIContractValidator()
         inquiry = (
             Inquiry.objects.select_related("subscription__product_model")
@@ -221,11 +235,54 @@ class InquiryAIService:
             outcome = cls._cancelled_outcome(run)
             cls._log_outcome(outcome, trace=trace, latency_ms=latency_ms)
             return outcome
-        outcome = cls._persist_validated_result(
-            run=run,
-            result=result,
-            evidence_verifier=evidence_verifier,
-        )
+        try:
+            outcome = cls._persist_validated_result(
+                run=run,
+                result=result,
+                evidence_verifier=evidence_verifier,
+                cause_ledger_verifier=cause_ledger_verifier,
+            )
+        except Exception as exc:
+            if not result.has_consultation_cause_ledger:
+                raise
+            failure_code = cls.AI_LEDGER_PERSISTENCE_FAILURE_CODE
+            ai_trace_logger.warning(
+                "validated_domain_bundle_persistence_failed",
+                extra={
+                    **trace,
+                    "trace_stage": "DOMAIN_BUNDLE_PERSISTENCE_FAILED",
+                    "ai_run_id": str(run.public_id),
+                    "failure_code": failure_code,
+                    "failure_type": type(exc).__name__,
+                },
+            )
+            if not cls._mark_domain_persistence_failed(
+                run,
+                failure_code=failure_code,
+            ):
+                outcome = cls._cancelled_outcome(run)
+                cls._log_outcome(
+                    outcome,
+                    trace=trace,
+                    latency_ms=latency_ms,
+                )
+                return outcome
+            outcome = InquiryAIOutcome(
+                ai_run_id=str(run.public_id),
+                status=run.status_code,
+                idempotent_replay=False,
+                stale=False,
+                event_candidate=None,
+                event_applied=None,
+                pending_reason=failure_code,
+            )
+            cls._log_outcome(
+                outcome,
+                trace=trace,
+                latency_ms=latency_ms,
+                failure_code=failure_code,
+            )
+            return outcome
         cls._log_outcome(outcome, trace=trace, latency_ms=latency_ms)
         return outcome
 
@@ -477,11 +534,9 @@ class InquiryAIService:
                 AIRun.SchemaValidationStatus.FAILED
             )
             locked.schema_validation_errors = errors
-            locked.raw_output_text = json.dumps(
-                exc.payload or {},
-                ensure_ascii=False,
-                sort_keys=True,
-            )
+            # Invalid AI output can contain customer text, PII, or secrets.
+            # Preserve only safe validation codes, never the rejected body.
+            locked.raw_output_text = "[REDACTED_INVALID_AI_RESPONSE]"
         elif error_contract_passed:
             locked.schema_validation_status_code = (
                 AIRun.SchemaValidationStatus.PASSED
@@ -499,6 +554,42 @@ class InquiryAIService:
                 "schema_validation_status_code",
                 "schema_validation_errors",
                 "raw_output_text",
+                "validated_output_payload",
+                "updated_at",
+            ]
+        )
+        run.refresh_from_db()
+        return True
+
+    @classmethod
+    @transaction.atomic
+    def _mark_domain_persistence_failed(
+        cls,
+        run: AIRun,
+        *,
+        failure_code: str,
+    ) -> bool:
+        """Fail a validated run after its atomic domain bundle rolls back."""
+
+        locked = AIRun.objects.select_for_update().get(pk=run.pk)
+        if locked.status_code not in {
+            AIRun.Status.SUCCEEDED,
+            AIRun.Status.NO_EVIDENCE,
+        }:
+            run.refresh_from_db()
+            return False
+        locked.status_code = AIRun.Status.FAILED
+        locked.error_code = failure_code
+        locked.error_message = (
+            "Validated analysis and cause-ledger persistence failed."
+        )
+        locked.validated_output_payload = None
+        locked.full_clean()
+        locked.save(
+            update_fields=[
+                "status_code",
+                "error_code",
+                "error_message",
                 "validated_output_payload",
                 "updated_at",
             ]
@@ -527,6 +618,7 @@ class InquiryAIService:
         run: AIRun,
         result: AIAnalysisResult,
         evidence_verifier: EvidenceVerifier | None,
+        cause_ledger_verifier: CauseLedgerVerifier,
     ) -> InquiryAIOutcome:
         inquiry = (
             Inquiry.objects.select_for_update()
@@ -545,6 +637,19 @@ class InquiryAIService:
             )
 
         assessment = cls._save_assessment(inquiry, run, result)
+        cause_ledger: ConsultationCauseLedger | None = None
+        if result.consultation_cause_ledger is not None:
+            ledger_errors = cause_ledger_verifier(
+                result.consultation_cause_ledger,
+                inquiry,
+            )
+            if ledger_errors:
+                raise ValueError("Cause Ledger Evidence validation failed.")
+            cause_ledger = cls._save_consultation_cause_ledger(
+                inquiry=inquiry,
+                run=run,
+                result=result,
+            )
         saved_questions = cls._save_followup_questions(inquiry, run, result)
         try:
             verified_evidence_ids = (
@@ -567,45 +672,36 @@ class InquiryAIService:
 
         guidance: Guidance | None = None
         if verified_evidence_ids:
-            try:
-                # Guidance, evidence snapshots, and PRE_SEND HumanReview are
-                # one publication bundle. Any canonical-link failure rolls
-                # the whole bundle back so an unverified draft cannot enter
-                # either the customer read path or the review queue.
-                with transaction.atomic():
-                    candidate_guidance = cls._save_guidance(
-                        inquiry,
-                        run,
-                        result,
-                    )
-                    cls._save_evidence_links(
+            if result.has_consultation_cause_ledger:
+                guidance = cls._save_verified_guidance_bundle(
+                    inquiry=inquiry,
+                    run=run,
+                    result=result,
+                    verified_evidence_ids=verified_evidence_ids,
+                )
+            else:
+                try:
+                    guidance = cls._save_verified_guidance_bundle(
                         inquiry=inquiry,
                         run=run,
-                        guidance=candidate_guidance,
-                        references=result.payload["evidence_references"],
+                        result=result,
                         verified_evidence_ids=verified_evidence_ids,
                     )
-                    cls._create_human_review_if_required(
-                        guidance=candidate_guidance,
-                        run=run,
-                        inquiry=inquiry,
+                except Exception as exc:
+                    ai_trace_logger.warning(
+                        "verified_guidance_bundle_persistence_failed",
+                        extra={
+                            "trace_stage": (
+                                "VERIFIED_GUIDANCE_BUNDLE_PERSISTENCE_FAILED"
+                            ),
+                            "ai_run_id": str(run.public_id),
+                            "inquiry_id": str(inquiry.public_id),
+                            "correlation_id": str(run.correlation_id),
+                            "failure_type": type(exc).__name__,
+                        },
                     )
-                    guidance = candidate_guidance
-            except Exception as exc:
-                ai_trace_logger.warning(
-                    "verified_guidance_bundle_persistence_failed",
-                    extra={
-                        "trace_stage": (
-                            "VERIFIED_GUIDANCE_BUNDLE_PERSISTENCE_FAILED"
-                        ),
-                        "ai_run_id": str(run.public_id),
-                        "inquiry_id": str(inquiry.public_id),
-                        "correlation_id": str(run.correlation_id),
-                        "failure_type": type(exc).__name__,
-                    },
-                )
-                verified_evidence_ids = []
-                guidance = None
+                    verified_evidence_ids = []
+                    guidance = None
         cls._update_inquiry_projection(
             inquiry,
             result=result,
@@ -625,9 +721,72 @@ class InquiryAIService:
             event_applied=event_applied,
             pending_reason=pending_reason,
             saved_assessment=assessment is not None,
+            saved_cause_ledger=cause_ledger is not None,
             saved_guidance=guidance is not None,
             saved_questions=saved_questions,
         )
+
+    @classmethod
+    def _save_verified_guidance_bundle(
+        cls,
+        *,
+        inquiry: Inquiry,
+        run: AIRun,
+        result: AIAnalysisResult,
+        verified_evidence_ids: list[str],
+    ) -> Guidance:
+        """Persist Guidance, Evidence, and optional review as one savepoint."""
+
+        # For an Envelope result, the caller's outer transaction also owns
+        # assessment and cause-ledger rows. Any failure must escape so all
+        # Backend business records roll back together.
+        with transaction.atomic():
+            guidance = cls._save_guidance(inquiry, run, result)
+            cls._save_evidence_links(
+                inquiry=inquiry,
+                run=run,
+                guidance=guidance,
+                references=result.payload["evidence_references"],
+                verified_evidence_ids=verified_evidence_ids,
+            )
+            cls._create_human_review_if_required(
+                guidance=guidance,
+                run=run,
+                inquiry=inquiry,
+            )
+        return guidance
+
+    @staticmethod
+    def _save_consultation_cause_ledger(
+        *,
+        inquiry: Inquiry,
+        run: AIRun,
+        result: AIAnalysisResult,
+    ) -> ConsultationCauseLedger:
+        payload = result.consultation_cause_ledger
+        if payload is None:
+            raise ValueError("Cause Ledger payload is required.")
+        ledger = ConsultationCauseLedger(
+            ledger_id=payload["ledger_id"],
+            inquiry=inquiry,
+            ai_run=run,
+            contract_version=payload["contract_version"],
+            correlation_id=payload["correlation_id"],
+            ai_request_id=payload["ai_request_id"],
+            source_inquiry_state_version=payload["state_version"],
+            model_code=payload["model_code"],
+            producer=payload["producer"],
+            policy_version=payload["policy_version"],
+            execution_identity=deepcopy(payload["execution_identity"]),
+            analysis_result_sha256=payload[
+                "analysis_result_sha256"
+            ].casefold(),
+            causes=deepcopy(payload["causes"]),
+            ledger_sha256=payload["ledger_sha256"].casefold(),
+        )
+        ledger.full_clean()
+        ledger.save()
+        return ledger
 
     @classmethod
     def _save_evidence_links(
