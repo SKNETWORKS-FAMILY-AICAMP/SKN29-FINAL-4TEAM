@@ -43,7 +43,18 @@ class SymptomNormalizer:
     _SYMPTOM_RULES = (
         ("제품 누수", ("누수", "물이 새", "물 새", "바닥에 물", "젖어")),
         ("전기 이상", ("스파크", "탄 냄새", "타는 냄새", "연기", "전원선")),
-        ("온도 이상", ("미지근", "안 차갑", "뜨겁지", "온도")),
+        (
+            "온도 이상",
+            (
+                "미지근",
+                "안 차갑",
+                "뜨겁지",
+                "온도",
+                "온수가 이상",
+                "냉수가 이상",
+                "찬물이 이상",
+            ),
+        ),
         (
             "출수량 저하",
             (
@@ -57,6 +68,8 @@ class SymptomNormalizer:
                 "안 나와",
                 "적게 나",
                 "약하게 나",
+                "물이 약",
+                "출수가 약",
                 "출수가 안",
                 "수압",
             ),
@@ -76,7 +89,10 @@ class SymptomNormalizer:
                 "역한",
             ),
         ),
-        ("소음 이상", ("소음", "진동", "웅웅", "덜컹")),
+        (
+            "소음 이상",
+            ("소음", "진동", "웅웅", "덜컹", "소리가 이상", "이상한 소리"),
+        ),
         ("필터/관리 문의", ("필터", "교체 주기", "관리 주기")),
     )
 
@@ -115,6 +131,11 @@ class SymptomNormalizer:
         return "기타 증상"
 
     def normalize_water_type(self, text: str) -> str | None:
+        if re.search(
+            r"전체(?:적으)?로|(?:^|\s)전부(?:\s|$)|모든\s*출수|냉수.?온수.?정수",
+            text,
+        ):
+            return "전체"
         found = []
         for normalized, keywords in self._WATER_RULES:
             matched = any(keyword in text for keyword in keywords)

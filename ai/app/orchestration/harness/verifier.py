@@ -123,6 +123,10 @@ class HarnessVerifier:
             if (
                 not chunk.allowed_use
                 or not chunk.runtime_eligible
+                or chunk.knowledge_type != "OFFICIAL_EVIDENCE"
+                or not chunk.evidence_eligible
+                or not chunk.official_evidence
+                or not chunk.customer_citation_allowed
                 or chunk.verification_status not in self.VERIFIED_STATUSES
             ):
                 rejected_ids.append(chunk.chunk_id)

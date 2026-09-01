@@ -141,8 +141,8 @@ class RiskClassifier:
         for symptom in selected_symptoms:
             selected = symptom.strip()
             if selected.casefold() in cls._LEAK_SELECTED_SIGNAL_ALIASES:
-                if not leak_is_explicitly_negated:
-                    normalized.append("누수")
+                # A broad UI category is not an explicit location/safety signal.
+                # The raw text still activates bottom/electrical leak rules.
                 continue
             normalized.append(selected)
         return normalized

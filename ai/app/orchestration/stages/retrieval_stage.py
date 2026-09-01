@@ -61,6 +61,14 @@ def execute_retrieval_stage(
                 query,
                 cancellation_token=cancellation_token,
             )
+            chunks = [
+                chunk
+                for chunk in chunks
+                if chunk.knowledge_type == "OFFICIAL_EVIDENCE"
+                and chunk.evidence_eligible
+                and chunk.official_evidence
+                and chunk.customer_citation_allowed
+            ]
             chunks = EvidenceTopicFilter().filter_chunks(
                 chunks,
                 symptom_type=(

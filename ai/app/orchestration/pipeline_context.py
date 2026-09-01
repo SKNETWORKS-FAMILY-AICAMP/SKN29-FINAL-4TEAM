@@ -69,6 +69,27 @@ class PipelineContext(BaseModel):
         True,
         description="제품·근거 무결성 Guard가 clarification을 허용하는지 표시",
     )
+    synthetic_scenario_candidate_count: int = Field(
+        0,
+        ge=0,
+        description="공식 Evidence와 분리된 합성 Scenario 후보 수",
+    )
+    synthetic_scenario_ids: List[str] = Field(
+        default_factory=list,
+        description="고객 응답에 노출하지 않는 합성 Scenario 내부 식별자",
+    )
+    synthetic_clarification_requested: bool = Field(
+        False,
+        description="합성 Scenario 모호성으로 추가질문을 요청했는지 표시",
+    )
+    synthetic_clarification_target_field: Optional[str] = Field(
+        None,
+        description="합성 Scenario가 결정한 canonical 질문 대상 필드",
+    )
+    synthetic_clarification_reason: Optional[str] = Field(
+        None,
+        description="고객 원문 없이 남기는 합성 Scenario 결정 코드",
+    )
 
     # 메타데이터 및 지연 추적
     model_metadata: ModelMetadata = Field(

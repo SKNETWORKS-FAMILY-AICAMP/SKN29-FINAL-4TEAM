@@ -34,3 +34,19 @@ class RetrievedChunk(BaseModel):
     retrieval_role: Optional[str] = Field(None, description="인계 데이터 검색 역할")
     dataset_profile: Optional[str] = Field(None, description="적재 데이터 Consumer Profile")
     runtime_eligible: bool = Field(True, description="공식 Runtime 활성화 가능 여부")
+    knowledge_type: str = Field(
+        "OFFICIAL_EVIDENCE",
+        description="공식 근거와 clarification-only 지식을 구분하는 유형",
+    )
+    evidence_eligible: bool = Field(
+        True,
+        description="고객 안내 및 Harness 근거로 사용할 수 있는지 여부",
+    )
+    official_evidence: bool = Field(
+        True,
+        description="공식 문서 근거 여부",
+    )
+    customer_citation_allowed: bool = Field(
+        True,
+        description="고객 응답 Citation 허용 여부",
+    )

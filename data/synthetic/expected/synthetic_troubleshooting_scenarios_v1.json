@@ -1,0 +1,1042 @@
+{
+  "dataset_id": "waterbridge_synthetic_troubleshooting_scenarios_v1",
+  "version": "1.0.0",
+  "created_date": "2026-09-01",
+  "language": "ko-KR",
+  "scenario_count": 36,
+  "group_count": 6,
+  "purpose": "사용설명서만으로 세부 증상 분기가 부족한 경우 Evidence-driven Clarification의 후보 시나리오를 제공하기 위한 합성 Troubleshooting Dataset",
+  "provenance": {
+    "source_type": "MODEL_AUTHORED_SYNTHETIC",
+    "official_manual_derived": false,
+    "official_service_policy_derived": false,
+    "warning": "실제 제품 고장 원인이나 조치 방법을 주장하지 않으며 추가질문 분기에만 사용"
+  },
+  "global_policy": {
+    "knowledge_type": "SYNTHETIC_SCENARIO",
+    "clarification_only": true,
+    "evidence_eligible": false,
+    "customer_citation_allowed": false,
+    "official_evidence": false,
+    "diagnosis_allowed": false,
+    "safety_priority": "원문/이전 답변에서 danger 신호가 확인되면 synthetic scenario retrieval과 clarification을 건너뛰고 deterministic Safety Rule을 우선",
+    "allowed_symptom_types": [
+      "출수량 저하",
+      "온도 이상",
+      "물맛/냄새 이상",
+      "소음 이상",
+      "제품 누수",
+      "필터/관리 문의"
+    ],
+    "excluded_from_clarification": [
+      "전기 이상 또는 명시적 danger 신호",
+      "정확한 공식 Evidence가 없고 질문으로도 답변 가능성이 높아지지 않는 케이스"
+    ],
+    "max_clarification_rounds": 1
+  },
+  "groups": [
+    {
+      "group_id": "LOW_FLOW",
+      "symptom_type": "출수량 저하",
+      "purpose": "출수 종류와 발생 패턴에 따라 세부 상황을 구분",
+      "activation_examples": [
+        "물이 약하게 나와요",
+        "출수가 너무 약해요",
+        "물이 예전보다 적게 나와요",
+        "물이 졸졸 나와요"
+      ],
+      "primary_question": {
+        "question_id": "syn-low-flow-water-type",
+        "question_text": "어떤 출수에서 물이 약하게 나오나요?",
+        "target_field": "target_water_type",
+        "options": [
+          "냉수",
+          "온수",
+          "정수",
+          "전체"
+        ]
+      },
+      "secondary_question": {
+        "question_id": "syn-low-flow-condition",
+        "question_text": "출수량이 약해지는 양상은 어떤 경우에 가장 가깝나요?",
+        "target_field": "occurrence_condition",
+        "options": [
+          "사용할 때마다 계속 약함",
+          "처음 몇 초만 약하고 이후 정상",
+          "연속으로 사용할수록 점점 약해짐",
+          "간헐적으로 약해졌다가 정상으로 돌아옴",
+          "필터 교체 직후부터 약해짐"
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_id": "LOW_FLOW_COLD_ONLY",
+          "label": "냉수만 출수량 저하",
+          "discriminators": {
+            "target_water_type": "냉수"
+          },
+          "observation": "냉수에서만 출수량이 약하고 다른 출수는 상대적으로 정상이라고 답한 상황",
+          "example_utterances": [
+            "냉수만 약하게 나와요",
+            "찬물만 졸졸 나와요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "출수량 저하",
+          "group_id": "LOW_FLOW",
+          "chunk_id": "syn-scn-low-flow-001",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 출수량 저하. 세부 시나리오: 냉수만 출수량 저하. 관찰 패턴: 냉수에서만 출수량이 약하고 다른 출수는 상대적으로 정상이라고 답한 상황. 구분 정보: target_water_type=냉수. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LOW_FLOW_HOT_ONLY",
+          "label": "온수만 출수량 저하",
+          "discriminators": {
+            "target_water_type": "온수"
+          },
+          "observation": "온수에서만 출수량이 약하고 다른 출수는 상대적으로 정상이라고 답한 상황",
+          "example_utterances": [
+            "온수만 약하게 나와요",
+            "뜨거운 물만 양이 적어요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "출수량 저하",
+          "group_id": "LOW_FLOW",
+          "chunk_id": "syn-scn-low-flow-002",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 출수량 저하. 세부 시나리오: 온수만 출수량 저하. 관찰 패턴: 온수에서만 출수량이 약하고 다른 출수는 상대적으로 정상이라고 답한 상황. 구분 정보: target_water_type=온수. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LOW_FLOW_PURIFIED_ONLY",
+          "label": "정수만 출수량 저하",
+          "discriminators": {
+            "target_water_type": "정수"
+          },
+          "observation": "정수에서만 출수량이 약하고 냉수·온수는 상대적으로 정상이라고 답한 상황",
+          "example_utterances": [
+            "정수만 잘 안 나와요",
+            "정수 출수만 약해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "출수량 저하",
+          "group_id": "LOW_FLOW",
+          "chunk_id": "syn-scn-low-flow-003",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 출수량 저하. 세부 시나리오: 정수만 출수량 저하. 관찰 패턴: 정수에서만 출수량이 약하고 냉수·온수는 상대적으로 정상이라고 답한 상황. 구분 정보: target_water_type=정수. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LOW_FLOW_ALL_PERSISTENT",
+          "label": "전체 출수 지속 저하",
+          "discriminators": {
+            "target_water_type": "전체",
+            "occurrence_condition": "사용할 때마다 계속 약함"
+          },
+          "observation": "냉수·온수·정수 모두에서 사용할 때마다 계속 출수량이 약한 상황",
+          "example_utterances": [
+            "전부 다 약하게 나와요",
+            "어떤 물을 눌러도 계속 약해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "출수량 저하",
+          "group_id": "LOW_FLOW",
+          "chunk_id": "syn-scn-low-flow-004",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 출수량 저하. 세부 시나리오: 전체 출수 지속 저하. 관찰 패턴: 냉수·온수·정수 모두에서 사용할 때마다 계속 출수량이 약한 상황. 구분 정보: target_water_type=전체; occurrence_condition=사용할 때마다 계속 약함. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LOW_FLOW_INITIAL_ONLY",
+          "label": "초기 출수만 일시 저하",
+          "discriminators": {
+            "occurrence_condition": "처음 몇 초만 약하고 이후 정상"
+          },
+          "observation": "출수를 시작한 직후 몇 초 동안만 약하고 이후에는 정상 수준으로 돌아오는 상황",
+          "example_utterances": [
+            "처음에만 약하고 조금 지나면 괜찮아요",
+            "첫 몇 초만 졸졸 나와요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "출수량 저하",
+          "group_id": "LOW_FLOW",
+          "chunk_id": "syn-scn-low-flow-005",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 출수량 저하. 세부 시나리오: 초기 출수만 일시 저하. 관찰 패턴: 출수를 시작한 직후 몇 초 동안만 약하고 이후에는 정상 수준으로 돌아오는 상황. 구분 정보: occurrence_condition=처음 몇 초만 약하고 이후 정상. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LOW_FLOW_CONSECUTIVE_DEGRADE",
+          "label": "연속 사용 중 출수량 감소",
+          "discriminators": {
+            "occurrence_condition": "연속으로 사용할수록 점점 약해짐"
+          },
+          "observation": "처음에는 상대적으로 정상이나 여러 번 연속 사용할수록 출수량이 줄어드는 상황",
+          "example_utterances": [
+            "계속 받다 보면 점점 약해져요",
+            "몇 잔 연속으로 받으면 물이 줄어요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "출수량 저하",
+          "group_id": "LOW_FLOW",
+          "chunk_id": "syn-scn-low-flow-006",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 출수량 저하. 세부 시나리오: 연속 사용 중 출수량 감소. 관찰 패턴: 처음에는 상대적으로 정상이나 여러 번 연속 사용할수록 출수량이 줄어드는 상황. 구분 정보: occurrence_condition=연속으로 사용할수록 점점 약해짐. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        }
+      ]
+    },
+    {
+      "group_id": "TEMPERATURE",
+      "symptom_type": "온도 이상",
+      "purpose": "대상 출수와 온도 이상이 발생하는 시점을 구분",
+      "activation_examples": [
+        "물 온도가 이상해요",
+        "온도가 제대로 안 맞아요",
+        "뜨겁거나 차가워야 하는데 이상해요"
+      ],
+      "primary_question": {
+        "question_id": "syn-temperature-water-type",
+        "question_text": "어떤 출수의 온도가 이상한가요?",
+        "target_field": "target_water_type",
+        "options": [
+          "냉수",
+          "온수",
+          "전체"
+        ]
+      },
+      "secondary_question": {
+        "question_id": "syn-temperature-condition",
+        "question_text": "온도 이상은 어떤 상황에서 가장 자주 나타나나요?",
+        "target_field": "occurrence_condition",
+        "options": [
+          "첫 잔에서만",
+          "여러 잔 연속 사용할 때",
+          "사용할 때마다 계속",
+          "간헐적으로",
+          "처음에는 이상하지만 잠시 뒤 정상"
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_id": "TEMP_HOT_ALWAYS_COLD",
+          "label": "온수가 계속 차갑게 출수",
+          "discriminators": {
+            "target_water_type": "온수",
+            "occurrence_condition": "사용할 때마다 계속"
+          },
+          "observation": "온수를 선택해도 사용할 때마다 차가운 물에 가깝게 출수된다고 답한 상황",
+          "example_utterances": [
+            "온수 눌러도 찬물이 나와요",
+            "온수가 계속 차가워요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "온도 이상",
+          "group_id": "TEMPERATURE",
+          "chunk_id": "syn-scn-temperature-001",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 온도 이상. 세부 시나리오: 온수가 계속 차갑게 출수. 관찰 패턴: 온수를 선택해도 사용할 때마다 차가운 물에 가깝게 출수된다고 답한 상황. 구분 정보: target_water_type=온수; occurrence_condition=사용할 때마다 계속. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TEMP_HOT_FIRST_LUKEWARM",
+          "label": "온수 첫 잔만 미지근함",
+          "discriminators": {
+            "target_water_type": "온수",
+            "occurrence_condition": "첫 잔에서만"
+          },
+          "observation": "온수 첫 잔에서만 미지근하고 이후 출수는 상대적으로 달라지는 상황",
+          "example_utterances": [
+            "온수 첫 잔만 미지근해요",
+            "처음 받는 온수만 안 뜨거워요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "온도 이상",
+          "group_id": "TEMPERATURE",
+          "chunk_id": "syn-scn-temperature-002",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 온도 이상. 세부 시나리오: 온수 첫 잔만 미지근함. 관찰 패턴: 온수 첫 잔에서만 미지근하고 이후 출수는 상대적으로 달라지는 상황. 구분 정보: target_water_type=온수; occurrence_condition=첫 잔에서만. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TEMP_HOT_CONSECUTIVE_LUKEWARM",
+          "label": "온수 연속 사용 중 미지근해짐",
+          "discriminators": {
+            "target_water_type": "온수",
+            "occurrence_condition": "여러 잔 연속 사용할 때"
+          },
+          "observation": "온수를 여러 잔 연속 사용할 때 뒤쪽 출수에서 미지근해지는 상황",
+          "example_utterances": [
+            "온수 여러 잔 받으면 점점 미지근해져요",
+            "연속으로 쓰면 온도가 내려가요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "온도 이상",
+          "group_id": "TEMPERATURE",
+          "chunk_id": "syn-scn-temperature-003",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 온도 이상. 세부 시나리오: 온수 연속 사용 중 미지근해짐. 관찰 패턴: 온수를 여러 잔 연속 사용할 때 뒤쪽 출수에서 미지근해지는 상황. 구분 정보: target_water_type=온수; occurrence_condition=여러 잔 연속 사용할 때. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TEMP_COLD_NOT_COLD",
+          "label": "냉수가 계속 충분히 차갑지 않음",
+          "discriminators": {
+            "target_water_type": "냉수",
+            "occurrence_condition": "사용할 때마다 계속"
+          },
+          "observation": "냉수를 선택해도 사용할 때마다 충분히 차갑지 않다고 답한 상황",
+          "example_utterances": [
+            "냉수가 안 차가워요",
+            "찬물이 계속 미지근해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "온도 이상",
+          "group_id": "TEMPERATURE",
+          "chunk_id": "syn-scn-temperature-004",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 온도 이상. 세부 시나리오: 냉수가 계속 충분히 차갑지 않음. 관찰 패턴: 냉수를 선택해도 사용할 때마다 충분히 차갑지 않다고 답한 상황. 구분 정보: target_water_type=냉수; occurrence_condition=사용할 때마다 계속. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TEMP_COLD_INITIAL_WARM",
+          "label": "냉수 초기 출수만 덜 차가움",
+          "discriminators": {
+            "target_water_type": "냉수",
+            "occurrence_condition": "처음에는 이상하지만 잠시 뒤 정상"
+          },
+          "observation": "냉수 출수를 시작한 직후에는 덜 차갑지만 잠시 뒤에는 상대적으로 차가워지는 상황",
+          "example_utterances": [
+            "냉수 처음만 미지근하고 좀 지나면 차가워요",
+            "처음 나오는 찬물만 안 차가워요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "온도 이상",
+          "group_id": "TEMPERATURE",
+          "chunk_id": "syn-scn-temperature-005",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 온도 이상. 세부 시나리오: 냉수 초기 출수만 덜 차가움. 관찰 패턴: 냉수 출수를 시작한 직후에는 덜 차갑지만 잠시 뒤에는 상대적으로 차가워지는 상황. 구분 정보: target_water_type=냉수; occurrence_condition=처음에는 이상하지만 잠시 뒤 정상. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TEMP_INTERMITTENT",
+          "label": "출수 온도 간헐적 변동",
+          "discriminators": {
+            "occurrence_condition": "간헐적으로"
+          },
+          "observation": "같은 출수를 사용해도 어떤 때는 정상이고 어떤 때는 온도가 다르게 느껴지는 상황",
+          "example_utterances": [
+            "될 때도 있고 안 될 때도 있어요",
+            "물 온도가 들쭉날쭉해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "온도 이상",
+          "group_id": "TEMPERATURE",
+          "chunk_id": "syn-scn-temperature-006",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 온도 이상. 세부 시나리오: 출수 온도 간헐적 변동. 관찰 패턴: 같은 출수를 사용해도 어떤 때는 정상이고 어떤 때는 온도가 다르게 느껴지는 상황. 구분 정보: occurrence_condition=간헐적으로. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        }
+      ]
+    },
+    {
+      "group_id": "TASTE_ODOR",
+      "symptom_type": "물맛/냄새 이상",
+      "purpose": "미사용 기간·필터 교체·반복 여부 등 적용 조건을 구분",
+      "activation_examples": [
+        "물에서 이상한 냄새가 나요",
+        "물맛이 이상해요",
+        "예전과 다른 맛이 나요"
+      ],
+      "primary_question": {
+        "question_id": "syn-taste-odor-applicability",
+        "question_text": "이상한 맛이나 냄새는 어떤 상황에서 시작됐나요?",
+        "target_field": "taste_odor_applicability",
+        "options": [
+          "10일 이내 부재 후",
+          "10일 이상 부재 후",
+          "장시간 미사용 후",
+          "필터 교체 직후",
+          "특정 출수에서만",
+          "사용할 때마다 계속"
+        ]
+      },
+      "secondary_question": {
+        "question_id": "syn-taste-odor-water-type",
+        "question_text": "어떤 출수에서 맛이나 냄새 이상이 느껴지나요?",
+        "target_field": "target_water_type",
+        "options": [
+          "냉수",
+          "온수",
+          "정수",
+          "전체"
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_id": "TASTE_ODOR_ABSENCE_WITHIN_10D",
+          "label": "10일 이내 부재 후 맛/냄새 이상",
+          "discriminators": {
+            "taste_odor_applicability": "10일 이내 부재 후"
+          },
+          "observation": "10일 이내의 부재 후 다시 사용하면서 맛이나 냄새 이상을 느낀 상황",
+          "example_utterances": [
+            "며칠 집 비우고 왔더니 냄새가 나요",
+            "일주일 정도 안 쓰고 나서 맛이 이상해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "물맛/냄새 이상",
+          "group_id": "TASTE_ODOR",
+          "chunk_id": "syn-scn-taste-odor-001",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 물맛/냄새 이상. 세부 시나리오: 10일 이내 부재 후 맛/냄새 이상. 관찰 패턴: 10일 이내의 부재 후 다시 사용하면서 맛이나 냄새 이상을 느낀 상황. 구분 정보: taste_odor_applicability=10일 이내 부재 후. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TASTE_ODOR_ABSENCE_OVER_10D",
+          "label": "10일 이상 부재 후 맛/냄새 이상",
+          "discriminators": {
+            "taste_odor_applicability": "10일 이상 부재 후"
+          },
+          "observation": "10일 이상 사용하지 않은 뒤 다시 사용하면서 맛이나 냄새 이상을 느낀 상황",
+          "example_utterances": [
+            "2주 정도 안 썼더니 냄새가 나요",
+            "오래 집을 비운 뒤 물맛이 달라졌어요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "물맛/냄새 이상",
+          "group_id": "TASTE_ODOR",
+          "chunk_id": "syn-scn-taste-odor-002",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 물맛/냄새 이상. 세부 시나리오: 10일 이상 부재 후 맛/냄새 이상. 관찰 패턴: 10일 이상 사용하지 않은 뒤 다시 사용하면서 맛이나 냄새 이상을 느낀 상황. 구분 정보: taste_odor_applicability=10일 이상 부재 후. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TASTE_ODOR_LONG_UNUSED",
+          "label": "장시간 미사용 직후 맛/냄새 이상",
+          "discriminators": {
+            "taste_odor_applicability": "장시간 미사용 후"
+          },
+          "observation": "정확한 기간은 모르지만 장시간 사용하지 않은 직후 맛이나 냄새 이상이 나타난 상황",
+          "example_utterances": [
+            "오랫동안 안 쓰다가 켰더니 냄새가 나요",
+            "한동안 안 쓰고 나서 물맛이 이상해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "물맛/냄새 이상",
+          "group_id": "TASTE_ODOR",
+          "chunk_id": "syn-scn-taste-odor-003",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 물맛/냄새 이상. 세부 시나리오: 장시간 미사용 직후 맛/냄새 이상. 관찰 패턴: 정확한 기간은 모르지만 장시간 사용하지 않은 직후 맛이나 냄새 이상이 나타난 상황. 구분 정보: taste_odor_applicability=장시간 미사용 후. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TASTE_ODOR_AFTER_FILTER_CHANGE",
+          "label": "필터 교체 직후 맛/냄새 이상",
+          "discriminators": {
+            "taste_odor_applicability": "필터 교체 직후"
+          },
+          "observation": "필터 교체 직후부터 이전과 다른 맛이나 냄새를 느낀 상황",
+          "example_utterances": [
+            "필터 바꾸고 나서 냄새가 나요",
+            "필터 교체한 뒤 물맛이 달라졌어요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "물맛/냄새 이상",
+          "group_id": "TASTE_ODOR",
+          "chunk_id": "syn-scn-taste-odor-004",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 물맛/냄새 이상. 세부 시나리오: 필터 교체 직후 맛/냄새 이상. 관찰 패턴: 필터 교체 직후부터 이전과 다른 맛이나 냄새를 느낀 상황. 구분 정보: taste_odor_applicability=필터 교체 직후. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TASTE_ODOR_SPECIFIC_WATER",
+          "label": "특정 출수에서만 맛/냄새 이상",
+          "discriminators": {
+            "taste_odor_applicability": "특정 출수에서만"
+          },
+          "observation": "냉수·온수·정수 중 특정 출수에서만 맛이나 냄새 이상이 느껴지는 상황",
+          "example_utterances": [
+            "냉수에서만 냄새가 나요",
+            "온수만 맛이 이상해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "물맛/냄새 이상",
+          "group_id": "TASTE_ODOR",
+          "chunk_id": "syn-scn-taste-odor-005",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 물맛/냄새 이상. 세부 시나리오: 특정 출수에서만 맛/냄새 이상. 관찰 패턴: 냉수·온수·정수 중 특정 출수에서만 맛이나 냄새 이상이 느껴지는 상황. 구분 정보: taste_odor_applicability=특정 출수에서만. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "TASTE_ODOR_PERSISTENT",
+          "label": "모든 사용에서 지속되는 맛/냄새 이상",
+          "discriminators": {
+            "taste_odor_applicability": "사용할 때마다 계속"
+          },
+          "observation": "특정 시점이나 출수에 한정되지 않고 사용할 때마다 맛이나 냄새 이상이 계속되는 상황",
+          "example_utterances": [
+            "물을 받을 때마다 계속 냄새가 나요",
+            "항상 물맛이 이상해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "물맛/냄새 이상",
+          "group_id": "TASTE_ODOR",
+          "chunk_id": "syn-scn-taste-odor-006",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 물맛/냄새 이상. 세부 시나리오: 모든 사용에서 지속되는 맛/냄새 이상. 관찰 패턴: 특정 시점이나 출수에 한정되지 않고 사용할 때마다 맛이나 냄새 이상이 계속되는 상황. 구분 정보: taste_odor_applicability=사용할 때마다 계속. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        }
+      ]
+    },
+    {
+      "group_id": "NOISE",
+      "symptom_type": "소음 이상",
+      "purpose": "소음이 발생하는 작동 시점과 반복 양상을 구분",
+      "activation_examples": [
+        "정수기에서 이상한 소리가 나요",
+        "소음이 커졌어요",
+        "웅웅거리는 소리가 나요"
+      ],
+      "primary_question": {
+        "question_id": "syn-noise-condition",
+        "question_text": "이상한 소리는 주로 언제 들리나요?",
+        "target_field": "occurrence_condition",
+        "options": [
+          "물을 받는 동안",
+          "물을 받은 직후",
+          "사용하지 않는 대기 중에도",
+          "특정 기능을 사용할 때",
+          "간헐적으로",
+          "소리와 함께 진동도 느껴짐"
+        ]
+      },
+      "secondary_question": {
+        "question_id": "syn-noise-water-type",
+        "question_text": "특정 출수를 사용할 때만 소리가 나나요?",
+        "target_field": "target_water_type",
+        "options": [
+          "냉수",
+          "온수",
+          "정수",
+          "특정하지 않음"
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_id": "NOISE_DURING_DISPENSE",
+          "label": "출수 중 소음",
+          "discriminators": {
+            "occurrence_condition": "물을 받는 동안"
+          },
+          "observation": "물을 받는 동안에만 평소와 다른 소리가 들리는 상황",
+          "example_utterances": [
+            "물 받을 때만 소리가 나요",
+            "출수 중에 웅웅거려요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "소음 이상",
+          "group_id": "NOISE",
+          "chunk_id": "syn-scn-noise-001",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 소음 이상. 세부 시나리오: 출수 중 소음. 관찰 패턴: 물을 받는 동안에만 평소와 다른 소리가 들리는 상황. 구분 정보: occurrence_condition=물을 받는 동안. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "NOISE_AFTER_DISPENSE",
+          "label": "출수 직후 소음",
+          "discriminators": {
+            "occurrence_condition": "물을 받은 직후"
+          },
+          "observation": "출수가 끝난 직후 일정 시간 동안 평소와 다른 소리가 이어지는 상황",
+          "example_utterances": [
+            "물 받고 나면 소리가 나요",
+            "출수 끝난 뒤에 웅 소리가 나요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "소음 이상",
+          "group_id": "NOISE",
+          "chunk_id": "syn-scn-noise-002",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 소음 이상. 세부 시나리오: 출수 직후 소음. 관찰 패턴: 출수가 끝난 직후 일정 시간 동안 평소와 다른 소리가 이어지는 상황. 구분 정보: occurrence_condition=물을 받은 직후. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "NOISE_IDLE",
+          "label": "대기 중 지속 소음",
+          "discriminators": {
+            "occurrence_condition": "사용하지 않는 대기 중에도"
+          },
+          "observation": "제품을 사용하지 않는 대기 상태에서도 소음이 들리는 상황",
+          "example_utterances": [
+            "아무것도 안 하는데 소리가 나요",
+            "가만히 있어도 웅웅거려요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "소음 이상",
+          "group_id": "NOISE",
+          "chunk_id": "syn-scn-noise-003",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 소음 이상. 세부 시나리오: 대기 중 지속 소음. 관찰 패턴: 제품을 사용하지 않는 대기 상태에서도 소음이 들리는 상황. 구분 정보: occurrence_condition=사용하지 않는 대기 중에도. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "NOISE_FEATURE_SPECIFIC",
+          "label": "특정 기능 사용 시 소음",
+          "discriminators": {
+            "occurrence_condition": "특정 기능을 사용할 때"
+          },
+          "observation": "냉수·온수 등 특정 기능을 사용할 때에만 소음이 나타나는 상황",
+          "example_utterances": [
+            "온수 쓸 때만 소리가 커요",
+            "냉수 기능에서만 이상한 소리가 나요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "소음 이상",
+          "group_id": "NOISE",
+          "chunk_id": "syn-scn-noise-004",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 소음 이상. 세부 시나리오: 특정 기능 사용 시 소음. 관찰 패턴: 냉수·온수 등 특정 기능을 사용할 때에만 소음이 나타나는 상황. 구분 정보: occurrence_condition=특정 기능을 사용할 때. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "NOISE_INTERMITTENT",
+          "label": "간헐적 소음",
+          "discriminators": {
+            "occurrence_condition": "간헐적으로"
+          },
+          "observation": "항상 재현되지는 않고 간헐적으로 평소와 다른 소리가 나타나는 상황",
+          "example_utterances": [
+            "가끔씩만 이상한 소리가 나요",
+            "소리가 났다 안 났다 해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "소음 이상",
+          "group_id": "NOISE",
+          "chunk_id": "syn-scn-noise-005",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 소음 이상. 세부 시나리오: 간헐적 소음. 관찰 패턴: 항상 재현되지는 않고 간헐적으로 평소와 다른 소리가 나타나는 상황. 구분 정보: occurrence_condition=간헐적으로. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "NOISE_WITH_VIBRATION",
+          "label": "진동 동반 소음",
+          "discriminators": {
+            "occurrence_condition": "소리와 함께 진동도 느껴짐"
+          },
+          "observation": "이상한 소리와 함께 제품 본체나 주변에서 진동도 느껴지는 상황",
+          "example_utterances": [
+            "소리 나면서 기계가 떨려요",
+            "웅웅거리면서 진동이 있어요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "소음 이상",
+          "group_id": "NOISE",
+          "chunk_id": "syn-scn-noise-006",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 소음 이상. 세부 시나리오: 진동 동반 소음. 관찰 패턴: 이상한 소리와 함께 제품 본체나 주변에서 진동도 느껴지는 상황. 구분 정보: occurrence_condition=소리와 함께 진동도 느껴짐. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        }
+      ]
+    },
+    {
+      "group_id": "LEAK",
+      "symptom_type": "제품 누수",
+      "purpose": "누수 위치와 사용 시점에 따라 안전 우선 분기 또는 세부 상황을 구분",
+      "activation_examples": [
+        "정수기에서 물이 새요",
+        "어디선가 물이 떨어져요",
+        "제품 주변에 물이 고여요"
+      ],
+      "primary_question": {
+        "question_id": "syn-leak-condition",
+        "question_text": "물이 새는 위치나 상황은 어디에 가장 가깝나요?",
+        "target_field": "occurrence_condition",
+        "options": [
+          "출수구 주변",
+          "제품 하단",
+          "제품 뒤쪽 호스나 연결부 주변",
+          "물을 받을 때만",
+          "사용하지 않아도 계속",
+          "전원선·플러그·콘센트 주변"
+        ]
+      },
+      "safety_bypass_rule": "원문 또는 이전 답변에 전원선·플러그·콘센트·전기부 주변 누수가 명시되면 추가질문보다 deterministic Safety를 우선",
+      "scenarios": [
+        {
+          "scenario_id": "LEAK_NOZZLE_AREA",
+          "label": "출수구 주변 누수",
+          "discriminators": {
+            "occurrence_condition": "출수구 주변"
+          },
+          "observation": "출수구나 노즐 주변에서 물방울 또는 물 흐름이 관찰되는 상황",
+          "example_utterances": [
+            "물 나오는 곳 주변에서 새요",
+            "출수구 쪽에 물방울이 맺혀요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "제품 누수",
+          "group_id": "LEAK",
+          "chunk_id": "syn-scn-leak-001",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 제품 누수. 세부 시나리오: 출수구 주변 누수. 관찰 패턴: 출수구나 노즐 주변에서 물방울 또는 물 흐름이 관찰되는 상황. 구분 정보: occurrence_condition=출수구 주변. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LEAK_BOTTOM",
+          "label": "제품 하단 누수",
+          "discriminators": {
+            "occurrence_condition": "제품 하단"
+          },
+          "observation": "제품 아래쪽 바닥에 물이 고이거나 하단에서 물이 떨어지는 상황",
+          "example_utterances": [
+            "정수기 밑에 물이 고여요",
+            "아래쪽에서 물이 새요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "제품 누수",
+          "group_id": "LEAK",
+          "chunk_id": "syn-scn-leak-002",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 제품 누수. 세부 시나리오: 제품 하단 누수. 관찰 패턴: 제품 아래쪽 바닥에 물이 고이거나 하단에서 물이 떨어지는 상황. 구분 정보: occurrence_condition=제품 하단. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LEAK_REAR_CONNECTION",
+          "label": "뒤쪽 호스·연결부 주변 누수",
+          "discriminators": {
+            "occurrence_condition": "제품 뒤쪽 호스나 연결부 주변"
+          },
+          "observation": "제품 뒤쪽 호스 또는 연결부 주변에서 물이 새는 것으로 보이는 상황",
+          "example_utterances": [
+            "뒤쪽 호스 근처가 젖어 있어요",
+            "연결부 쪽에서 물이 보여요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "제품 누수",
+          "group_id": "LEAK",
+          "chunk_id": "syn-scn-leak-003",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 제품 누수. 세부 시나리오: 뒤쪽 호스·연결부 주변 누수. 관찰 패턴: 제품 뒤쪽 호스 또는 연결부 주변에서 물이 새는 것으로 보이는 상황. 구분 정보: occurrence_condition=제품 뒤쪽 호스나 연결부 주변. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LEAK_ONLY_DURING_DISPENSE",
+          "label": "출수할 때만 누수",
+          "discriminators": {
+            "occurrence_condition": "물을 받을 때만"
+          },
+          "observation": "평소에는 보이지 않다가 물을 받을 때에만 누수가 나타나는 상황",
+          "example_utterances": [
+            "물 받을 때만 새요",
+            "출수할 때만 물이 떨어져요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "제품 누수",
+          "group_id": "LEAK",
+          "chunk_id": "syn-scn-leak-004",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 제품 누수. 세부 시나리오: 출수할 때만 누수. 관찰 패턴: 평소에는 보이지 않다가 물을 받을 때에만 누수가 나타나는 상황. 구분 정보: occurrence_condition=물을 받을 때만. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LEAK_CONTINUOUS",
+          "label": "미사용 중에도 지속 누수",
+          "discriminators": {
+            "occurrence_condition": "사용하지 않아도 계속"
+          },
+          "observation": "출수하지 않는 상태에서도 계속 물이 새거나 주변이 젖는 상황",
+          "example_utterances": [
+            "안 쓰고 있어도 계속 새요",
+            "가만히 놔둬도 물이 고여요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "제품 누수",
+          "group_id": "LEAK",
+          "chunk_id": "syn-scn-leak-005",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 제품 누수. 세부 시나리오: 미사용 중에도 지속 누수. 관찰 패턴: 출수하지 않는 상태에서도 계속 물이 새거나 주변이 젖는 상황. 구분 정보: occurrence_condition=사용하지 않아도 계속. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "LEAK_NEAR_ELECTRICAL",
+          "label": "전기부 주변 누수 — Safety 우선",
+          "discriminators": {
+            "occurrence_condition": "전원선·플러그·콘센트 주변"
+          },
+          "observation": "전원선·플러그·콘센트 등 전기 관련 부위 주변에 물이나 젖음이 관찰되는 상황",
+          "example_utterances": [
+            "콘센트 근처에 물이 있어요",
+            "전원선 쪽이 젖었어요"
+          ],
+          "force_safety_recheck": true,
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "제품 누수",
+          "group_id": "LEAK",
+          "chunk_id": "syn-scn-leak-006",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 제품 누수. 세부 시나리오: 전기부 주변 누수 — Safety 우선. 관찰 패턴: 전원선·플러그·콘센트 등 전기 관련 부위 주변에 물이나 젖음이 관찰되는 상황. 구분 정보: occurrence_condition=전원선·플러그·콘센트 주변. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        }
+      ]
+    },
+    {
+      "group_id": "FILTER_MAINT",
+      "symptom_type": "필터/관리 문의",
+      "purpose": "필터 교체 자체 문의와 교체 후 발생한 현상을 구분",
+      "activation_examples": [
+        "필터가 이상한 것 같아요",
+        "필터 바꾼 뒤 뭔가 달라졌어요",
+        "필터 관리가 궁금해요"
+      ],
+      "primary_question": {
+        "question_id": "syn-filter-condition",
+        "question_text": "필터와 관련해 어떤 상황을 확인하고 싶으신가요?",
+        "target_field": "occurrence_condition",
+        "options": [
+          "교체 시기나 주기가 궁금함",
+          "교체 후 표시가 그대로 남아 있음",
+          "교체 후 출수량이 약해짐",
+          "교체 후 맛이나 냄새가 달라짐",
+          "장기간 사용하지 않은 뒤 관리가 궁금함",
+          "필터 교체 후 다른 이상 증상이 생김"
+        ]
+      },
+      "secondary_question": {
+        "question_id": "syn-filter-actions",
+        "question_text": "필터와 관련해 이미 해본 조치가 있나요?",
+        "target_field": "actions_taken",
+        "options": [
+          "아직 없음",
+          "필터 교체",
+          "필터 상태 확인",
+          "전원 재시작"
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_id": "FILTER_REPLACEMENT_TIMING",
+          "label": "필터 교체 시기 문의",
+          "discriminators": {
+            "occurrence_condition": "교체 시기나 주기가 궁금함"
+          },
+          "observation": "현재 특별한 이상 증상보다 필터 교체 시기 또는 관리 주기를 확인하려는 상황",
+          "example_utterances": [
+            "필터 언제 바꿔야 해요?",
+            "필터 교체 주기가 궁금해요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "필터/관리 문의",
+          "group_id": "FILTER_MAINT",
+          "chunk_id": "syn-scn-filter-maint-001",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 필터/관리 문의. 세부 시나리오: 필터 교체 시기 문의. 관찰 패턴: 현재 특별한 이상 증상보다 필터 교체 시기 또는 관리 주기를 확인하려는 상황. 구분 정보: occurrence_condition=교체 시기나 주기가 궁금함. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "FILTER_INDICATOR_AFTER_CHANGE",
+          "label": "필터 교체 후 표시 유지",
+          "discriminators": {
+            "occurrence_condition": "교체 후 표시가 그대로 남아 있음"
+          },
+          "observation": "필터를 교체한 뒤에도 교체 또는 관리 관련 표시가 그대로 남아 있다고 답한 상황",
+          "example_utterances": [
+            "필터 바꿨는데 표시가 안 없어져요",
+            "교체 후에도 알림이 남아 있어요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "필터/관리 문의",
+          "group_id": "FILTER_MAINT",
+          "chunk_id": "syn-scn-filter-maint-002",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 필터/관리 문의. 세부 시나리오: 필터 교체 후 표시 유지. 관찰 패턴: 필터를 교체한 뒤에도 교체 또는 관리 관련 표시가 그대로 남아 있다고 답한 상황. 구분 정보: occurrence_condition=교체 후 표시가 그대로 남아 있음. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "FILTER_LOW_FLOW_AFTER_CHANGE",
+          "label": "필터 교체 후 출수량 저하",
+          "discriminators": {
+            "occurrence_condition": "교체 후 출수량이 약해짐"
+          },
+          "observation": "필터 교체 이후 출수량이 이전보다 약해졌다고 답한 상황",
+          "example_utterances": [
+            "필터 바꾼 뒤 물이 약해졌어요",
+            "교체하고 나서 출수가 줄었어요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "필터/관리 문의",
+          "group_id": "FILTER_MAINT",
+          "chunk_id": "syn-scn-filter-maint-003",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 필터/관리 문의. 세부 시나리오: 필터 교체 후 출수량 저하. 관찰 패턴: 필터 교체 이후 출수량이 이전보다 약해졌다고 답한 상황. 구분 정보: occurrence_condition=교체 후 출수량이 약해짐. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "FILTER_TASTE_ODOR_AFTER_CHANGE",
+          "label": "필터 교체 후 맛/냄새 변화",
+          "discriminators": {
+            "occurrence_condition": "교체 후 맛이나 냄새가 달라짐"
+          },
+          "observation": "필터 교체 이후 물맛이나 냄새가 이전과 달라졌다고 답한 상황",
+          "example_utterances": [
+            "필터 바꾼 다음부터 물맛이 달라요",
+            "교체 뒤 냄새가 나는 것 같아요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "필터/관리 문의",
+          "group_id": "FILTER_MAINT",
+          "chunk_id": "syn-scn-filter-maint-004",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 필터/관리 문의. 세부 시나리오: 필터 교체 후 맛/냄새 변화. 관찰 패턴: 필터 교체 이후 물맛이나 냄새가 이전과 달라졌다고 답한 상황. 구분 정보: occurrence_condition=교체 후 맛이나 냄새가 달라짐. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "FILTER_AFTER_LONG_UNUSED",
+          "label": "장기 미사용 후 필터 관리 문의",
+          "discriminators": {
+            "occurrence_condition": "장기간 사용하지 않은 뒤 관리가 궁금함"
+          },
+          "observation": "장기간 제품을 사용하지 않은 뒤 다시 사용할 때 필터나 관리 상태를 확인하려는 상황",
+          "example_utterances": [
+            "오래 안 쓰다가 다시 쓰려는데 필터 괜찮나요?",
+            "한동안 비웠는데 필터를 어떻게 해야 해요?"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "필터/관리 문의",
+          "group_id": "FILTER_MAINT",
+          "chunk_id": "syn-scn-filter-maint-005",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 필터/관리 문의. 세부 시나리오: 장기 미사용 후 필터 관리 문의. 관찰 패턴: 장기간 제품을 사용하지 않은 뒤 다시 사용할 때 필터나 관리 상태를 확인하려는 상황. 구분 정보: occurrence_condition=장기간 사용하지 않은 뒤 관리가 궁금함. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        },
+        {
+          "scenario_id": "FILTER_OTHER_POST_CHANGE",
+          "label": "필터 교체 후 기타 이상",
+          "discriminators": {
+            "occurrence_condition": "필터 교체 후 다른 이상 증상이 생김"
+          },
+          "observation": "필터 교체 이후 출수량·맛/냄새 외의 다른 변화가 생겼지만 구체 증상이 아직 정리되지 않은 상황",
+          "example_utterances": [
+            "필터 바꾸고 나서 뭔가 이상해요",
+            "교체 후부터 전과 달라졌어요"
+          ],
+          "knowledge_type": "SYNTHETIC_SCENARIO",
+          "clarification_only": true,
+          "evidence_eligible": false,
+          "customer_citation_allowed": false,
+          "official_evidence": false,
+          "diagnosis_allowed": false,
+          "symptom_type": "필터/관리 문의",
+          "group_id": "FILTER_MAINT",
+          "chunk_id": "syn-scn-filter-maint-006",
+          "chunk_text": "[합성 시나리오 / 추가질문 전용] 증상 유형: 필터/관리 문의. 세부 시나리오: 필터 교체 후 기타 이상. 관찰 패턴: 필터 교체 이후 출수량·맛/냄새 외의 다른 변화가 생겼지만 구체 증상이 아직 정리되지 않은 상황. 구분 정보: occurrence_condition=필터 교체 후 다른 이상 증상이 생김. 이 데이터는 세부 상황을 구분해 추가질문을 선택하기 위한 합성 지식이며, 고장 원인 진단·자가조치·안전 판정·고객 안내의 공식 근거로 사용할 수 없다."
+        }
+      ]
+    }
+  ]
+}

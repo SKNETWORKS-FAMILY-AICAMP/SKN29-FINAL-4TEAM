@@ -7,11 +7,13 @@ from .questionnaire_pending_stage import execute_questionnaire_pending_stage
 from .retrieval_stage import execute_retrieval_stage
 from .safety_check_stage import execute_safety_check_stage
 from .structuring_stage import execute_structuring_stage
+from .synthetic_clarification_stage import execute_synthetic_clarification_stage
 from .validation_stage import execute_validation_stage
 
 __all__ = [
     "execute_structuring_stage",
     "execute_safety_check_stage",
+    "execute_synthetic_clarification_stage",
     "execute_retrieval_stage",
     "execute_generation_stage",
     "execute_evidence_clarification_stage",

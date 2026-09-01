@@ -29,15 +29,15 @@
     },
     "inquiry_events": {
       "path": "contracts/state-machine/inquiry-events.yaml",
-      "sha256": "051272FF4D011DAD872E0BF20C6CC2C8A8739664A9D352E6585B1BEC9DB6F618"
+      "sha256": "7393849155BBEEFA0C2D1F38868F14E30C19953B7C6A5CE0E5CDE9A2A15A81DE"
     },
     "transition_rules": {
       "path": "contracts/state-machine/transition-rules.yaml",
-      "sha256": "AF5CA23DF0FF47CDF6B78FD33D9CBEA32A64F6A83174AFC03DE9D0F5811B34E1"
+      "sha256": "5EC9D711F7B07D61C71A979E44175D3F18864846C59379D2B4EBBCF7C107491A"
     },
     "allowed_actions": {
       "path": "contracts/state-machine/allowed-actions.yaml",
-      "sha256": "0A119B79D13F1D80905E087185F4FE60B3BD5D74FE322FB1D72D436D911114DA"
+      "sha256": "6CD746025D5BF2C2773756FD84C02B1EF4614E3F10C2316B29447431AA95A9D3"
     },
     "data_state_crosswalk": {
       "path": "contracts/state-machine/data-state-crosswalk.yaml",

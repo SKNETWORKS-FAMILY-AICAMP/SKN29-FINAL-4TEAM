@@ -327,7 +327,7 @@ def test_multi_agent_evidence_path_matches_single_rag_public_contract():
     ]
 
 
-def test_missing_fields_do_not_block_retrieval_when_evidence_is_sufficient():
+def test_known_water_type_uses_synthetic_condition_question_before_retrieval():
     ctx = PipelineContext(
         trace_context=TraceContext(
             inquiry_id=INQUIRY_ID,
@@ -344,23 +344,24 @@ def test_missing_fields_do_not_block_retrieval_when_evidence_is_sufficient():
     assert symptom_output.followup_questions == []
     evidence_output = EvidenceAnalysisAgent(EvidenceSearchService(), token).run(ctx)
 
-    assert evidence_output.retrieval_outcome == RetrievalOutcome.AVAILABLE
-    assert evidence_output.evidence_sufficient is True
-    assert evidence_output.request_more_information is False
-    assert ctx.followup_questions == []
+    assert evidence_output.retrieval_outcome == RetrievalOutcome.NOT_RUN
+    assert evidence_output.evidence_sufficient is False
+    assert evidence_output.request_more_information is True
+    assert len(ctx.followup_questions) == 1
+    assert ctx.followup_questions[0].target_field == "occurrence_condition"
 
 
-def test_ambiguous_evidence_generates_scenario_distinguishing_question():
+def test_synthetic_scenario_generates_question_before_official_evidence():
     result = _run_multi_agent(
         search_service=AmbiguousHotWaterSearchService(),
         raw_symptom="온수가 미지근해요",
         llm_client=UnexpectedGuidanceLLMClient(),
     )
 
-    assert result.context.retrieval_outcome == RetrievalOutcome.AVAILABLE
+    assert result.context.retrieval_outcome == RetrievalOutcome.NOT_RUN
     assert result.context.evidence_sufficient is False
     assert result.context.evidence_clarification_reason == (
-        "EVIDENCE_SCENARIOS_AMBIGUOUS"
+        "SYNTHETIC_SCENARIO_AMBIGUOUS"
     )
     assert result.context.awaiting_customer_input is True
     assert len(result.context.followup_questions) == 1
@@ -400,7 +401,7 @@ def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence
     )
 
 
-def test_multi_agent_earthy_taste_retrieves_before_evidence_clarification():
+def test_multi_agent_earthy_taste_clarifies_before_official_retrieval():
     search_service = TasteEvidenceSearchService()
     result = _run_multi_agent(
         search_service=search_service,
@@ -411,8 +412,8 @@ def test_multi_agent_earthy_taste_retrieves_before_evidence_clarification():
     reasons = [item.reason_code for item in result.multi_agent_metadata.handoffs]
 
     assert result.context.awaiting_customer_input is True
-    assert search_service.calls == 1
-    assert result.context.retrieval_outcome == RetrievalOutcome.NO_MATCH
+    assert search_service.calls == 0
+    assert result.context.retrieval_outcome == RetrievalOutcome.NOT_RUN
     assert result.multi_agent_metadata.awaiting_customer_input is True
     assert response.status.value == "SUCCEEDED"
     assert response.failure_stage is None

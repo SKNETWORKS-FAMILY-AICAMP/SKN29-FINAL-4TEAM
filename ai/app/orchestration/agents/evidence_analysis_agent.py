@@ -10,6 +10,7 @@ from ..pipeline_context import PipelineContext
 from ..stages import (
     execute_evidence_clarification_stage,
     execute_retrieval_stage,
+    execute_synthetic_clarification_stage,
 )
 from .contracts import EvidenceAgentOutput
 
@@ -40,6 +41,15 @@ class EvidenceAnalysisAgent:
         self.timeout_policy = get_stage_timeout_policy()
 
     def run(self, ctx: PipelineContext) -> EvidenceAgentOutput:
+        synthetic = execute_synthetic_clarification_stage(ctx)
+        if synthetic.question is not None:
+            return EvidenceAgentOutput(
+                retrieval_outcome=ctx.retrieval_outcome,
+                evidence_references=[],
+                evidence_sufficient=False,
+                request_more_information=True,
+            )
+
         with self.cancellation_token.deadline_scope(
             self.timeout_policy.for_stage(AiStage.RETRIEVING.value),
             AiStage.RETRIEVING.value,

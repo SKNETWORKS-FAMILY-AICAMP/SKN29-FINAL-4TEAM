@@ -1,0 +1,122 @@
+{
+  "dataset_id": "waterbridge_synthetic_clarification_demo_cases_v1",
+  "created_date": "2026-09-01",
+  "cases": [
+    {
+      "case_id": "DEMO-LOW-FLOW-01",
+      "input": "물이 약하게 나와요",
+      "expected_symptom_type": "출수량 저하",
+      "expected_question_target": "target_water_type",
+      "expected_question": "어떤 출수에서 물이 약하게 나오나요?",
+      "expected_options": [
+        "냉수",
+        "온수",
+        "정수",
+        "전체"
+      ],
+      "reason": "동일 증상 유형에 냉수/온수/정수/전체 시나리오가 동시에 존재"
+    },
+    {
+      "case_id": "DEMO-LOW-FLOW-02",
+      "input": "전체적으로 물이 약해요",
+      "expected_symptom_type": "출수량 저하",
+      "expected_question_target": "occurrence_condition",
+      "expected_question": "출수량이 약해지는 양상은 어떤 경우에 가장 가깝나요?",
+      "expected_options": [
+        "사용할 때마다 계속 약함",
+        "처음 몇 초만 약하고 이후 정상",
+        "연속으로 사용할수록 점점 약해짐",
+        "간헐적으로 약해졌다가 정상으로 돌아옴",
+        "필터 교체 직후부터 약해짐"
+      ],
+      "reason": "target_water_type이 전체로 좁혀져도 시간/사용 패턴에 따른 후보가 여러 개"
+    },
+    {
+      "case_id": "DEMO-TEMP-01",
+      "input": "온수가 이상해요",
+      "expected_symptom_type": "온도 이상",
+      "expected_question_target": "occurrence_condition",
+      "expected_question": "온도 이상은 어떤 상황에서 가장 자주 나타나나요?",
+      "expected_options": [
+        "첫 잔에서만",
+        "여러 잔 연속 사용할 때",
+        "사용할 때마다 계속",
+        "간헐적으로",
+        "처음에는 이상하지만 잠시 뒤 정상"
+      ],
+      "reason": "온수 이상 내부에도 첫 잔/연속 사용/지속 시나리오가 공존"
+    },
+    {
+      "case_id": "DEMO-TASTE-01",
+      "input": "물에서 냄새가 나요",
+      "expected_symptom_type": "물맛/냄새 이상",
+      "expected_question_target": "taste_odor_applicability",
+      "expected_question": "이상한 맛이나 냄새는 어떤 상황에서 시작됐나요?",
+      "expected_options": [
+        "10일 이내 부재 후",
+        "10일 이상 부재 후",
+        "장시간 미사용 후",
+        "필터 교체 직후",
+        "특정 출수에서만",
+        "사용할 때마다 계속"
+      ],
+      "reason": "현재 코드의 taste/odor applicability 개념과 맞춘 분기"
+    },
+    {
+      "case_id": "DEMO-NOISE-01",
+      "input": "정수기 소리가 이상해요",
+      "expected_symptom_type": "소음 이상",
+      "expected_question_target": "occurrence_condition",
+      "expected_question": "이상한 소리는 주로 언제 들리나요?",
+      "expected_options": [
+        "물을 받는 동안",
+        "물을 받은 직후",
+        "사용하지 않는 대기 중에도",
+        "특정 기능을 사용할 때",
+        "간헐적으로",
+        "소리와 함께 진동도 느껴짐"
+      ],
+      "reason": "작동 시점이 시나리오를 가르는 핵심 축"
+    },
+    {
+      "case_id": "DEMO-LEAK-01",
+      "input": "정수기에서 물이 새요",
+      "expected_symptom_type": "제품 누수",
+      "expected_question_target": "occurrence_condition",
+      "expected_question": "물이 새는 위치나 상황은 어디에 가장 가깝나요?",
+      "expected_options": [
+        "출수구 주변",
+        "제품 하단",
+        "제품 뒤쪽 호스나 연결부 주변",
+        "물을 받을 때만",
+        "사용하지 않아도 계속",
+        "전원선·플러그·콘센트 주변"
+      ],
+      "reason": "원문에 위험 위치가 없을 때만 위치를 구분"
+    },
+    {
+      "case_id": "DEMO-LEAK-SAFETY-01",
+      "input": "콘센트 근처로 물이 새요",
+      "expected_symptom_type": "제품 누수",
+      "expected_question_target": null,
+      "expected_route": "DETERMINISTIC_SAFETY_FIRST",
+      "reason": "전기부 주변 누수가 이미 명시돼 있으므로 synthetic clarification 금지"
+    },
+    {
+      "case_id": "DEMO-FILTER-01",
+      "input": "필터 바꾸고 나서 이상해요",
+      "expected_symptom_type": "필터/관리 문의",
+      "expected_question_target": "occurrence_condition",
+      "expected_question": "필터와 관련해 어떤 상황을 확인하고 싶으신가요?",
+      "expected_options": [
+        "교체 시기나 주기가 궁금함",
+        "교체 후 표시가 그대로 남아 있음",
+        "교체 후 출수량이 약해짐",
+        "교체 후 맛이나 냄새가 달라짐",
+        "장기간 사용하지 않은 뒤 관리가 궁금함",
+        "필터 교체 후 다른 이상 증상이 생김"
+      ],
+      "reason": "필터라는 큰 유형만으로는 세부 의도를 구분할 수 없음"
+    }
+  ]
+}
