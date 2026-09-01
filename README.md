@@ -134,32 +134,9 @@ P1 코드·화면 골격이나 과거 테스트가 존재하더라도 P0 핵심 
 
 ## 서비스 흐름
 
-```mermaid
-flowchart LR
-    subgraph P0["P0 핵심 흐름"]
-        CUSTOMER["고객 Android 앱"]
-        BACKEND["Django·DRF Backend<br/>권한·상태·업무 원장"]
-        AI["FastAPI AI·RAG<br/>구조화·근거·안전 검증"]
-        CONSULTANT["상담사 React 웹"]
+![WaterBridge 서비스 흐름](docs/assets/readme-diagrams/service-flow.svg)
 
-        CUSTOMER -->|"인증·문의·문진"| BACKEND
-        BACKEND -->|"분석 요청"| AI
-        AI -->|"안내·근거·상담 필요 신호"| BACKEND
-        BACKEND -->|"상담 큐·문의 맥락"| CONSULTANT
-        CONSULTANT -->|"상담 기록·완료·방문 필요 판정"| BACKEND
-        BACKEND -->|"상담 결과·현재 상태"| CUSTOMER
-        CUSTOMER -->|"해결 여부·재문의"| BACKEND
-    end
-
-    subgraph P1["P1 후속 흐름"]
-        TECHNICIAN["방문기사 Android 앱<br/>배정·일정·현장 결과"]
-        OPERATOR["운영 React 웹<br/>현황·예외·지표"]
-    end
-
-    BACKEND -.->|방문 필요 인계| TECHNICIAN
-    TECHNICIAN -.->|방문 처리 결과| BACKEND
-    BACKEND -.->|운영 현황 전달| OPERATOR
-```
+다이어그램 원본은 [서비스 흐름 Mermaid 파일](docs/assets/readme-diagrams/service-flow.mmd?plain=1)에서 관리합니다.
 
 AI는 안내와 구조화된 결과를 반환하지만 문의 상태를 직접 변경하지 않습니다. 모든 상태 변경은 Backend가 권한, 가드, 상태 버전과 멱등성을 확인한 뒤 기록합니다.
 상태·이벤트·가드·완료 정책의 상세 기준은 [State Machine 계약](contracts/state-machine/README.md)에서 관리합니다. 계약 승인은 개별 기능의 Runtime 구현 완료를 의미하지 않습니다.
@@ -168,55 +145,9 @@ AI는 안내와 구조화된 결과를 반환하지만 문의 상태를 직접 �
 
 아래 그림은 현재 저장소의 책임 경계와 P0·P1 우선순위를 함께 표현합니다. 사용자 채널은 AI·DB를 직접 호출하지 않으며 Backend가 인증·권한·업무 상태의 최종 책임을 가집니다. 점선 P1 연결은 확장 경계이며 구현·배포 완료를 뜻하지 않습니다.
 
-```mermaid
-flowchart LR
-    subgraph P0_CHANNELS["P0 핵심 사용자 채널"]
-        CUSTOMER_APP["고객 Android 앱"]
-        CONSULTANT_WEB["상담사 React 웹"]
-    end
+![WaterBridge 시스템 아키텍처](docs/assets/readme-diagrams/system-architecture.svg)
 
-    subgraph P1_CHANNELS["P1 후속 사용자 채널"]
-        TECH_APP["방문기사 Android 앱"]
-        OPERATOR_WEB["운영 React 웹"]
-    end
-
-    subgraph SERVICES["서비스 계층"]
-        BACKEND["Django 5.2·DRF Backend<br/>/api/v1<br/>JWT·RBAC·State Machine·Audit"]
-        AI["FastAPI·LangGraph AI/RAG<br/>구조화·검색·생성·안전 검증"]
-    end
-
-    subgraph STORAGE["데이터 계층"]
-        BUSINESS_DB[("PostgreSQL 16<br/>업무 원장·상태 이력")]
-        VECTOR_DB[("pgvector<br/>검증 근거·검색 인덱스")]
-        DATA["공식 근거 메타데이터<br/>합성 Fixture·평가 데이터"]
-    end
-
-    CONTRACTS["contracts/**<br/>OpenAPI·AI Schema·State·Code"]
-    DELIVERY["Docker·GitHub Actions·AWS<br/>ECR·EC2/SSM·RDS·Nginx"]
-
-    CUSTOMER_APP --> BACKEND
-    CONSULTANT_WEB --> BACKEND
-    TECH_APP -.->|P1| BACKEND
-    OPERATOR_WEB -.->|P1| BACKEND
-    BACKEND --> AI
-    AI --> BACKEND
-    BACKEND --> BUSINESS_DB
-    AI --> VECTOR_DB
-    DATA --> VECTOR_DB
-    DATA --> BACKEND
-
-    CONTRACTS -.-> CUSTOMER_APP
-    CONTRACTS -.-> CONSULTANT_WEB
-    CONTRACTS -.-> TECH_APP
-    CONTRACTS -.-> OPERATOR_WEB
-    CONTRACTS -.-> BACKEND
-    CONTRACTS -.-> AI
-    DELIVERY -.-> CUSTOMER_APP
-    DELIVERY -.-> CONSULTANT_WEB
-    DELIVERY -.-> BACKEND
-    DELIVERY -.-> AI
-    DELIVERY -.-> BUSINESS_DB
-```
+다이어그램 원본은 [시스템 아키텍처 Mermaid 파일](docs/assets/readme-diagrams/system-architecture.mmd?plain=1)에서 관리합니다.
 
 PostgreSQL 업무 원장과 pgvector 검색 인덱스는 같은 PostgreSQL 계열 인프라에 배치될 수 있지만, 그림에서는 쓰기 책임과 검색 책임을 분명히 하기 위해 논리적으로 나눴습니다. 개별 Route·배포·E2E 완료 범위는 각 Component README, [Runtime 구현 현황](docs/api/runtime_implementation_status.md), [WBS](docs/planning/md/WBS.md)에서 별도로 확인합니다.
 
