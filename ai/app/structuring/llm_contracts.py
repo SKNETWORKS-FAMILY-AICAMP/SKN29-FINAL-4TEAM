@@ -54,6 +54,7 @@ class SafetySignalEvidence(BaseModel):
         "water_leak",
         "smoke_or_burn",
         "shock_or_spark",
+        "refrigerant_leak_or_line_damage",
     ]
     evidence_quote: str = Field(min_length=1, max_length=500)
     source: Literal["RAW_SYMPTOM", "PREVIOUS_ANSWER"]
@@ -70,6 +71,7 @@ class SafetySignals(BaseModel):
     water_leak: bool = False
     smoke_or_burn: bool = False
     shock_or_spark: bool = False
+    refrigerant_leak_or_line_damage: bool = False
     evidence: list[SafetySignalEvidence] = Field(default_factory=list, max_length=10)
 
     @property
@@ -82,6 +84,7 @@ class SafetySignals(BaseModel):
                 self.water_leak,
                 self.smoke_or_burn,
                 self.shock_or_spark,
+                self.refrigerant_leak_or_line_damage,
             )
         )
 
