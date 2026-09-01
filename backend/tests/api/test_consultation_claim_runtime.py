@@ -287,6 +287,57 @@ def test_p1_team_contract_routes_queue_and_claim_to_numbered_consultant():
     assert inquiry_001.assigned_user == skn_001
 
 
+def test_skn_007_routes_only_the_approved_extra_contract():
+    skn_007 = create_user(
+        97,
+        role=User.Role.CONSULTANT,
+        username="SKN-007",
+    )
+    skn_001 = create_user(
+        98,
+        role=User.Role.CONSULTANT,
+        username="SKN-001",
+    )
+    public_consultant = create_user(99, role=User.Role.CONSULTANT)
+    extra_inquiry, _ = create_queue_item(
+        97,
+        contract_no="SYN-P1-EXTRA-CONTRACT-001",
+    )
+    public_inquiry, _ = create_queue_item(99)
+
+    queue_007 = client_for(skn_007).get(QUEUE_PATH).json()["data"]
+    queue_001 = client_for(skn_001).get(QUEUE_PATH).json()["data"]
+    public_queue = client_for(public_consultant).get(QUEUE_PATH).json()[
+        "data"
+    ]
+
+    assert {
+        item["inquiry_id"] for item in queue_007["items"]
+    } == {str(extra_inquiry.public_id), str(public_inquiry.public_id)}
+    assert {
+        item["inquiry_id"] for item in queue_001["items"]
+    } == {str(public_inquiry.public_id)}
+    assert {
+        item["inquiry_id"] for item in public_queue["items"]
+    } == {str(public_inquiry.public_id)}
+
+    denied = claim(
+        actor=skn_001,
+        inquiry=extra_inquiry,
+        key="skn-007-extra-contract-denied",
+    )
+    assert denied.status_code == 404
+
+    allowed = claim(
+        actor=skn_007,
+        inquiry=extra_inquiry,
+        key="skn-007-extra-contract-allowed",
+    )
+    assert allowed.status_code == 200
+    extra_inquiry.refresh_from_db()
+    assert extra_inquiry.assigned_user == skn_007
+
+
 def test_claim_assigns_both_rows_without_starting_consultation():
     consultant = create_user(30, role=User.Role.CONSULTANT)
     inquiry, consultation = create_queue_item(30)
