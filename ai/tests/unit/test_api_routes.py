@@ -77,15 +77,24 @@ def test_analyze_endpoint_local_mode_leak(client):
 
     response = client.post("/api/v1/ai/analyze?mode=local", json=payload)
     assert response.status_code == 200
-    data = response.json()
+    envelope = response.json()
+    data = envelope["analysis_result"]
 
     assert data["safety_assessment"]["risk_level"] == "danger"
     assert data["usage_guidance"]["guidance_status"] == "TOTAL_STOP"
     assert data["safety_assessment"]["requires_consultation"] is True
+    assert envelope["contract_version"] == "1.0.0"
+    assert {
+        cause["cause_code"]
+        for cause in envelope["consultation_cause_ledger"]["causes"]
+    } == {"DANGER_ASSESSMENT", "EXPLICIT_SAFETY_RULE"}
 
 
-def test_local_mode_can_select_multi_agent_without_changing_public_schema(client, monkeypatch):
-    """후보 Runtime은 Process 설정으로만 선택되고 공개 계약은 4.0.0을 유지한다."""
+def test_local_mode_multi_agent_envelope_preserves_nested_public_4_0_0(
+    client,
+    monkeypatch,
+):
+    """내부 Envelope 안에서도 공개 분석 본문은 4.0.0 그대로 유지한다."""
 
     monkeypatch.setenv("AI_PIPELINE_RUNTIME", "multi_agent")
     response = client.post(
@@ -103,11 +112,14 @@ def test_local_mode_can_select_multi_agent_without_changing_public_schema(client
     )
 
     assert response.status_code == 200
-    body = response.json()
-    assert body["safety_assessment"]["risk_level"] == "danger"
-    assert body["usage_guidance"]["guidance_status"] == "TOTAL_STOP"
-    assert "runtime_name" not in body
-    assert "multi_agent_metadata" not in body
+    envelope = response.json()
+    analysis = envelope["analysis_result"]
+    ledger = envelope["consultation_cause_ledger"]
+    assert analysis["safety_assessment"]["risk_level"] == "danger"
+    assert analysis["usage_guidance"]["guidance_status"] == "TOTAL_STOP"
+    assert "runtime_name" not in analysis
+    assert "multi_agent_metadata" not in analysis
+    assert ledger["execution_identity"]["runtime_name"] == "multi_agent"
 
 
 def test_invalid_pipeline_runtime_fails_closed_as_503(client, monkeypatch):
@@ -152,13 +164,67 @@ def test_local_mode_no_match_is_200_fallback(client, monkeypatch):
     })
 
     assert response.status_code == 200
-    body = response.json()
+    envelope = response.json()
+    body = envelope["analysis_result"]
     assert body["status"] == "FALLBACK"
     assert body["failure_stage"] == "RETRIEVING"
     assert body["evidence_references"] == []
     assert body["safety_assessment"]["risk_level"] == "caution"
     assert body["safety_assessment"]["requires_consultation"] is True
     assert body["usage_guidance"]["guidance_status"] == "PENDING_CONSULTATION"
+    assert "FAIL_CLOSED_AI_RESULT" in {
+        cause["cause_code"]
+        for cause in envelope["consultation_cause_ledger"]["causes"]
+    }
+
+
+def test_local_mode_envelope_failure_is_sanitized_and_skips_handoff(
+    client,
+    monkeypatch,
+):
+    from ai.app.interfaces.http.routes import analysis_routes
+    from ai.app.schemas.consultation_cause_ledger import (
+        ConsultationCauseLedgerBuildError,
+    )
+
+    scheduled = []
+
+    def fail_envelope(*args, **kwargs):
+        raise ConsultationCauseLedgerBuildError(
+            "secret-sentinel-must-not-leak"
+        )
+
+    monkeypatch.setattr(
+        analysis_routes,
+        "_build_runtime_envelope",
+        fail_envelope,
+    )
+    monkeypatch.setattr(
+        analysis_routes,
+        "_schedule_handoff_delivery",
+        lambda *args, **kwargs: scheduled.append(True),
+    )
+
+    response = client.post(
+        "/api/v1/ai/analyze?mode=local",
+        json={
+            "inquiry_id": INQUIRY_ID,
+            "correlation_id": CORRELATION_ID,
+            "ai_request_id": "ai-req-envelope-failure",
+            "state_version": 1,
+            "raw_symptom": "정수기 하부에서 누수가 생겼습니다.",
+            "model_code": "WPUJAC104DWH",
+            "selected_symptoms": ["누수"],
+            "previous_answers": [],
+        },
+    )
+
+    assert response.status_code == 503
+    body = response.json()
+    assert body["error"]["failure_stage"] == "VALIDATING"
+    assert body["error"]["retryable"] is False
+    assert "secret-sentinel" not in response.text
+    assert scheduled == []
 
 
 def test_local_mode_missing_vector_config_is_non_retryable_503(client, monkeypatch):

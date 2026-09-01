@@ -4,14 +4,24 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
+import subprocess
+from collections.abc import Iterable
 from enum import Enum
+from functools import lru_cache
+from pathlib import Path
 from typing import Literal
-from uuid import UUID
+from uuid import NAMESPACE_URL, UUID, uuid5
 
-from pydantic import Field, model_validator
+from pydantic import Field, ValidationError, model_validator
 
-from .common import ContractModel
+from .common import (
+    AiExecutionStatus,
+    ContractModel,
+    RiskLevel,
+    VerificationStatus,
+)
 from .pipeline import SymptomAnalysisResult
 
 
@@ -19,6 +29,25 @@ SHA256_PATTERN = r"^[0-9a-fA-F]{64}$"
 COMMIT_SHA_PATTERN = r"^[0-9a-f]{40}$"
 CODE_PATTERN = r"^[A-Z][A-Z0-9_]{2,99}$"
 RULE_ID_PATTERN = r"^SAFETY-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]{3}$"
+POLICY_VERSION = "consultation-cause-ledger/1.0.0"
+_LEDGER_NAMESPACE = uuid5(
+    NAMESPACE_URL,
+    "https://waterbridge.site/contracts/ai/consultation-cause-ledger/1.0.0",
+)
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+_FAIL_CLOSED_HARNESS_ISSUES = frozenset(
+    {
+        "NO_EVIDENCE",
+        "UNVERIFIED_EVIDENCE",
+        "WRONG_MODEL_EVIDENCE",
+        "PRODUCT_FAMILY_MISMATCH",
+        "SAFETY_CONFLICT",
+        "OUTPUT_SCHEMA_INVALID",
+        "AI_PROCESSING_TIMEOUT",
+        "RUNTIME_PRODUCT_NOT_APPROVED",
+        "MCP_TOOL_FAILURE",
+    }
+)
 
 
 class ConsultationCauseCode(str, Enum):
@@ -46,6 +75,10 @@ class CauseOrigin(str, Enum):
 class CauseStatus(str, Enum):
     ACTIVE = "ACTIVE"
     RESOLUTION_PROPOSED = "RESOLUTION_PROPOSED"
+
+
+class ConsultationCauseLedgerBuildError(RuntimeError):
+    """Sanitized fail-closed signal for deterministic Runtime construction."""
 
 
 EXPECTED_LOCK_CLASS = {
@@ -203,6 +236,243 @@ class AnalysisConsultationEnvelope(ContractModel):
         return self
 
 
+@lru_cache(maxsize=4)
+def resolve_execution_commit_sha(release_sha: str | None = None) -> str:
+    """Resolve the immutable release identity without inventing a commit SHA."""
+
+    candidate = (release_sha or "").strip().lower()
+    if candidate:
+        if re.fullmatch(COMMIT_SHA_PATTERN, candidate):
+            return candidate
+        raise ConsultationCauseLedgerBuildError(
+            "EXECUTION_COMMIT_SHA_INVALID"
+        )
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=_REPOSITORY_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ConsultationCauseLedgerBuildError(
+            "EXECUTION_COMMIT_SHA_UNAVAILABLE"
+        ) from exc
+    candidate = completed.stdout.strip().lower()
+    if not re.fullmatch(COMMIT_SHA_PATTERN, candidate):
+        raise ConsultationCauseLedgerBuildError(
+            "EXECUTION_COMMIT_SHA_INVALID"
+        )
+    return candidate
+
+
+def build_analysis_consultation_envelope(
+    analysis_result: SymptomAnalysisResult,
+    *,
+    runtime_name: Literal["single_rag", "multi_agent"],
+    harness_issue_codes: Iterable[str] = (),
+    execution_commit_sha: str | None = None,
+    model_provider: str | None = None,
+    model_name: str | None = None,
+    prompt_version: str | None = None,
+    prompt_sha256: str | None = None,
+) -> AnalysisConsultationEnvelope:
+    """Build the internal Envelope from deterministic Runtime decisions only."""
+
+    if any(
+        evidence.verification_status
+        != VerificationStatus.OFFICIAL_VERIFIED
+        for evidence in analysis_result.evidence_references
+    ):
+        raise ConsultationCauseLedgerBuildError(
+            "UNVERIFIED_EVIDENCE_NOT_ALLOWED"
+        )
+
+    commit_sha = resolve_execution_commit_sha(
+        execution_commit_sha or os.getenv("RELEASE_SHA")
+    )
+    analysis_hash = canonical_payload_sha256(analysis_result)
+    ledger_identity = json.dumps(
+        {
+            "inquiry_id": str(analysis_result.inquiry_id),
+            "correlation_id": str(analysis_result.correlation_id),
+            "ai_request_id": analysis_result.ai_request_id,
+            "state_version": analysis_result.state_version,
+            "model_code": analysis_result.model_code,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    ledger_id = uuid5(
+        _LEDGER_NAMESPACE,
+        ledger_identity,
+    )
+    issue_codes = {
+        str(getattr(code, "value", code)).strip().upper()
+        for code in harness_issue_codes
+        if str(getattr(code, "value", code)).strip()
+    }
+    causes = _deterministic_causes(
+        analysis_result,
+        ledger_id=ledger_id,
+        issue_codes=issue_codes,
+    )
+    consultation_required = bool(
+        analysis_result.safety_assessment.requires_consultation
+    )
+    if consultation_required != bool(causes):
+        raise ConsultationCauseLedgerBuildError(
+            "CONSULTATION_CAUSE_AUTHORITY_MISMATCH"
+        )
+
+    execution_identity = LedgerExecutionIdentity(
+        execution_commit_sha=commit_sha,
+        runtime_name=runtime_name,
+        model_provider=model_provider,
+        model_name=model_name,
+        prompt_version=prompt_version,
+        prompt_sha256=prompt_sha256,
+    )
+    ledger_payload = {
+        "contract_version": "1.0.0",
+        "ledger_id": str(ledger_id),
+        "inquiry_id": str(analysis_result.inquiry_id),
+        "correlation_id": str(analysis_result.correlation_id),
+        "ai_request_id": analysis_result.ai_request_id,
+        "state_version": analysis_result.state_version,
+        "model_code": analysis_result.model_code,
+        "producer": "AI_HARNESS",
+        "policy_version": POLICY_VERSION,
+        "execution_identity": execution_identity.model_dump(mode="json"),
+        "analysis_result_sha256": analysis_hash,
+        "causes": [cause.model_dump(mode="json") for cause in causes],
+    }
+    ledger_payload["ledger_sha256"] = canonical_payload_sha256(
+        ledger_payload
+    )
+    try:
+        ledger = ConsultationCauseLedger.model_validate(ledger_payload)
+        return AnalysisConsultationEnvelope(
+            analysis_result=analysis_result,
+            consultation_cause_ledger=ledger,
+        )
+    except ValidationError as exc:
+        raise ConsultationCauseLedgerBuildError(
+            "CONSULTATION_CAUSE_LEDGER_INVALID"
+        ) from exc
+
+
+def _deterministic_causes(
+    analysis_result: SymptomAnalysisResult,
+    *,
+    ledger_id: UUID,
+    issue_codes: set[str],
+) -> list[ConsultationCause]:
+    safety = analysis_result.safety_assessment
+    rule_ids = sorted(set(safety.matched_safety_rule_ids))
+    if safety.risk_level == RiskLevel.DANGER and not rule_ids:
+        raise ConsultationCauseLedgerBuildError(
+            "DANGER_RULE_ID_MISSING"
+        )
+
+    causes: list[ConsultationCause] = []
+    cause_keys: set[tuple[str, str]] = set()
+
+    def add_cause(
+        *,
+        code: ConsultationCauseCode,
+        origin: CauseOrigin,
+        verification_code: str,
+        matched_rule_ids: list[str] | None = None,
+    ) -> None:
+        key = (code.value, verification_code)
+        if key in cause_keys:
+            return
+        cause_keys.add(key)
+        cause = ConsultationCause(
+            cause_id=uuid5(
+                _LEDGER_NAMESPACE,
+                f"{ledger_id}|{code.value}|{verification_code}",
+            ),
+            cause_code=code,
+            origin=origin,
+            lock_class=EXPECTED_LOCK_CLASS[code],
+            verification_code=verification_code,
+            matched_safety_rule_ids=matched_rule_ids or [],
+            required_fact_codes=[],
+            # Public EvidenceReference intentionally lacks the canonical
+            # document/source/content hashes required by LedgerEvidenceReference.
+            # Never fabricate those values; active v1 causes do not require them.
+            evidence_refs=[],
+            status=CauseStatus.ACTIVE,
+            supersedes_cause_id=None,
+        )
+        causes.append(cause)
+
+    if safety.risk_level == RiskLevel.DANGER:
+        add_cause(
+            code=ConsultationCauseCode.DANGER_ASSESSMENT,
+            origin=CauseOrigin.AI_SAFETY,
+            verification_code="DETERMINISTIC_DANGER_ASSESSMENT",
+            matched_rule_ids=rule_ids,
+        )
+    if rule_ids and (
+        safety.risk_level == RiskLevel.DANGER
+        or (
+            safety.requires_consultation
+            and analysis_result.status == AiExecutionStatus.SUCCEEDED
+        )
+    ):
+        add_cause(
+            code=ConsultationCauseCode.EXPLICIT_SAFETY_RULE,
+            origin=CauseOrigin.AI_SAFETY,
+            verification_code="APPROVED_SAFETY_RULE_MATCH",
+            matched_rule_ids=rule_ids,
+        )
+
+    if analysis_result.status == AiExecutionStatus.FALLBACK:
+        fallback_reason = analysis_result.fallback_reason_code
+        if fallback_reason is None:
+            raise ConsultationCauseLedgerBuildError(
+                "FALLBACK_REASON_MISSING"
+            )
+        add_cause(
+            code=ConsultationCauseCode.FAIL_CLOSED_AI_RESULT,
+            origin=CauseOrigin.AI_RUNTIME,
+            verification_code=f"FALLBACK_{fallback_reason.value}",
+        )
+
+    if "UNSUPPORTED_FUNCTION" in issue_codes:
+        add_cause(
+            code=ConsultationCauseCode.HARNESS_UNSUPPORTED_FUNCTION,
+            origin=CauseOrigin.HARNESS,
+            verification_code="HARNESS_UNSUPPORTED_FUNCTION",
+        )
+    if "PRODUCT_FAMILY_MISMATCH" in issue_codes:
+        add_cause(
+            code=ConsultationCauseCode.HARNESS_SCOPE_EXCEEDED,
+            origin=CauseOrigin.HARNESS,
+            verification_code="HARNESS_PRODUCT_FAMILY_SCOPE_EXCEEDED",
+        )
+    for issue_code in sorted(issue_codes & _FAIL_CLOSED_HARNESS_ISSUES):
+        add_cause(
+            code=ConsultationCauseCode.FAIL_CLOSED_AI_RESULT,
+            origin=CauseOrigin.HARNESS,
+            verification_code=f"HARNESS_{issue_code}",
+        )
+
+    if safety.requires_consultation and not causes:
+        add_cause(
+            code=ConsultationCauseCode.UNCLASSIFIED_AI_SIGNAL,
+            origin=CauseOrigin.AI_RUNTIME,
+            verification_code="CONSULTATION_REQUIRED_UNCLASSIFIED",
+        )
+    return causes
+
+
 __all__ = [
     "AnalysisConsultationEnvelope",
     "CauseOrigin",
@@ -210,8 +480,11 @@ __all__ = [
     "ConsultationCause",
     "ConsultationCauseCode",
     "ConsultationCauseLedger",
+    "ConsultationCauseLedgerBuildError",
     "ConsultationLockClass",
     "LedgerEvidenceReference",
     "LedgerExecutionIdentity",
+    "build_analysis_consultation_envelope",
     "canonical_payload_sha256",
+    "resolve_execution_commit_sha",
 ]

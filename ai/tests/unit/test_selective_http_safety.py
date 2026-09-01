@@ -1,4 +1,4 @@
-"""Public HTTP v4 boundary after selective natural-language integration."""
+"""Internal Envelope with the nested public v4 selective-safety result."""
 
 import logging
 
@@ -57,9 +57,15 @@ def test_http_electrical_danger_has_no_external_calls_and_retains_trace(monkeypa
     with caplog.at_level(logging.INFO):
         response = http.post("/api/v1/ai/analyze?mode=local", json={**REQUEST, "model_code": model})
     assert response.status_code == 200
-    data = response.json()
+    envelope = response.json()
+    data = envelope["analysis_result"]
+    ledger = envelope["consultation_cause_ledger"]
+    assert envelope["contract_version"] == "1.0.0"
     for name in ("inquiry_id", "correlation_id", "ai_request_id", "state_version"):
         assert data[name] == REQUEST[name]
+        assert ledger[name] == data[name]
+    assert ledger["model_code"] == data["model_code"] == model
+    assert ledger["causes"]
     assert response.headers["X-Correlation-ID"] == REQUEST["correlation_id"]
     assert data["safety_assessment"]["risk_level"] == "danger"
     assert data["safety_assessment"]["requires_consultation"] is True
