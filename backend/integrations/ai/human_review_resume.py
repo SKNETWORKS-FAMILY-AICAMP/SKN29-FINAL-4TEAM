@@ -18,6 +18,7 @@ from apps.inquiries.models import ConsultationCauseLedger, HumanReview
 
 RESUME_PATH = "/api/v1/internal/ai/human-reviews/resume"
 CONTEXT_RESUME_APPROVED_MODEL_CODES = frozenset({"WPUJAC104DWH"})
+CONTEXT_RESUME_REQUIRED_RUNTIME_NAME = "multi_agent"
 ALLOWED_FALLBACK_REASONS = frozenset(
     {
         "CONFIGURATION",
@@ -230,6 +231,13 @@ def build_human_review_resume_payload(
         != inquiry.subscription.product_model.model_code
     ):
         raise HumanReviewResumeFailure("AI_RESUME_CAUSE_LEDGER_MISMATCH")
+    execution_identity = cause_ledger.execution_identity
+    if (
+        not isinstance(execution_identity, dict)
+        or execution_identity.get("runtime_name")
+        != CONTEXT_RESUME_REQUIRED_RUNTIME_NAME
+    ):
+        raise HumanReviewResumeFailure("AI_RESUME_RUNTIME_NOT_MULTI_AGENT")
 
     payload = {
         "contract_version": "1.0.0",

@@ -65,6 +65,10 @@ CauseLedgerVerifier = Callable[[dict[str, Any], Inquiry], list[str]]
 ai_trace_logger = logging.getLogger("watercare.ai")
 
 
+class _CauseLedgerVerificationError(ValueError):
+    """The AI bundle is structurally valid but its Evidence binding failed."""
+
+
 @dataclass(frozen=True, slots=True)
 class InquiryAIOutcome:
     """공개 원문을 포함하지 않는 AI 실행 결과."""
@@ -89,6 +93,7 @@ class InquiryAIService:
     """HTTP 호출은 Transaction 밖, 결과 적용은 잠금 Transaction 안에서 수행."""
 
     AI_PROCESSING_TIMEOUT_EVENT = "AI_PROCESSING_TIMEOUT"
+    AI_NO_USABLE_EVIDENCE_EVENT = "NO_EVIDENCE"
     AI_LEDGER_PERSISTENCE_FAILURE_CODE = "AI-LEDGER-PERSIST-01"
 
     @classmethod
@@ -213,6 +218,11 @@ class InquiryAIService:
                 event_candidate = cls.AI_PROCESSING_TIMEOUT_EVENT
                 event_applied, pending_reason = cls._apply_timeout_event(run)
                 stale = pending_reason == "STALE_STATE_VERSION"
+            else:
+                event_applied, pending_reason = (
+                    cls._apply_unusable_ai_failure_event(run)
+                )
+                stale = pending_reason == "STALE_STATE_VERSION"
             outcome = InquiryAIOutcome(
                 ai_run_id=str(run.public_id),
                 status=run.status_code,
@@ -267,14 +277,21 @@ class InquiryAIService:
                     latency_ms=latency_ms,
                 )
                 return outcome
+            if isinstance(exc, _CauseLedgerVerificationError):
+                event_applied, pending_reason = (
+                    cls._apply_unusable_ai_failure_event(run)
+                )
+            else:
+                event_applied = None
+                pending_reason = failure_code
             outcome = InquiryAIOutcome(
                 ai_run_id=str(run.public_id),
                 status=run.status_code,
                 idempotent_replay=False,
-                stale=False,
+                stale=pending_reason == "STALE_STATE_VERSION",
                 event_candidate=None,
-                event_applied=None,
-                pending_reason=failure_code,
+                event_applied=event_applied,
+                pending_reason=pending_reason,
             )
             cls._log_outcome(
                 outcome,
@@ -455,6 +472,87 @@ class InquiryAIService:
             ai_request_id=run.idempotency_key,
         )
         return cls.AI_PROCESSING_TIMEOUT_EVENT, None
+
+    @classmethod
+    @transaction.atomic
+    def _apply_unusable_ai_failure_event(
+        cls,
+        run: AIRun,
+    ) -> tuple[str | None, str | None]:
+        """Route a terminal unusable AI result without publishing its output."""
+
+        inquiry = (
+            Inquiry.objects.select_for_update()
+            .select_related("subscription__product_model")
+            .get(pk=run.inquiry_id)
+        )
+        requested_state_version = run.input_payload.get("state_version")
+        if (
+            inquiry.status_code != Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+            or inquiry.state_version != requested_state_version
+        ):
+            return None, "STALE_STATE_VERSION"
+
+        snapshot = WorkflowSnapshot(
+            inquiry_state=inquiry.status_code,
+            state_version=inquiry.state_version,
+            visit_status=InquiryRepository.latest_visit_status(inquiry),
+        )
+        transition = StateMachine().resolve(
+            snapshot=snapshot,
+            event_code=cls.AI_NO_USABLE_EVIDENCE_EVENT,
+        )
+        guard_result = GuardEvaluator().evaluate(
+            transition=transition,
+            snapshot=snapshot,
+            context=GuardContext(
+                actor_role="SYSTEM",
+                is_authenticated=False,
+                correlation_id=str(run.correlation_id),
+                idempotency_key=None,
+                requested_state_version=requested_state_version,
+                trusted_internal_actor=True,
+                domain_results={
+                    "G-NO-USABLE-EVIDENCE": (
+                        run.status_code == AIRun.Status.FAILED
+                        and bool(run.error_code)
+                        and run.inquiry_id == inquiry.pk
+                    )
+                },
+            ),
+        )
+        if not guard_result.allowed:
+            failure = guard_result.failure
+            return None, failure.error_code if failure else "GUARD_REJECTED"
+
+        InquiryRepository.apply_state_transition(
+            inquiry,
+            status_code=transition.inquiry_state_after,
+            state_version=transition.state_version_after,
+        )
+        inquiry.requires_fallback = True
+        inquiry.usage_guidance_status = (
+            Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+        )
+        inquiry.evidence_mode = Inquiry.EvidenceMode.NO_EVIDENCE
+        inquiry.evidence_ids = []
+        inquiry.full_clean()
+        inquiry.save(
+            update_fields=[
+                "requires_fallback",
+                "usage_guidance_status",
+                "evidence_mode",
+                "evidence_ids",
+                "updated_at",
+            ]
+        )
+        TransitionHistoryService.record_ai_result(
+            inquiry=inquiry,
+            transition=transition,
+            correlation_id=run.correlation_id,
+            ai_request_id=run.idempotency_key,
+        )
+        return cls.AI_NO_USABLE_EVIDENCE_EVENT, None
 
     @staticmethod
     @transaction.atomic
@@ -644,7 +742,9 @@ class InquiryAIService:
                 inquiry,
             )
             if ledger_errors:
-                raise ValueError("Cause Ledger Evidence validation failed.")
+                raise _CauseLedgerVerificationError(
+                    "Cause Ledger Evidence validation failed."
+                )
             cause_ledger = cls._save_consultation_cause_ledger(
                 inquiry=inquiry,
                 run=run,
@@ -1190,8 +1290,9 @@ class InquiryAIService:
             created += 1
         return created
 
-    @staticmethod
+    @classmethod
     def _update_inquiry_projection(
+        cls,
         inquiry: Inquiry,
         *,
         result: AIAnalysisResult,
@@ -1199,13 +1300,25 @@ class InquiryAIService:
     ) -> None:
         safety = result.payload["safety_assessment"]
         guidance = result.payload["usage_guidance"]
+        requires_no_usable_evidence_transition = (
+            cls._requires_no_usable_evidence_transition(
+                result=result,
+                verified_evidence_ids=verified_evidence_ids,
+            )
+        )
         inquiry.risk_level_code = safety["risk_level"]
-        inquiry.usage_guidance_status = guidance["guidance_status"]
+        inquiry.usage_guidance_status = (
+            Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+            if requires_no_usable_evidence_transition
+            else guidance["guidance_status"]
+        )
         references_were_rejected = bool(
             result.payload["evidence_references"]
         ) and not verified_evidence_ids
         inquiry.requires_fallback = (
-            result.is_fallback or references_were_rejected
+            result.is_fallback
+            or references_were_rejected
+            or requires_no_usable_evidence_transition
         )
         update_fields = [
             "risk_level_code",
@@ -1213,7 +1326,10 @@ class InquiryAIService:
             "requires_fallback",
             "updated_at",
         ]
-        if result.is_no_evidence:
+        if result.is_no_evidence or (
+            requires_no_usable_evidence_transition
+            and not references_were_rejected
+        ):
             inquiry.evidence_mode = Inquiry.EvidenceMode.NO_EVIDENCE
             inquiry.evidence_ids = []
             update_fields.extend(["evidence_mode", "evidence_ids"])
@@ -1227,6 +1343,28 @@ class InquiryAIService:
             update_fields.extend(["evidence_mode", "evidence_ids"])
         inquiry.save(update_fields=update_fields)
 
+    @staticmethod
+    def _requires_no_usable_evidence_transition(
+        *,
+        result: AIAnalysisResult,
+        verified_evidence_ids: list[str],
+    ) -> bool:
+        """Detect a terminal AI result that cannot advance customer workflow.
+
+        A result with an unanswered follow-up remains in the questionnaire.
+        Danger and product-validation failures already own explicit state
+        events. Every other terminal result without Backend-verified evidence
+        must use the existing NO_EVIDENCE fail-closed route instead of leaving
+        the customer with no callable next action.
+        """
+
+        return bool(
+            not verified_evidence_ids
+            and not result.payload["followup_questions"]
+            and result.risk_level != "danger"
+            and not result.is_product_validation_failed
+        )
+
     @classmethod
     def _apply_event_if_allowed(
         cls,
@@ -1236,18 +1374,33 @@ class InquiryAIService:
         verified_evidence_ids: list[str],
     ) -> tuple[str | None, str | None]:
         event = result.event_candidate
+        requires_no_usable_evidence_transition = (
+            cls._requires_no_usable_evidence_transition(
+                result=result,
+                verified_evidence_ids=verified_evidence_ids,
+            )
+        )
         if event is None:
             if result.risk_level == "caution" and verified_evidence_ids:
                 return None, "HUMAN_REVIEW_REQUIRED"
-            return None, "NO_STATE_EVENT_CANDIDATE"
+            if requires_no_usable_evidence_transition:
+                event = "NO_EVIDENCE"
+            else:
+                return None, "NO_STATE_EVENT_CANDIDATE"
         if event == "SAFE_GUIDANCE_READY" and not verified_evidence_ids:
-            return None, "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+            if requires_no_usable_evidence_transition:
+                event = "NO_EVIDENCE"
+            else:
+                return None, "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
 
         domain_results = {
             "G-PRODUCT-VALIDATION-FAILED": (
                 result.is_product_validation_failed
             ),
-            "G-NO-USABLE-EVIDENCE": result.is_no_evidence,
+            "G-NO-USABLE-EVIDENCE": (
+                event == "NO_EVIDENCE"
+                and requires_no_usable_evidence_transition
+            ),
             "G-SAFE-GUIDANCE-VALID": (
                 event == "SAFE_GUIDANCE_READY"
                 and result.risk_level == "general"
@@ -1324,10 +1477,20 @@ class InquiryAIService:
         request_payload: dict[str, Any],
         validator: AIContractValidator,
     ) -> InquiryAIOutcome:
+        replay_request_payload = request_payload
         if run.input_sha256 != input_digest:
-            raise AIIdempotencyConflictError(
-                "같은 ai_request_id에 다른 Payload가 사용되었습니다."
-            )
+            if not cls._same_payload_except_state_version(
+                run.input_payload,
+                request_payload,
+            ):
+                raise AIIdempotencyConflictError(
+                    "같은 ai_request_id에 다른 Payload가 사용되었습니다."
+                )
+            # The original AI result may have advanced the Inquiry state. In
+            # that case a replay reconstructs a newer state_version from the
+            # database even though every caller-controlled input is unchanged.
+            # Validate the stored result against its immutable original input.
+            replay_request_payload = run.input_payload
         event_candidate = None
         if run.validated_output_payload and run.status_code in {
             AIRun.Status.SUCCEEDED,
@@ -1335,7 +1498,7 @@ class InquiryAIService:
         }:
             result = map_success_response(
                 run.validated_output_payload,
-                expected_request=request_payload,
+                expected_request=replay_request_payload,
                 validator=validator,
             )
             event_candidate = result.event_candidate
@@ -1350,7 +1513,8 @@ class InquiryAIService:
         ).get(pk=run.inquiry_id)
         stale = (
             current_inquiry.status_code == Inquiry.Status.CANCELLED
-            or current_inquiry.state_version != request_payload["state_version"]
+            or current_inquiry.state_version
+            != replay_request_payload["state_version"]
         )
         return InquiryAIOutcome(
             ai_run_id=str(run.public_id),
@@ -1369,6 +1533,27 @@ class InquiryAIService:
                 )
             ),
         )
+
+    @staticmethod
+    def _same_payload_except_state_version(
+        stored_payload: Any,
+        current_payload: dict[str, Any],
+    ) -> bool:
+        """Allow idempotent replay after only the workflow version advanced."""
+
+        if not isinstance(stored_payload, dict):
+            return False
+        stored_without_version = {
+            key: value
+            for key, value in stored_payload.items()
+            if key != "state_version"
+        }
+        current_without_version = {
+            key: value
+            for key, value in current_payload.items()
+            if key != "state_version"
+        }
+        return stored_without_version == current_without_version
 
     @staticmethod
     def _input_digest(payload: dict[str, Any]) -> str:

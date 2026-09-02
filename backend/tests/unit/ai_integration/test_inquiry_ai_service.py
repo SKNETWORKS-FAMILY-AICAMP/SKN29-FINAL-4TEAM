@@ -30,6 +30,10 @@ from apps.inquiries.services.inquiry_ai_service import InquiryAIService
 from apps.inquiries.services.inquiry_service import InquiryService
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
+from apps.workflow.engine.allowed_action_resolver import (
+    AllowedActionContext,
+    AllowedActionResolver,
+)
 from apps.workflow.models import TransitionHistory
 from integrations.ai.client import AIClient
 from integrations.ai.exceptions import AIIdempotencyConflictError
@@ -235,7 +239,7 @@ def cancel_inquiry(inquiry: Inquiry, *, key: str) -> None:
     )
 
 
-def test_safe_result_is_audited_but_has_no_guidance_without_verified_evidence():
+def test_safe_result_without_verified_evidence_routes_to_consultation():
     inquiry = create_inquiry(1)
     client, http_client, calls = make_client()
 
@@ -243,8 +247,8 @@ def test_safe_result_is_audited_but_has_no_guidance_without_verified_evidence():
 
     assert outcome.status == AIRun.Status.SUCCEEDED
     assert outcome.event_candidate == "SAFE_GUIDANCE_READY"
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
     assert outcome.saved_assessment is True
     assert outcome.saved_guidance is False
     assert len(calls) == 1
@@ -254,13 +258,30 @@ def test_safe_result_is_audited_but_has_no_guidance_without_verified_evidence():
     assert not HumanReview.objects.filter(inquiry=inquiry).exists()
 
     inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
     assert inquiry.risk_level_code == Inquiry.RiskLevel.GENERAL
+    assert (
+        inquiry.usage_guidance_status
+        == Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+    )
     assert inquiry.evidence_ids == []
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
     assert inquiry.requires_fallback is True
-    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
+    actions = AllowedActionResolver.resolve(
+        context=AllowedActionContext.from_models(
+            inquiry=inquiry,
+            actor=inquiry.initiated_by,
+            consultation=None,
+            visit=None,
+            open_followup_questions=False,
+        )
+    )
+    assert [action["code"] for action in actions] == [
+        "REQUEST_CONSULTATION",
+        "CANCEL_INQUIRY",
+    ]
     http_client.close()
 
 
@@ -318,13 +339,19 @@ def test_invalid_internal_envelope_is_redacted_and_stores_no_domain_rows():
     outcome = analyze(inquiry, client)
 
     run = AIRun.objects.get(inquiry=inquiry)
+    inquiry.refresh_from_db()
     assert outcome.status == AIRun.Status.FAILED
-    assert outcome.pending_reason == "AI-RESPONSE-SCHEMA-01"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
     assert run.raw_output_text == "[REDACTED_INVALID_AI_RESPONSE]"
     assert run.validated_output_payload is None
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
+    assert inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
     assert not SymptomAssessment.objects.filter(inquiry=inquiry).exists()
     assert not ConsultationCauseLedger.objects.filter(inquiry=inquiry).exists()
     assert not HumanReview.objects.filter(inquiry=inquiry).exists()
+    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
     http_client.close()
 
 
@@ -347,16 +374,17 @@ def test_cause_ledger_verifier_failure_rolls_back_entire_domain_bundle():
     run = AIRun.objects.get(inquiry=inquiry)
     inquiry.refresh_from_db()
     assert outcome.status == AIRun.Status.FAILED
-    assert outcome.pending_reason == "AI-LEDGER-PERSIST-01"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
     assert run.error_code == "AI-LEDGER-PERSIST-01"
     assert run.validated_output_payload is None
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
     assert not SymptomAssessment.objects.filter(inquiry=inquiry).exists()
     assert not ConsultationCauseLedger.objects.filter(inquiry=inquiry).exists()
     assert not HumanReview.objects.filter(inquiry=inquiry).exists()
     assert not Consultation.objects.filter(inquiry=inquiry).exists()
-    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
     http_client.close()
 
 
@@ -416,8 +444,10 @@ def test_evidence_verifier_failure_is_fail_closed_without_publication_bundle():
 
     inquiry.refresh_from_db()
     assert outcome.status == AIRun.Status.SUCCEEDED
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
     assert inquiry.evidence_ids == []
     assert inquiry.requires_fallback is True
     assert publication_state_seen_by_verifier == [(False, False)]
@@ -425,6 +455,7 @@ def test_evidence_verifier_failure_is_fail_closed_without_publication_bundle():
     assert not Guidance.objects.filter(inquiry=inquiry).exists()
     assert not HumanReview.objects.filter(inquiry=inquiry).exists()
     assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
+    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
     http_client.close()
 
 
@@ -513,17 +544,17 @@ def test_injected_evidence_id_cannot_bypass_backend_mapping():
         ],
     )
 
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "CANONICAL_EVIDENCE_VERIFICATION_REQUIRED"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
     inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
     assert inquiry.evidence_mode == Inquiry.EvidenceMode.PARTIAL_EVIDENCE
     assert inquiry.evidence_ids == []
     assert not Guidance.objects.filter(inquiry=inquiry).exists()
     assert not HumanReview.objects.filter(inquiry=inquiry).exists()
     assert EvidenceLink.objects.filter(inquiry=inquiry).count() == 0
-    assert TransitionHistory.objects.filter(inquiry=inquiry).count() == 0
+    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
     http_client.close()
 
 
@@ -725,7 +756,7 @@ def test_product_runtime_hold_preserves_valid_danger_total_stop():
     http_client.close()
 
 
-def test_other_contract_v4_fallback_stays_fail_closed_without_state_event():
+def test_other_contract_v4_fallback_routes_fail_closed_to_consultation():
     inquiry = create_inquiry(105)
     validator = ContractV4CompatValidator()
 
@@ -748,14 +779,19 @@ def test_other_contract_v4_fallback_stays_fail_closed_without_state_event():
     outcome = analyze(inquiry, client, validator=validator)
 
     assert outcome.event_candidate is None
-    assert outcome.event_applied is None
-    assert outcome.pending_reason == "NO_STATE_EVENT_CANDIDATE"
+    assert outcome.event_applied == "NO_EVIDENCE"
+    assert outcome.pending_reason is None
     inquiry.refresh_from_db()
-    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
-    assert inquiry.state_version == 2
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert inquiry.state_version == 3
     assert inquiry.requires_fallback is True
+    assert inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
+    assert (
+        inquiry.usage_guidance_status
+        == Inquiry.UsageGuidanceStatus.PENDING_CONSULTATION
+    )
     assert not Guidance.objects.filter(inquiry=inquiry).exists()
-    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    assert TransitionHistory.objects.get(inquiry=inquiry).event_code == "NO_EVIDENCE"
     http_client.close()
 
 
@@ -1019,7 +1055,8 @@ def test_duplicate_request_replays_without_second_http_call_or_rows():
     assert first.idempotent_replay is False
     assert replay.idempotent_replay is True
     assert replay.ai_run_id == first.ai_run_id
-    assert replay.pending_reason == "REPLAYED_EXISTING_RESULT"
+    assert replay.stale is True
+    assert replay.pending_reason == "STALE_STATE_VERSION"
     assert len(calls) == 1
     assert AIRun.objects.filter(inquiry=inquiry).count() == 1
     assert SymptomAssessment.objects.filter(inquiry=inquiry).count() == 1
@@ -1034,6 +1071,7 @@ def test_replay_reports_stale_after_inquiry_is_cancelled_post_success():
 
     first = analyze(inquiry, client, ai_request_id=ai_request_id)
     run = AIRun.objects.get(public_id=first.ai_run_id)
+    inquiry.refresh_from_db()
     cancel_inquiry(inquiry, key="cancel-after-ai-success")
 
     replay = InquiryAIService._replay_or_conflict(
@@ -1141,11 +1179,24 @@ def test_error_contract_and_timeout_are_audited_without_backend_retry():
     )
     failed = analyze(failed_inquiry, failed_client)
     failed_run = AIRun.objects.get(inquiry=failed_inquiry)
+    failed_inquiry.refresh_from_db()
 
     assert failed.status == AIRun.Status.FAILED
-    assert failed.pending_reason == "AI-FAILED-01"
-    assert failed_run.schema_validation_status_code == AIRun.SchemaValidationStatus.PASSED
+    assert failed.event_candidate is None
+    assert failed.event_applied == "NO_EVIDENCE"
+    assert failed.pending_reason is None
+    assert (
+        failed_run.schema_validation_status_code
+        == AIRun.SchemaValidationStatus.PASSED
+    )
     assert failed_run.retry_count == 0
+    assert failed_inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert failed_inquiry.state_version == 3
+    assert failed_inquiry.evidence_mode == Inquiry.EvidenceMode.NO_EVIDENCE
+    assert (
+        TransitionHistory.objects.get(inquiry=failed_inquiry).event_code
+        == "NO_EVIDENCE"
+    )
     assert len(failed_calls) == 1
     failed_http_client.close()
 
@@ -1247,6 +1298,36 @@ def test_timeout_result_does_not_overwrite_a_newer_inquiry_version():
     http_client.close()
 
 
+def test_terminal_ai_failure_does_not_overwrite_a_newer_inquiry_version():
+    inquiry = create_inquiry(110)
+    calls = []
+
+    def failure_after_state_change(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        request_payload = json.loads(request.content.decode("utf-8"))
+        Inquiry.objects.filter(pk=inquiry.pk).update(state_version=3)
+        return httpx.Response(503, json=error_payload(request_payload))
+
+    http_client = httpx.Client(
+        transport=httpx.MockTransport(failure_after_state_change)
+    )
+    client = AIClient(base_url="http://ai.test", http_client=http_client)
+
+    outcome = analyze(inquiry, client)
+
+    assert outcome.status == AIRun.Status.FAILED
+    assert outcome.event_applied is None
+    assert outcome.pending_reason == "STALE_STATE_VERSION"
+    assert outcome.stale is True
+    inquiry.refresh_from_db()
+    assert inquiry.status_code == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert inquiry.state_version == 3
+    assert not TransitionHistory.objects.filter(inquiry=inquiry).exists()
+    assert not Consultation.objects.filter(inquiry=inquiry).exists()
+    assert len(calls) == 1
+    http_client.close()
+
+
 def test_ai_lifecycle_trace_contains_only_safe_identifiers_and_outcome_fields():
     inquiry = create_inquiry(20)
     client, http_client, _calls = make_client()
@@ -1302,6 +1383,7 @@ def test_expected_ai_failure_trace_uses_safe_warning_code():
     trace_warning.assert_called_once()
     extra = trace_warning.call_args.kwargs["extra"]
     assert extra["failure_code"] == "AI-FAILED-01"
-    assert extra["pending_reason"] == "AI-FAILED-01"
+    assert extra["event_applied"] == "NO_EVIDENCE"
+    assert extra["pending_reason"] is None
     assert "The AI service could not complete the request" not in str(extra)
     http_client.close()
