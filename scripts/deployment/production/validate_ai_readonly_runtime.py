@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 
 import psycopg
@@ -23,11 +24,21 @@ FORBIDDEN_TABLES = (
     "knowledge_chunk_embedding",
     "knowledge_ai_chunk_crosswalk",
 )
+RELEASE_SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 
 
 def main() -> int:
     stage = "ENVIRONMENT"
     try:
+        if os.environ.get("AI_HUMAN_REVIEW_RESUME_ENABLED", "").strip().lower() != "false":
+            raise RuntimeError("AI Resume must start disabled")
+        if len(os.environ.get("AI_HUMAN_REVIEW_RESUME_TOKEN", "").encode("utf-8")) < 32:
+            raise RuntimeError("AI Resume token is missing")
+        if os.environ.get("AI_HANDOFF_BACKEND_ENABLED", "").strip().lower() != "false":
+            raise RuntimeError("AI Handoff must start disabled")
+        release_sha = os.environ["RELEASE_SHA"].strip().lower()
+        if RELEASE_SHA_PATTERN.fullmatch(release_sha) is None:
+            raise RuntimeError("invalid AI release SHA")
         dsn = os.environ["AI_VECTOR_DSN"]
         if os.environ.get("AI_VECTOR_TABLE_NAME") != VIEW_NAME:
             raise RuntimeError("unexpected AI view")
@@ -127,6 +138,7 @@ def main() -> int:
         return 1
 
     print("AI_READONLY_RUNTIME_PREFLIGHT_PASS")
+    print(f"release_sha={release_sha}")
     print(f"pgvector={pgvector_version}")
     print("view_select=ONLY_APPROVED_VIEW")
     print("view_rows=53")
@@ -134,6 +146,8 @@ def main() -> int:
     print("vector_dimensions=1024")
     print("base_table_access=DENIED")
     print("transaction=READ_ONLY")
+    print("ai_resume=DISABLED_PROTECTED")
+    print("ai_handoff=DISABLED_PROTECTED")
     return 0
 
 

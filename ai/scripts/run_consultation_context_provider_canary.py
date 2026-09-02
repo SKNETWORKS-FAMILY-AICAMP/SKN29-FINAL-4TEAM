@@ -87,7 +87,7 @@ from ai.app.validation.routing import (
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 INPUT_SCHEMA_VERSION = "1.1.0"
-REPORT_SCHEMA_VERSION = "1.1.0"
+REPORT_SCHEMA_VERSION = "1.2.0"
 TARGET_MODEL_CODE = "WPUJAC104DWH"
 TARGET_PRODUCT_FAMILY = ProductFamily.DIRECT_WATER_PURIFIER
 TARGET_CAUTION_SAFETY_RULE_ID = "SAFETY-TEMP-ABNORMAL-001"
@@ -238,6 +238,7 @@ class ConsultationContextProviderCanaryReport(_CanaryModel):
     provider_input_explicitly_allowed: bool = False
     context_synthesis_status: str | None = None
     context_synthesis_fallback_reason: str | None = None
+    context_synthesis_diagnostic_code: str | None = None
     provider_called: bool | None = None
     provider_model: str | None = None
     prompt_version: str | None = None
@@ -569,6 +570,7 @@ def _apply_failure(
         "routing_disposition",
         "context_synthesis_status",
         "context_synthesis_fallback_reason",
+        "context_synthesis_diagnostic_code",
         "provider_called",
         "context_agent_calls",
         "provider_calls",
@@ -751,6 +753,11 @@ def execute_canary(
                     if context_synthesis is not None
                     else None
                 ),
+                "context_synthesis_diagnostic_code": (
+                    context_synthesis.diagnostic_code
+                    if context_synthesis is not None
+                    else None
+                ),
                 "provider_called": (
                     context_synthesis.provider_called
                     if context_synthesis is not None
@@ -817,6 +824,9 @@ def execute_canary(
                     "context_synthesis_status": context_synthesis.status,
                     "context_synthesis_fallback_reason": (
                         context_synthesis.fallback_reason
+                    ),
+                    "context_synthesis_diagnostic_code": (
+                        context_synthesis.diagnostic_code
                     ),
                     "provider_called": context_synthesis.provider_called,
                     "context_agent_calls": recording_agent.call_count,

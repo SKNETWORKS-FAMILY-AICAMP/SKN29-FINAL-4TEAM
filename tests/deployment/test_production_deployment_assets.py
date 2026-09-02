@@ -426,6 +426,18 @@ class ProductionDeploymentAssetTests(unittest.TestCase):
         self.assertIn("--env PYTHONPATH=/workspace/backend", deploy)
         self.assertIn("BACKEND_TO_AI_SOCKET_PASS", deploy)
 
+    def test_release_sha_is_forwarded_to_backend_and_ai_and_validated(self) -> None:
+        text = COMPOSE.read_text(encoding="utf-8")
+        ai_preflight = AI_PREFLIGHT.read_text(encoding="utf-8")
+        release_sha_environment = (
+            'RELEASE_SHA: "${RELEASE_SHA:?RELEASE_SHA is required}"'
+        )
+
+        self.assertEqual(text.count(release_sha_environment), 2)
+        self.assertIn('os.environ["RELEASE_SHA"]', ai_preflight)
+        self.assertIn("RELEASE_SHA_PATTERN.fullmatch", ai_preflight)
+        self.assertIn('print(f"release_sha={release_sha}")', ai_preflight)
+
     def test_backend_and_ai_mount_the_rds_ca_read_only(self) -> None:
         text = COMPOSE.read_text(encoding="utf-8")
         ca_mount = (

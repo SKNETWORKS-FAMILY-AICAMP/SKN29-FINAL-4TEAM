@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph P0["P0 핵심 흐름"]
+        CUSTOMER["고객 Android 앱"]
+        BACKEND["Django·DRF Backend<br/>권한·상태·업무 원장"]
+        AI["FastAPI AI·RAG<br/>구조화·근거·안전 검증"]
+        CONSULTANT["상담사 React 웹"]
+
+        CUSTOMER -->|"인증·문의·문진"| BACKEND
+        BACKEND -->|"분석 요청"| AI
+        AI -->|"안내·근거·상담 필요 신호"| BACKEND
+        BACKEND -->|"상담 큐·문의 맥락"| CONSULTANT
+        CONSULTANT -->|"상담 기록·완료·방문 필요 판정"| BACKEND
+        BACKEND -->|"상담 결과·현재 상태"| CUSTOMER
+        CUSTOMER -->|"해결 여부·재문의"| BACKEND
+    end
+
+    subgraph P1["P1 후속 흐름"]
+        TECHNICIAN["방문기사 Android 앱<br/>배정·일정·현장 결과"]
+        OPERATOR["운영 React 웹<br/>현황·예외·지표"]
+    end
+
+    BACKEND -.->|방문 필요 인계| TECHNICIAN
+    TECHNICIAN -.->|방문 처리 결과| BACKEND
+    BACKEND -.->|운영 현황 전달| OPERATOR

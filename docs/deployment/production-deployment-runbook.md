@@ -207,20 +207,30 @@ Retain only non-sensitive evidence:
 Never record credentials, DSNs, passwords, tokens, prompts, vectors, customer
 content, or the protected runtime env file contents.
 
-## 6. AI Handoff Canary
+## 6. AI Resume and Handoff Canary
 
-The production Handoff flag is process-wide, not Inquiry-scoped. Do not change
-`AI_HANDOFF_BACKEND_ENABLED` by editing the container or by running an ad-hoc
+The production Resume and Handoff flags are process-wide, not Inquiry-scoped.
+Do not change `AI_HUMAN_REVIEW_RESUME_ENABLED` or
+`AI_HANDOFF_BACKEND_ENABLED` by editing a container or by running an ad-hoc
 Compose command. The only approved entry point is the `Production AI Handoff
-Canary` workflow, and the default and final state is always
-`AI_HANDOFF_BACKEND_ENABLED=false`.
+Canary` workflow. Both Backend and AI Resume flags and the AI Handoff flag must
+start and finish as `false`.
+
+```text
+Backend AI_HUMAN_REVIEW_RESUME_ENABLED=false
+AI AI_HUMAN_REVIEW_RESUME_ENABLED=false
+AI_HANDOFF_BACKEND_ENABLED=false
+```
 
 Every official release atomically normalizes the non-secret Handoff runtime
 settings to the fail-closed production values: the flag is `false`, the Backend
 address is the internal `backend:8000` service, and the timeout is bounded. The
 release fails without changing the token when the pre-provisioned
 `AI_HANDOFF_INTERNAL_TOKEN` is missing, empty, duplicated, or exposed through
-unsafe file permissions. Do not append these keys manually on the host.
+unsafe file permissions. The release derives a distinct Resume credential by
+domain-separated HMAC, writes the same protected credential to Backend and AI,
+and keeps both Resume flags `false`. Secret values are never printed. Do not
+append these keys manually on the host.
 
 Before the first Canary, the official release prepares the one exact
 `waterbridge.site` host Nginx server block that proxies to
@@ -237,30 +247,44 @@ release fails. If the public server name, source file, or upstream is ambiguous,
 the release does not guess or rewrite the site file and the later Canary
 preflight remains `ENVIRONMENT_BLOCKED`.
 
-Use one new Inquiry created through the public API from an existing approved
-synthetic customer and active subscription. Do not run Migration, Schema
-changes, Seed commands, management-command fixture creation, or direct RDS
-updates. Record only the fixed release SHA, Inquiry and correlation identifiers,
+Use one new Inquiry created before the Canary by the approved JAC104 synthetic
+fixture path. It must remain `DRAFT` at state version 1 with zero AI Run,
+HumanReview, Resume Dispatch, Handoff, and Consultation rows. Do not run a
+Migration, Schema change, Seed command, or unrelated direct RDS update inside
+the Canary window. Record only the fixed release SHA, synthetic identifiers,
 counts, hashes, health results, Workflow run ID, and SSM command ID.
 
-Run the workflow actions in this order:
+The preferred action is `run`, which performs the following sequence in one
+trusted SSM session and always invokes `close` on failure:
 
 1. `preflight`: require the expected current SHA, protected AI environment,
-   disabled flag, zero active AI Runs, and zero target AI/Handoff/Consultation
-   rows.
+   all three disabled flags, zero active AI Runs, no non-synthetic pending
+   HumanReviews, an immutable count baseline for any pre-existing synthetic
+   pending HumanReviews, and a fresh target baseline.
 2. `open`: install a host Nginx gate that allows only the operator IP and target
    Inquiry's `submit` and `answers` paths. All equivalent paths for other
-   Inquiries are denied. Drain for 65 seconds, enable the flag atomically,
-   recreate only AI from the current immutable Release, and arm the Watchdog.
-3. `status`: record target and other-Inquiry AI Run counts without printing
-   prompts, evidence, summaries, environment values, or customer content.
-4. `close`: stop AI first, force the flag to `false`, recreate and health-check
-   AI, then remove the Nginx gate only after the original Nginx configuration
-   checksum is restored.
+   Inquiries are denied. All public HumanReview decision paths are also denied
+   for the maintenance window; the Canary applies its one target decision
+   inside the Backend service boundary. Drain for 65 seconds while requiring
+   the pre-existing synthetic pending count to remain unchanged, enable Backend
+   Resume, AI Resume, and AI Handoff together, recreate Backend and AI from the
+   current immutable Release, and arm the Watchdog.
+3. `execute`: submit the exact synthetic Inquiry, require one official Evidence
+   HumanReview, apply one official REJECT, and let Backend call the protected AI
+   Resume endpoint. Require Context Agent 1, Context Provider 1, successful
+   synthesis without fallback, Handoff 1, Consultation 1, decision Replay with
+   no new Dispatch, and an HTTP Handoff Replay with no duplicate row.
+4. `close`: stop Backend and AI, force all three flags to `false`, recreate and
+   health-check both services, then remove the Nginx gate only after the
+   original Nginx configuration checksum is restored.
+
+The low-level `preflight`, `open`, `status`, and `close` actions remain available
+for diagnosis and recovery. Do not use `open` as a substitute for `run` when
+the approved goal is the automatic Resume-to-Handoff proof.
 
 The Watchdog calls `close` after at most 15분 even if the operator is
 disconnected. Any open failure attempts the same restoration. If restoration
-cannot be proven, AI remains stopped and the Nginx gate remains active. An
+cannot be proven, Backend and AI remain stopped and the Nginx gate remains active. An
 ordinary production deployment is blocked while a Canary state file exists;
 an early block does not invoke Release rollback because no deployment mutation
 started.
@@ -269,4 +293,5 @@ Functional Canary failure alone does not roll back the Release. Use the recorded
 previous SHA only for deployment or health regression, and verify the flag is
 still `false` after rollback. A Canary PASS is evidence for one synthetic
 Inquiry only; 상시 활성화 remains `HOLD` until independent QA and a separate PM
-decision.
+decision. Mobile and Web E2E starts only after the automatic `run` result and
+the final three `false` flags have both been independently confirmed.

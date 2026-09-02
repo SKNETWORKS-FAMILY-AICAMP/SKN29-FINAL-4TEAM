@@ -1,4 +1,4 @@
-"""Six numbered consultant-to-contract routing boundaries."""
+"""Numbered consultant-to-contract routing boundaries."""
 
 from types import SimpleNamespace
 
@@ -16,6 +16,7 @@ from apps.inquiries.p1_team_routing import P1TeamConsultantRouting
         ("SKN-004", "SYN-P1-TEAM-CONTRACT-004"),
         ("SKN-005", "SYN-P1-TEAM-CONTRACT-005"),
         ("SKN-006", "SYN-P1-TEAM-CONTRACT-006"),
+        ("SKN-007", "SYN-P1-EXTRA-CONTRACT-001"),
     ],
 )
 def test_numbered_consultant_can_access_only_matching_reserved_contract(
@@ -34,9 +35,9 @@ def test_numbered_consultant_can_access_only_matching_reserved_contract(
         contract_no=contract_no,
     )
     other_contract = (
-        "SYN-P1-TEAM-CONTRACT-006"
-        if contract_no != "SYN-P1-TEAM-CONTRACT-006"
-        else "SYN-P1-TEAM-CONTRACT-001"
+        "SYN-P1-TEAM-CONTRACT-001"
+        if contract_no != "SYN-P1-TEAM-CONTRACT-001"
+        else "SYN-P1-TEAM-CONTRACT-002"
     )
     assert not P1TeamConsultantRouting.is_exact_reserved_pair(
         actor=actor,

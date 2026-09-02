@@ -35,6 +35,7 @@ services:
     env_file:
       - "${BACKEND_RUNTIME_ENV_FILE:?BACKEND_RUNTIME_ENV_FILE is required}"
     environment:
+      RELEASE_SHA: "${RELEASE_SHA:?RELEASE_SHA is required}"
       DJANGO_SETTINGS_MODULE: config.settings.production
       AI_SERVICE_BASE_URL: http://ai:8001
       POSTGRES_SSLROOTCERT: /run/secrets/rds-ca.pem
@@ -89,6 +90,7 @@ services:
     env_file:
       - "${AI_RUNTIME_ENV_FILE:?AI_RUNTIME_ENV_FILE is required}"
     environment:
+      RELEASE_SHA: "${RELEASE_SHA:?RELEASE_SHA is required}"
       AI_ENV: production
       AI_OTEL_ENABLED: "true"
       AI_ENABLE_EXPERIMENT_PLAYGROUND: "false"

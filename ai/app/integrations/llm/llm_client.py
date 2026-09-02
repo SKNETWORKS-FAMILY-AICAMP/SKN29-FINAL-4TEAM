@@ -36,6 +36,15 @@ class LLMProviderTimeoutError(TimeoutError):
 class LLMOutputValidationError(ValueError):
     """Provider 출력이 요청된 strict Structured Output 계약을 충족하지 못했다."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        diagnostic_code: str = "PROVIDER_OUTPUT_INVALID",
+    ) -> None:
+        super().__init__(message)
+        self.diagnostic_code = diagnostic_code
+
 
 class LLMRefusalError(ValueError):
     """Provider가 요청 처리를 거부했다."""

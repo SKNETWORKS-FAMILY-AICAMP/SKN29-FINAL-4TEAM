@@ -84,7 +84,10 @@ tar -xzf "$archive_path" -C "$payload_dir"
 }
 secret_sync_script="${payload_dir}/scripts/deployment/production/sync_backend_email_auth_secret.py"
 ai_handoff_env_prepare_script="${payload_dir}/scripts/deployment/production/prepare_ai_handoff_runtime_env.py"
+ai_resume_env_prepare_script="${payload_dir}/scripts/deployment/production/prepare_ai_resume_runtime_env.py"
 ai_handoff_nginx_prepare_script="${payload_dir}/scripts/deployment/production/prepare_ai_handoff_nginx.py"
+ai_handoff_canary_script="${payload_dir}/scripts/deployment/production/manage-ai-handoff-canary.sh"
+ai_resume_handoff_canary_runner="${payload_dir}/scripts/deployment/production/run-ai-resume-handoff-canary.sh"
 worker_preflight_script="${payload_dir}/scripts/deployment/production/validate_p1_auth_email_worker_runtime.py"
 worker_runner_source="${payload_dir}/scripts/deployment/production/run_p1_auth_email_worker.sh"
 worker_unit_source="${payload_dir}/infra/systemd/${worker_service}"
@@ -93,7 +96,10 @@ for required_asset in \
   "$image_maintenance_script" \
   "$secret_sync_script" \
   "$ai_handoff_env_prepare_script" \
+  "$ai_resume_env_prepare_script" \
   "$ai_handoff_nginx_prepare_script" \
+  "$ai_handoff_canary_script" \
+  "$ai_resume_handoff_canary_runner" \
   "$worker_preflight_script" \
   "$worker_runner_source" \
   "$worker_unit_source"; do
@@ -102,6 +108,7 @@ for required_asset in \
     exit 1
   }
 done
+chmod 0750 "$ai_handoff_canary_script" "$ai_resume_handoff_canary_runner"
 [[ -f "$backend_env_file" && -f "$ai_env_file" && -s "$rds_ca_file" ]] || {
   echo "DEPLOYMENT_FAILED: protected service env or RDS CA is unavailable" >&2
   exit 1
@@ -125,6 +132,7 @@ required_backend_keys=(
   POSTGRES_HOST
   POSTGRES_PORT
   POSTGRES_SSLMODE
+  AI_HANDOFF_INTERNAL_TOKEN
 )
 required_ai_keys=(
   OPENAI_API_KEY
@@ -303,6 +311,9 @@ python3 "$ai_handoff_nginx_prepare_script" \
   --backup-dir "${base_dir}/shared/nginx-canary-bootstrap"
 python3 "$ai_handoff_env_prepare_script" \
   --ai-env-file "$ai_env_file"
+python3 "$ai_resume_env_prepare_script" \
+  --backend-env-file "$backend_env_file" \
+  --ai-env-file "$ai_env_file"
 for key in \
   AI_HANDOFF_BACKEND_ENABLED \
   AI_BACKEND_BASE_URL \
@@ -320,6 +331,20 @@ grep -Eq '^[[:space:]]*AI_BACKEND_BASE_URL=http://backend:8000/?[[:space:]]*$' "
   echo "DEPLOYMENT_FAILED: AI Backend URL is not the internal production service" >&2
   false
 }
+for protected_file in "$backend_env_file" "$ai_env_file"; do
+  for key in \
+    AI_HUMAN_REVIEW_RESUME_ENABLED \
+    AI_HUMAN_REVIEW_RESUME_TOKEN; do
+    grep -Eq "^[[:space:]]*${key}=.+$" "$protected_file" || {
+      echo "DEPLOYMENT_FAILED: required AI Resume runtime key is missing: ${key}" >&2
+      false
+    }
+  done
+  grep -Eq '^[[:space:]]*AI_HUMAN_REVIEW_RESUME_ENABLED=false[[:space:]]*$' "$protected_file" || {
+    echo "DEPLOYMENT_FAILED: AI Resume must be disabled after release preparation" >&2
+    false
+  }
+done
 python3 "$secret_sync_script" \
   --secret-id "$backend_email_auth_secret_id" \
   --region "$aws_region" \
