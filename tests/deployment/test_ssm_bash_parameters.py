@@ -104,17 +104,26 @@ class SSMWireExecutionTests(unittest.TestCase):
             self.assertEqual(result.stdout, value)
             self.assertFalse(marker.exists())
 
-    def workflow_payload(self, index, state):
+    def workflow_payload(self, role, state):
         # Execute the commands_json assignment extracted from the real workflow.
         # Only external operation values and the Canary fixture path are replaced.
         text = WORKFLOW.read_text(encoding="utf-8")
         pattern = r'commands_json="\$\((python3 ' + re.escape(BUILDER) + r'[\s\S]*?)\)"'
         calls = re.findall(pattern, text)
-        self.assertEqual(len(calls), 3)
-        call = calls[index].replace("python3 ", shlex.quote(sys.executable) + " ", 1)
+        self.assertEqual(len(calls), 4)
+        marker = {
+            "canary": '"$canary_command"',
+            "activation": '"$activation_command"',
+            "deploy": '"$deploy_command"',
+            "rollback": '"$rollback_command"',
+        }[role]
+        selected = [call for call in calls if marker in call]
+        self.assertEqual(len(selected), 1, role)
+        call = selected[0].replace("python3 ", shlex.quote(sys.executable) + " ", 1)
         call = call.replace("/opt/waterbridge/shared/ai-handoff-canary.state", str(state))
         env = os.environ | {
             "canary_command": "printf CANARY_CALLED",
+            "activation_command": "printf ACTIVATION_CALLED",
             "copy_command": "aws synthetic-copy",
             "chmod_command": "chmod synthetic-chmod",
             "deploy_command": "printf DEPLOY_CALLED",
@@ -147,7 +156,7 @@ class SSMWireExecutionTests(unittest.TestCase):
             directory = Path(temporary)
             state = directory / "canary.state"
             state.touch()
-            result = self.execute(self.workflow_payload(1, state), env=self.stub_environment(directory))
+            result = self.execute(self.workflow_payload("deploy", state), env=self.stub_environment(directory))
             self.assertEqual(result.returncode, 1)
             self.assertIn("DEPLOYMENT_BLOCKED", result.stderr)
             self.assertNotIn("[[: not found", result.stderr)
@@ -157,17 +166,18 @@ class SSMWireExecutionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
             result = self.execute(
-                self.workflow_payload(1, directory / "absent.state"), env=self.stub_environment(directory),
+                self.workflow_payload("deploy", directory / "absent.state"),
+                env=self.stub_environment(directory),
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout, "INSTALL_CALLED\nCOPY_CALLED\nCHMOD_CALLED\nDEPLOY_CALLED")
 
     def test_copy_failure_stops_deploy_and_rollback_wire(self):
-        for index in (1, 2):
-            with self.subTest(index=index), tempfile.TemporaryDirectory() as temporary:
+        for role in ("deploy", "rollback"):
+            with self.subTest(role=role), tempfile.TemporaryDirectory() as temporary:
                 directory = Path(temporary)
                 result = self.execute(
-                    self.workflow_payload(index, directory / "absent.state"),
+                    self.workflow_payload(role, directory / "absent.state"),
                     env=self.stub_environment(directory, copy_status=23),
                 )
                 self.assertEqual(result.returncode, 23)
@@ -175,12 +185,18 @@ class SSMWireExecutionTests(unittest.TestCase):
                 for marker in ("CHMOD_CALLED", "DEPLOY_CALLED", "ROLLBACK_CALLED"):
                     self.assertNotIn(marker, result.stdout)
 
-    def test_actual_canary_and_rollback_wire_execute_successfully(self):
-        for index, expected in ((0, "CANARY_CALLED"), (2, "COPY_CALLED\nCHMOD_CALLED\nROLLBACK_CALLED")):
-            with self.subTest(index=index), tempfile.TemporaryDirectory() as temporary:
+    def test_actual_canary_activation_and_rollback_wire_execute_successfully(self):
+        expected_outputs = (
+            ("canary", "CANARY_CALLED"),
+            ("activation", "ACTIVATION_CALLED"),
+            ("rollback", "COPY_CALLED\nCHMOD_CALLED\nROLLBACK_CALLED"),
+        )
+        for role, expected in expected_outputs:
+            with self.subTest(role=role), tempfile.TemporaryDirectory() as temporary:
                 directory = Path(temporary)
                 result = self.execute(
-                    self.workflow_payload(index, directory / "absent.state"), env=self.stub_environment(directory),
+                    self.workflow_payload(role, directory / "absent.state"),
+                    env=self.stub_environment(directory),
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected)
