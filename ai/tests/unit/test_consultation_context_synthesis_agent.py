@@ -34,6 +34,7 @@ from ai.app.orchestration.agents import (
     ContextFact,
     ContextQuestionnaireAnswer,
     ContextRoutingReason,
+    ContextSynthesisDiagnosticCode,
     ContextSynthesisEvidence,
     ContextSynthesisFallbackReason,
     ContextSynthesisStatus,
@@ -372,6 +373,10 @@ def test_unknown_source_id_falls_back_without_second_call():
     assert client.calls == 1
     assert result.status == ContextSynthesisStatus.FALLBACK
     assert result.fallback_reason == ContextSynthesisFallbackReason.OUTPUT_INVALID
+    assert (
+        result.diagnostic_code
+        == ContextSynthesisDiagnosticCode.INTERNAL_SOURCE_BINDING_INVALID
+    )
     assert result.should_use_deterministic_handoff is True
     assert result.retry_count == 0
     assert result.brief.customer_reported_facts
@@ -409,6 +414,10 @@ def test_non_evidence_source_cannot_be_grouped_as_evidence_finding():
 
     assert result.status == ContextSynthesisStatus.FALLBACK
     assert result.fallback_reason == ContextSynthesisFallbackReason.OUTPUT_INVALID
+    assert (
+        result.diagnostic_code
+        == ContextSynthesisDiagnosticCode.INTERNAL_SOURCE_BINDING_INVALID
+    )
     assert client.calls == 1
 
 
@@ -449,6 +458,13 @@ def test_provider_failure_is_explicit_and_never_retried(error, expected_reason):
     assert result.fallback_reason == expected_reason
     assert result.provider_called is True
     assert result.retry_count == 0
+    if isinstance(error, LLMOutputValidationError):
+        assert (
+            result.diagnostic_code
+            == ContextSynthesisDiagnosticCode.PROVIDER_OUTPUT_INVALID
+        )
+    else:
+        assert result.diagnostic_code is None
 
 
 def test_invalid_provider_response_metadata_uses_fallback():
@@ -470,6 +486,10 @@ def test_invalid_provider_response_metadata_uses_fallback():
     assert client.calls == 1
     assert result.status == ContextSynthesisStatus.FALLBACK
     assert result.fallback_reason == ContextSynthesisFallbackReason.OUTPUT_INVALID
+    assert (
+        result.diagnostic_code
+        == ContextSynthesisDiagnosticCode.INTERNAL_OUTPUT_METADATA_INVALID
+    )
 
 
 def test_missing_client_returns_configuration_fallback():
@@ -923,18 +943,33 @@ def test_output_contract_rejects_unknown_authority_fields():
         type(result).model_validate(payload)
 
 
-def test_llm_candidate_must_preserve_every_input_source_category():
+def test_missing_provider_categories_are_completed_deterministically():
     def dropped_fact_candidate(request):
         candidate = valid_candidate(request)
-        return candidate.model_copy(update={"customer_reported_fact_ids": []})
+        return candidate.model_copy(
+            update={
+                "customer_reported_fact_ids": [],
+                "attempted_action_ids": [],
+                "unresolved_question_ids": [],
+                "safety_constraint_ids": [],
+                "evidence_finding_source_groups": [],
+                "consultant_priority_check_ids": [],
+            }
+        )
 
     result = ConsultationContextSynthesisAgent(
         llm_client=DynamicClient(candidate_factory=dropped_fact_candidate)
     ).run(synthesis_input())
 
-    assert result.status == ContextSynthesisStatus.FALLBACK
-    assert result.fallback_reason == ContextSynthesisFallbackReason.OUTPUT_INVALID
+    assert result.status == ContextSynthesisStatus.SUCCEEDED
+    assert result.fallback_reason is None
+    assert result.diagnostic_code is None
     assert len(result.brief.customer_reported_facts) == 3
+    assert result.brief.attempted_actions_and_outcomes
+    assert result.brief.unresolved_questions
+    assert result.brief.safety_constraints
+    assert result.brief.evidence_based_findings
+    assert result.brief.consultant_priority_checks
 
 
 def test_conflicting_facts_and_missing_action_outcome_remain_uncertain():
@@ -1072,8 +1107,9 @@ def test_openai_adapter_rejects_refusal_and_invalid_schema():
             )
         ),
     )
-    with pytest.raises(LLMOutputValidationError):
+    with pytest.raises(LLMOutputValidationError) as error:
         invalid_client.synthesize_context(prepared.request, timeout_seconds=1.0)
+    assert error.value.diagnostic_code == "PROVIDER_SCHEMA_INVALID"
 
 
 def test_openai_adapter_classifies_authentication_failure_as_configuration():

@@ -19,6 +19,7 @@ class HandoffContextSynthesis(BaseModel):
     routing_reason: str = Field(..., min_length=1, max_length=100)
     brief: dict[str, Any]
     fallback_reason: str | None = Field(None, min_length=1, max_length=100)
+    diagnostic_code: str | None = Field(None, min_length=1, max_length=100)
     should_use_deterministic_handoff: bool
     provider_called: bool
     model_name: str | None = Field(None, min_length=1, max_length=200)
@@ -36,11 +37,18 @@ class HandoffContextSynthesis(BaseModel):
             if fallback_raw is not None
             else None
         )
+        diagnostic_raw = getattr(output, "diagnostic_code", None)
+        diagnostic_code = (
+            getattr(diagnostic_raw, "value", diagnostic_raw)
+            if diagnostic_raw is not None
+            else None
+        )
         return cls(
             status=str(status),
             routing_reason=str(routing_reason),
             brief=output.brief.model_dump(mode="json"),
             fallback_reason=(str(fallback_reason) if fallback_reason is not None else None),
+            diagnostic_code=(str(diagnostic_code) if diagnostic_code is not None else None),
             should_use_deterministic_handoff=bool(output.should_use_deterministic_handoff),
             provider_called=bool(output.provider_called),
             model_name=output.model_name,
