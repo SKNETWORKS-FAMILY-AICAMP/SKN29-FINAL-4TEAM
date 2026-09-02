@@ -187,6 +187,8 @@ def check_space(paths: list[tuple[str, Path]], *, enforce: bool) -> None:
 def maintain(base: Path, incoming: Path, *, apply: bool, before_pull: bool) -> None:
     if (base / "shared/ai-handoff-canary.state").exists():
         raise MaintenanceError("CANARY_ACTIVE")
+    if (base / "shared/ai-context-activation.state").exists():
+        raise MaintenanceError("CONTEXT_ACTIVATION_ACTIVE")
     protected_refs, required_refs, known = release_sets(base, incoming)
     protected_ids = container_images()
     identifiers = set(docker("image", "ls", "--quiet", "--no-trunc").split())

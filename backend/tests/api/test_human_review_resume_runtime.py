@@ -75,6 +75,12 @@ def _mock_dispatch_payload(monkeypatch, review: HumanReview) -> None:
     )
 
 
+def _set_jac104(review: HumanReview) -> None:
+    product = review.inquiry.subscription.product_model
+    product.model_code = "WPUJAC104DWH"
+    product.save(update_fields=["model_code", "updated_at"])
+
+
 @override_settings(
     AI_HUMAN_REVIEW_RESUME_ENABLED=True,
     AI_HUMAN_REVIEW_RESUME_TOKEN=TOKEN,
@@ -88,6 +94,7 @@ def test_official_reject_schedules_once_and_decision_replay_schedules_zero(
         1801,
         assigned_consultant=consultant,
     )
+    _set_jac104(review)
     calls = []
 
     def fake_resume(payload, *, idempotency_key):
@@ -148,6 +155,7 @@ def test_ai_failure_keeps_reject_and_inquiry_transition_durable(
         1802,
         assigned_consultant=consultant,
     )
+    _set_jac104(review)
     sentinel = inquiry.raw_text
 
     def fail_resume(_payload, *, idempotency_key):
@@ -228,6 +236,61 @@ def test_disabled_resume_never_schedules_ai_call(
     AI_HUMAN_REVIEW_RESUME_ENABLED=True,
     AI_HUMAN_REVIEW_RESUME_TOKEN=TOKEN,
 )
+def test_non_jac104_reject_never_schedules_context_resume(
+    monkeypatch,
+    django_capture_on_commit_callbacks,
+):
+    consultant = create_user(1812, role=User.Role.CONSULTANT)
+    _inquiry, _guidance, review = create_review(
+        1812,
+        assigned_consultant=consultant,
+    )
+    product = review.inquiry.subscription.product_model
+    product.model_code = "WPUIAC425SNW"
+    product.save(update_fields=["model_code", "updated_at"])
+    calls = []
+    monkeypatch.setattr(
+        "apps.inquiries.services.human_review_resume_dispatch_service."
+        "send_human_review_resume_payload",
+        lambda payload, **kwargs: calls.append((payload, kwargs)),
+    )
+
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        response = decide(
+            actor=consultant,
+            review=review,
+            body={
+                "decision": HumanReview.Decision.REJECT,
+                "review_state_version": 1,
+                "reason_code": "INSUFFICIENT_EVIDENCE",
+            },
+            key="human-review-resume-iac425-blocked-1812",
+        )
+
+    assert response.status_code == 200
+    assert callbacks == []
+    assert calls == []
+    assert not HumanReviewResumeDispatch.objects.filter(
+        human_review=review
+    ).exists()
+
+
+def test_non_jac104_payload_is_blocked_before_provider_dispatch():
+    _inquiry, _run, review, _mapping = _bound_rejected_review(1813)
+    product = review.inquiry.subscription.product_model
+    product.model_code = "WPUIAC606SNW"
+    product.save(update_fields=["model_code", "updated_at"])
+
+    with pytest.raises(HumanReviewResumeFailure) as captured:
+        build_human_review_resume_payload(review.public_id)
+
+    assert captured.value.failure_code == "RUNTIME_PRODUCT_NOT_APPROVED"
+
+
+@override_settings(
+    AI_HUMAN_REVIEW_RESUME_ENABLED=True,
+    AI_HUMAN_REVIEW_RESUME_TOKEN=TOKEN,
+)
 def test_commit_callback_loss_leaves_pending_row_for_worker_recovery(
     monkeypatch,
     django_capture_on_commit_callbacks,
@@ -237,6 +300,7 @@ def test_commit_callback_loss_leaves_pending_row_for_worker_recovery(
         1804,
         assigned_consultant=consultant,
     )
+    _set_jac104(review)
     calls = []
     _mock_dispatch_payload(monkeypatch, review)
 
@@ -298,6 +362,7 @@ def test_unknown_outcome_is_never_automatically_retried(
         1805,
         assigned_consultant=consultant,
     )
+    _set_jac104(review)
     calls = []
     _mock_dispatch_payload(monkeypatch, review)
 

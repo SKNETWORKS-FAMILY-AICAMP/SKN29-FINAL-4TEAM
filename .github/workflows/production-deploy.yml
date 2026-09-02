@@ -32,6 +32,11 @@ on:
         required: false
         default: ""
         type: string
+      context_activation_action:
+        description: Persistent JAC104 Context Agent activation action.
+        required: false
+        default: ""
+        type: string
 
 permissions:
   actions: read
@@ -201,6 +206,131 @@ jobs:
             echo "- Always-on activation: \`HOLD\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  ai-context-activation:
+    name: Control protected JAC104 Context Agent activation
+    if: ${{ inputs.operation == 'ai_context_activation' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Validate activation caller and inputs
+        shell: bash
+        env:
+          ACTIVATION_ACTION: ${{ inputs.context_activation_action }}
+          CALLER_REPOSITORY: ${{ github.repository }}
+          CALLER_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          [[ "$CALLER_REPOSITORY" == "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM" ]]
+          [[ "$CALLER_REF" == "refs/heads/main" ]]
+          [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$ACTIVATION_ACTION" =~ ^(preflight|activate|status|deactivate)$ ]]
+          for key in AWS_REGION AWS_ROLE_ARN AWS_ACCOUNT_ID EC2_INSTANCE_ID; do
+            [[ -n "${!key:-}" ]] || {
+              echo "Required repository variable is missing: ${key}" >&2
+              exit 1
+            }
+          done
+          [[ "$AWS_ACCOUNT_ID" =~ ^[0-9]{12}$ ]]
+          [[ "$AWS_REGION" =~ ^[a-z]{2}-[a-z]+-[0-9]+$ ]]
+          [[ "$EC2_INSTANCE_ID" =~ ^i-[0-9a-f]{8,17}$ ]]
+          [[ "$AWS_ROLE_ARN" =~ ^arn:aws:iam::${AWS_ACCOUNT_ID}:role/[A-Za-z0-9+=,.@_/-]+$ ]]
+
+      - name: Checkout trusted main caller for SSM transport helper
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          sparse-checkout: scripts/deployment/production
+
+      - uses: aws-actions/configure-aws-credentials@v6.2.3
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ env.AWS_ACCOUNT_ID }}
+          role-session-name: waterbridge-context-activation-${{ github.run_id }}
+
+      - name: Run protected activation action through SSM
+        id: activation
+        shell: bash
+        env:
+          ACTIVATION_ACTION: ${{ inputs.context_activation_action }}
+        run: |
+          set -euo pipefail
+          script_path="/opt/waterbridge/current/scripts/deployment/production/manage-ai-context-activation.sh"
+          printf -v activation_command '%q %q %q' \
+            "$script_path" "$ACTIVATION_ACTION" "$RELEASE_SHA"
+          commands_json="$(python3 scripts/deployment/production/build_ssm_bash_parameters.py \
+            "$activation_command")"
+          command_id="$(aws ssm send-command \
+            --region "$AWS_REGION" \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "WaterBridge JAC104 Context ${ACTIVATION_ACTION}" \
+            --parameters "$commands_json" \
+            --query 'Command.CommandId' \
+            --output text)"
+          echo "command_id=${command_id}" >> "$GITHUB_OUTPUT"
+
+          poll_ssm_activation() {
+            local deadline invocation poll_status
+            deadline=$((SECONDS + 900))
+            while (( SECONDS < deadline )); do
+              if invocation="$(aws ssm get-command-invocation \
+                --region "$AWS_REGION" \
+                --command-id "$command_id" \
+                --instance-id "$EC2_INSTANCE_ID" \
+                --output json 2>/dev/null)"; then
+                poll_status="$(jq -r '.Status' <<<"$invocation")"
+                case "$poll_status" in
+                  Success|Failed|Cancelled|TimedOut)
+                    printf '%s' "$invocation"
+                    return 0
+                    ;;
+                  Pending|InProgress|Delayed|Cancelling)
+                    ;;
+                  *)
+                    printf 'SSM_CONTEXT_ACTIVATION_UNKNOWN_STATUS status=%s\n' "$poll_status" >&2
+                    return 1
+                    ;;
+                esac
+              fi
+              sleep 5
+            done
+            printf 'SSM_CONTEXT_ACTIVATION_POLL_TIMEOUT seconds=900\n' >&2
+            return 1
+          }
+
+          invocation="$(poll_ssm_activation)"
+          status="$(jq -r '.Status' <<<"$invocation")"
+          stdout="$(jq -r '.StandardOutputContent // ""' <<<"$invocation")"
+          stderr="$(jq -r '.StandardErrorContent // ""' <<<"$invocation")"
+          printf '%s\n' "$stdout"
+          [[ -z "$stderr" ]] || printf '%s\n' "$stderr" >&2
+          [[ "$status" == "Success" ]]
+          case "$ACTIVATION_ACTION" in
+            preflight) marker=AI_CONTEXT_ACTIVATION_PREFLIGHT_PASS ;;
+            activate) marker=AI_CONTEXT_ACTIVATION_PASS ;;
+            status) marker=AI_CONTEXT_ACTIVATION_STATUS_PASS ;;
+            deactivate) marker=AI_CONTEXT_DEACTIVATION_PASS ;;
+          esac
+          grep -q "^${marker}$" <<<"$stdout"
+
+      - name: Record non-sensitive activation evidence
+        shell: bash
+        env:
+          ACTIVATION_ACTION: ${{ inputs.context_activation_action }}
+        run: |
+          {
+            echo "### JAC104 Context Agent activation"
+            echo
+            echo "- Action: \`${ACTIVATION_ACTION}\`"
+            echo "- Release SHA: \`${RELEASE_SHA}\`"
+            echo "- Runtime scope: \`JAC104_LIMITED\`"
+            echo "- IAC425/IAC606: \`HOLD\`"
+            echo "- First E2E failure policy: deactivate and stop; no automatic retry"
+            echo "- SSM command ID: \`${{ steps.activation.outputs.command_id }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   source-guard:
     name: Verify release source and container boundaries
     if: ${{ inputs.operation == 'release' }}
@@ -335,6 +465,7 @@ jobs:
         run: >-
           python -B -m unittest
           tests.deployment.test_production_deployment_assets
+          tests.deployment.test_ai_context_activation_assets
           tests.deployment.test_release_image_maintenance
           tests.deployment.test_ssm_bash_parameters
           tests.deployment.test_backend_email_auth_secret_sync
@@ -677,6 +808,7 @@ jobs:
             scripts/deployment/production/maintain_release_images.py \
             scripts/deployment/production/rollback-release.sh \
             scripts/deployment/production/manage-ai-handoff-canary.sh \
+            scripts/deployment/production/manage-ai-context-activation.sh \
             scripts/deployment/production/run-ai-resume-handoff-canary.sh \
             scripts/deployment/production/prepare_ai_handoff_nginx.py \
             scripts/deployment/production/prepare_ai_handoff_runtime_env.py \
@@ -690,6 +822,7 @@ jobs:
             "$release_root/scripts/deployment/production/"
           chmod 0750 \
             "$release_root/scripts/deployment/production/manage-ai-handoff-canary.sh" \
+            "$release_root/scripts/deployment/production/manage-ai-context-activation.sh" \
             "$release_root/scripts/deployment/production/run-ai-resume-handoff-canary.sh"
           {
             echo "WEB_IMAGE=${REGISTRY}/${ECR_WEB_REPOSITORY}"
@@ -749,6 +882,7 @@ jobs:
             "/etc/waterbridge/certs/rds-ca.pem" "$BACKEND_EMAIL_AUTH_SECRET_ID"
           commands_json="$(python3 scripts/deployment/production/build_ssm_bash_parameters.py \
             "if [[ -f /opt/waterbridge/shared/ai-handoff-canary.state ]]; then echo 'DEPLOYMENT_BLOCKED: active AI Handoff Canary window' >&2; exit 1; fi" \
+            "if [[ -f /opt/waterbridge/shared/ai-context-activation.state ]]; then echo 'DEPLOYMENT_BLOCKED: JAC104 Context Agent activation is active' >&2; exit 1; fi" \
             "install -d -m 0750 /opt/waterbridge/shared" \
             "$copy_command" "$chmod_command" "$deploy_command")"
           command_id="$(aws ssm send-command \

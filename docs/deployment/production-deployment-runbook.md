@@ -295,3 +295,49 @@ still `false` after rollback. A Canary PASS is evidence for one synthetic
 Inquiry only; 상시 활성화 remains `HOLD` until independent QA and a separate PM
 decision. Mobile and Web E2E starts only after the automatic `run` result and
 the final three `false` flags have both been independently confirmed.
+
+## 7. JAC104 Context Agent limited activation
+
+Persistent activation is a separate production change from the 15-minute
+Canary. Use the `Production AI Context Activation` workflow only after the
+activation implementation is contained in an immutable deployed Release and PM
+has explicitly approved this operational change. Do not edit either protected
+environment file by hand.
+
+The activation scope is fixed to `JAC104_LIMITED`. Backend rejects IAC425 and
+IAC606 before dispatch, and AI independently authorizes only exact model code
+`WPUJAC104DWH`. The activation does not contain a symptom, answer, Evidence
+body, Provider output, or fixed consultation result.
+
+Run the protected operations in this order:
+
+1. `preflight`: bind to the exact deployed 40-character Release SHA, require all
+   three flags to be `false`, require no active AI Run, validate protected file
+   permissions and token agreement, and verify the Backend and AI JAC104-only
+   code guards.
+2. `activate`: acquire the deployment lock, record a non-secret activation
+   state, atomically enable Backend Resume, AI Resume, and AI Handoff, recreate
+   only Backend and AI, and require their internal health checks. Any failure
+   restores all flags to `false`; if restoration cannot be proven, Backend and
+   AI stay stopped.
+3. `status`: read the exact Release, activation state, three flags, JAC104-only
+   policy, internal health, and active AI Run count without changing state.
+4. `deactivate`: atomically restore all three flags to `false`, verify that no
+   unrelated protected environment content drifted, recreate Backend and AI,
+   and remove the activation state only after health succeeds.
+
+While the activation state exists, Release deployment, rollback, image
+maintenance, and the isolated Handoff Canary are blocked. Deactivate before any
+of those operations. Every normal Release still writes the three flags as
+`false`; deploying a new Release never implicitly enables the Agent.
+
+After the first activation, run only one approved synthetic JAC104 E2E. If it
+fails, do not replay the decision, re-call the Provider, or repeat the test with
+the same or a new Inquiry. Immediately run `deactivate`, retain only
+non-sensitive identifiers, hashes, counts, and failure codes, and choose an
+alternative path before another approval. Acceptable alternatives are a
+component-only Context Agent invocation with Handoff disabled, deterministic
+fallback consultation routing without Provider execution, or correction of the
+specific contract/transport defect followed by a newly approved one-shot test.
+Never hardcode a symptom, Evidence, Provider answer, or expected summary into
+the production Agent to make the E2E pass.

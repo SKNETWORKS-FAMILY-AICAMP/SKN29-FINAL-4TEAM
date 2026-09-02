@@ -329,6 +329,16 @@ class ReleaseImageMaintenanceTests(unittest.TestCase):
             self.run_maintenance(fake)
         self.assertEqual(fake.calls, [])
 
+    def test_active_context_activation_blocks_all_docker_commands(self):
+        (self.base / "shared/ai-context-activation.state").touch()
+        fake = FakeDocker([])
+        with self.assertRaisesRegex(
+            POLICY.MaintenanceError,
+            "CONTEXT_ACTIVATION_ACTIVE",
+        ):
+            self.run_maintenance(fake)
+        self.assertEqual(fake.calls, [])
+
     def test_each_filesystem_is_checked_not_only_docker_root(self):
         with patch.object(POLICY.shutil, "disk_usage", side_effect=[types.SimpleNamespace(free=POLICY.MIN_FREE_BYTES), types.SimpleNamespace(free=1)]), contextlib.redirect_stdout(io.StringIO()):
             with self.assertRaisesRegex(POLICY.MaintenanceError, "INSUFFICIENT_DISK_SPACE"):

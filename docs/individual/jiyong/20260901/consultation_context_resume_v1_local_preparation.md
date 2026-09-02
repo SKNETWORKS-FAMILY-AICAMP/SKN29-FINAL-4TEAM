@@ -78,3 +78,31 @@
 2. 최지용: Backend Outbox·Migration `0018` 독립 QA 요청
 3. 양측 PASS 후 JAC104 한정 NONPROD 자동 재개 E2E
 4. IAC425·IAC606, Provider·Handoff 운영 활성화는 계속 HOLD
+
+## 2026-09-02 JAC104 제한 운영 활성화 준비
+
+- 최신 `main@6752a9bfeca58e71caa4bc948ea21b013c7902a9`를 병합한 깨끗한
+  격리 Worktree에서 구현했습니다.
+- 기존 15분 Canary와 분리된 `preflight → activate → status → deactivate`
+  보호 Workflow를 추가했습니다.
+- 활성화는 세 플래그를 함께 켜고 Backend·AI만 재생성하며, 중간 실패 시
+  모두 `false`로 복구합니다. 복구를 증명하지 못하면 두 서비스를 정지한
+  채 Fail-closed로 남깁니다.
+- 활성 상태 파일이 있으면 일반 Release 배포·Rollback·이미지 정리·기존
+  Handoff Canary를 모두 차단합니다. 일반 Release의 기본값은 계속
+  `false`입니다.
+- Backend가 IAC425·IAC606 공식 거절을 AI에 보내기 전에 차단하고, AI의
+  기존 JAC104 전용 허용 정책도 독립적으로 재검증합니다. 증상·Evidence·
+  Provider 결과를 고정한 코드는 추가하지 않았습니다.
+- 이전 AWS Canary의 기능 성공 뒤 보고서 파서만 실패했던 문제는 여러 로그
+  중 `overall_status`와 `canary_scope`를 가진 단 하나의 결과 JSON만 선택하도록
+  수정했습니다.
+- 로컬 검증: Backend 25개, AI 54개, 배포 안전 고유 99개 PASS
+  (Linux 전용 11개는 Windows에서 SKIP), Workflow YAML·쉘 문법·Python
+  Compile·Whitespace PASS입니다.
+- AWS·RDS·외부 Provider·운영 플래그는 이번 구현에서 변경하지 않았습니다.
+  코드를 `main`에 병합하고 새 불변 Release로 배포한 뒤 별도의 운영 승인과
+  정확한 Release SHA가 있어야 활성화할 수 있습니다.
+- 최초 운영 활성화 후 E2E는 신규 합성 JAC104 한 건만 실행합니다. 한 번이라도
+  실패하면 재실행하지 않고 즉시 `deactivate`한 뒤, Handoff를 끈 컴포넌트
+  실행 또는 결정론적 상담 전환 등 대체 경로를 먼저 결정합니다.

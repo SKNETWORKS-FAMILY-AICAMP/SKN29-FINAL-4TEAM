@@ -15,6 +15,7 @@ nginx_gate_file="${nginx_dropin_dir}/50-ai-handoff-canary.conf"
 nginx_include="include ${nginx_dropin_dir}/*.conf;"
 shared_dir="${base_dir}/shared"
 state_file="${shared_dir}/ai-handoff-canary.state"
+activation_state_file="${shared_dir}/ai-context-activation.state"
 lock_file="${shared_dir}/deploy.lock"
 watchdog_prefix="waterbridge-ai-handoff-canary"
 max_window_minutes=15
@@ -62,6 +63,8 @@ mkdir -p "$shared_dir"
 chmod 0750 "$base_dir" "$shared_dir"
 exec 9>"$lock_file"
 flock -n 9 || fail "deployment_or_canary_lock_busy"
+[[ ! -e "$activation_state_file" ]] \
+  || fail "persistent_context_activation_is_active"
 
 current_target=""
 compose_file=""
@@ -733,7 +736,21 @@ case "$action" in
 import json
 import sys
 
-report = json.loads(sys.argv[1])
+reports = []
+for line in sys.argv[1].splitlines():
+    try:
+        candidate = json.loads(line)
+    except json.JSONDecodeError:
+        continue
+    if (
+        isinstance(candidate, dict)
+        and "overall_status" in candidate
+        and "canary_scope" in candidate
+    ):
+        reports.append(candidate)
+if len(reports) != 1:
+    raise SystemExit(1)
+report = reports[0]
 expected_release = sys.argv[2]
 expected_inquiry = sys.argv[3]
 expected = {
