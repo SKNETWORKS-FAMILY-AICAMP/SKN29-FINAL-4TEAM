@@ -74,7 +74,7 @@ jobs:
           [[ "$CALLER_REPOSITORY" == "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM" ]]
           [[ "$CALLER_REF" == "refs/heads/main" ]]
           [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          [[ "$CANARY_ACTION" =~ ^(preflight|open|close|status)$ ]]
+          [[ "$CANARY_ACTION" =~ ^(preflight|open|run|close|status)$ ]]
           [[ "$CANARY_INQUIRY_ID" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]]
           python3 - "$CANARY_OPERATOR_IP" <<'PY'
           import ipaddress
@@ -117,10 +117,17 @@ jobs:
           CANARY_OPERATOR_IP: ${{ inputs.canary_operator_ip }}
         run: |
           set -euo pipefail
-          script_path="/opt/waterbridge/current/scripts/deployment/production/manage-ai-handoff-canary.sh"
-          printf -v canary_command '%q %q %q %q %q' \
-            "$script_path" "$CANARY_ACTION" "$RELEASE_SHA" \
-            "$CANARY_INQUIRY_ID" "$CANARY_OPERATOR_IP"
+          if [[ "$CANARY_ACTION" == "run" ]]; then
+            script_path="/opt/waterbridge/current/scripts/deployment/production/run-ai-resume-handoff-canary.sh"
+            printf -v canary_command '%q %q %q %q' \
+              "$script_path" "$RELEASE_SHA" \
+              "$CANARY_INQUIRY_ID" "$CANARY_OPERATOR_IP"
+          else
+            script_path="/opt/waterbridge/current/scripts/deployment/production/manage-ai-handoff-canary.sh"
+            printf -v canary_command '%q %q %q %q %q' \
+              "$script_path" "$CANARY_ACTION" "$RELEASE_SHA" \
+              "$CANARY_INQUIRY_ID" "$CANARY_OPERATOR_IP"
+          fi
           commands_json="$(python3 scripts/deployment/production/build_ssm_bash_parameters.py \
             "$canary_command")"
           command_id="$(aws ssm send-command \
@@ -172,6 +179,7 @@ jobs:
           case "$CANARY_ACTION" in
             preflight) marker=CANARY_PREFLIGHT_PASS ;;
             open) marker=CANARY_OPEN_PASS ;;
+            run) marker=CANARY_RUN_PASS ;;
             close) marker=CANARY_CLOSE_PASS ;;
             status) marker=CANARY_STATUS_PASS ;;
           esac
@@ -669,8 +677,10 @@ jobs:
             scripts/deployment/production/maintain_release_images.py \
             scripts/deployment/production/rollback-release.sh \
             scripts/deployment/production/manage-ai-handoff-canary.sh \
+            scripts/deployment/production/run-ai-resume-handoff-canary.sh \
             scripts/deployment/production/prepare_ai_handoff_nginx.py \
             scripts/deployment/production/prepare_ai_handoff_runtime_env.py \
+            scripts/deployment/production/prepare_ai_resume_runtime_env.py \
             scripts/deployment/production/run_p1_auth_email_worker.sh \
             scripts/deployment/production/sync_backend_email_auth_secret.py \
             scripts/deployment/production/validate_backend_runtime.py \
@@ -679,7 +689,8 @@ jobs:
             scripts/deployment/production/trace_canary.py \
             "$release_root/scripts/deployment/production/"
           chmod 0750 \
-            "$release_root/scripts/deployment/production/manage-ai-handoff-canary.sh"
+            "$release_root/scripts/deployment/production/manage-ai-handoff-canary.sh" \
+            "$release_root/scripts/deployment/production/run-ai-resume-handoff-canary.sh"
           {
             echo "WEB_IMAGE=${REGISTRY}/${ECR_WEB_REPOSITORY}"
             echo "WEB_IMAGE_DIGEST=${WEB_DIGEST}"

@@ -10,6 +10,7 @@ on:
         options:
           - preflight
           - open
+          - run
           - status
           - close
       expected_release_sha:
@@ -17,7 +18,7 @@ on:
         required: true
         type: string
       inquiry_id:
-        description: Existing new synthetic Inquiry UUID with zero AI/Handoff rows.
+        description: Existing new synthetic JAC104 Inquiry UUID with zero AI/Handoff rows.
         required: true
         type: string
       operator_ip:
