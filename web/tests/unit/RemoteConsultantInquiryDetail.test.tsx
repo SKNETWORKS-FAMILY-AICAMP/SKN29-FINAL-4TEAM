@@ -232,7 +232,7 @@ describe("Remote 상담사 문의 상세", () => {
       }),
     );
     expect(screen.getByLabelText("상담 기록")).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "편집 시작" }));
+    await user.click(screen.getByRole("button", { name: "상담 시작" }));
     await user.type(screen.getByLabelText("상담 기록"), "필터 상태 확인");
     await user.click(
       screen.getByRole("button", {
@@ -597,6 +597,70 @@ describe("Remote 상담사 문의 상세", () => {
     expect(summary.getByText(formatWorkspaceDateTime(completedAt))).toBeVisible();
     expect(summary.getByText(formatWorkspaceDateTime(confirmedAt))).toBeVisible();
     expect(summary.getByText("백엔드에서 제공되지 않음")).toBeVisible();
+    expect(
+      screen.queryByText("현재 진행할 상담 작업이 없습니다."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("최종 완료 대기 문의도 빈 상태 대신 상담 완료 결과를 표시한다", () => {
+    const completedAt = "2026-08-13T12:30:00+09:00";
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          status: "COMPLETION_PENDING",
+          stateVersion: 8,
+          consultation: {
+            consultationId: "30000000-0000-4000-8000-000000000301",
+            resultCode: "COMPLETED_NO_VISIT",
+            summary: {
+              aiDraftSummary: "AI 초안",
+              editedSummary: "상담사 수정 내용",
+              confirmedSummary: "필터 교체 방법과 사용 주의사항을 안내함",
+              confirmedAt: "2026-08-13T11:20:00+09:00",
+            },
+            consultationNote: "필터 상태를 확인함",
+            additionalCheck: "추가 누수 없음",
+            customerGuidance: "필터 교체 후 5분간 출수 안내",
+            usageGuidanceStatus: "NORMAL",
+          },
+          stateHistory: [
+            {
+              fromStatus: "CONSULTATION_IN_PROGRESS",
+              toStatus: "COMPLETION_PENDING",
+              changedAt: completedAt,
+              actorRole: "CONSULTANT",
+            },
+          ],
+          workflow: {
+            status: "COMPLETION_PENDING",
+            stateVersion: 8,
+            allowedActions: [
+              {
+                code: "FINALIZE_INQUIRY",
+                label: "문의 최종 완료",
+                operationId: "finalizeInquiry",
+                style: "PRIMARY",
+                requiresConfirmation: true,
+                confirmationMessage: "문의를 최종 완료하시겠습니까?",
+              },
+            ],
+          },
+        })}
+        onOpenVisit={() => undefined}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    const summary = within(screen.getByTestId("consultation-completion-summary"));
+    expect(summary.getAllByText("최종 완료 대기").length).toBeGreaterThan(0);
+    expect(summary.getByText("방문 없이 상담 완료")).toBeVisible();
+    expect(
+      summary.getByText("필터 교체 방법과 사용 주의사항을 안내함"),
+    ).toBeVisible();
+    expect(summary.getByText(formatWorkspaceDateTime(completedAt))).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "문의 최종 완료" }),
+    ).toBeVisible();
     expect(
       screen.queryByText("현재 진행할 상담 작업이 없습니다."),
     ).not.toBeInTheDocument();

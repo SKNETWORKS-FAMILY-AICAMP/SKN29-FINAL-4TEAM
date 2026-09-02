@@ -48,9 +48,10 @@ describe("상담 업무 Repository 경계", () => {
     expect(repository.findInquiry(inquiry.inquiryId)).toMatchObject({
       inquiryId: inquiry.inquiryId,
       status: "CONSULTATION_REQUIRED",
-      allowedActions: [
+      allowedActions: expect.arrayContaining([
         expect.objectContaining({ code: "START_CONSULTATION" }),
-      ],
+        expect.objectContaining({ code: "CANCEL_INQUIRY" }),
+      ]),
     });
   });
 });

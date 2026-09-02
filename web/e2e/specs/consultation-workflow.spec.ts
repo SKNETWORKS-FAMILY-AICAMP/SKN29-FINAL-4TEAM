@@ -826,12 +826,18 @@ test("Backend Fixture로 상담 처리와 404·409 경계를 검증한다", asyn
   await expect(
     recoveredFirstDetailPanel.getByText("최종 완료 대기", { exact: true }),
   ).toBeVisible();
+  const recoveredCompletionSummary = recoveredFirstDetailPanel.getByTestId(
+    "consultation-completion-summary",
+  );
+  await expect(recoveredCompletionSummary).toBeVisible();
+  await expect(recoveredCompletionSummary).toContainText("최종 완료 대기");
+  await expect(recoveredCompletionSummary).toContainText(confirmedSummary);
   await expect(
     recoveredFirstDetailPanel.getByText(
       "현재 진행할 상담 작업이 없습니다.",
       { exact: true },
     ),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await recoveredFirstDetailPanel
     .getByRole("button", {
       name: "상담 2단계: AI 상담 · 이전 상담 기록 확인",

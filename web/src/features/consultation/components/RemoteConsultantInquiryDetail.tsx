@@ -328,6 +328,8 @@ export default function RemoteConsultantInquiryDetail({
     inquiry.consultation !== null || inquiry.stateHistory.length > 0;
   const isCompletedInquiry =
     normalizedStatus === "RESOLVED" || normalizedStatus === "CANCELLED";
+  const showCompletionSummary =
+    isCompletedInquiry || normalizedStatus === "COMPLETION_PENDING";
   const showActionPanel = Boolean(
     !isCompletedInquiry &&
       onOpenVisit &&
@@ -406,7 +408,7 @@ export default function RemoteConsultantInquiryDetail({
 
       <ConsultationStepNavigator
         key={inquiry.inquiryId}
-        initialStepId={isCompletedInquiry ? "action" : undefined}
+        initialStepId={showCompletionSummary ? "action" : undefined}
         steps={[
           {
             id: "inquiry",
@@ -560,7 +562,7 @@ export default function RemoteConsultantInquiryDetail({
             description: "",
             content: (
               <div className="consultation-stepper__step-stack">
-                {showActionPanel && onOpenVisit && onRefresh ? (
+                {showActionPanel && onOpenVisit && onRefresh && (
                   <RemoteConsultationActionPanel
                     inquiry={inquiry}
                     onOpenVisit={onOpenVisit}
@@ -569,7 +571,8 @@ export default function RemoteConsultantInquiryDetail({
                     onSummaryConfirmed={onSummaryConfirmed}
                     onUnsavedChangesChange={onUnsavedChangesChange}
                   />
-                ) : isCompletedInquiry ? (
+                )}
+                {showCompletionSummary && (
                   <section
                     className="remote-inquiry-detail__completion-summary"
                     aria-labelledby="consultation-completion-summary-title"
@@ -584,7 +587,7 @@ export default function RemoteConsultantInquiryDetail({
                         </h2>
                       </div>
                       <span className="remote-inquiry-detail__completion-badge">
-                        완료
+                        {isCompletedInquiry ? "완료" : "상담 확정"}
                       </span>
                     </div>
                     <dl className="remote-inquiry-detail__completion-list">
@@ -607,7 +610,7 @@ export default function RemoteConsultantInquiryDetail({
                         <dd>{unavailableCompletionValue}</dd>
                       </div>
                       <div>
-                        <dt>완료 시간</dt>
+                        <dt>{isCompletedInquiry ? "완료 시간" : "상담 확정 시간"}</dt>
                         <dd>
                           {completionHistory
                             ? formatWorkspaceDateTime(
@@ -642,7 +645,8 @@ export default function RemoteConsultantInquiryDetail({
                       </div>
                     </dl>
                   </section>
-                ) : (
+                )}
+                {!showActionPanel && !showCompletionSummary && (
                   <div className="consultation-stepper__empty-action">
                     <strong>현재 진행할 상담 작업이 없습니다.</strong>
                     <p>처리 이력과 최신 문의 상태를 확인해 주세요.</p>

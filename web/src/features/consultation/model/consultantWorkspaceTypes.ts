@@ -35,6 +35,7 @@ export type CounselorAssigneeFilter = "ALL" | "MINE" | "UNASSIGNED";
 export type DetailTab = "summary" | "answers" | "evidence" | "timeline";
 
 export type CounselorActionCode =
+  | "CANCEL_INQUIRY"
   | "START_CONSULTATION"
   | "UPDATE_CONSULTATION_SUMMARY"
   | "CONFIRM_CONSULTATION_SUMMARY"

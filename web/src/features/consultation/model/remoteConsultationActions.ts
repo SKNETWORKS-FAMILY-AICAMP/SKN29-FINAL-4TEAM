@@ -2,6 +2,7 @@ import type { ConsultantInquiryDetailViewModel } from "./consultantWorkspaceRemo
 import type { CounselorActionCode } from "./consultantWorkspaceTypes";
 
 const REMOTE_CONSULTATION_ACTION_CODES = new Set<CounselorActionCode>([
+  "CANCEL_INQUIRY",
   "START_CONSULTATION",
   "UPDATE_CONSULTATION_SUMMARY",
   "CONFIRM_CONSULTATION_SUMMARY",
