@@ -36,6 +36,16 @@ interface RecentCareDatePresentation {
   label: string;
 }
 
+interface SymptomDetailItem {
+  label: string;
+  value: string;
+}
+
+const SYMPTOM_DETAIL_PREFIXES = [
+  "발생 조건",
+  "제품 표시 문구·오류 코드",
+] as const;
+
 const CONSULTATION_RESULT_LABELS: Readonly<Record<string, string>> = {
   PENDING: "상담 결과 검토 중",
   COMPLETED_NO_VISIT: "방문 없이 상담 완료",
@@ -84,6 +94,38 @@ function getRecentCareDatePresentation(
     dateTime: value,
     label: `${year}. ${month}. ${day}.`,
   };
+}
+
+function getSymptomDetailItems(summary: string): SymptomDetailItem[] {
+  const inquiryLines: string[] = [];
+  const structuredItems: SymptomDetailItem[] = [];
+
+  summary
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .forEach((line) => {
+      const prefix = SYMPTOM_DETAIL_PREFIXES.find((candidate) =>
+        line.startsWith(`${candidate}:`),
+      );
+      if (!prefix) {
+        inquiryLines.push(line);
+        return;
+      }
+
+      structuredItems.push({
+        label: prefix,
+        value: line.slice(prefix.length + 1).trim() || "입력 내용 없음",
+      });
+    });
+
+  return [
+    {
+      label: "문의내용",
+      value: inquiryLines.join("\n") || "문의 내용 확인 필요",
+    },
+    ...structuredItems,
+  ];
 }
 
 function formatElapsedSince(receivedAt: string): string {
@@ -324,6 +366,9 @@ export default function RemoteConsultantInquiryDetail({
         inquiry.productAndCare.productModelName,
       )
     : "제품 정보 확인 필요";
+  const symptomDetailItems = getSymptomDetailItems(
+    inquiry.symptomAndQuestionnaire.symptomSummary,
+  );
   const hasConsultationHistory =
     inquiry.consultation !== null || inquiry.stateHistory.length > 0;
   const isCompletedInquiry =
@@ -421,9 +466,17 @@ export default function RemoteConsultantInquiryDetail({
                   data-e2e-sensitive="true"
                 >
                   <h2>고객 증상과 답변</h2>
-                  <p className="remote-inquiry-detail__symptom-detail">
-                    {inquiry.symptomAndQuestionnaire.symptomSummary}
-                  </p>
+                  <dl
+                    className="remote-inquiry-detail__symptom-detail"
+                    aria-label="고객 문의 세부 내용"
+                  >
+                    {symptomDetailItems.map((item) => (
+                      <div key={item.label}>
+                        <dt>{item.label}:</dt>
+                        <dd>{item.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                   {inquiry.symptomAndQuestionnaire.answers.length > 0 ? (
                     <dl className="remote-inquiry-detail__answers">
                       {inquiry.symptomAndQuestionnaire.answers.map((answer) => (

@@ -70,6 +70,30 @@ function createDetail(
 }
 
 describe("Remote 상담사 문의 상세", () => {
+  it("앱 문의 원문과 발생 조건을 라벨이 있는 별도 행으로 표시한다", () => {
+    render(
+      <RemoteConsultantInquiryDetail
+        inquiry={createDetail({
+          symptomAndQuestionnaire: {
+            symptomSummary:
+              "냉수에서 온수가 나와요\n발생 조건: 오늘 아침 9시부터",
+            answers: [],
+          },
+        })}
+      />,
+    );
+
+    const details = within(
+      screen.getByLabelText("고객 문의 세부 내용"),
+    );
+    const inquiryRow = details.getByText("문의내용:").closest("div");
+    const conditionRow = details.getByText("발생 조건:").closest("div");
+
+    expect(inquiryRow).toHaveTextContent("문의내용:냉수에서 온수가 나와요");
+    expect(inquiryRow).not.toHaveTextContent("발생 조건");
+    expect(conditionRow).toHaveTextContent("발생 조건:오늘 아침 9시부터");
+  });
+
   it("Backend가 허용한 담당 고객 연락처를 상세 화면에 우선 표시한다", () => {
     render(
       <RemoteConsultantInquiryDetail
