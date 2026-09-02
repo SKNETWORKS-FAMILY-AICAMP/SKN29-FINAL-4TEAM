@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from apps.inquiries.models import HumanReview, HumanReviewResumeDispatch
 from integrations.ai.human_review_resume import (
+    CONTEXT_RESUME_APPROVED_MODEL_CODES,
     HumanReviewResumeFailure,
     HumanReviewResumeReceipt,
     build_human_review_resume_payload,
@@ -36,6 +37,15 @@ def _payload_sha256(payload: dict) -> str:
 class HumanReviewResumeDispatchService:
     """Own the persistent one-attempt boundary around the AI HTTP call."""
 
+    @staticmethod
+    def is_review_model_approved(review: HumanReview) -> bool:
+        """Keep the current automatic Resume scope fail-closed to JAC104."""
+
+        model_code = (
+            review.inquiry.subscription.product_model.model_code
+        )
+        return model_code.strip().upper() in CONTEXT_RESUME_APPROVED_MODEL_CODES
+
     @classmethod
     def enqueue(
         cls,
@@ -49,6 +59,8 @@ class HumanReviewResumeDispatchService:
             or review.review_state_version != 2
         ):
             raise ValueError("only an official rejected review can be enqueued")
+        if not cls.is_review_model_approved(review):
+            raise ValueError("review product is not approved for context resume")
         idempotency_key = (
             "human-review-resume:"
             f"{review.public_id}:{review.review_state_version}"

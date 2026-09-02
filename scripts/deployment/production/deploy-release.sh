@@ -42,6 +42,10 @@ if [[ -f "${base_dir}/shared/ai-handoff-canary.state" ]]; then
   echo "DEPLOYMENT_BLOCKED: active AI Handoff Canary window" >&2
   exit 1
 fi
+if [[ -f "${base_dir}/shared/ai-context-activation.state" ]]; then
+  echo "DEPLOYMENT_BLOCKED: JAC104 Context Agent activation is active" >&2
+  exit 1
+fi
 
 aws s3 cp \
   "s3://${storage_bucket}/releases/${release_sha}/release.tar.gz" \
@@ -87,6 +91,7 @@ ai_handoff_env_prepare_script="${payload_dir}/scripts/deployment/production/prep
 ai_resume_env_prepare_script="${payload_dir}/scripts/deployment/production/prepare_ai_resume_runtime_env.py"
 ai_handoff_nginx_prepare_script="${payload_dir}/scripts/deployment/production/prepare_ai_handoff_nginx.py"
 ai_handoff_canary_script="${payload_dir}/scripts/deployment/production/manage-ai-handoff-canary.sh"
+ai_context_activation_script="${payload_dir}/scripts/deployment/production/manage-ai-context-activation.sh"
 ai_resume_handoff_canary_runner="${payload_dir}/scripts/deployment/production/run-ai-resume-handoff-canary.sh"
 worker_preflight_script="${payload_dir}/scripts/deployment/production/validate_p1_auth_email_worker_runtime.py"
 worker_runner_source="${payload_dir}/scripts/deployment/production/run_p1_auth_email_worker.sh"
@@ -99,6 +104,7 @@ for required_asset in \
   "$ai_resume_env_prepare_script" \
   "$ai_handoff_nginx_prepare_script" \
   "$ai_handoff_canary_script" \
+  "$ai_context_activation_script" \
   "$ai_resume_handoff_canary_runner" \
   "$worker_preflight_script" \
   "$worker_runner_source" \
@@ -108,7 +114,10 @@ for required_asset in \
     exit 1
   }
 done
-chmod 0750 "$ai_handoff_canary_script" "$ai_resume_handoff_canary_runner"
+chmod 0750 \
+  "$ai_handoff_canary_script" \
+  "$ai_context_activation_script" \
+  "$ai_resume_handoff_canary_runner"
 [[ -f "$backend_env_file" && -f "$ai_env_file" && -s "$rds_ca_file" ]] || {
   echo "DEPLOYMENT_FAILED: protected service env or RDS CA is unavailable" >&2
   exit 1

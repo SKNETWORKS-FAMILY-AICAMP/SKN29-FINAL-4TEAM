@@ -1,0 +1,32 @@
+name: Production AI Context Activation
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Protected JAC104 context operation to run.
+        required: true
+        type: choice
+        options:
+          - preflight
+          - activate
+          - status
+          - deactivate
+      expected_release_sha:
+        description: Exact 40-character SHA currently deployed on EC2.
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
+jobs:
+  run-trusted-context-operation:
+    name: Run trusted JAC104 context activation operation
+    uses: SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/.github/workflows/production-deploy.yml@main
+    with:
+      operation: ai_context_activation
+      release_sha: ${{ inputs.expected_release_sha }}
+      context_activation_action: ${{ inputs.action }}

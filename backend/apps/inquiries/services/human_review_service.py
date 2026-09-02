@@ -510,6 +510,10 @@ class HumanReviewService:
         )
 
         review = HumanReview.objects.get(public_id=review_public_id)
+        if not HumanReviewResumeDispatchService.is_review_model_approved(
+            review
+        ):
+            return
         dispatch = HumanReviewResumeDispatchService.enqueue(review)
         transaction.on_commit(
             lambda: HumanReviewResumeDispatchService.process_dispatch(

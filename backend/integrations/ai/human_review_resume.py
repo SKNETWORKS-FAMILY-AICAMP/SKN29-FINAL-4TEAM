@@ -17,6 +17,7 @@ from apps.inquiries.models import ConsultationCauseLedger, HumanReview
 
 
 RESUME_PATH = "/api/v1/internal/ai/human-reviews/resume"
+CONTEXT_RESUME_APPROVED_MODEL_CODES = frozenset({"WPUJAC104DWH"})
 ALLOWED_FALLBACK_REASONS = frozenset(
     {
         "CONFIGURATION",
@@ -115,6 +116,9 @@ def build_human_review_resume_payload(
     review = _load_review(review_public_id)
     inquiry = review.inquiry
     run = review.guidance.generated_by_ai_run
+    model_code = inquiry.subscription.product_model.model_code.strip().upper()
+    if model_code not in CONTEXT_RESUME_APPROVED_MODEL_CODES:
+        raise HumanReviewResumeFailure("RUNTIME_PRODUCT_NOT_APPROVED")
     if (
         review.status_code != HumanReview.Status.REJECTED
         or review.decision_code != HumanReview.Decision.REJECT

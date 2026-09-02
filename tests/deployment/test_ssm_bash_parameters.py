@@ -38,9 +38,9 @@ class SSMParameterTests(unittest.TestCase):
             with self.subTest(commands=commands), self.assertRaises(ValueError):
                 MODULE.build_parameters(commands)
 
-    def test_all_three_ssm_paths_use_the_tested_builder(self):
+    def test_all_four_ssm_paths_use_the_tested_builder(self):
         text = WORKFLOW.read_text(encoding="utf-8")
-        self.assertEqual(text.count('commands_json="$(python3 ' + BUILDER), 3)
+        self.assertEqual(text.count('commands_json="$(python3 ' + BUILDER), 4)
         self.assertNotIn('commands_json="$(jq', text)
         self.assertIn("tests.deployment.test_ssm_bash_parameters", text)
 
