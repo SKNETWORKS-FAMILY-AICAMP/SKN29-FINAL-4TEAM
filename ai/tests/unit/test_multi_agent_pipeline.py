@@ -29,7 +29,11 @@ from ai.app.validation.routing import ResponseRoutingDisposition
 INQUIRY_ID = "018f2f9b-7c30-7981-b541-1a987c88b601"
 CORRELATION_ID = "018f2f9b-7c30-7981-b541-1a987c88b602"
 COMPLETE_SYMPTOM = "어제부터 냉수 버튼을 누르면 물이 졸졸 나옵니다. 전원을 껐다 켰어요."
-EVIDENCE_SUMMARY = "냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다."
+CONTEXT_CANARY_LOW_FLOW_SYMPTOM = (
+    "오늘부터 정수 출수 버튼을 누르면 출수량이 평소보다 줄었고, "
+    "원수 밸브를 확인했지만 동일합니다."
+)
+EVIDENCE_SUMMARY = "출수량이 적은 경우 원수 공급 밸브가 열려 있는지 확인합니다."
 TASTE_EVIDENCE_SUMMARY = "단기(10일 이내) : 냉수, 정수, 온수를 1L씩 각각 1회 이상 출수하여 버린 후 사용해 주세요."
 
 
@@ -44,10 +48,14 @@ class UnexpectedSearchService:
 
 
 class EvidenceSearchService:
+    def __init__(self):
+        self.queries = []
+
     def search(self, *args, **kwargs):
+        self.queries.append(args[0])
         return [
             RetrievedChunk(
-                chunk_id="RAG-WPUJAC104DWH-COLD-MA-TEST",
+                chunk_id="RAG-WPUJAC104DWH-LOW-FLOW-MA-TEST",
                 document_title="WPU-JAC104D 사용설명서",
                 document_version="REV.00",
                 page=37,
@@ -132,6 +140,7 @@ def _run_multi_agent(
     *,
     search_service,
     raw_symptom=COMPLETE_SYMPTOM,
+    selected_symptoms=None,
     previous_answers=None,
     llm_client=None,
 ):
@@ -145,6 +154,7 @@ def _run_multi_agent(
         state_version=1,
         raw_symptom=raw_symptom,
         model_code="WPUJAC104DWH",
+        selected_symptoms=selected_symptoms or [],
         previous_answers=previous_answers or [],
         runtime_name="multi_agent",
     )
@@ -300,6 +310,44 @@ def test_multi_agent_evidence_path_matches_single_rag_public_contract():
         AgentRole.CARE_DECISION,
         AgentRole.SUPERVISOR,
     ]
+
+
+def test_context_canary_fixture_reaches_evidence_without_followup_wait():
+    search_service = EvidenceSearchService()
+    result = _run_multi_agent(
+        search_service=search_service,
+        raw_symptom=CONTEXT_CANARY_LOW_FLOW_SYMPTOM,
+        selected_symptoms=["LOW_FLOW"],
+    )
+    response = result.to_analysis_result()
+
+    assert result.context.awaiting_customer_input is False
+    assert response.missing_fields == []
+    assert response.followup_questions == []
+    assert len(search_service.queries) == 1
+    assert search_service.queries[0].model_code == "WPUJAC104DWH"
+    assert "출수량 저하" in search_service.queries[0].query_text
+    assert [item.chunk_id for item in response.evidence_references] == [
+        "RAG-WPUJAC104DWH-LOW-FLOW-MA-TEST"
+    ]
+    assert HandoffReason.EVIDENCE_READY in {
+        item.reason_code for item in result.multi_agent_metadata.handoffs
+    }
+
+
+def test_incomplete_low_flow_fixture_still_stops_before_evidence_search():
+    result = _run_multi_agent(
+        search_service=UnexpectedSearchService(),
+        raw_symptom="정수기 출수량이 평소보다 줄었습니다.",
+        selected_symptoms=["LOW_FLOW"],
+    )
+    response = result.to_analysis_result()
+
+    assert result.context.awaiting_customer_input is True
+    assert "target_water_type" in {
+        item.field_name for item in response.missing_fields
+    }
+    assert response.evidence_references == []
 
 
 def test_evidence_gap_with_missing_information_returns_questions_not_no_evidence():
