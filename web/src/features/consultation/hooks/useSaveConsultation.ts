@@ -47,6 +47,7 @@ interface UseSaveConsultationOptions {
 
 const remoteRepository = createRemoteConsultationWriteRepository();
 const ACTION_CODES = new Set<CounselorActionCode>([
+  "CANCEL_INQUIRY",
   "START_CONSULTATION",
   "UPDATE_CONSULTATION_SUMMARY",
   "CONFIRM_CONSULTATION_SUMMARY",
@@ -159,6 +160,33 @@ export function useSaveConsultation(
         const stateBody = { state_version: stateVersion };
         let response;
         switch (action.code) {
+          case "CANCEL_INQUIRY": {
+            const cancelResponse = await writeRepository.cancel(
+              inquiry.inquiryId,
+              {
+                ...stateBody,
+                reason_code: "OTHER",
+                reason_detail: "상담사 화면에서 문의 삭제 요청",
+              },
+              context,
+            );
+            response = {
+              ...cancelResponse,
+              data: cancelResponse.data
+                ? {
+                    message: "문의가 취소 처리되었습니다.",
+                    inquiry_id: cancelResponse.data.inquiry_id,
+                    status: cancelResponse.data.state,
+                    state_version: cancelResponse.data.state_version,
+                    allowed_actions: cancelResponse.data.allowed_actions,
+                    idempotent_replay:
+                      cancelResponse.data.idempotent_replay,
+                    resource: null,
+                  }
+                : null,
+            };
+            break;
+          }
           case "START_CONSULTATION":
             response = await writeRepository.start(inquiry.inquiryId, stateBody, context);
             break;

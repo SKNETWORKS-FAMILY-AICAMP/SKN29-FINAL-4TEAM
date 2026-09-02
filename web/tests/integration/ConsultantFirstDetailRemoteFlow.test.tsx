@@ -866,7 +866,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
       await screen.findByRole("button", { name: "상담 시작" }),
     );
     expect(await screen.findByLabelText("상담 기록")).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "편집 시작" }));
+    await user.click(screen.getByRole("button", { name: "상담 시작" }));
     await user.type(
       screen.getByLabelText("상담 기록"),
       "고객과 출수 상태를 확인하고 필터 상태 및 정상 사용 방법을 안내했습니다.",
@@ -874,7 +874,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     await user.click(screen.getByRole("combobox", { name: "방문 필요 여부" }));
     await user.click(screen.getByRole("option", { name: "방문 불필요" }));
 
-    await user.click(screen.getByRole("button", { name: "수정 내용 저장" }));
+    await user.click(screen.getByRole("button", { name: "내용 저장" }));
     await user.click(await screen.findByRole("button", { name: "상담 내용 확정" }));
     expect(await screen.findByRole("region", { name: "문의 처리 결과" })).toHaveTextContent("상담 진행 중");
     expect(screen.getByRole("region", { name: "문의 처리 결과" }).parentElement).toBe(
@@ -895,10 +895,17 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
         }),
       ),
     );
+    const completionSummary = await screen.findByTestId(
+      "consultation-completion-summary",
+    );
+    expect(completionSummary).toHaveTextContent("최종 완료 대기");
+    expect(completionSummary).toHaveTextContent("방문 없이 상담 완료");
+    expect(completionSummary).toHaveTextContent(
+      "고객과 출수 상태를 확인하고 필터 상태 및 정상 사용 방법을 안내했습니다.",
+    );
     expect(
-      await screen.findByText("현재 진행할 상담 작업이 없습니다."),
-    ).toBeVisible();
-    expect(screen.getByText("최종 완료 대기")).toBeVisible();
+      screen.queryByText("현재 진행할 상담 작업이 없습니다."),
+    ).not.toBeInTheDocument();
 
     const expectedCalls = [
       ["claim-consultation", 3],
@@ -1012,7 +1019,7 @@ describe("상담사 Remote 첫 상세 패널 경로", () => {
     await user.click(
       screen.getByRole("button", { name: "상담 3단계: 상담 진행" }),
     );
-    await user.click(screen.getByRole("button", { name: "편집 시작" }));
+    await user.click(screen.getByRole("button", { name: "상담 시작" }));
     await user.type(screen.getByLabelText("상담 기록"), "작성 중인 상담 내용");
 
     const closeButtons = screen.getAllByRole("button", {

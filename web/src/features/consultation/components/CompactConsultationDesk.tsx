@@ -493,7 +493,13 @@ function CompactConsultationDeskContent({
               visibleActions.map((action) => (
                 <button
                   key={action.code}
-                  className={action.style === "PRIMARY" ? "is-primary" : ""}
+                  className={
+                    action.style === "PRIMARY"
+                      ? "is-primary"
+                      : action.style === "DESTRUCTIVE"
+                        ? "is-destructive"
+                        : ""
+                  }
                   type="button"
                   disabled={save.isSaving || !save.isWriteEnabled}
                   onClick={() => handleAction(action)}

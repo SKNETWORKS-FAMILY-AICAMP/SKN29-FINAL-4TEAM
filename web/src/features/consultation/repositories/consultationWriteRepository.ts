@@ -33,6 +33,25 @@ export interface SaveConsultationRequestDto extends StateTransitionRequestDto {
 
 export type CompleteConsultationRequestDto = StateTransitionRequestDto;
 
+export type CancelInquiryReasonCode =
+  | "CUSTOMER_REQUEST"
+  | "DUPLICATE_INQUIRY"
+  | "ISSUE_RESOLVED"
+  | "OTHER";
+
+export interface CancelInquiryRequestDto extends StateTransitionRequestDto {
+  reason_code: CancelInquiryReasonCode;
+  reason_detail?: string | null;
+}
+
+export interface CancelInquiryResultDto {
+  inquiry_id: string;
+  state: "CANCELLED";
+  state_version: number;
+  idempotent_replay: boolean;
+  allowed_actions: AllowedActionDto[];
+}
+
 export interface StateTransitionResultDto {
   message: string;
   inquiry_id: string;
@@ -49,6 +68,11 @@ export type ConsultationWriteRequester = <TData>(
 ) => Promise<ApiResponse<TData>>;
 
 export interface ConsultationWriteRepository {
+  cancel(
+    inquiryId: string,
+    body: CancelInquiryRequestDto,
+    requestContext: RequestContext,
+  ): Promise<ApiResponse<CancelInquiryResultDto>>;
   claimConsultation(
     inquiryId: string,
     body: StateTransitionRequestDto,
@@ -101,6 +125,11 @@ export function createRemoteConsultationWriteRepository(
     `/inquiries/${encodeURIComponent(inquiryId)}`;
 
   return {
+    cancel: (inquiryId, body, requestContext) =>
+      requester<CancelInquiryResultDto>(
+        `${inquiryPath(inquiryId)}/cancel`,
+        createWriteRequest("POST", body, requestContext),
+      ),
     claimConsultation: (inquiryId, body, requestContext) =>
       requester<StateTransitionResultDto>(
         `${inquiryPath(inquiryId)}/claim-consultation`,
