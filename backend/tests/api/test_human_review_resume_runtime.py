@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from hashlib import sha256
 from uuid import UUID, uuid4
 
 import httpx
@@ -14,6 +15,9 @@ from apps.inquiries.models import (
     HumanReview,
     HumanReviewResumeDispatch,
     Inquiry,
+)
+from apps.inquiries.p1_team_routing import (
+    P1_TEAM_CONSULTANT_CONTRACT_MAP,
 )
 from apps.inquiries.services.human_review_resume_dispatch_service import (
     HumanReviewResumeDispatchService,
@@ -140,6 +144,137 @@ def test_official_reject_schedules_once_and_decision_replay_schedules_zero(
     assert dispatch.status == HumanReviewResumeDispatch.Status.SUCCEEDED
     assert dispatch.attempt_count == 1
     assert len(dispatch.payload_sha256) == 64
+
+
+@pytest.mark.parametrize("consultant_number", range(1, 8))
+@override_settings(
+    AI_HUMAN_REVIEW_RESUME_ENABLED=True,
+    AI_HUMAN_REVIEW_RESUME_TOKEN=TOKEN,
+)
+def test_all_active_skn_consultants_share_official_reject_resume_pipeline(
+    consultant_number,
+    monkeypatch,
+    django_capture_on_commit_callbacks,
+):
+    """Usernames are test cases; production authorization is role-based."""
+
+    sequence = 1900 + consultant_number
+    consultant = create_user(sequence, role=User.Role.CONSULTANT)
+    consultant.username = f"SKN-{consultant_number:03d}"
+    consultant.save(update_fields=["username", "updated_at"])
+    inquiry, _guidance, review = create_review(
+        sequence,
+        assigned_consultant=consultant,
+    )
+    _set_jac104(review)
+    inquiry.subscription.contract_no = P1_TEAM_CONSULTANT_CONTRACT_MAP[
+        consultant.username
+    ]
+    inquiry.subscription.save(update_fields=["contract_no", "updated_at"])
+
+    run = review.guidance.generated_by_ai_run
+    source_state_version = review.source_inquiry_state_version
+    mapping = create_verified_mapping(inquiry, sequence=sequence + 3000)
+    configure_v2_run(
+        run,
+        {
+            "inquiry_id": str(inquiry.public_id),
+            "correlation_id": str(run.correlation_id),
+            "ai_request_id": run.idempotency_key,
+            "state_version": source_state_version,
+            "model_code": inquiry.subscription.product_model.model_code,
+        },
+        mapping=mapping,
+    )
+    review.source_ai_request_id = run.idempotency_key
+    review.checkpoint_thread_id = (
+        "hitl-"
+        + sha256(
+            (
+                f"{inquiry.public_id}:{run.idempotency_key}:"
+                f"{source_state_version}"
+            ).encode("utf-8")
+        )
+        .hexdigest()[:32]
+    )
+    review.full_clean()
+    review.save(
+        update_fields=[
+            "source_ai_request_id",
+            "checkpoint_thread_id",
+            "updated_at",
+        ]
+    )
+    EvidenceLink.objects.filter(guidance=review.guidance).delete()
+    EvidenceLink.objects.create(
+        **link_values(
+            sequence + 3000,
+            inquiry=inquiry,
+            chunk=mapping.chunk,
+            target=review.guidance,
+            ai_run=run,
+            is_verified=True,
+            verified_by=mapping.verified_by,
+            verified_at=mapping.verified_at,
+        )
+    )
+    ledger = _attach_cause_ledger(
+        inquiry=inquiry,
+        run=run,
+        source_state_version=source_state_version,
+    )
+    calls = []
+
+    def fake_resume(payload, *, idempotency_key):
+        assert idempotency_key == (
+            f"human-review-resume:{review.public_id}:2"
+        )
+        persisted = HumanReview.objects.get(
+            public_id=payload["backend_review_id"]
+        )
+        assert payload["analysis_result"]["inquiry_id"] == str(
+            inquiry.public_id
+        )
+        assert payload["analysis_result"]["ai_request_id"] == (
+            run.idempotency_key
+        )
+        assert payload["analysis_result"]["evidence_references"][0][
+            "verification_status"
+        ] == "official_verified"
+        assert ledger.execution_identity["runtime_name"] == "multi_agent"
+        calls.append(persisted.public_id)
+        return _receipt(persisted)
+
+    monkeypatch.setattr(
+        "apps.inquiries.services.human_review_resume_dispatch_service."
+        "send_human_review_resume_payload",
+        fake_resume,
+    )
+
+    with django_capture_on_commit_callbacks(execute=True):
+        response = decide(
+            actor=consultant,
+            review=review,
+            body={
+                "decision": HumanReview.Decision.REJECT,
+                "review_state_version": 1,
+                "reason_code": "INSUFFICIENT_EVIDENCE",
+            },
+            key=f"human-review-resume-skn-{consultant_number:03d}",
+        )
+
+    assert response.status_code == 200
+    review.refresh_from_db()
+    inquiry.refresh_from_db()
+    dispatch = HumanReviewResumeDispatch.objects.get(human_review=review)
+    assert review.reviewer == consultant
+    assert review.status_code == HumanReview.Status.REJECTED
+    assert inquiry.status_code == Inquiry.Status.CONSULTATION_REQUIRED
+    assert calls == [review.public_id]
+    assert dispatch.status == HumanReviewResumeDispatch.Status.SUCCEEDED
+    assert dispatch.attempt_count == 1
+    assert dispatch.provider_calls == 0
+    assert dispatch.context_synthesis_status == "FALLBACK"
 
 
 @override_settings(
@@ -578,6 +713,40 @@ def test_payload_is_rebuilt_from_bound_ledger_without_customer_original():
     assert inquiry.raw_text not in serialized
     assert "OPENAI_API_KEY" not in serialized
     assert "system_prompt" not in serialized
+
+
+def test_payload_rejects_non_multi_agent_source_runtime():
+    _inquiry, run, review, _mapping = _bound_rejected_review(1814)
+    ledger = run.consultation_cause_ledger
+    ledger.execution_identity = {
+        **ledger.execution_identity,
+        "runtime_name": "single_rag",
+    }
+    ledger.ledger_sha256 = canonical_json_sha256(
+        {
+            "contract_version": ledger.contract_version,
+            "ledger_id": str(ledger.ledger_id),
+            "inquiry_id": str(ledger.inquiry.public_id),
+            "correlation_id": str(ledger.correlation_id),
+            "ai_request_id": ledger.ai_request_id,
+            "state_version": ledger.source_inquiry_state_version,
+            "model_code": ledger.model_code,
+            "producer": ledger.producer,
+            "policy_version": ledger.policy_version,
+            "execution_identity": ledger.execution_identity,
+            "analysis_result_sha256": ledger.analysis_result_sha256,
+            "causes": ledger.causes,
+        }
+    )
+    ledger.full_clean()
+    ledger.save(
+        update_fields=["execution_identity", "ledger_sha256", "updated_at"]
+    )
+
+    with pytest.raises(HumanReviewResumeFailure) as captured:
+        build_human_review_resume_payload(review.public_id)
+
+    assert captured.value.failure_code == "AI_RESUME_RUNTIME_NOT_MULTI_AGENT"
 
 
 def test_no_evidence_review_can_reconstruct_without_fabricated_evidence():
