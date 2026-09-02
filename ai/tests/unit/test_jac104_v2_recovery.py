@@ -37,7 +37,7 @@ class FakeGuidance:
         self.calls += 1
         return GuidanceLLMResponse(
             output=GuidanceGenerationResult(
-                message=request.evidence_summaries[0],
+                selected_evidence_index=0,
                 next_actions=[request.allowed_next_actions[0]],
             ),
             model_name="test-only-fake-provider",

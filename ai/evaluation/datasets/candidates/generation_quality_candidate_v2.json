@@ -1,8 +1,8 @@
 {
   "dataset_id": "T029-GENERATION-QUALITY-CANDIDATE",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "approval_status": "CANDIDATE_NOT_QA_APPROVED",
-  "scope": "합성 Evidence와 출력으로 Generation 계약을 검증하며 실제 Provider 품질 Gold가 아니다.",
+  "scope": "합성 Evidence와 근거 선택 출력으로 Generation 계약을 검증하며 실제 Provider 품질 Gold가 아니다.",
   "cases": [
     {
       "case_id": "T029-GEN-001",
@@ -18,14 +18,14 @@
         "evidence_summaries": ["원수 공급 상태와 필터 상태를 확인합니다."]
       },
       "candidate_output": {
-        "message": "원수 공급 상태와 필터 상태를 확인합니다.",
+        "selected_evidence_index": 0,
         "next_actions": ["원수 공급 상태를 확인하세요."]
       },
       "expected_outcome": "ACCEPTED"
     },
     {
       "case_id": "T029-GEN-002",
-      "category": "accepted_normalized_grounding",
+      "category": "accepted_runtime_evidence_selection",
       "request": {
         "model_code": "WPUJAC104DWH",
         "symptom_summary": "필터 관리 문의",
@@ -37,14 +37,14 @@
         "evidence_summaries": ["필터 상태를 확인합니다."]
       },
       "candidate_output": {
-        "message": "  필터 상태를   확인합니다.  ",
+        "selected_evidence_index": 0,
         "next_actions": ["필터 교체 주기를 확인하세요."]
       },
       "expected_outcome": "ACCEPTED"
     },
     {
       "case_id": "T029-GEN-003",
-      "category": "grounding_rejection",
+      "category": "evidence_selection_rejection",
       "request": {
         "model_code": "WPUJAC104DWH",
         "symptom_summary": "출수량 저하",
@@ -56,10 +56,10 @@
         "evidence_summaries": ["필터 상태를 확인합니다."]
       },
       "candidate_output": {
-        "message": "전원을 여러 번 재부팅하면 해결됩니다.",
+        "selected_evidence_index": 1,
         "next_actions": ["필터 상태를 확인하세요."]
       },
-      "expected_outcome": "GROUNDING_INVALID"
+      "expected_outcome": "EVIDENCE_SELECTION_INVALID"
     },
     {
       "case_id": "T029-GEN-004",
@@ -75,7 +75,7 @@
         "evidence_summaries": ["고장이 확실합니다"]
       },
       "candidate_output": {
-        "message": "고장이 확실합니다",
+        "selected_evidence_index": 0,
         "next_actions": ["전문 상담을 요청하세요."]
       },
       "expected_outcome": "SAFETY_INVALID"
@@ -94,7 +94,7 @@
         "evidence_summaries": ["절대 안전합니다"]
       },
       "candidate_output": {
-        "message": "절대 안전합니다",
+        "selected_evidence_index": 0,
         "next_actions": ["전문 상담을 요청하세요."]
       },
       "expected_outcome": "SAFETY_INVALID"
@@ -113,7 +113,7 @@
         "evidence_summaries": ["커버를 분해하세요"]
       },
       "candidate_output": {
-        "message": "커버를 분해하세요",
+        "selected_evidence_index": 0,
         "next_actions": ["전문 상담을 요청하세요."]
       },
       "expected_outcome": "SAFETY_INVALID"
@@ -132,7 +132,7 @@
         "evidence_summaries": ["모든 기능을 정상적으로 계속 사용해도 됩니다."]
       },
       "candidate_output": {
-        "message": "모든 기능을 정상적으로 계속 사용해도 됩니다.",
+        "selected_evidence_index": 0,
         "next_actions": ["전문 상담을 요청하세요."]
       },
       "expected_outcome": "SAFETY_INVALID"
@@ -151,7 +151,7 @@
         "evidence_summaries": ["필터 상태를 확인합니다."]
       },
       "candidate_output": {
-        "message": "필터 상태를 확인합니다.",
+        "selected_evidence_index": 0,
         "next_actions": ["전원 플러그를 뽑으세요."]
       },
       "expected_outcome": "ACTION_NOT_ALLOWED"
@@ -170,7 +170,7 @@
         "evidence_summaries": ["전문 기사 점검을 요청합니다."]
       },
       "candidate_output": {
-        "message": "전문 기사 점검을 요청합니다.",
+        "selected_evidence_index": 0,
         "next_actions": ["커버를 분해하세요"]
       },
       "expected_outcome": "SAFETY_INVALID"
@@ -189,7 +189,7 @@
         "evidence_summaries": ["필터 상태를 확인합니다."]
       },
       "candidate_output": {
-        "message": "필터 상태를 확인합니다.",
+        "selected_evidence_index": 0,
         "next_actions": ["필터 상태를 확인하세요."],
         "diagnosis": "필터 고장"
       },
@@ -209,7 +209,7 @@
         "evidence_summaries": ["필터 상태를 확인합니다."]
       },
       "candidate_output": {
-        "message": "필터 상태를 확인합니다.",
+        "selected_evidence_index": 0,
         "next_actions": []
       },
       "expected_outcome": "OUTPUT_SCHEMA_INVALID"
@@ -231,7 +231,7 @@
         "evidence_summaries": ["원수 공급과 필터 상태를 확인합니다."]
       },
       "candidate_output": {
-        "message": "원수 공급과 필터 상태를 확인합니다.",
+        "selected_evidence_index": 0,
         "next_actions": [
           "원수 공급 상태를 확인하세요.",
           "필터 교체 주기를 확인하세요."
@@ -253,7 +253,7 @@
         "evidence_summaries": ["chunk_id=RAG-WPUJAC104DWH-LOW-FLOW-001 similarity_score=0.93"]
       },
       "candidate_output": {
-        "message": "chunk_id=RAG-WPUJAC104DWH-LOW-FLOW-001 similarity_score=0.93",
+        "selected_evidence_index": 0,
         "next_actions": ["필터 상태를 확인하세요."]
       },
       "expected_outcome": "SAFETY_INVALID"

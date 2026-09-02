@@ -20,3 +20,4 @@ class AiServiceError(Exception):
     ai_request_id: str | None = None
     state_version: int | None = None
     retry_count: int = 0
+    details: dict[str, str] | None = None

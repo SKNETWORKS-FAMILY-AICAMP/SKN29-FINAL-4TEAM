@@ -511,7 +511,6 @@ class E05Q2OpenAIClient:
         # Deterministic materialization:
         # returned customer text is byte-for-byte from the approved evidence set,
         # so the existing production Grounding Guard remains authoritative.
-        message = evidence_options[evidence_index]
         next_action = action_options[action_index]
 
         usage_body = body.get("usage") if isinstance(body.get("usage"), dict) else {}
@@ -522,7 +521,7 @@ class E05Q2OpenAIClient:
         )
         return GuidanceLLMResponse(
             output=GuidanceGenerationResult(
-                message=message,
+                selected_evidence_index=evidence_index,
                 next_actions=[next_action],
             ),
             model_name=str(body.get("model") or self.model_name),

@@ -28,6 +28,7 @@ GenerationOutcome = Literal[
     "ACCEPTED",
     "OUTPUT_SCHEMA_INVALID",
     "ACTION_NOT_ALLOWED",
+    "EVIDENCE_SELECTION_INVALID",
     "GROUNDING_INVALID",
     "SAFETY_INVALID",
 ]
@@ -67,7 +68,7 @@ class GenerationEvaluationRunner:
         Path(__file__).resolve().parents[1]
         / "datasets"
         / "candidates"
-        / "generation_quality_candidate_v1.json"
+        / "generation_quality_candidate_v2.json"
     )
 
     def __init__(self, dataset_path: str | Path | None = None) -> None:
@@ -155,9 +156,13 @@ class GenerationEvaluationRunner:
         ):
             return "ACTION_NOT_ALLOWED"
 
+        if candidate.selected_evidence_index >= len(request.evidence_summaries):
+            return "EVIDENCE_SELECTION_INVALID"
+        message = request.evidence_summaries[candidate.selected_evidence_index]
+
         try:
             self.message_guard.validate_grounding(
-                candidate.message,
+                message,
                 grounding_texts=request.evidence_summaries,
             )
         except ValueError:
@@ -177,7 +182,7 @@ class GenerationEvaluationRunner:
         )
         guidance = UsageGuidance(
             guidance_status=request.guidance_status,
-            message=candidate.message,
+            message=message,
             restricted_functions=request.restricted_functions,
             next_actions=candidate.next_actions,
         )

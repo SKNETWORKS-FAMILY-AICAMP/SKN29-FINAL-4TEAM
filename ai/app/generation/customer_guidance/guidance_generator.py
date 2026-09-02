@@ -10,6 +10,7 @@ from ...integrations.llm import (
     GuidanceLLMClient,
     LLMConfigurationError,
     LLMOutputValidationError,
+    LLMProviderConnectionError,
     LLMProviderTimeoutError,
     LLMRefusalError,
     OpenAIResponsesLLMClient,
@@ -31,15 +32,17 @@ class GuidanceGenerationExecutionError(RuntimeError):
         retry_count: int,
         retryable: bool,
         timed_out: bool = False,
+        diagnostic_code: str = "PROVIDER_EXECUTION_FAILED",
     ) -> None:
         self.retry_count = retry_count
         self.retryable = retryable
         self.timed_out = timed_out
+        self.diagnostic_code = diagnostic_code
         super().__init__(message)
 
 
 class CustomerGuidanceGenerator:
-    """LLM 권한을 message·next_actions로만 제한해 최종 Guidance를 조립한다."""
+    """LLM 권한을 Evidence 선택·next_actions로 제한해 Guidance를 조립한다."""
 
     _PROVIDER_SYMPTOM_TYPES = frozenset(
         {
@@ -75,6 +78,7 @@ class CustomerGuidanceGenerator:
                     "실제 LLM Guidance 생성 구성이 완료되지 않았습니다.",
                     retry_count=0,
                     retryable=False,
+                    diagnostic_code="PROVIDER_CONFIGURATION_INVALID",
                 ) from exc
 
         request = self._build_request(ctx, deterministic_guidance)
@@ -89,11 +93,26 @@ class CustomerGuidanceGenerator:
                     timeout_seconds=attempt_timeout_seconds,
                 )
                 break
-            except (LLMConfigurationError, LLMOutputValidationError, LLMRefusalError) as exc:
+            except LLMConfigurationError as exc:
+                raise GuidanceGenerationExecutionError(
+                    "LLM Guidance 구성을 검증하지 못했습니다.",
+                    retry_count=retry_count,
+                    retryable=False,
+                    diagnostic_code="PROVIDER_CONFIGURATION_INVALID",
+                ) from exc
+            except LLMOutputValidationError as exc:
                 raise GuidanceGenerationExecutionError(
                     "LLM Guidance 출력을 검증하지 못했습니다.",
                     retry_count=retry_count,
                     retryable=False,
+                    diagnostic_code=self._safe_output_diagnostic_code(exc),
+                ) from exc
+            except LLMRefusalError as exc:
+                raise GuidanceGenerationExecutionError(
+                    "LLM Provider가 Guidance 생성을 거부했습니다.",
+                    retry_count=retry_count,
+                    retryable=False,
+                    diagnostic_code="PROVIDER_REFUSAL",
                 ) from exc
             except PipelineCancelledError:
                 raise
@@ -104,6 +123,13 @@ class CustomerGuidanceGenerator:
                         retry_count=retry_count,
                         retryable=retry_policy.is_retryable_exception(exc),
                         timed_out=isinstance(exc, LLMProviderTimeoutError),
+                        diagnostic_code=(
+                            "PROVIDER_TIMEOUT"
+                            if isinstance(exc, LLMProviderTimeoutError)
+                            else "PROVIDER_TRANSPORT_FAILURE"
+                            if isinstance(exc, LLMProviderConnectionError)
+                            else "PROVIDER_EXECUTION_FAILED"
+                        ),
                     ) from exc
                 next_retry_count = retry_count + 1
                 backoff_seconds = retry_policy.backoff_seconds(next_retry_count)
@@ -114,9 +140,17 @@ class CustomerGuidanceGenerator:
                 ctx.retry_count = max(ctx.retry_count, retry_count)
 
         ctx.retry_count = max(ctx.retry_count, retry_count)
+        selected_evidence_index = response.output.selected_evidence_index
+        if selected_evidence_index >= len(request.evidence_summaries):
+            raise GuidanceGenerationExecutionError(
+                "LLM Guidance가 존재하지 않는 Evidence 항목을 선택했습니다.",
+                retry_count=retry_count,
+                retryable=False,
+                diagnostic_code="PROVIDER_EVIDENCE_SELECTION_INVALID",
+            )
         candidate = UsageGuidance(
             guidance_status=deterministic_guidance.guidance_status,
-            message=response.output.message,
+            message=request.evidence_summaries[selected_evidence_index],
             restricted_functions=deterministic_guidance.restricted_functions,
             next_actions=response.output.next_actions,
         )
@@ -128,12 +162,21 @@ class CustomerGuidanceGenerator:
                 "LLM Guidance가 허용된 다음 행동 범위를 벗어났습니다.",
                 retry_count=retry_count,
                 retryable=False,
+                diagnostic_code="NEXT_ACTION_NOT_ALLOWLISTED",
             )
         try:
             GuidanceMessageGuard().validate_grounding(
                 candidate.message,
                 grounding_texts=request.evidence_summaries,
             )
+        except ValueError as exc:
+            raise GuidanceGenerationExecutionError(
+                "선택된 공식 Evidence를 고객 안내로 결속하지 못했습니다.",
+                retry_count=retry_count,
+                retryable=False,
+                diagnostic_code="GROUNDING_VALIDATION_FAILED",
+            ) from exc
+        try:
             accepted_guidance = UsageGuidanceValidator().validate(
                 ctx.safety_assessment,
                 candidate,
@@ -144,6 +187,7 @@ class CustomerGuidanceGenerator:
                 "LLM Guidance가 최종 안전 Gate를 통과하지 못했습니다.",
                 retry_count=retry_count,
                 retryable=False,
+                diagnostic_code="GUIDANCE_SAFETY_VALIDATION_FAILED",
             ) from exc
 
         ctx.model_metadata = ModelMetadata(
@@ -164,6 +208,24 @@ class CustomerGuidanceGenerator:
             retry_count=retry_count,
         )
         return accepted_guidance
+
+    @staticmethod
+    def _safe_output_diagnostic_code(exc: LLMOutputValidationError) -> str:
+        allowed_codes = {
+            "PROVIDER_OUTPUT_INVALID",
+            "PROVIDER_SCHEMA_INVALID",
+            "PROVIDER_HTTP_REJECTED",
+            "PROVIDER_RESPONSE_JSON_INVALID",
+            "PROVIDER_RESPONSE_SHAPE_INVALID",
+            "PROVIDER_RESPONSE_INCOMPLETE",
+            "PROVIDER_OUTPUT_COUNT_INVALID",
+            "PROVIDER_EVIDENCE_SELECTION_INVALID",
+        }
+        return (
+            exc.diagnostic_code
+            if exc.diagnostic_code in allowed_codes
+            else "PROVIDER_OUTPUT_INVALID"
+        )
 
     @staticmethod
     def _build_request(ctx, guidance: UsageGuidance) -> GuidanceGenerationRequest:

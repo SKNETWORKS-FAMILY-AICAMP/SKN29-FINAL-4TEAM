@@ -74,7 +74,7 @@ class AuditedProvider:
 
         def invoke(request, **kwargs):
             event = {"task": self.task, "configured_model": self.client.model_name,
-                     "prompt_version": getattr(self.client, "prompt_version", "customer_guidance/v3"),
+                     "prompt_version": getattr(self.client, "prompt_version", "customer_guidance/v4"),
                      "request_sha256": json_sha256(_payload(request))}
             self.events.append(event)
             try:

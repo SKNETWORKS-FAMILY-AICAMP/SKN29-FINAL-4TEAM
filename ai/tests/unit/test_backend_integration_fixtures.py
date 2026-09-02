@@ -70,7 +70,7 @@ class FixtureGuidanceLLMClient:
     def generate_guidance(self, request, *, timeout_seconds):
         return GuidanceLLMResponse(
             output=GuidanceGenerationResult(
-                message="냉수 온도가 높으면 잠시 기다린 뒤 다시 확인합니다.",
+                selected_evidence_index=0,
                 next_actions=["안내된 자가조치 단계별 점검 수행"],
             ),
             model_name="gpt-4.1-mini",

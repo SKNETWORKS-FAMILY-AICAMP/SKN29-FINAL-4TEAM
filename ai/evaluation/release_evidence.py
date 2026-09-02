@@ -63,7 +63,7 @@ def execution_provenance(root: Path = REPOSITORY_ROOT) -> dict:
     except (OSError, ValueError, subprocess.SubprocessError):
         head, branch, dirty = None, None, None
     inputs = {name: text_file_sha256(root / name) for name in IDENTITY_FILES if (root / name).is_file()}
-    for task in ("symptom_structuring/v1", "followup_question/v1", "customer_guidance/v3"):
+    for task in ("symptom_structuring/v1", "followup_question/v1", "customer_guidance/v4"):
         for filename in ("system.txt", "user_template.txt"):
             path = root / "ai/prompts" / task / filename
             if path.is_file():

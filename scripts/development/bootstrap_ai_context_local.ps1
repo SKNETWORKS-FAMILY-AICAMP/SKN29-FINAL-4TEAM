@@ -161,7 +161,7 @@ function Set-DjangoRuntimeEnvironment {
         AI_SERVICE_MODE = 'local'
         AI_MODEL_PROVIDER = 'openai'
         AI_MODEL_NAME = 'gpt-4.1-mini'
-        AI_PROMPT_VERSION = 'customer_guidance/v3'
+        AI_PROMPT_VERSION = 'customer_guidance/v4'
     }
     foreach ($entry in $values.GetEnumerator()) {
         [Environment]::SetEnvironmentVariable(

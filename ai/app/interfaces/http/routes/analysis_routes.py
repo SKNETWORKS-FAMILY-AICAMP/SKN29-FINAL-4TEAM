@@ -358,6 +358,7 @@ async def analyze_symptom(
             ai_request_id=req.ai_request_id,
             state_version=req.state_version,
             retry_count=exc.retry_count,
+            details={"diagnostic_code": exc.diagnostic_code},
         ) from exc
     except Exception as exc:
         if "worker" not in locals():

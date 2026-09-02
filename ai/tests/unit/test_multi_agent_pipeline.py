@@ -103,7 +103,7 @@ class FakeGuidanceLLMClient:
         self.calls += 1
         return GuidanceLLMResponse(
             output=GuidanceGenerationResult(
-                message=EVIDENCE_SUMMARY,
+                selected_evidence_index=0,
                 next_actions=["안내된 자가조치 단계별 점검 수행"],
             ),
             model_name="gpt-4.1-mini",
@@ -127,7 +127,7 @@ class TasteGuidanceLLMClient:
         self.requests.append(request)
         return GuidanceLLMResponse(
             output=GuidanceGenerationResult(
-                message=TASTE_EVIDENCE_SUMMARY,
+                selected_evidence_index=0,
                 next_actions=["기본 필터 및 사용 환경 유지"],
             ),
             model_name="gpt-4.1-mini",

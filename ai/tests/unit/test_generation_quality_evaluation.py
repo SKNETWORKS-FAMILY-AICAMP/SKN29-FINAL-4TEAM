@@ -18,9 +18,9 @@ def test_generation_candidate_matrix_passes_required_categories():
     assert report["summary"]["failed_count"] == 0
     assert set(report["summary"]["category_results"]) >= {
         "accepted_grounded_caution",
-        "accepted_normalized_grounding",
+        "accepted_runtime_evidence_selection",
         "accepted_multiple_actions",
-        "grounding_rejection",
+        "evidence_selection_rejection",
         "diagnosis_rejection",
         "guarantee_rejection",
         "repair_message_rejection",
@@ -39,8 +39,9 @@ def test_generation_report_excludes_candidate_and_evidence_text():
 
     dataset = runner.load_dataset()
     assert all(
-        str(case.candidate_output.get("message", "")) not in serialized
+        str(evidence_text) not in serialized
         for case in dataset.cases
+        for evidence_text in case.request["evidence_summaries"]
     )
     assert report["provider_called"] is False
     assert report["candidate_text_printed"] is False

@@ -164,8 +164,14 @@ class OpenAIResponsesLLMClient:
             )
         except (ValidationError, ValueError) as exc:
             raise LLMOutputValidationError(
-                "OpenAI Guidance 출력이 내부 Schema와 일치하지 않습니다."
+                "OpenAI Guidance 출력이 내부 Schema와 일치하지 않습니다.",
+                diagnostic_code="PROVIDER_SCHEMA_INVALID",
             ) from exc
+        if output.selected_evidence_index >= len(request.evidence_summaries):
+            raise LLMOutputValidationError(
+                "OpenAI Guidance가 존재하지 않는 Evidence 항목을 선택했습니다.",
+                diagnostic_code="PROVIDER_EVIDENCE_SELECTION_INVALID",
+            )
         return GuidanceLLMResponse(
             output=output,
             model_name=raw_response.model_name,
@@ -240,18 +246,28 @@ class OpenAIResponsesLLMClient:
             )
         if response.status_code >= 400:
             raise LLMOutputValidationError(
-                f"OpenAI 요청이 거부되었습니다: {response.status_code}"
+                f"OpenAI 요청이 거부되었습니다: {response.status_code}",
+                diagnostic_code="PROVIDER_HTTP_REJECTED",
             )
 
         try:
             body = response.json()
         except ValueError as exc:
-            raise LLMOutputValidationError("OpenAI 응답이 JSON이 아닙니다.") from exc
+            raise LLMOutputValidationError(
+                "OpenAI 응답이 JSON이 아닙니다.",
+                diagnostic_code="PROVIDER_RESPONSE_JSON_INVALID",
+            ) from exc
 
         if not isinstance(body, dict):
-            raise LLMOutputValidationError("OpenAI 응답 객체가 올바르지 않습니다.")
+            raise LLMOutputValidationError(
+                "OpenAI 응답 객체가 올바르지 않습니다.",
+                diagnostic_code="PROVIDER_RESPONSE_SHAPE_INVALID",
+            )
         if body.get("status") != "completed":
-            raise LLMOutputValidationError("OpenAI 응답이 완료 상태가 아닙니다.")
+            raise LLMOutputValidationError(
+                "OpenAI 응답이 완료 상태가 아닙니다.",
+                diagnostic_code="PROVIDER_RESPONSE_INCOMPLETE",
+            )
 
         output_text = self._extract_output_text(body)
         usage_body = body.get("usage") if isinstance(body, dict) else None
@@ -270,13 +286,15 @@ class OpenAIResponsesLLMClient:
 
     @staticmethod
     def _guidance_schema(request: GuidanceGenerationRequest) -> dict[str, object]:
-        """Select complete approved sentences and allowlisted next actions."""
+        """Select one approved Evidence item and allowlisted next actions."""
 
         schema = GuidanceGenerationResult.model_json_schema()
         properties = schema["properties"]
-        properties["message"]["description"] = (
-            "공식 evidence_summaries의 완전한 문장을 원문 순서로 선택·조합한 안내. "
-            "조건·경고를 보존하고 새 사실이나 조치를 추가하지 않으며, 닫힌 존댓말 변환만 허용"
+        properties["selected_evidence_index"]["enum"] = list(
+            range(len(request.evidence_summaries))
+        )
+        properties["selected_evidence_index"]["description"] = (
+            "입력 evidence_summaries에서 안내에 사용할 단 하나의 0 기반 항목 번호"
         )
         properties["next_actions"]["items"]["enum"] = list(
             dict.fromkeys(request.allowed_next_actions)
@@ -286,7 +304,10 @@ class OpenAIResponsesLLMClient:
     @staticmethod
     def _extract_output_text(body: object) -> str:
         if not isinstance(body, dict):
-            raise LLMOutputValidationError("OpenAI 응답 객체가 올바르지 않습니다.")
+            raise LLMOutputValidationError(
+                "OpenAI 응답 객체가 올바르지 않습니다.",
+                diagnostic_code="PROVIDER_RESPONSE_SHAPE_INVALID",
+            )
         output_texts: list[str] = []
         for output in body.get("output", []):
             if not isinstance(output, dict) or output.get("type") != "message":
@@ -300,7 +321,8 @@ class OpenAIResponsesLLMClient:
                     output_texts.append(item["text"])
         if len(output_texts) != 1:
             raise LLMOutputValidationError(
-                "OpenAI 응답에는 Structured Output이 정확히 1개여야 합니다."
+                "OpenAI 응답에는 Structured Output이 정확히 1개여야 합니다.",
+                diagnostic_code="PROVIDER_OUTPUT_COUNT_INVALID",
             )
         return output_texts[0]
 

@@ -1,0 +1,2 @@
+아래 구조화 JSON에서 적용할 공식 Evidence 한 항목의 번호와 허용된 다음 행동만 선택해 주세요.
+{guidance_generation_request_json}

@@ -34,9 +34,15 @@ class GuidanceGenerationRequest(GuidanceInternalModel):
 
 
 class GuidanceGenerationResult(GuidanceInternalModel):
-    """LLM이 생성할 수 있는 필드를 안내 내용으로만 제한한다."""
+    """LLM이 공식 Evidence 선택과 허용 행동만 결정하도록 제한한다."""
 
-    message: str = Field(..., min_length=1, max_length=1000)
+    selected_evidence_index: int = Field(
+        ...,
+        ge=0,
+        le=4,
+        strict=True,
+        description="evidence_summaries에서 선택한 0 기반 항목 번호",
+    )
     next_actions: list[Annotated[str, Field(min_length=1, max_length=500)]] = Field(
         ...,
         min_length=1,
