@@ -236,6 +236,14 @@ class SearchOfficialEvidenceAdapter:
                 product_generation=chunk.product_generation or "",
                 allowed_use=chunk.allowed_use,
                 runtime_eligible=chunk.runtime_eligible,
+                document_id=chunk.document_id,
+                source_hash=chunk.source_hash,
+                index_version=chunk.index_version,
+                chunk_set_sha256=chunk.chunk_set_sha256,
+                topic_code=chunk.topic_code,
+                evidence_group_id=chunk.evidence_group_id,
+                record_type=chunk.record_type,
+                retrieval_role=chunk.retrieval_role,
             )
             for chunk in chunks
         ]
