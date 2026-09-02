@@ -9,6 +9,29 @@
   background: #fff;
 }
 
+.remote-inquiry-detail__symptom-detail {
+  display: grid;
+  gap: 6px;
+}
+
+.remote-inquiry-detail__symptom-detail > div {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+}
+
+.remote-inquiry-detail__symptom-detail dt {
+  font-weight: 700 !important;
+}
+
+.remote-inquiry-detail__symptom-detail dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 .remote-inquiry-detail__history-launcher h2,
 .remote-inquiry-detail__history-launcher p {
   margin: 0;
