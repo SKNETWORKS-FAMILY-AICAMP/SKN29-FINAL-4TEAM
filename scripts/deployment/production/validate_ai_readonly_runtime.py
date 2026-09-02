@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 
 import psycopg
@@ -23,11 +24,15 @@ FORBIDDEN_TABLES = (
     "knowledge_chunk_embedding",
     "knowledge_ai_chunk_crosswalk",
 )
+RELEASE_SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 
 
 def main() -> int:
     stage = "ENVIRONMENT"
     try:
+        release_sha = os.environ["RELEASE_SHA"].strip().lower()
+        if RELEASE_SHA_PATTERN.fullmatch(release_sha) is None:
+            raise RuntimeError("invalid AI release SHA")
         dsn = os.environ["AI_VECTOR_DSN"]
         if os.environ.get("AI_VECTOR_TABLE_NAME") != VIEW_NAME:
             raise RuntimeError("unexpected AI view")
@@ -127,6 +132,7 @@ def main() -> int:
         return 1
 
     print("AI_READONLY_RUNTIME_PREFLIGHT_PASS")
+    print(f"release_sha={release_sha}")
     print(f"pgvector={pgvector_version}")
     print("view_select=ONLY_APPROVED_VIEW")
     print("view_rows=53")
