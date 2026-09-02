@@ -77,6 +77,20 @@ class AIContextActivationAssetTests(unittest.TestCase):
         self.assertIn("os.fsync", script)
         self.assertIn("protected_environment_drift_detected", script)
 
+    def test_backend_runtime_scope_check_initializes_django_first(self) -> None:
+        script = SCRIPT.read_text(encoding="utf-8")
+
+        setup = "import django; django.setup()"
+        policy_import = (
+            "from integrations.ai.human_review_resume import "
+            "CONTEXT_RESUME_APPROVED_MODEL_CODES"
+        )
+        self.assertEqual(script.count(policy_import), 1)
+        policy_index = script.index(policy_import)
+        setup_index = script.rfind(setup, 0, policy_index)
+        self.assertNotEqual(setup_index, -1)
+        self.assertLess(setup_index, policy_index)
+
     def test_activation_scope_is_policy_not_scenario_hardcoding(self) -> None:
         script = SCRIPT.read_text(encoding="utf-8")
         dispatch = DISPATCH.read_text(encoding="utf-8")
