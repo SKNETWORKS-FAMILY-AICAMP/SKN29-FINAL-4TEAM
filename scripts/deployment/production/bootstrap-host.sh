@@ -46,6 +46,7 @@ required_backend_keys=(
   POSTGRES_HOST
   POSTGRES_PORT
   POSTGRES_SSLMODE
+  AI_HANDOFF_INTERNAL_TOKEN
 )
 
 required_ai_keys=(

@@ -12,8 +12,13 @@ EXPECTED_PENDING = {
 
 
 def main() -> int:
-    stage = "DJANGO_SETUP"
+    stage = "RESUME_ENVIRONMENT"
     try:
+        if os.environ.get("AI_HUMAN_REVIEW_RESUME_ENABLED", "").strip().lower() != "false":
+            raise RuntimeError("Backend AI Resume must start disabled")
+        if len(os.environ.get("AI_HUMAN_REVIEW_RESUME_TOKEN", "").encode("utf-8")) < 32:
+            raise RuntimeError("Backend AI Resume token is missing")
+        stage = "DJANGO_SETUP"
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.production")
         import django
 
@@ -94,6 +99,7 @@ def main() -> int:
     print("evidence.0014=APPLIED")
     print("visits.0005=NOT_APPLIED_P1_HOLD")
     print("migration_plan=VISITS_0005_ONLY_HOLD")
+    print("backend_resume=DISABLED_PROTECTED")
     return 0
 
 

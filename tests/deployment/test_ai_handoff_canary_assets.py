@@ -9,12 +9,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/deployment/production/manage-ai-handoff-canary.sh"
+AUTO_RUNNER = (
+    ROOT
+    / "scripts/deployment/production/run-ai-resume-handoff-canary.sh"
+)
 DISPATCH = ROOT / ".github/workflows/production-ai-handoff-canary.yml"
 TRUSTED = ROOT / ".github/workflows/production-deploy.yml"
 DEPLOY = ROOT / "scripts/deployment/production/deploy-release.sh"
 ENV_PREPARE = (
     ROOT
     / "scripts/deployment/production/prepare_ai_handoff_runtime_env.py"
+)
+RESUME_ENV_PREPARE = (
+    ROOT
+    / "scripts/deployment/production/prepare_ai_resume_runtime_env.py"
 )
 NGINX_PREPARE = (
     ROOT / "scripts/deployment/production/prepare_ai_handoff_nginx.py"
@@ -36,7 +44,7 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
             "operator_ip:",
         ):
             self.assertIn(name, dispatch)
-        for action in ("preflight", "open", "status", "close"):
+        for action in ("preflight", "open", "run", "status", "close"):
             self.assertRegex(dispatch, rf"(?m)^          - {action}$")
         self.assertIn(
             "SKNETWORKS-FAMILY-AICAMP/SKN29-FINAL-4TEAM/"
@@ -52,6 +60,7 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
         self.assertIn("printf -v canary_command '%q %q %q %q %q'", trusted)
         self.assertIn("SSM_CANARY_POLL_TIMEOUT seconds=1200", trusted)
         self.assertIn("CANARY_OPEN_PASS", trusted)
+        self.assertIn("CANARY_RUN_PASS", trusted)
         self.assertIn("Always-on activation:", trusted)
         self.assertIn("HOLD", trusted)
 
@@ -64,6 +73,10 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
             trusted.count("manage-ai-handoff-canary.sh"),
             2,
         )
+        self.assertGreaterEqual(
+            trusted.count("run-ai-resume-handoff-canary.sh"),
+            2,
+        )
         self.assertIn("chmod 0750", trusted)
         self.assertIn("ai-handoff-canary.state", deploy)
         self.assertIn("DEPLOYMENT_BLOCKED: active AI Handoff Canary window", deploy)
@@ -73,6 +86,22 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
         self.assertIn("steps.deploy.outcome == 'success'", trusted)
         self.assertIn("DEPLOYMENT_BLOCKED: active AI Handoff Canary window", trusted)
         self.assertIn("ROLLBACK_BLOCKED: active AI Handoff Canary window", rollback)
+
+    def test_automatic_runner_always_closes_after_execute(self) -> None:
+        runner = AUTO_RUNNER.read_text(encoding="utf-8")
+
+        self.assertIn('"$manager" preflight', runner)
+        self.assertIn('"$manager" open', runner)
+        self.assertIn('"$manager" execute', runner)
+        self.assertIn('"$manager" close', runner)
+        self.assertIn("trap close_after_run EXIT", runner)
+        self.assertIn("CANARY_RUN_FAILURE_RESTORED", runner)
+        self.assertIn("CANARY_RUN_FAILURE_FAIL_CLOSED", runner)
+        self.assertIn("CANARY_RUN_PASS", runner)
+        self.assertLess(
+            runner.index('"$manager" execute'),
+            runner.index('"$manager" close'),
+        )
 
     def test_release_prepares_fail_closed_handoff_environment(self) -> None:
         trusted = TRUSTED.read_text(encoding="utf-8")
@@ -91,6 +120,26 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
         self.assertIn("os.replace", prepare)
         self.assertIn("os.fsync", prepare)
         self.assertNotIn("print(secret_value", prepare)
+        self.assertIn("secret_values_printed=false", prepare)
+
+    def test_release_prepares_fail_closed_resume_environment(self) -> None:
+        trusted = TRUSTED.read_text(encoding="utf-8")
+        deploy = DEPLOY.read_text(encoding="utf-8")
+        prepare = RESUME_ENV_PREPARE.read_text(encoding="utf-8")
+
+        self.assertIn("prepare_ai_resume_runtime_env.py", trusted)
+        self.assertIn("prepare_ai_resume_runtime_env.py", deploy)
+        self.assertLess(
+            deploy.index("DEPLOYMENT_MUTATION_STARTED"),
+            deploy.index('python3 "$ai_resume_env_prepare_script"'),
+        )
+        self.assertIn("AI_HUMAN_REVIEW_RESUME_ENABLED", prepare)
+        self.assertIn("AI_HUMAN_REVIEW_RESUME_TOKEN", prepare)
+        self.assertIn("DOMAIN_SEPARATED_DERIVATION", prepare)
+        self.assertIn("hmac.new", prepare)
+        self.assertIn("os.replace", prepare)
+        self.assertIn("os.fsync", prepare)
+        self.assertNotIn("print(resume_token", prepare)
         self.assertIn("secret_values_printed=false", prepare)
 
     def test_release_prepares_exact_canary_nginx_server_scope(self) -> None:
@@ -139,14 +188,24 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
             "AI_BACKEND_BASE_URL",
             "AI_HANDOFF_INTERNAL_TOKEN",
             "AI_HANDOFF_TIMEOUT_SECONDS",
+            "AI_HUMAN_REVIEW_RESUME_ENABLED",
+            "AI_HUMAN_REVIEW_RESUME_TOKEN",
         ):
             self.assertIn(key, script)
-        self.assertIn("ai_handoff_must_start_disabled", script)
+        self.assertIn("resume_and_handoff_must_start_disabled", script)
         self.assertIn("ENVIRONMENT_BLOCKED reason=", script)
-        self.assertIn("set_enabled false", script)
-        self.assertIn("compose stop ai", script)
+        self.assertIn("set_runtime_enabled false", script)
+        self.assertIn("compose stop backend ai", script)
+        self.assertIn('"false:false:false"', script)
+        self.assertIn('"true:true:true"', script)
+        self.assertIn("pending_human_reviews", script)
+        self.assertIn("recreate_runtime", script)
+        self.assertIn("run_ai_context_resume_handoff_canary", script)
+        self.assertIn("AWS_AUTO_CONTEXT_HANDOFF_PASS", script)
+        self.assertIn("CANARY_EXECUTE_PASS", script)
         self.assertIn("CANARY_OPEN_FAILURE_RESTORED", script)
         self.assertIn("CANARY_OPEN_FAILURE_FAIL_CLOSED", script)
+        self.assertIn("CANARY_CLOSE_FAILURE_RESTORED", script)
         self.assertIn("CANARY_CLOSE_FAILURE_FAIL_CLOSED", script)
         self.assertIn("trap on_exit EXIT", script)
         self.assertIn("systemd-run", script)
@@ -179,7 +238,7 @@ class AIHandoffCanaryAssetTests(unittest.TestCase):
     def test_runbook_keeps_canary_and_always_on_approval_separate(self) -> None:
         runbook = RUNBOOK.read_text(encoding="utf-8")
 
-        self.assertIn("AI Handoff Canary", runbook)
+        self.assertIn("AI Resume and Handoff Canary", runbook)
         self.assertIn("AI_HANDOFF_BACKEND_ENABLED=false", runbook)
         self.assertIn("15분", runbook)
         self.assertIn("상시 활성화", runbook)
