@@ -322,7 +322,7 @@ active_ai_runs() {
 verify_runtime() {
   compose exec -T backend python -c \
     "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings.production'); import django; django.setup(); value=os.getenv('AI_HUMAN_REVIEW_RESUME_ENABLED','').strip().lower(); assert value in {'true','false'}; token=os.getenv('AI_HUMAN_REVIEW_RESUME_TOKEN',''); assert len(token.encode()) >= 32; from integrations.ai.human_review_resume import CONTEXT_RESUME_APPROVED_MODEL_CODES; assert CONTEXT_RESUME_APPROVED_MODEL_CODES == frozenset({'WPUJAC104DWH'}); print('backend_context_resume_scope=JAC104_ONLY'); print('backend_resume_enabled='+value)"
-  compose exec -T ai python -c \
+  compose exec -T --workdir /workspace/ai ai python -c \
     "import os; resume=os.getenv('AI_HUMAN_REVIEW_RESUME_ENABLED','').strip().lower(); handoff=os.getenv('AI_HANDOFF_BACKEND_ENABLED','').strip().lower(); assert resume in {'true','false'} and handoff in {'true','false'}; token=os.getenv('AI_HUMAN_REVIEW_RESUME_TOKEN',''); assert len(token.encode()) >= 32; from app.orchestration.harness.product_registry import RUNTIME_APPROVED_EXACT_MODEL_CODES; assert RUNTIME_APPROVED_EXACT_MODEL_CODES == frozenset({'WPUJAC104DWH'}); print('ai_context_resume_scope=JAC104_ONLY'); print('ai_resume_enabled='+resume); print('ai_handoff_enabled='+handoff)"
   compose exec -T backend python -c \
     "import urllib.request; response=urllib.request.urlopen('http://ai:8001/api/v1/ai/health',timeout=5); assert response.status == 200; print('backend_to_ai_health=PASS')"

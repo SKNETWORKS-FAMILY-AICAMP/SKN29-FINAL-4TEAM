@@ -91,6 +91,14 @@ class AIContextActivationAssetTests(unittest.TestCase):
         self.assertNotEqual(setup_index, -1)
         self.assertLess(setup_index, policy_index)
 
+    def test_ai_runtime_scope_check_uses_ai_import_root(self) -> None:
+        script = SCRIPT.read_text(encoding="utf-8")
+
+        self.assertIn(
+            "compose exec -T --workdir /workspace/ai ai python -c",
+            script,
+        )
+
     def test_activation_scope_is_policy_not_scenario_hardcoding(self) -> None:
         script = SCRIPT.read_text(encoding="utf-8")
         dispatch = DISPATCH.read_text(encoding="utf-8")
