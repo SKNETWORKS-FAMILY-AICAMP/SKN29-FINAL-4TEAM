@@ -25,6 +25,7 @@ from ...validation.consultation_context import (
 from .context_synthesis_contracts import (
     ConsultationContextSynthesisAgentOutput,
     ConsultationContextSynthesisInput,
+    ContextSynthesisDiagnosticCode,
     ContextSynthesisFallbackReason,
     ContextSynthesisStatus,
 )
@@ -128,6 +129,7 @@ class ConsultationContextSynthesisAgent:
                 status=ContextSynthesisStatus.SUCCEEDED,
                 brief=brief,
                 fallback_reason=None,
+                diagnostic_code=None,
                 should_use_deterministic_handoff=False,
                 provider_called=True,
                 retry_count=0,
@@ -166,12 +168,44 @@ class ConsultationContextSynthesisAgent:
                 reason=ContextSynthesisFallbackReason.REFUSED,
                 provider_called=True,
             )
-        except (LLMOutputValidationError, ContextBriefValidationError, ValueError):
+        except LLMOutputValidationError as exc:
+            raw_code = getattr(
+                exc,
+                "diagnostic_code",
+                ContextSynthesisDiagnosticCode.PROVIDER_OUTPUT_INVALID.value,
+            )
+            try:
+                diagnostic_code = ContextSynthesisDiagnosticCode(raw_code)
+            except ValueError:
+                diagnostic_code = (
+                    ContextSynthesisDiagnosticCode.PROVIDER_OUTPUT_INVALID
+                )
             return self._fallback(
                 synthesis_input,
                 prepared,
                 reason=ContextSynthesisFallbackReason.OUTPUT_INVALID,
                 provider_called=True,
+                diagnostic_code=diagnostic_code,
+            )
+        except ContextBriefValidationError:
+            return self._fallback(
+                synthesis_input,
+                prepared,
+                reason=ContextSynthesisFallbackReason.OUTPUT_INVALID,
+                provider_called=True,
+                diagnostic_code=(
+                    ContextSynthesisDiagnosticCode.INTERNAL_SOURCE_BINDING_INVALID
+                ),
+            )
+        except ValueError:
+            return self._fallback(
+                synthesis_input,
+                prepared,
+                reason=ContextSynthesisFallbackReason.OUTPUT_INVALID,
+                provider_called=True,
+                diagnostic_code=(
+                    ContextSynthesisDiagnosticCode.INTERNAL_OUTPUT_METADATA_INVALID
+                ),
             )
         except Exception:
             return self._fallback(
@@ -190,6 +224,7 @@ class ConsultationContextSynthesisAgent:
         *,
         reason: ContextSynthesisFallbackReason,
         provider_called: bool,
+        diagnostic_code: ContextSynthesisDiagnosticCode | None = None,
     ) -> ConsultationContextSynthesisAgentOutput:
         return ConsultationContextSynthesisAgentOutput(
             inquiry_id=synthesis_input.inquiry_id,
@@ -201,6 +236,7 @@ class ConsultationContextSynthesisAgent:
             status=ContextSynthesisStatus.FALLBACK,
             brief=prepared.deterministic_brief,
             fallback_reason=reason,
+            diagnostic_code=diagnostic_code,
             should_use_deterministic_handoff=True,
             provider_called=provider_called,
             retry_count=0,

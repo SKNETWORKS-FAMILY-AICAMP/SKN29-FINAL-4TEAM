@@ -68,27 +68,27 @@ class CounselorContextBriefValidator:
             category_ids[ContextSourceKind.CUSTOMER_REPORTED]
             | category_ids[ContextSourceKind.QUESTIONNAIRE]
         )
-        self._require_exact_coverage(
+        self._require_safe_subset(
             "customer_reported_fact_ids",
             candidate.customer_reported_fact_ids,
             reported_ids,
         )
-        self._require_exact_coverage(
+        self._require_safe_subset(
             "attempted_action_ids",
             candidate.attempted_action_ids,
             category_ids[ContextSourceKind.ATTEMPTED_ACTION],
         )
-        self._require_exact_coverage(
+        self._require_safe_subset(
             "unresolved_question_ids",
             candidate.unresolved_question_ids,
             category_ids[ContextSourceKind.UNRESOLVED],
         )
-        self._require_exact_coverage(
+        self._require_safe_subset(
             "safety_constraint_ids",
             candidate.safety_constraint_ids,
             category_ids[ContextSourceKind.SAFETY],
         )
-        self._require_exact_coverage(
+        self._require_safe_subset(
             "consultant_priority_check_ids",
             candidate.consultant_priority_check_ids,
             category_ids[ContextSourceKind.PRIORITY],
@@ -112,7 +112,7 @@ class CounselorContextBriefValidator:
                 allowed_kinds={ContextSourceKind.EVIDENCE},
             )
             evidence_ids.extend(group.source_ids)
-        self._require_exact_coverage(
+        self._require_safe_subset(
             "evidence_finding_source_groups",
             evidence_ids,
             category_ids[ContextSourceKind.EVIDENCE],
@@ -271,7 +271,7 @@ class CounselorContextBriefValidator:
             )
 
     @staticmethod
-    def _require_exact_coverage(
+    def _require_safe_subset(
         field_name: str,
         selected_ids: Iterable[str],
         expected_ids: set[str],
@@ -281,9 +281,9 @@ class CounselorContextBriefValidator:
             raise ContextBriefValidationError(
                 f"{field_name}에 중복 Source가 포함되었습니다."
             )
-        if set(selected) != expected_ids:
+        if not set(selected).issubset(expected_ids):
             raise ContextBriefValidationError(
-                f"{field_name}가 입력 Source를 누락하거나 추가했습니다."
+                f"{field_name}에 입력에 없는 Source가 포함되었습니다."
             )
 
     @staticmethod

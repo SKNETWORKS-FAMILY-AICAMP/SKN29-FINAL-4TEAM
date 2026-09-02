@@ -157,22 +157,30 @@ class OpenAIResponsesConsultationContextClient:
             )
         if response.status_code >= 400:
             raise LLMOutputValidationError(
-                f"OpenAI 상담 맥락 합성 요청이 거부되었습니다: {response.status_code}"
+                f"OpenAI 상담 맥락 합성 요청이 거부되었습니다: {response.status_code}",
+                diagnostic_code="PROVIDER_HTTP_REJECTED",
             )
 
         try:
             body = response.json()
         except ValueError as exc:
-            raise LLMOutputValidationError("OpenAI 응답이 JSON이 아닙니다.") from exc
+            raise LLMOutputValidationError(
+                "OpenAI 응답이 JSON이 아닙니다.",
+                diagnostic_code="PROVIDER_RESPONSE_JSON_INVALID",
+            ) from exc
         if not isinstance(body, dict) or body.get("status") != "completed":
-            raise LLMOutputValidationError("OpenAI 상담 맥락 합성이 완료 상태가 아닙니다.")
+            raise LLMOutputValidationError(
+                "OpenAI 상담 맥락 합성이 완료 상태가 아닙니다.",
+                diagnostic_code="PROVIDER_RESPONSE_INCOMPLETE",
+            )
 
         output_text = self._extract_output_text(body)
         try:
             output = ConsultationContextSynthesisCandidate.model_validate_json(output_text)
         except (ValidationError, ValueError) as exc:
             raise LLMOutputValidationError(
-                "OpenAI 상담 맥락 합성 출력이 내부 Schema와 일치하지 않습니다."
+                "OpenAI 상담 맥락 합성 출력이 내부 Schema와 일치하지 않습니다.",
+                diagnostic_code="PROVIDER_SCHEMA_INVALID",
             ) from exc
 
         usage_body = body.get("usage")
@@ -194,7 +202,10 @@ class OpenAIResponsesConsultationContextClient:
         output_texts: list[str] = []
         output_items = body.get("output", [])
         if not isinstance(output_items, list):
-            raise LLMOutputValidationError("OpenAI output 형식이 올바르지 않습니다.")
+            raise LLMOutputValidationError(
+                "OpenAI output 형식이 올바르지 않습니다.",
+                diagnostic_code="PROVIDER_OUTPUT_SHAPE_INVALID",
+            )
         for output in output_items:
             if not isinstance(output, dict) or output.get("type") != "message":
                 continue
@@ -210,7 +221,8 @@ class OpenAIResponsesConsultationContextClient:
                     output_texts.append(item["text"])
         if len(output_texts) != 1:
             raise LLMOutputValidationError(
-                "OpenAI 응답에는 상담 맥락 합성 출력이 정확히 1개여야 합니다."
+                "OpenAI 응답에는 상담 맥락 합성 출력이 정확히 1개여야 합니다.",
+                diagnostic_code="PROVIDER_OUTPUT_COUNT_INVALID",
             )
         return output_texts[0]
 

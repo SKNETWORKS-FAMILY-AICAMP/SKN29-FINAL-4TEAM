@@ -19,6 +19,7 @@ from ai.app.integrations.backend.handoff_client import (
 )
 from ai.app.integrations.llm import (
     ConsultationContextLLMResponse,
+    LLMOutputValidationError,
     LLMProviderTimeoutError,
     LLMUsage,
 )
@@ -322,6 +323,34 @@ def test_execute_stops_before_delivery_when_provider_falls_back():
     assert report.provider_called is True
     assert report.provider_calls == 1
     assert published == []
+
+
+def test_execute_reports_sanitized_output_diagnostic_without_provider_body():
+    protected_provider_text = "TEST_ONLY_PRIVATE_PROVIDER_BODY"
+    provider = FakeProvider(
+        error=LLMOutputValidationError(
+            protected_provider_text,
+            diagnostic_code="PROVIDER_SCHEMA_INVALID",
+        )
+    )
+
+    report = execute_canary(
+        canary_input(),
+        provider_client=provider,
+        git_identity=GIT_IDENTITY,
+        provider_input_explicitly_allowed=True,
+    )
+    serialized = report.model_dump_json()
+
+    assert report.report_schema_version == "1.2.0"
+    assert report.overall_status == "FAIL"
+    assert report.failure_stage == "PROVIDER"
+    assert report.context_synthesis_fallback_reason == "OUTPUT_INVALID"
+    assert (
+        report.context_synthesis_diagnostic_code
+        == "PROVIDER_SCHEMA_INVALID"
+    )
+    assert protected_provider_text not in serialized
 
 
 def test_execute_sends_same_handoff_for_replay_without_second_provider_call():

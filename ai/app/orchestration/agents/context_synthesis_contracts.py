@@ -59,6 +59,20 @@ class ContextSynthesisFallbackReason(str, Enum):
     RUNTIME_PRODUCT_NOT_APPROVED = "RUNTIME_PRODUCT_NOT_APPROVED"
 
 
+class ContextSynthesisDiagnosticCode(str, Enum):
+    """본문 없이 OUTPUT_INVALID의 고정된 실패 경계만 식별한다."""
+
+    PROVIDER_OUTPUT_INVALID = "PROVIDER_OUTPUT_INVALID"
+    PROVIDER_HTTP_REJECTED = "PROVIDER_HTTP_REJECTED"
+    PROVIDER_RESPONSE_JSON_INVALID = "PROVIDER_RESPONSE_JSON_INVALID"
+    PROVIDER_RESPONSE_INCOMPLETE = "PROVIDER_RESPONSE_INCOMPLETE"
+    PROVIDER_OUTPUT_SHAPE_INVALID = "PROVIDER_OUTPUT_SHAPE_INVALID"
+    PROVIDER_OUTPUT_COUNT_INVALID = "PROVIDER_OUTPUT_COUNT_INVALID"
+    PROVIDER_SCHEMA_INVALID = "PROVIDER_SCHEMA_INVALID"
+    INTERNAL_SOURCE_BINDING_INVALID = "INTERNAL_SOURCE_BINDING_INVALID"
+    INTERNAL_OUTPUT_METADATA_INVALID = "INTERNAL_OUTPUT_METADATA_INVALID"
+
+
 class ContextFact(_ContextSynthesisContract):
     field_name: str = Field(min_length=1, max_length=100)
     value: str = Field(min_length=1, max_length=1000)
@@ -345,6 +359,7 @@ class ConsultationContextSynthesisAgentOutput(_ContextSynthesisContract):
     status: ContextSynthesisStatus
     brief: CounselorContextBrief
     fallback_reason: ContextSynthesisFallbackReason | None = None
+    diagnostic_code: ContextSynthesisDiagnosticCode | None = None
     should_use_deterministic_handoff: bool
     provider_called: bool
     retry_count: Literal[0] = 0
@@ -356,11 +371,25 @@ class ConsultationContextSynthesisAgentOutput(_ContextSynthesisContract):
     @model_validator(mode="after")
     def validate_status_boundary(self) -> "ConsultationContextSynthesisAgentOutput":
         if self.status == ContextSynthesisStatus.SUCCEEDED:
-            if self.fallback_reason is not None or self.should_use_deterministic_handoff:
+            if (
+                self.fallback_reason is not None
+                or self.diagnostic_code is not None
+                or self.should_use_deterministic_handoff
+            ):
                 raise ValueError("합성 성공 결과에는 Fallback 표시를 둘 수 없습니다.")
             if not self.provider_called or self.model_name is None:
                 raise ValueError("합성 성공 결과에는 Provider 실행 메타데이터가 필요합니다.")
         else:
             if self.fallback_reason is None or not self.should_use_deterministic_handoff:
                 raise ValueError("합성 Fallback 결과에는 사유와 결정론적 이관 표시가 필요합니다.")
+            if (
+                self.fallback_reason == ContextSynthesisFallbackReason.OUTPUT_INVALID
+                and self.diagnostic_code is None
+            ):
+                raise ValueError("OUTPUT_INVALID에는 비식별 세부 진단 코드가 필요합니다.")
+            if (
+                self.fallback_reason != ContextSynthesisFallbackReason.OUTPUT_INVALID
+                and self.diagnostic_code is not None
+            ):
+                raise ValueError("OUTPUT_INVALID 이외의 Fallback에는 세부 진단 코드를 둘 수 없습니다.")
         return self
