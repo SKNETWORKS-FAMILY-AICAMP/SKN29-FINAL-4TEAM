@@ -128,7 +128,7 @@ class FollowUpCancelSectionTest {
                 .assertIsDisplayed()
 
             onNodeWithText(
-                "진행 중인 문의는 상황에 따라 취소할 수 있어요."
+                "작성 내용을 처음부터 다시 시작하고 싶다면 현재 문의를 취소할 수 있어요."
             ).assertIsDisplayed()
         }
 

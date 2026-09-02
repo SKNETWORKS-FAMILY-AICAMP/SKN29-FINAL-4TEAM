@@ -347,6 +347,7 @@ class CustomerMinimumFlowTest {
             onNodeWithText(
                 "물이 약해요"
             )
+                .performScrollTo()
                 .assertIsDisplayed()
                 .assertIsSelected()
 
@@ -579,7 +580,7 @@ class CustomerMinimumFlowTest {
 
             waitForIdle()
 
-            onNodeWithText("정수기 정보를 불러오고 있어요")
+            onNodeWithText("정수기와 문의 상태를 확인하고 있어요.")
                 .assertIsDisplayed()
         }
 
@@ -676,34 +677,38 @@ class CustomerMinimumFlowTest {
 
             setContent {
                 WaterCareTheme {
-                    CustomerResolutionSection(
-                        statusCode =
-                            "COMPLETION_PENDING",
-                        stateVersion = 9,
-                        allowedActions =
-                            listOf(
-                                AllowedAction(
-                                    code =
-                                        InquiryActionLabels
-                                            .SUBMIT_RESOLUTION_FEEDBACK
+                    WaterCareScreen(
+                        title = "Resolution test",
+                    ) {
+                        CustomerResolutionSection(
+                            statusCode =
+                                "COMPLETION_PENDING",
+                            stateVersion = 9,
+                            allowedActions =
+                                listOf(
+                                    AllowedAction(
+                                        code =
+                                            InquiryActionLabels
+                                                .SUBMIT_RESOLUTION_FEEDBACK
+                                    ),
+                                    AllowedAction(
+                                        code =
+                                            InquiryActionLabels
+                                                .CUSTOMER_REPORTED_UNRESOLVED
+                                    ),
                                 ),
-                                AllowedAction(
-                                    code =
-                                        InquiryActionLabels
-                                            .CUSTOMER_REPORTED_UNRESOLVED
-                                ),
-                            ),
-                        state =
-                            CustomerResolutionUiState.Idle,
-                        onResolved = {
-                            resolvedClicked = true
-                        },
-                        onUnresolved = {
-                            unresolvedClicked = true
-                        },
-                        onRetry = {},
-                        onDone = {},
-                    )
+                            state =
+                                CustomerResolutionUiState.Idle,
+                            onResolved = {
+                                resolvedClicked = true
+                            },
+                            onUnresolved = {
+                                unresolvedClicked = true
+                            },
+                            onRetry = {},
+                            onDone = {},
+                        )
+                    }
                 }
             }
 
@@ -725,6 +730,26 @@ class CustomerMinimumFlowTest {
             )
                 .assertIsDisplayed()
                 .performClick()
+
+            waitForIdle()
+
+            onNodeWithTag(
+                "unresolvedComment"
+            )
+                .performScrollTo()
+                .assertIsDisplayed()
+                .performTextInput(
+                    "점검 후에도 물이 약하게 나와요"
+                )
+
+            onNodeWithTag(
+                "submitUnresolvedComment"
+            )
+                .performScrollTo()
+                .assertIsDisplayed()
+                .performClick()
+
+            waitForIdle()
 
             assertTrue(
                 "unresolved action must be clickable",
