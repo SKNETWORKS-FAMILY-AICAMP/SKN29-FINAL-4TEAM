@@ -258,13 +258,17 @@ The preferred action is `run`, which performs the following sequence in one
 trusted SSM session and always invokes `close` on failure:
 
 1. `preflight`: require the expected current SHA, protected AI environment,
-   all three disabled flags, zero active AI Runs, zero pending HumanReviews,
-   and a fresh target baseline.
+   all three disabled flags, zero active AI Runs, no non-synthetic pending
+   HumanReviews, an immutable count baseline for any pre-existing synthetic
+   pending HumanReviews, and a fresh target baseline.
 2. `open`: install a host Nginx gate that allows only the operator IP and target
    Inquiry's `submit` and `answers` paths. All equivalent paths for other
-   Inquiries are denied. Drain for 65 seconds, enable Backend Resume, AI Resume,
-   and AI Handoff together, recreate Backend and AI from the current immutable
-   Release, and arm the Watchdog.
+   Inquiries are denied. All public HumanReview decision paths are also denied
+   for the maintenance window; the Canary applies its one target decision
+   inside the Backend service boundary. Drain for 65 seconds while requiring
+   the pre-existing synthetic pending count to remain unchanged, enable Backend
+   Resume, AI Resume, and AI Handoff together, recreate Backend and AI from the
+   current immutable Release, and arm the Watchdog.
 3. `execute`: submit the exact synthetic Inquiry, require one official Evidence
    HumanReview, apply one official REJECT, and let Backend call the protected AI
    Resume endpoint. Require Context Agent 1, Context Provider 1, successful

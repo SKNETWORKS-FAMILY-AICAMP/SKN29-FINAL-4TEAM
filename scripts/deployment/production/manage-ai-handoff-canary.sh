@@ -99,7 +99,10 @@ write_state() {
   local opened_at="$2"
   local nginx_sha="$3"
   local window_id="$4"
+  local pending_reviews_before="$5"
   local temporary="${state_file}.tmp"
+  [[ "$pending_reviews_before" =~ ^[0-9]+$ ]] \
+    || fail "pending_review_baseline_invalid"
   {
     printf 'phase=%s\n' "$phase"
     printf 'release_sha=%s\n' "$expected_release_sha"
@@ -108,6 +111,7 @@ write_state() {
     printf 'opened_at=%s\n' "$opened_at"
     printf 'nginx_sha_before=%s\n' "$nginx_sha"
     printf 'window_id=%s\n' "$window_id"
+    printf 'pending_human_reviews_before=%s\n' "$pending_reviews_before"
   } >"$temporary"
   chmod 0600 "$temporary"
   mv -f -- "$temporary" "$state_file"
@@ -386,6 +390,10 @@ location ~ ^/api/v1/inquiries/${inquiry_id}/(submit|answers)/?$ {
 location ~ "^/api/v1/inquiries/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/(submit|answers)/?$" {
     deny all;
 }
+
+location ~ "^/api/v1/inquiries/human-reviews/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/decision/?$" {
+    deny all;
+}
 EOF
   chmod 0644 "$temporary"
   mv -f -- "$temporary" "$nginx_gate_file"
@@ -415,6 +423,11 @@ active_ai_runs() {
 pending_human_reviews() {
   compose exec -T backend python -c \
     "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings.production'); import django; django.setup(); from apps.inquiries.models import HumanReview; print(HumanReview.objects.filter(status_code='PENDING').count())"
+}
+
+non_synthetic_pending_human_reviews() {
+  compose exec -T backend python -c \
+    "import os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings.production'); import django; django.setup(); from apps.inquiries.models import HumanReview; print(HumanReview.objects.filter(status_code='PENDING',inquiry__initiated_by__is_synthetic=False).count())"
 }
 
 target_snapshot() {
@@ -619,8 +632,11 @@ case "$action" in
       || fail "resume_and_handoff_must_start_disabled"
     nginx_sha="$(nginx_dump_sha)"
     [[ "$(active_ai_runs)" == "0" ]] || fail "active_ai_runs_present"
-    [[ "$(pending_human_reviews)" == "0" ]] \
-      || fail "pending_human_reviews_present"
+    pending_reviews_before="$(pending_human_reviews)"
+    [[ "$pending_reviews_before" =~ ^[0-9]+$ ]] \
+      || fail "pending_review_baseline_invalid"
+    [[ "$(non_synthetic_pending_human_reviews)" == "0" ]] \
+      || fail "non_synthetic_pending_human_reviews_present"
     snapshot="$(target_snapshot)"
     assert_target_baseline "$snapshot"
     printf 'CANARY_PREFLIGHT_PASS\n'
@@ -630,7 +646,8 @@ case "$action" in
     printf 'ai_handoff_enabled=false\n'
     printf 'nginx_sha=%s\n' "$nginx_sha"
     printf 'active_ai_runs=0\n'
-    printf 'pending_human_reviews=0\n'
+    printf 'pending_human_reviews=%s\n' "$pending_reviews_before"
+    printf 'pending_review_scope=SYNTHETIC_ONLY\n'
     printf '%s\n' "$snapshot"
     ;;
   open)
@@ -641,19 +658,25 @@ case "$action" in
       || fail "resume_and_handoff_must_start_disabled"
     nginx_sha="$(nginx_dump_sha)"
     [[ "$(active_ai_runs)" == "0" ]] || fail "active_ai_runs_present"
-    [[ "$(pending_human_reviews)" == "0" ]] \
-      || fail "pending_human_reviews_present"
+    pending_reviews_before="$(pending_human_reviews)"
+    [[ "$pending_reviews_before" =~ ^[0-9]+$ ]] \
+      || fail "pending_review_baseline_invalid"
+    [[ "$(non_synthetic_pending_human_reviews)" == "0" ]] \
+      || fail "non_synthetic_pending_human_reviews_present"
     snapshot="$(target_snapshot)"
     assert_target_baseline "$snapshot"
     opened_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     window_id="$(date -u +%Y%m%dT%H%M%SZ)-${expected_release_sha:0:8}"
-    write_state opening "$opened_at" "$nginx_sha" "$window_id"
+    write_state opening "$opened_at" "$nginx_sha" "$window_id" \
+      "$pending_reviews_before"
     install_gate
     deadline=$((SECONDS + drain_seconds))
     while (( SECONDS < deadline )); do
       [[ "$(active_ai_runs)" == "0" ]] || fail "ai_run_started_during_drain"
-      [[ "$(pending_human_reviews)" == "0" ]] \
-        || fail "human_review_started_during_drain"
+      [[ "$(pending_human_reviews)" == "$pending_reviews_before" ]] \
+        || fail "pending_human_review_baseline_changed_during_drain"
+      [[ "$(non_synthetic_pending_human_reviews)" == "0" ]] \
+        || fail "non_synthetic_pending_human_review_during_drain"
       sleep 5
     done
     compose stop backend ai >/dev/null
@@ -668,7 +691,10 @@ case "$action" in
       fail "runtime_recreate_after_activation_failed"
     fi
     schedule_watchdog "$window_id"
-    write_state open "$opened_at" "$nginx_sha" "$window_id"
+    [[ "$(pending_human_reviews)" == "$pending_reviews_before" ]] \
+      || fail "pending_human_review_baseline_changed_after_open"
+    write_state open "$opened_at" "$nginx_sha" "$window_id" \
+      "$pending_reviews_before"
     open_in_progress=0
     printf 'CANARY_OPEN_PASS\n'
     printf 'release_sha=%s\n' "$expected_release_sha"
@@ -687,8 +713,13 @@ case "$action" in
     [[ "$(runtime_status)" == "true:true:true" ]] \
       || fail "resume_and_handoff_not_enabled"
     [[ "$(active_ai_runs)" == "0" ]] || fail "active_ai_runs_present"
-    [[ "$(pending_human_reviews)" == "0" ]] \
-      || fail "pending_human_reviews_present"
+    pending_reviews_before="$(read_state_value pending_human_reviews_before)"
+    [[ "$pending_reviews_before" =~ ^[0-9]+$ ]] \
+      || fail "pending_review_baseline_invalid"
+    [[ "$(pending_human_reviews)" == "$pending_reviews_before" ]] \
+      || fail "pending_human_review_baseline_changed_before_execute"
+    [[ "$(non_synthetic_pending_human_reviews)" == "0" ]] \
+      || fail "non_synthetic_pending_human_reviews_present"
     snapshot="$(target_snapshot "$(read_state_value opened_at)")"
     assert_target_baseline "$snapshot"
     execution="$(compose exec -T backend python manage.py \
@@ -743,6 +774,8 @@ PY
       || fail "target_final_consultation_count_invalid"
     grep -q '^other_window_ai_runs=0$' <<<"$final_snapshot" \
       || fail "other_inquiry_ai_run_detected"
+    [[ "$(pending_human_reviews)" == "$pending_reviews_before" ]] \
+      || fail "pending_human_review_baseline_changed_after_execute"
     printf 'CANARY_EXECUTE_PASS\n'
     printf '%s\n' "$execution"
     printf '%s\n' "$final_snapshot"
@@ -764,11 +797,13 @@ PY
       printf 'window_id=%s\n' "$(read_state_value window_id)"
       printf 'nginx_gate=%s\n' "$([[ -f "$nginx_gate_file" ]] && echo active || echo missing)"
       printf 'active_ai_runs=%s\n' "$(active_ai_runs)"
+      printf 'pending_human_reviews=%s\n' "$(pending_human_reviews)"
       target_snapshot "$(read_state_value opened_at)"
     else
       printf 'window_phase=closed\n'
       printf 'nginx_gate=%s\n' "$([[ -f "$nginx_gate_file" ]] && echo unexpected || echo removed)"
       printf 'active_ai_runs=%s\n' "$(active_ai_runs)"
+      printf 'pending_human_reviews=%s\n' "$(pending_human_reviews)"
       target_snapshot
     fi
     ;;
