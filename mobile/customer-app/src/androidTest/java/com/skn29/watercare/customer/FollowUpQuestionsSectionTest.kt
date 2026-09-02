@@ -90,7 +90,7 @@ class FollowUpQuestionsSectionTest {
     }
     @Test
     @OptIn(ExperimentalTestApi::class)
-    fun loading_showsCustomerFriendlyProgress() = runManual {
+    fun loading_doesNotDuplicateScreenOwnedProgress() = runManual {
         setContent {
             WaterCareTheme {
                 FollowUpQuestionsSection(
@@ -107,7 +107,10 @@ class FollowUpQuestionsSectionTest {
         waitForIdle()
 
         onNodeWithText("몇 가지만 더 확인할게요")
-            .assertIsDisplayed()
+            .assertDoesNotExistCompat()
+
+        onNodeWithText("추가 질문을 확인하고 있어요")
+            .assertDoesNotExistCompat()
     }
 
     @Test
@@ -133,8 +136,11 @@ class FollowUpQuestionsSectionTest {
 
         waitForIdle()
 
+        onNodeWithText("추가 질문을 확인하지 못했어요")
+            .assertIsDisplayed()
+
         onNodeWithText(
-            "추가 질문을 확인하는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요."
+            "작성한 답변은 유지했어요. 잠시 후 다시 확인해주세요."
         ).assertIsDisplayed()
 
         onNodeWithText("Backend API timeout")
