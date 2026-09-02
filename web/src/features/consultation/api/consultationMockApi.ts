@@ -123,7 +123,9 @@ export async function submitConsultationMock(
     }));
   const successDto: WorkflowActionSuccessDto<CounselorActionCode> = {
     message:
-      request.action_code === "START_CONSULTATION"
+      request.action_code === "CANCEL_INQUIRY"
+        ? "문의가 취소 처리되었습니다."
+        : request.action_code === "START_CONSULTATION"
         ? "상담을 시작했습니다. 확인한 내용을 상담 기록에 입력해 주세요."
         : request.action_code === "VISIT_REVIEW_REQUIRED"
           ? "방문 필요를 확인했습니다. 기사와 방문 일정을 바로 조율해 주세요."
@@ -142,6 +144,9 @@ function getNextStatus(
   actionCode: CounselorActionCode,
   currentStatus: CounselorStatus,
 ): CounselorStatus {
+  if (actionCode === "CANCEL_INQUIRY") {
+    return "CANCELLED";
+  }
   if (actionCode === "START_CONSULTATION") {
     return "CONSULTATION_IN_PROGRESS";
   }

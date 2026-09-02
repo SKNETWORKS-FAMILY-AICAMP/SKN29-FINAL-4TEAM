@@ -276,6 +276,18 @@
   grid-column: 1 / -1;
 }
 
+body .remote-inquiry-detail .v6-action-buttons .v6-button--danger {
+  border-color: #efb4b0 !important;
+  background: #fff2f1 !important;
+  color: #b42318 !important;
+}
+
+body .remote-inquiry-detail .v6-action-buttons .v6-button--danger:hover:not(:disabled) {
+  border-color: #d92d20 !important;
+  background: #fee4e2 !important;
+  color: #912018 !important;
+}
+
 @media (max-width: 640px) {
   .remote-inquiry-detail__history-launcher {
     align-items: stretch;

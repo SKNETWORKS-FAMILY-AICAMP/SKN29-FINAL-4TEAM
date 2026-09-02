@@ -23,9 +23,21 @@ const UNIFIED_CONSULTATION_RECORD_MAX_LENGTH = 2000;
 
 function presentConsultationAction(
   action: CounselorAllowedAction,
+  hasPersistedSummary = false,
 ): CounselorAllowedAction {
+  if (action.code === "CANCEL_INQUIRY") {
+    return {
+      ...action,
+      label: "문의 삭제",
+      confirmationMessage:
+        "문의를 삭제하시겠습니까? 문의는 취소 상태로 전환되며 처리 이력은 보관됩니다.",
+    };
+  }
   if (action.code === "UPDATE_CONSULTATION_SUMMARY") {
-    return { ...action, label: "편집 시작" };
+    return {
+      ...action,
+      label: hasPersistedSummary ? "편집 시작" : "상담 시작",
+    };
   }
   if (action.code === "CONFIRM_CONSULTATION_SUMMARY") {
     return {
@@ -136,6 +148,7 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   const persistedSummary = savedSummary && savedSummary.stateVersion > inquiry.workflow.stateVersion
     ? savedSummary.record
     : serverSummary;
+  const hasPersistedSummary = Boolean(persistedSummary);
   const requiresSummarySave = showSummaryForm && (
     !persistedSummary || persistedSummary !== consultationRecord.trim()
   );
@@ -144,6 +157,11 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
     visibleActions.length === 1 &&
     visibleActions[0]?.code === "START_CONSULTATION";
   const isSummaryEditing = editingBaseline !== null;
+  const summarySaveNote = requiresSummarySave && !isSummaryEditing
+    ? hasPersistedSummary
+      ? "‘편집 시작’을 눌러 상담 기록을 수정해 주세요."
+      : "‘상담 시작’을 눌러 상담 기록을 작성해 주세요."
+    : null;
   const hasUnsavedChanges = Boolean(
     editingBaseline &&
       (editingBaseline.record !== consultationRecord ||
@@ -172,7 +190,10 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
   };
 
   const handleAction = async (action: CounselorAllowedAction) => {
-    const presentedAction = presentConsultationAction(action);
+    const presentedAction = presentConsultationAction(
+      action,
+      hasPersistedSummary,
+    );
     if (action.code === "CONFIRM_CONSULTATION_SUMMARY" && requiresSummarySave) return;
     if (
       action.code === "UPDATE_CONSULTATION_SUMMARY" &&
@@ -266,7 +287,7 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
                 data-testid="consultation-field-consultationNote"
                 name="consultationNote"
                 aria-label="상담 기록"
-                aria-describedby={requiresSummarySave ? "consultation-summary-save-note" : undefined}
+                aria-describedby={summarySaveNote ? "consultation-summary-save-note" : undefined}
                 disabled={!isSummaryEditing || save.isSaving}
                 maxLength={UNIFIED_CONSULTATION_RECORD_MAX_LENGTH}
                 value={consultationRecord}
@@ -274,11 +295,9 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
                   updateUnifiedConsultationRecord(event.target.value)
                 }
               />
-              {requiresSummarySave && (
+              {summarySaveNote && (
                 <small id="consultation-summary-save-note" className="v6-action-note">
-                  {isSummaryEditing
-                    ? "수정 내용을 저장한 뒤 상담 내용을 확정할 수 있습니다."
-                    : "‘편집 시작’을 눌러 상담 기록을 확인하고 저장해 주세요."}
+                  {summarySaveNote}
                 </small>
               )}
               {form.fieldErrors.consultationNote && (
@@ -336,15 +355,20 @@ export default function RemoteConsultationActionPanel({ inquiry, onOpenVisit, on
       )}
       <div className="v6-action-buttons">
         {visibleActions.map((action) => {
-          const presentedAction = presentConsultationAction(action);
+          const presentedAction = presentConsultationAction(
+            action,
+            hasPersistedSummary,
+          );
           const label =
             action.code === "UPDATE_CONSULTATION_SUMMARY" && isSummaryEditing
-              ? "수정 내용 저장"
+              ? hasPersistedSummary
+                ? "수정 내용 저장"
+                : "내용 저장"
               : presentedAction.label;
           const isConfirmationBlocked = action.code === "CONFIRM_CONSULTATION_SUMMARY" && requiresSummarySave;
 
           return (
-            <button key={action.code} className={`v6-button v6-button--${action.style === "PRIMARY" ? "primary" : "secondary"} v6-button--full`} type="button" data-action-code={action.code} aria-describedby={isConfirmationBlocked ? "consultation-summary-save-note" : undefined} disabled={save.isSaving || isConfirmationBlocked || (isSummaryEditing && action.code !== "UPDATE_CONSULTATION_SUMMARY")} onClick={() => handleAction(action)}>
+            <button key={action.code} className={`v6-button v6-button--${action.style === "PRIMARY" ? "primary" : action.style === "DESTRUCTIVE" ? "danger" : "secondary"} v6-button--full`} type="button" data-action-code={action.code} aria-describedby={isConfirmationBlocked && summarySaveNote ? "consultation-summary-save-note" : undefined} disabled={save.isSaving || isConfirmationBlocked || (isSummaryEditing && action.code !== "UPDATE_CONSULTATION_SUMMARY")} onClick={() => handleAction(action)}>
               {save.isSaving ? "처리 중" : label}
             </button>
           );

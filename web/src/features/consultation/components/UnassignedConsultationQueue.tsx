@@ -68,7 +68,7 @@ function getClaimErrorFeedback(
   } else if (error.status === 401) {
     message = "로그인이 필요하거나 로그인 정보가 만료되었습니다. 다시 로그인해 주세요.";
   } else if (error.status === 404) {
-    message = "다른 상담사가 먼저 가져간 문의입니다. 최신 목록을 확인해 주세요.";
+    message = "이미 배정된 문의입니다. 새로고침해주세요.";
   } else if (error.status === 409 && error.code === "STATE-CONFLICT-01") {
     message = "화면이 오래되어 문의 상태가 달라졌습니다. 최신 목록을 확인해 주세요.";
   } else if (error.status === 409 && error.code === "DUPLICATE-EVENT-01") {

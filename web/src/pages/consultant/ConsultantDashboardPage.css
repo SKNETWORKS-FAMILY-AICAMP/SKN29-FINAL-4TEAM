@@ -1313,6 +1313,18 @@
   background: var(--simple-blue-dark);
 }
 
+body .simple-consultant-app .simple-action-buttons button.is-destructive {
+  border-color: #efb4b0 !important;
+  background: #fff2f1 !important;
+  color: #b42318 !important;
+}
+
+body .simple-consultant-app .simple-action-buttons button.is-destructive:hover:not(:disabled) {
+  border-color: #d92d20 !important;
+  background: #fee4e2 !important;
+  color: #912018 !important;
+}
+
 .simple-action-buttons button:disabled,
 .simple-summary-action:disabled {
   cursor: wait;

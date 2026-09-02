@@ -5,6 +5,15 @@ import type {
 } from "./consultantWorkspaceTypes";
 
 export const ACTIONS = {
+  CANCEL_INQUIRY: {
+    code: "CANCEL_INQUIRY",
+    label: "문의 삭제",
+    operationId: "cancelInquiry",
+    style: "DESTRUCTIVE",
+    requiresConfirmation: true,
+    confirmationMessage:
+      "문의를 삭제하시겠습니까? 문의는 취소 상태로 전환되며 처리 이력은 보관됩니다.",
+  },
   START_CONSULTATION: {
     code: "START_CONSULTATION",
     label: "상담 시작",
@@ -102,12 +111,18 @@ export function getConsultantAllowedActions(
   const byStatus: Partial<
     Record<CounselorStatus, readonly CounselorAllowedAction[]>
   > = {
-    CONSULTATION_REQUIRED: [ACTIONS.START_CONSULTATION],
+    DRAFT: [ACTIONS.CANCEL_INQUIRY],
+    QUESTIONNAIRE_IN_PROGRESS: [ACTIONS.CANCEL_INQUIRY],
+    CONSULTATION_REQUIRED: [
+      ACTIONS.START_CONSULTATION,
+      ACTIONS.CANCEL_INQUIRY,
+    ],
     CONSULTATION_IN_PROGRESS: [
       ACTIONS.UPDATE_CONSULTATION_SUMMARY,
       ACTIONS.CONFIRM_CONSULTATION_SUMMARY,
       ACTIONS.CONSULTATION_COMPLETED,
       ACTIONS.VISIT_REVIEW_REQUIRED,
+      ACTIONS.CANCEL_INQUIRY,
     ],
     VISIT_REVIEW_PENDING: [ACTIONS.VISIT_NEEDED, ACTIONS.VISIT_NOT_NEEDED],
     VISIT_SCHEDULING: [ACTIONS.UPDATE_VISIT_SCHEDULE, ACTIONS.CONFIRM_VISIT],

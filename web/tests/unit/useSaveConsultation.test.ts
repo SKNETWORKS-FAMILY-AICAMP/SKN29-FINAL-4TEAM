@@ -372,6 +372,86 @@ describe("useSaveConsultation", () => {
     expect(finalizeConfirm).toHaveBeenCalledTimes(1);
   });
 
+  it("Remote 문의 삭제는 취소 API에 현재 버전과 감사 사유를 전송한다", async () => {
+    const baseInquiry = COUNSELOR_INQUIRIES[0];
+    if (!baseInquiry) throw new Error("상담 문의 fixture가 없습니다.");
+    const cancelAction = {
+      code: "CANCEL_INQUIRY" as const,
+      label: "문의 삭제",
+      operationId: "cancelInquiry",
+      style: "DESTRUCTIVE" as const,
+      requiresConfirmation: true,
+      confirmationMessage:
+        "문의를 삭제하시겠습니까? 문의는 취소 상태로 전환되며 처리 이력은 보관됩니다.",
+    };
+    const inquiry = {
+      ...baseInquiry,
+      status: "CONSULTATION_REQUIRED" as const,
+      stateVersion: 6,
+      allowedActions: [cancelAction],
+    };
+    const cancel = vi.fn().mockResolvedValue({
+      success: true,
+      data: {
+        inquiry_id: inquiry.inquiryId,
+        state: "CANCELLED",
+        state_version: 7,
+        idempotent_replay: false,
+        allowed_actions: [],
+      },
+      error: null,
+      metadata: { correlation_id: "corr-cancel" },
+    });
+    const repository = {
+      cancel,
+      start: vi.fn(),
+      saveSummary: vi.fn(),
+      confirmSummary: vi.fn(),
+      complete: vi.fn(),
+      resume: vi.fn(),
+      finalize: vi.fn(),
+    } as ConsultationWriteRepository;
+    const values: ConsultationFormValues = {
+      consultationNote: "",
+      additionalCheck: "",
+      customerGuidance: "",
+      consultationResult: "",
+      summaryRevision: "",
+      summaryConfirmed: false,
+      visitRequired: "UNDECIDED",
+      usageStatus: "NORMAL",
+    };
+    const confirmPrompt = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const { result } = renderHook(() =>
+      useSaveConsultation(inquiry, {
+        dataSource: "REMOTE",
+        remoteRepository: repository,
+      }),
+    );
+
+    await act(async () => {
+      await result.current.execute({
+        action: cancelAction,
+        values,
+        scenario: "SUCCESS",
+      });
+    });
+
+    expect(cancel).toHaveBeenCalledWith(
+      inquiry.inquiryId,
+      {
+        state_version: 6,
+        reason_code: "OTHER",
+        reason_detail: "상담사 화면에서 문의 삭제 요청",
+      },
+      expect.objectContaining({ idempotencyKey: expect.any(String) }),
+    );
+    expect(result.current.currentStatus).toBe("CANCELLED");
+    expect(result.current.stateVersion).toBe(7);
+    expect(result.current.allowedActions).toEqual([]);
+    expect(confirmPrompt).toHaveBeenCalledTimes(1);
+  });
+
   it("Remote 재개 문의는 현재 버전으로 Backend 상담 재개 API를 호출한다", async () => {
     const baseInquiry = COUNSELOR_INQUIRIES[0];
     if (!baseInquiry) throw new Error("상담 문의 fixture가 없습니다.");
