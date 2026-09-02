@@ -12,6 +12,10 @@ from ai.app.integrations.mcp.search_service import (
     McpEvidenceSearchError,
     McpEvidenceSearchService,
 )
+from ai.app.integrations.mcp.tools.search_official_evidence import (
+    SearchOfficialEvidenceAdapter,
+    SearchOfficialEvidenceInput,
+)
 from ai.app.orchestration.harness.product_registry import resolve_product_context
 from ai.app.orchestration.harness.runtime import ReliabilityRuntime
 from ai.app.orchestration.harness.tool_failure import (
@@ -22,6 +26,13 @@ from ai.app.orchestration.harness.tool_failure import (
 from ai.app.orchestration.harness.verification_result import HarnessDecision
 from ai.app.orchestration.pipeline_context import PipelineContext
 from ai.app.retrieval.models.retrieval_query import RetrievalQuery
+from ai.app.retrieval.filters.evidence_topic_filter import EvidenceTopicFilter
+from ai.app.retrieval.indexing.chunk_loader import ChunkLoader
+from ai.app.retrieval.indexing.index_manifest import IndexManifest
+from ai.app.retrieval.runtime_profile import (
+    JAC104_V2_RECOVERY_PROFILE,
+    resolve_rag_runtime_profile,
+)
 from ai.app.schemas import (
     TraceContext,
     UsageGuidance,
@@ -101,6 +112,78 @@ def test_mcp_search_service_reconstructs_exact_request_product_identity():
     assert results[0].verification_status == "official_verified"
     assert results[0].allowed_use is True
     assert results[0].runtime_eligible is True
+
+
+def test_mcp_v2_metadata_survives_round_trip_for_outer_topic_filter():
+    profile = resolve_rag_runtime_profile(JAC104_V2_RECOVERY_PROFILE)
+    manifest = IndexManifest.load_manifest(str(profile.manifest_path))
+    source = next(
+        chunk
+        for chunk in ChunkLoader.from_handoff_profile(
+            "rag-expansion"
+        ).load_verified_chunks()
+        if chunk.chunk_id == "CHILD-WPUJAC104DWH-P038-LOW-FLOW-001"
+    ).model_copy(
+        update={
+            "runtime_eligible": True,
+            "similarity_score": 0.91,
+            "index_version": manifest.index_version,
+            "chunk_set_sha256": manifest.chunk_set_sha256.lower(),
+            "record_type": None,
+            "topic_code": None,
+        }
+    )
+    class _ToolSearch:
+        @staticmethod
+        def evaluate_pre_search_gate(query):
+            return SimpleNamespace(
+                blocked=False,
+                execution_path="PGVECTOR_QUERY",
+                rule_id=None,
+                reason=None,
+            )
+
+        @staticmethod
+        def execution_path(query):
+            return "PGVECTOR_QUERY"
+
+        @staticmethod
+        def search(query):
+            return [source]
+
+    tool_output = SearchOfficialEvidenceAdapter(_ToolSearch()).execute(
+        SearchOfficialEvidenceInput(
+            customer_query="정수기 물이 졸졸 나와요.",
+            model_code="WPUJAC104DWH",
+            symptom_type=None,
+            previous_answers=[],
+        )
+    )
+    payload = tool_output.model_dump(mode="json")
+    service = McpEvidenceSearchService(
+        client_factory=lambda: _FakeMcpClient(payload)
+    )
+
+    results = service.search(
+        RetrievalQuery(
+            query_text="정수기 물이 졸졸 나와요.",
+            model_code="WPUJAC104DWH",
+            product_generation="D",
+            top_k=5,
+        )
+    )
+    filtered = EvidenceTopicFilter().filter_chunks(
+        results,
+        raw_symptom="정수기 물이 졸졸 나와요.",
+        selected_symptoms=["LOW_FLOW"],
+        symptom_type="출수량 저하",
+    )
+
+    assert [chunk.chunk_id for chunk in filtered] == [source.chunk_id]
+    assert filtered[0].index_version == "2.0.0"
+    assert filtered[0].chunk_set_sha256 == source.chunk_set_sha256
+    assert filtered[0].evidence_group_id == source.evidence_group_id
+    assert filtered[0].retrieval_role == "SEARCH_CANDIDATE"
 
 
 def test_invalid_mcp_response_is_sanitized():
@@ -223,4 +306,3 @@ def test_non_retryable_mcp_failure_escalates_without_retry():
     assert result.retrieval_retry_performed is False
     assert result.harness_runtime.harness.decision == HarnessDecision.ESCALATE
     assert result.harness_runtime.handoff is not None
-

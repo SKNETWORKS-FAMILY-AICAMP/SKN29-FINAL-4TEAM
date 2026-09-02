@@ -362,9 +362,21 @@ def test_search_success_returns_evidence_reference(monkeypatch):
         lambda: {},
     )
 
+    source_chunk = _sample_chunk().model_copy(
+        update={
+            "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+            "source_hash": "a" * 64,
+            "index_version": "1.0.0",
+            "chunk_set_sha256": "b" * 64,
+            "topic_code": "symptom_taste_odor",
+            "evidence_group_id": "TASTE-ODOR-001-P038",
+            "record_type": None,
+            "retrieval_role": "SEARCH_CANDIDATE",
+        }
+    )
     service = FakeSearchService(
         _allowed_decision(),
-        chunks=[_sample_chunk()],
+        chunks=[source_chunk],
     )
 
     adapter = SearchOfficialEvidenceAdapter(service)
@@ -404,6 +416,14 @@ def test_search_success_returns_evidence_reference(monkeypatch):
     assert evidence.page_refs == [10]
     assert evidence.similarity_score == 0.92
     assert evidence.verification_status.value == "official_verified"
+    assert evidence.document_id == source_chunk.document_id
+    assert evidence.source_hash == source_chunk.source_hash
+    assert evidence.index_version == source_chunk.index_version
+    assert evidence.chunk_set_sha256 == source_chunk.chunk_set_sha256
+    assert evidence.topic_code == source_chunk.topic_code
+    assert evidence.evidence_group_id == source_chunk.evidence_group_id
+    assert evidence.record_type == source_chunk.record_type
+    assert evidence.retrieval_role == source_chunk.retrieval_role
 
     assert service.search_called == 1
 

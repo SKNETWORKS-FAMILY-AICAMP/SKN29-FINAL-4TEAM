@@ -135,6 +135,14 @@ class McpEvidenceSearchService:
                 verification_status=evidence.verification_status,
                 allowed_use=evidence.allowed_use,
                 runtime_eligible=evidence.runtime_eligible,
+                document_id=evidence.document_id,
+                source_hash=evidence.source_hash,
+                index_version=evidence.index_version,
+                chunk_set_sha256=evidence.chunk_set_sha256,
+                topic_code=evidence.topic_code,
+                evidence_group_id=evidence.evidence_group_id,
+                record_type=evidence.record_type,
+                retrieval_role=evidence.retrieval_role,
             )
             for evidence in output.evidence_references
         ]
