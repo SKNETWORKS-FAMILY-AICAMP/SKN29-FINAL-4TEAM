@@ -21,6 +21,10 @@ from apps.subscriptions.models import CustomerSubscription
 
 CANONICAL_CONTRACT_NO = "SUB-SYN-0001"
 CANONICAL_MODEL_CODE = "WPUJAC104DWH"
+CANONICAL_RAW_SYMPTOM = (
+    "오늘부터 정수 출수 버튼을 누르면 출수량이 평소보다 줄었고, "
+    "원수 밸브를 확인했지만 동일합니다."
+)
 FIXTURE_SCOPE = "BACKEND_AI_CONTEXT_G1_ISOLATED_E2E"
 FIXTURE_NAMESPACE = UUID("f4c180e6-245e-4dbd-a34c-29f21f2bb9c6")
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
@@ -73,7 +77,7 @@ class Command(BaseCommand):
             validated_data={
                 "subscription_id": subscription.public_id,
                 "channel_code": Inquiry.Channel.MOBILE,
-                "raw_text": "정수기 출수량이 평소보다 줄었습니다.",
+                "raw_text": CANONICAL_RAW_SYMPTOM,
                 "representative_symptom_code": "LOW_FLOW",
                 "questionnaire_session_id": None,
             },

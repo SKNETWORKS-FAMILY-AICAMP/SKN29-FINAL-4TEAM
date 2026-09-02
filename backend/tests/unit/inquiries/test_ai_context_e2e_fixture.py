@@ -11,6 +11,9 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from apps.accounts.models import CustomerProfile, User
+from apps.inquiries.management.commands.create_ai_context_e2e_fixture import (
+    CANONICAL_RAW_SYMPTOM,
+)
 from apps.inquiries.models import Inquiry, SymptomEntry
 from apps.products.models import ProductModel
 from apps.subscriptions.models import CustomerSubscription
@@ -100,6 +103,7 @@ def test_apply_creates_exact_jac104_context_through_runtime():
 
     inquiry = Inquiry.objects.get(public_id=result["inquiry_id"])
     assert inquiry.subscription.product_model.model_code == "WPUJAC104DWH"
+    assert inquiry.raw_text == CANONICAL_RAW_SYMPTOM
     assert SymptomEntry.objects.filter(
         inquiry=inquiry,
         symptom_type_code="LOW_FLOW",
