@@ -37,7 +37,8 @@ def _runtime(monkeypatch) -> None:
 
 
 @override_settings(
-    AI_SERVICE_MODE="http",
+    AI_SERVICE_MODE="local",
+    AI_SERVICE_BASE_URL="http://ai:8001",
     AI_HUMAN_REVIEW_RESUME_ENABLED=True,
     AI_HUMAN_REVIEW_RESUME_TOKEN=TOKEN,
     AI_HANDOFF_INTERNAL_TOKEN=TOKEN,
@@ -67,7 +68,8 @@ def test_check_mode_accepts_only_fresh_official_jac104_fixture(monkeypatch):
 
 
 @override_settings(
-    AI_SERVICE_MODE="http",
+    AI_SERVICE_MODE="local",
+    AI_SERVICE_BASE_URL="http://ai:8001",
     AI_HUMAN_REVIEW_RESUME_ENABLED=True,
     AI_HUMAN_REVIEW_RESUME_TOKEN=TOKEN,
     AI_HANDOFF_INTERNAL_TOKEN=TOKEN,
@@ -93,7 +95,8 @@ def test_consumed_fixture_is_rejected_before_any_new_execution(monkeypatch):
 
 
 @override_settings(
-    AI_SERVICE_MODE="http",
+    AI_SERVICE_MODE="local",
+    AI_SERVICE_BASE_URL="http://ai:8001",
     AI_HUMAN_REVIEW_RESUME_ENABLED=True,
     AI_HUMAN_REVIEW_RESUME_TOKEN=TOKEN,
     AI_HANDOFF_INTERNAL_TOKEN=TOKEN,
@@ -278,7 +281,8 @@ def test_safe_handoff_payload_rejects_unapproved_or_sensitive_content():
 
 
 @override_settings(
-    AI_SERVICE_MODE="local",
+    AI_SERVICE_MODE="mock",
+    AI_SERVICE_BASE_URL="http://ai:8001",
     AI_HUMAN_REVIEW_RESUME_ENABLED=False,
     AI_HUMAN_REVIEW_RESUME_TOKEN="",
     AI_HANDOFF_INTERNAL_TOKEN="",
@@ -290,4 +294,18 @@ def test_runtime_guard_rejects_wrong_release_and_disabled_modes(monkeypatch):
 
     monkeypatch.setenv("RELEASE_SHA", RELEASE_SHA)
     with pytest.raises(CommandError, match="HTTP 모드"):
+        Command._assert_runtime(expected_sha=RELEASE_SHA)
+
+
+@override_settings(
+    AI_SERVICE_MODE="local",
+    AI_SERVICE_BASE_URL="http://127.0.0.1:8001",
+    AI_HUMAN_REVIEW_RESUME_ENABLED=True,
+    AI_HUMAN_REVIEW_RESUME_TOKEN=TOKEN,
+    AI_HANDOFF_INTERNAL_TOKEN=TOKEN,
+)
+def test_runtime_guard_rejects_non_internal_ai_endpoint(monkeypatch):
+    monkeypatch.setenv("RELEASE_SHA", RELEASE_SHA)
+
+    with pytest.raises(CommandError, match="내부 Runtime"):
         Command._assert_runtime(expected_sha=RELEASE_SHA)
