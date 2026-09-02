@@ -8,6 +8,7 @@ import re
 import time
 from collections.abc import Mapping
 from typing import Any
+from urllib.parse import urlsplit
 from uuid import UUID, uuid5
 
 import httpx
@@ -221,8 +222,30 @@ class Command(BaseCommand):
         actual_sha = os.getenv("RELEASE_SHA", "").strip().lower()
         if actual_sha != expected_sha:
             raise CommandError("실행 Container Release SHA가 승인값과 다릅니다.")
-        if settings.AI_SERVICE_MODE != "http":
-            raise CommandError("Backend가 실제 AI HTTP 모드가 아닙니다.")
+        if settings.AI_SERVICE_MODE != "local":
+            raise CommandError(
+                "Backend가 실제 AI HTTP 모드(local)가 아닙니다."
+            )
+        ai_endpoint = urlsplit(settings.AI_SERVICE_BASE_URL)
+        try:
+            ai_port = ai_endpoint.port
+        except ValueError as exc:
+            raise CommandError(
+                "Backend AI HTTP 대상 주소가 올바르지 않습니다."
+            ) from exc
+        if not (
+            ai_endpoint.scheme == "http"
+            and ai_endpoint.hostname == "ai"
+            and ai_port == 8001
+            and ai_endpoint.username is None
+            and ai_endpoint.password is None
+            and ai_endpoint.path in {"", "/"}
+            and not ai_endpoint.query
+            and not ai_endpoint.fragment
+        ):
+            raise CommandError(
+                "Backend AI HTTP 대상이 보호된 내부 Runtime이 아닙니다."
+            )
         if not settings.AI_HUMAN_REVIEW_RESUME_ENABLED:
             raise CommandError("Backend HumanReview Resume가 비활성 상태입니다.")
         if len(settings.AI_HUMAN_REVIEW_RESUME_TOKEN.encode("utf-8")) < 32:
