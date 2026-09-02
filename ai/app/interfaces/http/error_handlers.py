@@ -124,7 +124,7 @@ def register_error_handlers(app: FastAPI) -> None:
         detail = ApiErrorDetail(
             code=exc.code,
             message=exc.message,
-            details=None,
+            details=exc.details,
             retryable=exc.retryable,
             failure_stage=exc.failure_stage,
             retry_count=exc.retry_count,

@@ -318,7 +318,7 @@ $env:AI_RETRIEVAL_TRANSPORT='direct'
 $env:AI_EVIDENCE_ENVIRONMENT_ID='TEAM_DB_STAGING'
 $env:AI_MODEL_PROVIDER='openai'
 $env:AI_MODEL_NAME='gpt-4.1-mini'
-$env:AI_PROMPT_VERSION='customer_guidance/v3'
+$env:AI_PROMPT_VERSION='customer_guidance/v4'
 
 .\ai\.venv\Scripts\python.exe -m pytest `
   ai\tests\integration\test_pgvector_runtime.py -v
@@ -372,7 +372,7 @@ Backend 저장과 Web/Mobile 소비는 이 Gate에서 `NOT_VERIFIED_BY_THIS_GATE
 `integrity.payload_sha256`을 포함하되, 실제 저장 파일의 SHA-256은 별도로 계산한다.
 Backend 통합 Process에도 위 세 AIRun 환경변수를 같은 배포 설정에서 주입하고,
 E2E에서는 저장된 AIRun 값이 `openai`, `gpt-4.1-mini`,
-`customer_guidance/v3`인지 반드시 대조한다. 이 대조 전에는 Backend 수직 Gate를
+`customer_guidance/v4`인지 반드시 대조한다. 이 대조 전에는 Backend 수직 Gate를
 PASS로 판정하지 않는다.
 
 마지막 명령은 HTTP 200만으로 PASS하지 않는다. `SUCCEEDED`, 실패 단계 없음,

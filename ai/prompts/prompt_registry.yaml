@@ -12,9 +12,9 @@ tasks:
     description: "결정된 누락 필드에 대한 고객 맥락형 질문 표현"
 
   customer_guidance:
-    active_version: "v3"
+    active_version: "v4"
     status: "ACTIVE"
-    description: "승인 Evidence 원문 선택과 Allowlist 다음 행동 생성"
+    description: "승인 Evidence 항목 선택과 Allowlist 다음 행동 생성"
 
   consultation_summary:
     active_version: "v2"

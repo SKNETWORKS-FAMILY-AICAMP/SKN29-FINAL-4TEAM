@@ -53,7 +53,7 @@ class _LLM:
         self.calls += 1
         return GuidanceLLMResponse(
             output=GuidanceGenerationResult(
-                message=request.evidence_summaries[0],
+                selected_evidence_index=0,
                 next_actions=list(request.allowed_next_actions[:1]),
             ),
             model_name="gpt-4.1-mini",

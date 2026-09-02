@@ -94,7 +94,7 @@ class FakeRouter:
         context = SimpleNamespace(
             model_metadata=SimpleNamespace(
                 model_name="gpt-4.1-mini-2025-04-14",
-                prompt_version="customer_guidance/v3",
+                prompt_version="customer_guidance/v4",
                 tokens_used=self.tokens_used,
             )
         )
@@ -189,7 +189,7 @@ def test_local_runtime_gate_verifies_actual_identity_without_exposing_secrets(mo
     assert result["provider_adapter"] == "OPENAI_RESPONSES"
     assert result["provider_endpoint_class"] == "OPENAI_PUBLIC_API"
     assert result["provider_models"] == ["gpt-4.1-mini-2025-04-14"]
-    assert result["prompt_version"] == "customer_guidance/v3"
+    assert result["prompt_version"] == "customer_guidance/v4"
     assert result["tokens_used"] == 18
     assert result["evidence_count"] == 1
     assert result["evidence_unique_count"] == 1

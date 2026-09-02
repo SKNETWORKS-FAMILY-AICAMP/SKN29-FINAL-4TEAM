@@ -675,11 +675,11 @@ def test_runtime_identity_matches_pipeline_and_retrieval_manifests():
     assert runtime["local"]["prompt_version"] == "v1"
     assert runtime["local"]["external_llm_used"] is True
     assert runtime["local"]["llm"]["model_name"] == "gpt-4.1-mini"
-    assert runtime["local"]["llm"]["prompt_version"] == "customer_guidance/v3"
-    assert prompt_registry["tasks"]["customer_guidance"]["active_version"] == "v3"
-    assert Path("ai/prompts/customer_guidance/v3/system.txt").is_file()
-    assert Path("ai/prompts/customer_guidance/v3/user_template.txt").is_file()
-    assert runtime["local"]["llm"]["output_scope"] == "GUIDANCE_ONLY"
+    assert runtime["local"]["llm"]["prompt_version"] == "customer_guidance/v4"
+    assert prompt_registry["tasks"]["customer_guidance"]["active_version"] == "v4"
+    assert Path("ai/prompts/customer_guidance/v4/system.txt").is_file()
+    assert Path("ai/prompts/customer_guidance/v4/user_template.txt").is_file()
+    assert runtime["local"]["llm"]["output_scope"] == "EVIDENCE_SELECTION_ONLY"
     assert runtime["local"]["llm"]["timeout_policy"] == "HTTP_504_BACKEND_TRANSITION"
     context_metadata = PipelineContext.model_fields["model_metadata"].default_factory()
     assert runtime["local"]["model_name"] == context_metadata.model_name

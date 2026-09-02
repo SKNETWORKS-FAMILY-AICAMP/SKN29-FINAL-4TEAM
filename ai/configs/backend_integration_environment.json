@@ -98,7 +98,7 @@
     "AI_RETRIEVAL_TRANSPORT=mcp에서는 lookup_product_context와 get_inquiry_context를 먼저 호출하고 조회된 정확 판매코드를 search_official_evidence에 그대로 전달한다.",
     "Backend Context 조회 실패, Timeout, 식별자 불일치와 교차 모델 Evidence는 Provider 전에 fail-closed한다.",
     "팀 최소 권한 AI Role은 Vector 청크를 적재하지 않고 읽기 전용 View만 SELECT한다.",
-    "Backend AIRun에는 AI_MODEL_PROVIDER=openai, AI_MODEL_NAME=gpt-4.1-mini, AI_PROMPT_VERSION=customer_guidance/v3를 같은 배포 설정으로 주입하고 E2E 저장값을 대조한다.",
+    "Backend AIRun에는 AI_MODEL_PROVIDER=openai, AI_MODEL_NAME=gpt-4.1-mini, AI_PROMPT_VERSION=customer_guidance/v4를 같은 배포 설정으로 주입하고 E2E 저장값을 대조한다.",
     "실제 DSN과 Secret 값은 Manifest, 명령 출력, 구조화 로그에 기록하지 않는다."
   ]
 }

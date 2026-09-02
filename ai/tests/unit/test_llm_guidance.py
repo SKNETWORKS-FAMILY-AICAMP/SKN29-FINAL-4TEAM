@@ -1,4 +1,4 @@
-"""GUIDANCE_ONLY OpenAI Adapter와 Pipeline 안전 경계 테스트."""
+"""Evidence 선택 전용 OpenAI Adapter와 Pipeline 안전 경계 테스트."""
 
 import json
 import logging
@@ -126,12 +126,12 @@ class SequenceLLMClient:
 
 def llm_response(
     *,
-    message="출수량이 적을 때 원수 공급과 필터 상태를 확인합니다.",
+    evidence_index=0,
     actions=None,
 ):
     return GuidanceLLMResponse(
         output=GuidanceGenerationResult(
-            message=message,
+            selected_evidence_index=evidence_index,
             next_actions=actions or ["안내된 자가조치 단계별 점검 수행"],
         ),
         model_name="gpt-4.1-mini",
@@ -214,7 +214,6 @@ def test_earthy_taste_generation_receives_only_taste_or_odor_evidence():
     taste_message = TASTE_WITHIN
     client = SequenceLLMClient(
         llm_response(
-            message=taste_message,
             actions=["기본 필터 및 사용 환경 유지"],
         )
     )
@@ -256,7 +255,6 @@ def test_earthy_taste_applicability_preserves_matching_official_evidence(
 ):
     client = SequenceLLMClient(
         llm_response(
-            message=TASTE_OVER if expected_code == "ABSENCE_OVER_10_DAYS" else TASTE_UNUSED,
             actions=["기본 필터 및 사용 환경 유지"],
         )
     )
@@ -330,7 +328,7 @@ def test_openai_adapter_sends_guidance_only_strict_schema():
                 "content": [{
                     "type": "output_text",
                     "text": json.dumps({
-                        "message": "출수 상태를 확인해 주세요.",
+                        "selected_evidence_index": 0,
                         "next_actions": ["원수 공급 상태를 확인하세요."],
                     }, ensure_ascii=False),
                 }],
@@ -351,19 +349,18 @@ def test_openai_adapter_sends_guidance_only_strict_schema():
     assert captured["payload"]["temperature"] == 0.0
     assert captured["payload"]["max_output_tokens"] == 500
     assert captured["payload"]["text"]["format"]["strict"] is True
-    assert set(output_schema["properties"]) == {"message", "next_actions"}
-    assert "enum" not in output_schema["properties"]["message"]
-    assert (
-        "evidence_summaries"
-        in output_schema["properties"]["message"]["description"]
-    )
+    assert set(output_schema["properties"]) == {
+        "selected_evidence_index",
+        "next_actions",
+    }
+    assert output_schema["properties"]["selected_evidence_index"]["enum"] == [0]
     assert output_schema["properties"]["next_actions"]["items"]["enum"] == (
         request.allowed_next_actions
     )
     assert "correlation_id" not in output_schema["properties"]
     assert "safety_assessment" not in output_schema["properties"]
     assert "evidence_references" not in output_schema["properties"]
-    assert response.output.message == "출수 상태를 확인해 주세요."
+    assert response.output.selected_evidence_index == 0
     assert response.usage.total_tokens == 18
 
 
@@ -376,7 +373,7 @@ def test_openai_adapter_rejects_schema_violation_without_retry():
                 "status": "completed",
                 "output": [{"type": "message", "content": [{
                     "type": "output_text",
-                    "text": '{"message":"안내"}',
+                    "text": '{"selected_evidence_index":0}',
                 }]}],
             },
         ))),
@@ -392,6 +389,20 @@ def test_openai_adapter_rejects_schema_violation_without_retry():
     )
     with pytest.raises(LLMOutputValidationError):
         client.generate_guidance(request, timeout_seconds=1.0)
+
+
+def test_unapproved_provider_diagnostic_is_reduced_to_safe_code():
+    client = SequenceLLMClient(
+        LLMOutputValidationError(
+            "provider raw body",
+            diagnostic_code="UNAPPROVED_RAW_DETAIL",
+        )
+    )
+
+    with pytest.raises(GuidanceGenerationExecutionError) as raised:
+        run_pipeline(search_service=EvidenceSearchService(), llm_client=client)
+
+    assert raised.value.diagnostic_code == "PROVIDER_OUTPUT_INVALID"
 
 
 @pytest.mark.parametrize(
@@ -438,7 +449,7 @@ def test_openai_adapter_rejects_incomplete_response_even_with_valid_output():
                                         "type": "output_text",
                                         "text": json.dumps(
                                             {
-                                                "message": "안내",
+                                                "selected_evidence_index": 0,
                                                 "next_actions": ["상담 연결"],
                                             },
                                             ensure_ascii=False,
@@ -501,6 +512,56 @@ def test_evidence_path_calls_llm_and_preserves_runtime_owned_fields():
     assert result.context.model_metadata.tokens_used == 30
 
 
+def test_provider_selection_schema_follows_runtime_evidence_count():
+    request = generation_request().model_copy(
+        update={
+            "evidence_summaries": [
+                "원수 공급 상태를 확인합니다.",
+                "필터 교체 주기를 확인합니다.",
+            ]
+        }
+    )
+    schema = OpenAIResponsesLLMClient._guidance_schema(request)
+
+    assert schema["properties"]["selected_evidence_index"]["enum"] == [0, 1]
+
+
+def test_openai_adapter_rejects_out_of_request_evidence_index():
+    client = OpenAIResponsesLLMClient(
+        api_key="test-only-key",
+        http_client=httpx.Client(
+            transport=httpx.MockTransport(
+                lambda request: httpx.Response(
+                    200,
+                    json={
+                        "status": "completed",
+                        "output": [{
+                            "type": "message",
+                            "content": [{
+                                "type": "output_text",
+                                "text": json.dumps({
+                                    "selected_evidence_index": 1,
+                                    "next_actions": [
+                                        "원수 공급 상태를 확인하세요."
+                                    ],
+                                }, ensure_ascii=False),
+                            }],
+                        }],
+                    },
+                )
+            )
+        ),
+    )
+
+    with pytest.raises(LLMOutputValidationError) as raised:
+        client.generate_guidance(generation_request(), timeout_seconds=1.0)
+
+    assert (
+        raised.value.diagnostic_code
+        == "PROVIDER_EVIDENCE_SELECTION_INVALID"
+    )
+
+
 def test_llm_usage_log_records_tokens_without_customer_or_evidence_text(caplog):
     raw_symptom = "로그에 남으면 안 되는 고객 증상 원문"
     with caplog.at_level(logging.INFO, logger="watercare.ai.llm"):
@@ -514,7 +575,7 @@ def test_llm_usage_log_records_tokens_without_customer_or_evidence_text(caplog):
     payload = json.loads(caplog.records[-1].message)
     assert payload["event"] == "llm_guidance_completed"
     assert payload["model_name"] == "gpt-4.1-mini"
-    assert payload["prompt_version"] == "customer_guidance/v3"
+    assert payload["prompt_version"] == "customer_guidance/v4"
     assert payload["total_tokens"] == 30
     assert payload["correlation_id"] == CORRELATION_ID
     assert raw_symptom not in caplog.text
@@ -592,7 +653,6 @@ def test_pipeline_stage_timeout_is_not_reclassified_as_provider_503():
 
 def test_prohibited_llm_action_fails_closed():
     client = SequenceLLMClient(llm_response(
-        message="정확한 원인은 점검이 필요합니다.",
         actions=["커버를 분해하세요."],
     ))
     with pytest.raises(GuidanceGenerationExecutionError) as raised:
@@ -600,6 +660,7 @@ def test_prohibited_llm_action_fails_closed():
 
     assert client.calls == 1
     assert raised.value.retryable is False
+    assert raised.value.diagnostic_code == "NEXT_ACTION_NOT_ALLOWLISTED"
 
 
 @pytest.mark.parametrize(
@@ -614,13 +675,19 @@ def test_prohibited_llm_action_fails_closed():
 def test_unsafe_or_ungrounded_llm_message_fails_closed(
     unsafe_message,
 ):
-    client = SequenceLLMClient(llm_response(message=unsafe_message))
+    class UnsafeEvidenceSearchService:
+        def search(self, *args, **kwargs):
+            chunk = EvidenceSearchService().search(*args, **kwargs)[0]
+            return [chunk.model_copy(update={"content": unsafe_message})]
+
+    client = SequenceLLMClient(llm_response())
 
     with pytest.raises(GuidanceGenerationExecutionError) as raised:
-        run_pipeline(search_service=EvidenceSearchService(), llm_client=client)
+        run_pipeline(search_service=UnsafeEvidenceSearchService(), llm_client=client)
 
     assert client.calls == 1
     assert raised.value.retryable is False
+    assert raised.value.diagnostic_code == "GUIDANCE_SAFETY_VALIDATION_FAILED"
 
 
 def test_exact_official_directive_message_is_allowed_without_rewriting():
@@ -635,7 +702,6 @@ def test_exact_official_directive_message_is_allowed_without_rewriting():
         search_service=DirectiveEvidenceSearchService(),
         llm_client=SequenceLLMClient(
             llm_response(
-                message=official_message,
                 actions=accepted_actions(),
             )
         ),
@@ -644,7 +710,7 @@ def test_exact_official_directive_message_is_allowed_without_rewriting():
     assert result.usage_guidance.message == official_message
 
 
-def test_grounded_rewrite_of_official_directive_is_allowed():
+def test_selected_official_directive_is_returned_without_provider_rewriting():
     class DirectiveEvidenceSearchService:
         def search(self, *args, **kwargs):
             chunk = EvidenceSearchService().search(*args, **kwargs)[0]
@@ -658,13 +724,12 @@ def test_grounded_rewrite_of_official_directive_is_allowed():
         search_service=DirectiveEvidenceSearchService(),
         llm_client=SequenceLLMClient(
             llm_response(
-                message="먼저 원수 상태를 확인해 주세요.",
                 actions=accepted_actions(),
             )
         ),
     ).to_analysis_result()
 
-    assert result.usage_guidance.message == "먼저 원수 상태를 확인해 주세요."
+    assert result.usage_guidance.message == "원수 상태를 확인해 주세요."
 
 
 def test_official_do_not_drink_guidance_is_not_rejected_by_word_only_guard():
@@ -683,7 +748,6 @@ def test_official_do_not_drink_guidance_is_not_rejected_by_word_only_guard():
         search_service=DoNotDrinkEvidenceSearchService(),
         llm_client=SequenceLLMClient(
             llm_response(
-                message="점검 문구가 표시되면 해당 물은 음용하지 마세요.",
                 actions=accepted_actions(),
             )
         ),
@@ -822,3 +886,57 @@ def test_http_llm_timeout_is_504_generating(monkeypatch):
     assert error["failure_stage"] == "GENERATING"
     assert error["retry_count"] == 1
     assert client.calls == 2
+
+
+def test_out_of_range_evidence_selection_fails_closed_with_diagnostic():
+    client = SequenceLLMClient(llm_response(evidence_index=1))
+
+    with pytest.raises(GuidanceGenerationExecutionError) as raised:
+        run_pipeline(search_service=EvidenceSearchService(), llm_client=client)
+
+    assert client.calls == 1
+    assert raised.value.retryable is False
+    assert (
+        raised.value.diagnostic_code
+        == "PROVIDER_EVIDENCE_SELECTION_INVALID"
+    )
+
+
+def test_http_invalid_provider_output_exposes_only_safe_diagnostic(monkeypatch):
+    from ai.app.generation.customer_guidance import guidance_generator
+    from ai.app.interfaces.http.routes import analysis_routes
+
+    client = SequenceLLMClient(
+        LLMOutputValidationError(
+            "raw provider content must not be exposed",
+            diagnostic_code="PROVIDER_SCHEMA_INVALID",
+        )
+    )
+    monkeypatch.setattr(
+        analysis_routes.PipelineRouter,
+        "_configured_search_service",
+        staticmethod(lambda: EvidenceSearchService()),
+    )
+    monkeypatch.setattr(
+        guidance_generator.OpenAIResponsesLLMClient,
+        "from_environment",
+        classmethod(lambda cls: client),
+    )
+
+    response = TestClient(create_app()).post("/api/v1/ai/analyze?mode=local", json={
+        "inquiry_id": INQUIRY_ID,
+        "correlation_id": CORRELATION_ID,
+        "ai_request_id": "ai-req-http-output-invalid",
+        "state_version": 2,
+        "raw_symptom": "냉수 출수량이 적습니다.",
+        "model_code": "WPUJAC104DWH",
+    })
+
+    assert response.status_code == 503
+    error = response.json()["error"]
+    assert error["code"] == "AI-FAILED-01"
+    assert error["failure_stage"] == "GENERATING"
+    assert error["details"] == {
+        "diagnostic_code": "PROVIDER_SCHEMA_INVALID"
+    }
+    assert "raw provider content" not in response.text

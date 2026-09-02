@@ -32,8 +32,8 @@
     "llm": {
       "provider": "openai",
       "model_name": "gpt-4.1-mini",
-      "output_scope": "GUIDANCE_ONLY",
-      "prompt_version": "customer_guidance/v3",
+      "output_scope": "EVIDENCE_SELECTION_ONLY",
+      "prompt_version": "customer_guidance/v4",
       "timeout_policy": "HTTP_504_BACKEND_TRANSITION"
     },
     "retrieval": {
