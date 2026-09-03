@@ -29,6 +29,7 @@ import {
   type InquiryId,
 } from "../../entities/inquiry/inquiryIdentifiers";
 import CompactConsultationDesk from "../../features/consultation/components/CompactConsultationDesk";
+import HumanReviewQueue from "../../features/consultation/components/HumanReviewQueue";
 import ConsultantQueueSidebar from "../../features/consultation/components/ConsultantQueueSidebar";
 import ConsultantHeaderBrand from "../../features/consultation/components/ConsultantHeaderBrand";
 import ConsultantUserMenu from "../../features/consultation/components/ConsultantUserMenu";
@@ -673,6 +674,16 @@ export default function ConsultantDashboardPage() {
     }
 
     setSelectedInquiryId(inquiryId);
+  };
+
+  const handleReviewedInquiryClaimed = (rawInquiryId: string) => {
+    setActiveBucket("NEW");
+    setWorkFocus("NEW");
+    setRiskSectionStatusFilters(INITIAL_RISK_SECTION_STATUS_FILTERS);
+    if (filters.page !== 1) setFilters({ ...filters, page: 1 });
+    listQuery.retry();
+    overviewQuery.retry();
+    openInquiry(rawInquiryId);
   };
 
   const openInquiryList = (
@@ -1403,20 +1414,23 @@ export default function ConsultantDashboardPage() {
             )}
           </div>
 
-          <aside className="counselor-ai-review" aria-labelledby="counselor-ai-review-title">
-            <header className="counselor-ai-review__header">
-              <div>
-                <span>AI QUALITY CHECK</span>
-                <h2 id="counselor-ai-review-title">AI 요약 검수</h2>
+          {useDashboardMockData ? (
+            <aside className="counselor-ai-review" aria-labelledby="counselor-ai-review-title">
+              <header className="counselor-ai-review__header">
+                <div>
+                  <span>AI QUALITY CHECK</span>
+                  <h2 id="counselor-ai-review-title">AI 요약 검수</h2>
+                </div>
+                <b>—</b>
+              </header>
+              <div className="counselor-ai-review__empty">
+                <span aria-hidden="true">○</span>
+                <strong>디자인 Mock에서는 검수 저장을 사용하지 않습니다.</strong>
               </div>
-              <b>—</b>
-            </header>
-            <div className="counselor-ai-review__empty">
-              <span aria-hidden="true">○</span>
-              <strong>AI 검수 API 연동 대기</strong>
-              <p>승인·반려 API가 제공되기 전에는 검수 결과를 저장하지 않습니다.</p>
-            </div>
-          </aside>
+            </aside>
+          ) : (
+            <HumanReviewQueue onClaimed={handleReviewedInquiryClaimed} />
+          )}
 
           {loadState === "ready" && queuePage.totalItems > 0 && (
             <Pagination

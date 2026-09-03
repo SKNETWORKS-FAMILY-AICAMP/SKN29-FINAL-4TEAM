@@ -1,0 +1,60 @@
+.counselor-ai-review__feedback {
+  display: grid;
+  gap: 3px;
+  margin: 9px 12px 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.counselor-ai-review__feedback.is-error {
+  background: #fff0f1;
+  color: #9d343c;
+}
+
+.counselor-ai-review__feedback.is-success {
+  background: #edf8f2;
+  color: #27704e;
+}
+
+.counselor-ai-review__feedback small {
+  font-size: 8px;
+}
+
+.counselor-ai-review__safety {
+  margin: 0 0 8px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  background: #fff4e6;
+  color: #7d5524;
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.counselor-ai-review__items {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 9px;
+  padding-left: 20px;
+  color: #405668;
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.counselor-ai-review__actions.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.counselor-ai-review__empty button {
+  margin-top: 12px;
+  padding: 7px 12px;
+  border: 1px solid #cfdce4;
+  border-radius: 8px;
+  background: #fff;
+  color: #40586b;
+  font-size: 10px;
+  font-weight: 800;
+}

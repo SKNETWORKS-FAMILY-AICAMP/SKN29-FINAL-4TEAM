@@ -294,6 +294,8 @@ def test_list_and_detail_apply_visibility_and_minimal_projection():
     ]
     data = detailed.json()["data"]
     assert data["status"] == HumanReview.Status.PENDING
+    assert data["inquiry_status"] == Inquiry.Status.QUESTIONNAIRE_IN_PROGRESS
+    assert data["inquiry_state_version"] == visible_inquiry.state_version
     assert data["allowed_actions"] == ["DECIDE_HUMAN_REVIEW"]
     serialized = str(data)
     for private_value in (
@@ -305,6 +307,65 @@ def test_list_and_detail_apply_visibility_and_minimal_projection():
         "private_feature",
     ):
         assert private_value not in serialized
+
+
+def test_list_hides_stale_and_terminal_pending_reviews():
+    consultant = create_user(13, role=User.Role.CONSULTANT)
+    _current_inquiry, _guidance, current = create_review(13)
+    stale_inquiry, _guidance, _stale = create_review(14)
+    terminal_inquiry, _guidance, _terminal = create_review(15)
+    stale_inquiry.state_version += 1
+    stale_inquiry.save(update_fields=["state_version", "updated_at"])
+    terminal_inquiry.status_code = Inquiry.Status.RESOLVED
+    terminal_inquiry.state_version += 1
+    terminal_inquiry.save(
+        update_fields=["status_code", "state_version", "updated_at"]
+    )
+
+    listed = client_for(consultant).get(LIST_PATH)
+
+    assert listed.status_code == 200
+    assert [item["review_id"] for item in listed.json()["data"]["items"]] == [
+        str(current.public_id)
+    ]
+
+
+def test_list_applies_numbered_consultant_contract_lane():
+    consultant = User.objects.create_user(
+        username="SKN-006",
+        password=None,
+        full_name="윤승혁",
+        role_code=User.Role.CONSULTANT,
+        employee_no="HR-SKN-006",
+        is_active=True,
+        is_synthetic=True,
+    )
+    other_consultant = User.objects.create_user(
+        username="SKN-005",
+        password=None,
+        full_name="다른 상담사",
+        role_code=User.Role.CONSULTANT,
+        employee_no="HR-SKN-005",
+        is_active=True,
+        is_synthetic=True,
+    )
+    visible_inquiry, _guidance, visible = create_review(16)
+    hidden_inquiry, _guidance, hidden = create_review(17)
+    visible_inquiry.subscription.contract_no = "SYN-P1-TEAM-CONTRACT-006"
+    visible_inquiry.subscription.save(update_fields=["contract_no", "updated_at"])
+    hidden_inquiry.subscription.contract_no = "SYN-P1-TEAM-CONTRACT-005"
+    hidden_inquiry.subscription.save(update_fields=["contract_no", "updated_at"])
+
+    visible_list = client_for(consultant).get(LIST_PATH)
+    hidden_list = client_for(other_consultant).get(LIST_PATH)
+
+    assert visible_list.status_code == hidden_list.status_code == 200
+    assert [
+        item["review_id"] for item in visible_list.json()["data"]["items"]
+    ] == [str(visible.public_id)]
+    assert [
+        item["review_id"] for item in hidden_list.json()["data"]["items"]
+    ] == [str(hidden.public_id)]
 
 
 def test_approve_is_atomic_replayable_and_publishes_ai_guidance():
@@ -331,6 +392,8 @@ def test_approve_is_atomic_replayable_and_publishes_ai_guidance():
     assert created.status_code == replayed.status_code == 200
     assert created.json()["data"]["idempotent_replay"] is False
     assert replayed.json()["data"]["idempotent_replay"] is True
+    assert created.json()["data"]["inquiry_status"] == Inquiry.Status.AI_GUIDANCE
+    assert created.json()["data"]["inquiry_state_version"] == 5
     assert conflicted.status_code == 409
     assert conflicted.json()["error"]["code"] == "DUPLICATE-EVENT-01"
     review.refresh_from_db()

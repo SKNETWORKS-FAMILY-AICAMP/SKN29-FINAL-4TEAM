@@ -1018,6 +1018,8 @@ class HumanReviewService:
         return {
             "review_id": str(review.public_id),
             "inquiry_id": str(review.inquiry.public_id),
+            "inquiry_status": review.inquiry.status_code,
+            "inquiry_state_version": review.inquiry.state_version,
             "model_code": review.inquiry.subscription.product_model.model_code,
             "status": review.status_code,
             "decision": review.decision_code,

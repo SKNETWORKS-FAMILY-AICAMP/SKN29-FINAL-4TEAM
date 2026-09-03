@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from apps.inquiries.models import HumanReview
+from apps.inquiries.models import HumanReview, Inquiry
 
 
 CUSTOMER_GUIDANCE_MESSAGE_MAX_LENGTH = 3000
@@ -37,6 +37,8 @@ class HumanReviewGuidanceSerializer(serializers.Serializer):
 class HumanReviewDataSerializer(serializers.Serializer):
     review_id = serializers.UUIDField()
     inquiry_id = serializers.UUIDField()
+    inquiry_status = serializers.ChoiceField(choices=Inquiry.Status.values)
+    inquiry_state_version = serializers.IntegerField(min_value=1)
     model_code = serializers.CharField(max_length=100)
     status = serializers.ChoiceField(choices=HumanReview.Status.values)
     decision = serializers.ChoiceField(
