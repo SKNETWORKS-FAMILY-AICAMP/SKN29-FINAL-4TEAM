@@ -2,7 +2,7 @@
 
 팀 프로젝트 WaterBridge를 기반으로, **설명할 수 있는 기술적 선택과 정량 검증**을 축적하는 개인 개발 영역입니다. `main`의 기존 코드와 결과는 보존하고 `seunghyuk` 브랜치에서 진행합니다.
 
-**현재 진행:** S01(기초 검색·평가·원문 대조) 실습 마무리, S02(RRF 순위 결합) 다음 단계. 8개 문단·10개 질문의 수치는 **학습용 실험**이지 실서비스 성능이 아닙니다.
+**현재 진행:** **S01·S02 완료(31개 단위 테스트 통과)**, S03(실제 WaterBridge 검색·검증 흐름 분석) 예정. 8개 문단·10개 질문의 수치는 **학습용 실험**이지 실서비스 성능이 아닙니다.
 
 ## 주요 문서 — 세 개만 유지
 
@@ -16,7 +16,7 @@
 
 ## 실제 작업 파일
 
-- **src/** — 단어 겹침, BM25, 임베딩 검색 등 작은 검증 코드.
+- **src/** — 단어 겹침, BM25, E5 임베딩, RRF 순위 결합을 검증하는 코드.
 - **scripts/** — 검색 성능 평가기. 새 기능은 동일한 역할의 코드부터 확장합니다.
 - **tests/** — 직접 이해한 요구사항으로 작성한 소규모 테스트.
 - **data/** — 실습 말뭉치, Gold JSON, 공식 출처 및 검증 메타데이터.
@@ -30,6 +30,7 @@
     python portfolio_upgrade\src\compare_search_step02.py --demo
     python portfolio_upgrade\src\compare_search_step03.py --demo
     python portfolio_upgrade\scripts\evaluate_mini.py
+    python portfolio_upgrade\scripts\compare_rrf_step05.py
     python -m unittest discover -s portfolio_upgrade\tests -v
 
 임베딩 실습은 모델을 처음 불러올 때 인터넷 연결과 설치된 라이브러리가 필요할 수 있습니다. 문항별 결과를 확인하려면 `experiments/step03/embedding_comparison.json` 및 `experiments/step04/metrics_recomputed.json`을 참고하세요.
