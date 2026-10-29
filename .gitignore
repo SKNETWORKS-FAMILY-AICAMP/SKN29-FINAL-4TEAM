@@ -63,3 +63,8 @@ docs/individual/dongyoon/인계/
 mobile/keystore.properties
 mobile/signing/*.jks
 mobile/signing/*.keystore
+
+# WaterBridge 개인 고도화
+portfolio_upgrade/data/manuals/raw/
+portfolio_upgrade/data/processed/
+portfolio_upgrade/models/

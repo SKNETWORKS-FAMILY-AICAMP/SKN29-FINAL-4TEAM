@@ -1,0 +1,123 @@
+{
+  "dataset_id": "waterbridge-mini8-corpus-step02",
+  "version": "0.3.0-s01-audit",
+  "basis": "Uploaded WPU-JAC104,WPU-JCC104-냉온정수기메뉴얼.pdf, REV.00, pp.37-38 (PDF extracted text independently reviewed on 2026-10-29)",
+  "source_verification": "SOURCE_PDF_TEXT_PAGES_37_38_VERIFIED",
+  "chunking_policy": "8 condition-level chunks with section metadata stored separately; the step02 and step03 search scripts prepend section title to each chunk before scoring. Searchable title is not absent.",
+  "chunks": [
+    {
+      "chunk_id": "WB-S02-001",
+      "product_model_code": "WPUJAC104DWH",
+      "page": 37,
+      "section": "물이 출수되지 않음",
+      "condition_label": "필터 수명 종료",
+      "text": "필터 수명 종료\n필터 교체 주기를 확인 후 고객상담센터에 연락해 주세요.",
+      "source_status": "PDF_EXTRACTED_TEXT_MATCH_CONFIRMED",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "audit_description": "필터 수명 종료",
+      "audit_date": "2026-10-29",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P037"
+    },
+    {
+      "chunk_id": "WB-S02-002",
+      "product_model_code": "WPUJAC104DWH",
+      "page": 37,
+      "section": "물이 출수되지 않음",
+      "condition_label": "필터 교체 후에도 완전 미출수",
+      "text": "필터 교체 후에도 출수가 안될 시 원수 밸브를 잠그고 전원 플러그를 뽑은 후, 고객상담센터에 연락해 주세요.",
+      "source_status": "PDF_EXTRACTED_TEXT_MATCH_CONFIRMED",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "audit_description": "교체 후 완전 미출수",
+      "audit_date": "2026-10-29",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P037"
+    },
+    {
+      "chunk_id": "WB-S02-003",
+      "product_model_code": "WPUJAC104DWH",
+      "page": 37,
+      "section": "물이 출수되지 않음",
+      "condition_label": "수돗물 단수",
+      "text": "수돗물 단수\n원수 밸브를 잠그고, 전원 플러그를 뽑으세요. 수돗물이 나올 때 원수 밸브를 열고 전원 플러그를 꽂아 사용하세요.",
+      "source_status": "PDF_EXTRACTED_TEXT_MATCH_CONFIRMED",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "audit_description": "수돗물 단수",
+      "audit_date": "2026-10-29",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P037"
+    },
+    {
+      "chunk_id": "WB-S02-004",
+      "product_model_code": "WPUJAC104DWH",
+      "page": 37,
+      "section": "물이 출수되지 않음",
+      "condition_label": "연결 호스 꺾임",
+      "text": "연결 호스 꺾임\n연결 호스에 꺾인 부분이 있는지 확인해 주세요.",
+      "source_status": "PDF_EXTRACTED_TEXT_MATCH_CONFIRMED",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "audit_description": "연결 호스 꺾임",
+      "audit_date": "2026-10-29",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P037"
+    },
+    {
+      "chunk_id": "WB-S02-005",
+      "product_model_code": "WPUJAC104DWH",
+      "page": 38,
+      "section": "출수량이 적을 경우(제품의 고장이 아닌 경우)",
+      "condition_label": "조리수 또는 그외 수전 동시 사용",
+      "text": "조리수 또는 그외 수전 동시 사용\n다른 제품과 동시에 사용할 경우 출수량이 줄 수 있습니다. 조리수의 사용을 멈추고 출수해 보세요.",
+      "source_status": "PDF_EXTRACTED_TEXT_MATCH_CONFIRMED",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "audit_description": "조리수/다른 수전 동시 사용",
+      "audit_date": "2026-10-29",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P038"
+    },
+    {
+      "chunk_id": "WB-S02-006",
+      "product_model_code": "WPUJAC104DWH",
+      "page": 38,
+      "section": "출수량이 적을 경우(제품의 고장이 아닌 경우)",
+      "condition_label": "필터 수명 종료",
+      "text": "필터 수명 종료\n필터 교체 주기를 확인 후 필터를 교체해 주세요. 필터 교체 후에도 출수량이 적으면 고객상담센터에 연락해 주세요.",
+      "source_status": "PDF_EXTRACTED_TEXT_MATCH_CONFIRMED",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "audit_description": "필터 수명 종료",
+      "audit_date": "2026-10-29",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P038"
+    },
+    {
+      "chunk_id": "WB-S02-007",
+      "product_model_code": "WPUJAC104DWH",
+      "page": 38,
+      "section": "출수량이 적을 경우(제품의 고장이 아닌 경우)",
+      "condition_label": "순간 온수 가동 중",
+      "text": "순간 온수 가동 중 (WPU-JAC104 (D) 모델에 한함)\n온수 출수 시 순간적으로 차가운 물을 뜨겁게 가열하기 때문에 냉수, 정수의 출수 속도보다 느릴 수 있습니다. 설치 수압이 약한 지역에서는 출수 속도가 느릴 수 있습니다.",
+      "source_status": "PDF_EXTRACTED_TEXT_MATCH_CONFIRMED",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "audit_description": "순간 온수 가동 중 — JAC104(D) 한정",
+      "audit_date": "2026-10-29",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P038"
+    },
+    {
+      "chunk_id": "WB-S02-008",
+      "product_model_code": "WPUJAC104DWH",
+      "page": 38,
+      "section": "제품 누수 발생",
+      "condition_label": "조립(연결) 부위 불량 (예상 원인)",
+      "text": "조립(연결) 부위 불량\n원수 밸브를 잠그고, 전원 플러그를 뽑은 후 고객상담센터로 연락해 주세요.",
+      "source_status": "PDF_EXTRACTED_TEXT_MATCH_CONFIRMED",
+      "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+      "audit_description": "조립(연결) 부위 불량(예상 원인), 안전 조치",
+      "audit_date": "2026-10-29",
+      "source_page_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00-P038"
+    }
+  ],
+  "source_document": {
+    "document_id": "MAN-SKMAGIC-WPU-JAC104D-JCC104D-REV00",
+    "title": "WPU-JAC104,WPU-JCC104-냉온정수기메뉴얼.pdf",
+    "revision": "REV.00",
+    "page_count": 44,
+    "pdf_source": "original PDF in user's previously uploaded files, inspected pages 1/37/38",
+    "file_sha256_reported_by_team_inventory": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+    "sha256_status": "RECORDED_FROM_TEAM_REPOSITORY_NOT_REHASHED_FROM_CURRENT_PDF_BYTES",
+    "official_service_page": "https://www.skintellixservice.com/web/easy/easyMain.do?inputBasicKeyword=WPUJAC104DWH&tabIndex=3"
+  }
+}

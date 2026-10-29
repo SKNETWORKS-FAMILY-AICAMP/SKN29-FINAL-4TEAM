@@ -1,0 +1,554 @@
+{
+  "scope": "LEARNING_ONLY: 8 related manual passages and 10 correlated questions; NOT independent performance evidence",
+  "source_results": "saved ranked results",
+  "source_gold": "separate gold dataset",
+  "k": 3,
+  "summary": {
+    "overlap": {
+      "n_questions": 10,
+      "hit_at_1": 4,
+      "hit_at_3": 6,
+      "mrr_at_3": 0.4667,
+      "missing_count": 0,
+      "error_count": 0,
+      "no_results_count": 1
+    },
+    "bm25": {
+      "n_questions": 10,
+      "hit_at_1": 6,
+      "hit_at_3": 7,
+      "mrr_at_3": 0.6333,
+      "missing_count": 0,
+      "error_count": 0,
+      "no_results_count": 1
+    },
+    "embedding": {
+      "n_questions": 10,
+      "hit_at_1": 6,
+      "hit_at_3": 8,
+      "mrr_at_3": 0.6833,
+      "missing_count": 0,
+      "error_count": 0,
+      "no_results_count": 0
+    }
+  },
+  "cases": [
+    {
+      "case_id": "Q001",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-001",
+        "WB-S02-002"
+      ],
+      "acceptable_ids": [
+        "WB-S02-001",
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q002",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-001",
+        "WB-S02-002"
+      ],
+      "acceptable_ids": [
+        "WB-S02-005",
+        "WB-S02-006",
+        "WB-S02-007"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q003",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-001",
+        "WB-S02-002",
+        "WB-S02-003"
+      ],
+      "acceptable_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q004",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-002",
+        "WB-S02-001",
+        "WB-S02-006"
+      ],
+      "acceptable_ids": [
+        "WB-S02-002"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q005",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-002",
+        "WB-S02-008"
+      ],
+      "acceptable_ids": [
+        "WB-S02-003"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q006",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-004",
+        "WB-S02-008"
+      ],
+      "acceptable_ids": [
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q007",
+      "method": "overlap",
+      "status": "NO_RESULTS",
+      "retrieved_ids": [],
+      "acceptable_ids": [
+        "WB-S02-005"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q008",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-001",
+        "WB-S02-002",
+        "WB-S02-003"
+      ],
+      "acceptable_ids": [
+        "WB-S02-006"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q009",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-007"
+      ],
+      "acceptable_ids": [
+        "WB-S02-007"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "first_gold_rank": 3,
+      "rr_at_3": 0.3333333333333333
+    },
+    {
+      "case_id": "Q010",
+      "method": "overlap",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-008"
+      ],
+      "acceptable_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "first_gold_rank": 3,
+      "rr_at_3": 0.3333333333333333
+    },
+    {
+      "case_id": "Q001",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-004",
+        "WB-S02-001"
+      ],
+      "acceptable_ids": [
+        "WB-S02-001",
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q002",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-004",
+        "WB-S02-001"
+      ],
+      "acceptable_ids": [
+        "WB-S02-005",
+        "WB-S02-006",
+        "WB-S02-007"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q003",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-004",
+        "WB-S02-001",
+        "WB-S02-002"
+      ],
+      "acceptable_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q004",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-002",
+        "WB-S02-006",
+        "WB-S02-001"
+      ],
+      "acceptable_ids": [
+        "WB-S02-002"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q005",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-008",
+        "WB-S02-002"
+      ],
+      "acceptable_ids": [
+        "WB-S02-003"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q006",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-004",
+        "WB-S02-008"
+      ],
+      "acceptable_ids": [
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q007",
+      "method": "bm25",
+      "status": "NO_RESULTS",
+      "retrieved_ids": [],
+      "acceptable_ids": [
+        "WB-S02-005"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q008",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-006",
+        "WB-S02-004",
+        "WB-S02-001"
+      ],
+      "acceptable_ids": [
+        "WB-S02-006"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q009",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-007",
+        "WB-S02-008",
+        "WB-S02-002"
+      ],
+      "acceptable_ids": [
+        "WB-S02-007"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q010",
+      "method": "bm25",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-002",
+        "WB-S02-008"
+      ],
+      "acceptable_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "first_gold_rank": 3,
+      "rr_at_3": 0.3333333333333333
+    },
+    {
+      "case_id": "Q001",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-004",
+        "WB-S02-007"
+      ],
+      "acceptable_ids": [
+        "WB-S02-001",
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q002",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-007",
+        "WB-S02-004"
+      ],
+      "acceptable_ids": [
+        "WB-S02-005",
+        "WB-S02-006",
+        "WB-S02-007"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "first_gold_rank": 2,
+      "rr_at_3": 0.5
+    },
+    {
+      "case_id": "Q003",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-002",
+        "WB-S02-004"
+      ],
+      "acceptable_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q004",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-002",
+        "WB-S02-001",
+        "WB-S02-003"
+      ],
+      "acceptable_ids": [
+        "WB-S02-002"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q005",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-003",
+        "WB-S02-002",
+        "WB-S02-008"
+      ],
+      "acceptable_ids": [
+        "WB-S02-003"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q006",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-004",
+        "WB-S02-003",
+        "WB-S02-008"
+      ],
+      "acceptable_ids": [
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q007",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-005",
+        "WB-S02-004",
+        "WB-S02-003"
+      ],
+      "acceptable_ids": [
+        "WB-S02-005"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q008",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-002",
+        "WB-S02-001",
+        "WB-S02-003"
+      ],
+      "acceptable_ids": [
+        "WB-S02-006"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "first_gold_rank": null,
+      "rr_at_3": 0.0
+    },
+    {
+      "case_id": "Q009",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-007",
+        "WB-S02-005",
+        "WB-S02-002"
+      ],
+      "acceptable_ids": [
+        "WB-S02-007"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "first_gold_rank": 1,
+      "rr_at_3": 1.0
+    },
+    {
+      "case_id": "Q010",
+      "method": "embedding",
+      "status": "OK",
+      "retrieved_ids": [
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-008"
+      ],
+      "acceptable_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "first_gold_rank": 3,
+      "rr_at_3": 0.3333333333333333
+    }
+  ],
+  "source_results_path": "C:\\SKN projects\\final\\portfolio_upgrade\\experiments\\step03\\embedding_comparison.json",
+  "source_gold_path": "C:\\SKN projects\\final\\portfolio_upgrade\\data\\gold\\mini10_gold_step02.json"
+}

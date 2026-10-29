@@ -1,0 +1,862 @@
+{
+  "scope": "EDUCATIONAL_ONLY; 8 passages from 3 sections; 10 correlated questions; not a real-service performance benchmark",
+  "corpus_id": "waterbridge-mini8-corpus-step02",
+  "gold_id": "waterbridge-mini10-gold-step02",
+  "top_k": 3,
+  "summary": {
+    "overlap": {
+      "n_questions": 10,
+      "hit_at_1": {
+        "correct": 4,
+        "total": 10
+      },
+      "hit_at_3": {
+        "correct": 6,
+        "total": 10
+      },
+      "mrr_at_3": 0.4667
+    },
+    "bm25": {
+      "n_questions": 10,
+      "hit_at_1": {
+        "correct": 6,
+        "total": 10
+      },
+      "hit_at_3": {
+        "correct": 7,
+        "total": 10
+      },
+      "mrr_at_3": 0.6333
+    }
+  },
+  "cases": [
+    {
+      "case_id": "Q001",
+      "question": "정수기에서 물이 전혀 나오지 않을 때 무엇을 확인해야 하나요?",
+      "scenario_group": "NO_WATER_GENERAL",
+      "label_type": "broad_multi",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-001",
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 2,
+          "matched_keywords": [
+            "때",
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q001",
+      "question": "정수기에서 물이 전혀 나오지 않을 때 무엇을 확인해야 하나요?",
+      "scenario_group": "NO_WATER_GENERAL",
+      "label_type": "broad_multi",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-001",
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 2.549357,
+          "matched_keywords": [
+            "때",
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-004",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.852662,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.831964,
+          "matched_keywords": [
+            "물이"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q002",
+      "question": "정수기에서 물이 평소보다 조금씩 나올 때 어떻게 해야 하나요?",
+      "scenario_group": "LOW_FLOW_GENERAL",
+      "label_type": "broad_multi",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-005",
+        "WB-S02-006",
+        "WB-S02-007"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr_at_3": 0.0,
+      "first_gold_rank": null,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 3,
+          "matched_keywords": [
+            "나올",
+            "때",
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q002",
+      "question": "정수기에서 물이 평소보다 조금씩 나올 때 어떻게 해야 하나요?",
+      "scenario_group": "LOW_FLOW_GENERAL",
+      "label_type": "broad_multi",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-005",
+        "WB-S02-006",
+        "WB-S02-007"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr_at_3": 0.0,
+      "first_gold_rank": null,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 4.387588,
+          "matched_keywords": [
+            "나올",
+            "때",
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-004",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.852662,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.831964,
+          "matched_keywords": [
+            "물이"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q003",
+      "question": "정수기 아래에서 물이 새는 것 같으면 어떤 조치를 해야 하나요?",
+      "scenario_group": "LEAK",
+      "label_type": "single",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr_at_3": 0.0,
+      "first_gold_rank": null,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q003",
+      "question": "정수기 아래에서 물이 새는 것 같으면 어떤 조치를 해야 하나요?",
+      "scenario_group": "LEAK",
+      "label_type": "single",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr_at_3": 0.0,
+      "first_gold_rank": null,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-004",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.852662,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.831964,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.741913,
+          "matched_keywords": [
+            "물이"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q004",
+      "question": "필터 교체 후에도 정수기에서 물이 한 방울도 안 나와요. 어떻게 해야 하죠?",
+      "scenario_group": "NO_WATER_POST_FILTER",
+      "label_type": "single",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-002"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 4,
+          "matched_keywords": [
+            "교체",
+            "물이",
+            "필터",
+            "후에도"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 3,
+          "matched_keywords": [
+            "교체",
+            "물이",
+            "필터"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-006",
+          "page": 38,
+          "section": "출수량이 적을 경우(제품의 고장이 아닌 경우)",
+          "score": 3,
+          "matched_keywords": [
+            "교체",
+            "필터",
+            "후에도"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q004",
+      "question": "필터 교체 후에도 정수기에서 물이 한 방울도 안 나와요. 어떻게 해야 하죠?",
+      "scenario_group": "NO_WATER_POST_FILTER",
+      "label_type": "single",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-002"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 4.134785,
+          "matched_keywords": [
+            "교체",
+            "물이",
+            "필터",
+            "후에도"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-006",
+          "page": 38,
+          "section": "출수량이 적을 경우(제품의 고장이 아닌 경우)",
+          "score": 3.980987,
+          "matched_keywords": [
+            "교체",
+            "필터",
+            "후에도"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 3.497364,
+          "matched_keywords": [
+            "교체",
+            "물이",
+            "필터"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q005",
+      "question": "집에 수돗물이 끊겼다가 다시 나와요. 정수기 원수 밸브랑 전원은 어떻게 하죠?",
+      "scenario_group": "WATER_OUTAGE",
+      "label_type": "single",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-003"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 2,
+          "matched_keywords": [
+            "수돗물이",
+            "원수"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "원수"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "page": 38,
+          "section": "제품 누수 발생",
+          "score": 1,
+          "matched_keywords": [
+            "원수"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q005",
+      "question": "집에 수돗물이 끊겼다가 다시 나와요. 정수기 원수 밸브랑 전원은 어떻게 하죠?",
+      "scenario_group": "WATER_OUTAGE",
+      "label_type": "single",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-003"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 3.212275,
+          "matched_keywords": [
+            "수돗물이",
+            "원수"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "page": 38,
+          "section": "제품 누수 발생",
+          "score": 1.056657,
+          "matched_keywords": [
+            "원수"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1.010909,
+          "matched_keywords": [
+            "원수"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q006",
+      "question": "정수기 연결 호스가 구부러져 있어요. 어떤 부분을 확인해야 해요?",
+      "scenario_group": "HOSE_KINK",
+      "label_type": "single",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-004",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "연결"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "page": 38,
+          "section": "제품 누수 발생",
+          "score": 1,
+          "matched_keywords": [
+            "연결"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q006",
+      "question": "정수기 연결 호스가 구부러져 있어요. 어떤 부분을 확인해야 해요?",
+      "scenario_group": "HOSE_KINK",
+      "label_type": "single",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-004"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-004",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 2.112147,
+          "matched_keywords": [
+            "연결"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "page": 38,
+          "section": "제품 누수 발생",
+          "score": 1.4331,
+          "matched_keywords": [
+            "연결"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q007",
+      "question": "조리수를 같이 쓰고 있는데 정수기 물줄기가 약해졌어요. 왜 그런가요?",
+      "scenario_group": "LOW_FLOW_OTHER_TAP",
+      "label_type": "single",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-005"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr_at_3": 0.0,
+      "first_gold_rank": null,
+      "retrieved": []
+    },
+    {
+      "case_id": "Q007",
+      "question": "조리수를 같이 쓰고 있는데 정수기 물줄기가 약해졌어요. 왜 그런가요?",
+      "scenario_group": "LOW_FLOW_OTHER_TAP",
+      "label_type": "single",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-005"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr_at_3": 0.0,
+      "first_gold_rank": null,
+      "retrieved": []
+    },
+    {
+      "case_id": "Q008",
+      "question": "필터를 이미 갈았는데도 물이 조금씩만 나와요. 어떻게 하죠?",
+      "scenario_group": "LOW_FLOW_POST_FILTER",
+      "label_type": "single",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-006"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr_at_3": 0.0,
+      "first_gold_rank": null,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "물이"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q008",
+      "question": "필터를 이미 갈았는데도 물이 조금씩만 나와요. 어떻게 하죠?",
+      "scenario_group": "LOW_FLOW_POST_FILTER",
+      "label_type": "single",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-006"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-006",
+          "page": 38,
+          "section": "출수량이 적을 경우(제품의 고장이 아닌 경우)",
+          "score": 1.665447,
+          "matched_keywords": [
+            "필터를"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-004",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.852662,
+          "matched_keywords": [
+            "물이"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 0.831964,
+          "matched_keywords": [
+            "물이"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q009",
+      "question": "온수 뽑을 때 냉수보다 출수가 느린데 제품 고장인가요?",
+      "scenario_group": "LOW_FLOW_HOT",
+      "label_type": "single",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-007"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr_at_3": 0.333333,
+      "first_gold_rank": 3,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "출수가"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1,
+          "matched_keywords": [
+            "때"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-007",
+          "page": 38,
+          "section": "출수량이 적을 경우(제품의 고장이 아닌 경우)",
+          "score": 1,
+          "matched_keywords": [
+            "온수"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q009",
+      "question": "온수 뽑을 때 냉수보다 출수가 느린데 제품 고장인가요?",
+      "scenario_group": "LOW_FLOW_HOT",
+      "label_type": "single",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-007"
+      ],
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr_at_3": 1.0,
+      "first_gold_rank": 1,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-007",
+          "page": 38,
+          "section": "출수량이 적을 경우(제품의 고장이 아닌 경우)",
+          "score": 2.014103,
+          "matched_keywords": [
+            "온수"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "page": 38,
+          "section": "제품 누수 발생",
+          "score": 2.004608,
+          "matched_keywords": [
+            "제품"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 1.917818,
+          "matched_keywords": [
+            "출수가"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q010",
+      "question": "물이 새는 것 같아요. 원수 밸브와 전원 플러그는 어떻게 해야 하나요?",
+      "scenario_group": "LEAK",
+      "label_type": "paraphrase",
+      "method": "overlap",
+      "gold_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr_at_3": 0.333333,
+      "first_gold_rank": 3,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 3,
+          "matched_keywords": [
+            "물이",
+            "원수",
+            "전원"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 3,
+          "matched_keywords": [
+            "물이",
+            "원수",
+            "전원"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "page": 38,
+          "section": "제품 누수 발생",
+          "score": 2,
+          "matched_keywords": [
+            "원수",
+            "전원"
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "Q010",
+      "question": "물이 새는 것 같아요. 원수 밸브와 전원 플러그는 어떻게 해야 하나요?",
+      "scenario_group": "LEAK",
+      "label_type": "paraphrase",
+      "method": "bm25",
+      "gold_ids": [
+        "WB-S02-008"
+      ],
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr_at_3": 0.333333,
+      "first_gold_rank": 3,
+      "retrieved": [
+        {
+          "chunk_id": "WB-S02-003",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 3.459211,
+          "matched_keywords": [
+            "물이",
+            "원수",
+            "전원"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "page": 37,
+          "section": "물이 출수되지 않음",
+          "score": 2.763731,
+          "matched_keywords": [
+            "물이",
+            "원수",
+            "전원"
+          ]
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "page": 38,
+          "section": "제품 누수 발생",
+          "score": 2.113314,
+          "matched_keywords": [
+            "원수",
+            "전원"
+          ]
+        }
+      ]
+    }
+  ]
+}
