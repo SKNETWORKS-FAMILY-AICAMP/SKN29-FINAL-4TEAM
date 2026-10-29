@@ -1,7 +1,7 @@
-# 1주차 통합 기록 — 검색 원리·실험·판단·회고 (S01~S02)
+# 1주차 통합 기록 — 검색 원리·실험·판단·회고 (S01~S03)
 
 > 기준: 2026-10-29 · 브랜치: `seunghyuk`
-> **상태:** **S01·S02 완료**, 사용자 PC의 단위 테스트 31개 통과 확인. S02 결과는 저장된 BM25/E5 Top-3의 RRF 결합 실험이며, S03 실제 WaterBridge 검색 경로 분석을 앞두고 있음.
+> **상태:** **S01~S03 완료**(S03은 코드 경로 추적·결정적 부분 실험까지만 검증). S02 당시 사용자 PC에서 단위 테스트 31개 통과. 다음은 S04 독립 제품군·평가 데이터 구축.
 > **범위:** 공식 설명서 1종의 세 가지 증상 → 검색 문단 8개 → 서로 연관된 연습 질문 10개. 독립적인 실서비스 평가가 아님.
 
 ## 1. 왜 시작했는가
@@ -122,3 +122,72 @@ WaterBridge 팀 프로젝트의 기존 테스트와 구현을 충분히 이해�
 - **학습 확인:** RRF가 원점수를 합산하지 않는 이유, Q008의 BM25→RRF 퇴행 이유, Q003 미검색 원인을 내 말로 설명한다.
 
 <!-- S02_RRF_END -->
+<!-- S03_CODE_TRACE_20261029 -->
+## S03 — WaterBridge 실제 RAG 경로 추적 (코드·결정적 부분 실험)
+
+> 분석 기준: `seunghyuk` 원격 코드(2026-10-29), 테스트는 사용자 Windows `.venv`에서 직접 실행한 명령의 출력.
+> **완료 범위:** 정적 코드 경로와 정책·증상 분류·증상 주제 필터의 부분 실행 검증. **PostgreSQL 검색·LLM 호출·서비스 E2E는 실행하지 않음.**
+
+### 1. 추적 대상 Q008
+
+- 고객 질문: `필터를 이미 갈았는데도 물이 조금씩만 나와요. 어떻게 하죠?`
+- 정확한 판매 코드: `WPUJAC104DWH` (MVP 기본 모델), 세대: `D`.
+- 의미상 기대 증상: **출수량 저하**. 단, 원인(필터 문제인지 다른 조건인지는) 확정하지 않는다.
+
+### 2. 실제 소스 코드 호출 경로와 역할
+
+1. **시작·제품 확인:** `ai/app/orchestration/pipeline_router.py`의 `PipelineRouter.run_pipeline()`이 런타임·transport를 선택하고 `resolve_product_context()`로 제품 승인을 확인한다. 기본 설정은 `single_rag` / `direct`. `GuardedEvidenceSearchService`는 승인되지 않은 제품의 검색 호출을 막고 검색 후에도 정확 판매코드·검증 상태를 점검한다.
+2. **LangGraph 분기:** `ai/app/orchestration/pipelines/single_rag_pipeline.py`는 `structuring → safety → missing_fields → retrieval → generation → validation`을 기본 정상 경로로 사용한다. 위험도 `danger`는 검색하지 않고 안전 안내 생성으로 분기하며, 필수 정보 누락 시 `questionnaire_pending → validation` 경로로 갈 수 있다.
+3. **증상 구조화:** `SymptomStructurer`가 규칙 기반 결과를 만들고, LLM 클라이언트가 활성화되었다면 **검증된** LLM 결과로 보완할 수 있다. 이 실습의 명령은 LLM 없이 `SymptomNormalizer` 규칙만 직접 실행했다.
+4. **검색 질의:** `execute_retrieval_stage()`가 `RetrievalContextBuilder`로 PII를 제거한 고객 원문과 구조화 필드를 합쳐 `RetrievalQuery(query_text, model_code, product_generation, top_k=5, require_official_verified=True)`를 만든다.
+5. **검색 전 정책:** `VectorSearchService.search()`는 `ModelCapabilityGate` → `AnswerabilityCapabilityGate` → `FaqUsageValidator` 순으로 검사한다. 통과하면 `RetrievalQueryExpander`로 임베딩용 표현만 제한적으로 확장하고 `BgeM3EmbeddingClient`로 임베딩한다.
+6. **DB 검색:** `PgVectorStore.search()`가 **1024차원 BGE-M3 + pgvector 코사인 exact search**를 수행한다. 정확 판매코드·세대·공식 검증·고객 안내 허용·검색 후보 역할을 SQL에서 필터링하고, 유사도 임계값 기본 0.4 및 Top-5를 적용한다.
+7. **근거 재검증:** `VectorSearchService._is_valid_result()`가 모델·문서 정책·인덱스 메타데이터를 검사하고, `execute_retrieval_stage()`가 `EvidenceTopicFilter` → `EvidenceApplicabilityGate` → `ScenarioEvidenceSelector`를 적용해 최종 `evidence_references`를 만든다. 근거 유무에 따라 `RetrievalOutcome.AVAILABLE/NO_MATCH`로 기록한다.
+8. **생성·검증:** `execute_generation_stage()`는 위험 또는 근거가 없는 경우 결정적 안내를 사용하며, 그 외에는 `CustomerGuidanceGenerator` 경로를 사용한다. `execute_validation_stage()`에서 금지 표현 및 안내 상태·스키마 정합성을 검증한다. 이후 라우터에서 Reliability Runtime 검증을 수행한다.
+
+**중요:** `ai/app/retrieval/search/hybrid_search.py`와 `keyword_search.py`는 현재 빈 자리표시 파일이며, **S02에서 구현한 E5+RRF는 실제 서비스의 활성 검색 경로에 연결하지 않았다.**
+
+### 3. 사용자 PC에서 확인한 분류·근거 필터 실험
+
+| 입력/조건 | 실제 출력 | 의미 |
+|---|---|---|
+| Q008 원문 → `SymptomNormalizer` | `필터/관리 문의` | 저출수 표현 `조금씩만 나와요`를 기존 증상 키워드가 인식하지 못하고 `필터`를 먼저 선택 |
+| Q008 + selected `LOW_FLOW` | `필터/관리 문의` | 정규화 함수에서 원문 키워드가 선택 증상보다 우선 |
+| `필터를 교체했는데도 출수량이 적어요.` | `출수량 저하` | 명시된 `출수량`이 정확히 일치 |
+| Q008, `필터/관리 문의`로 공식 근거 7개를 직접 TopicFilter에 투입 | **7개 통과** | 해당 증상 유형에 전용 TopicFilter 제한 없음 |
+| Q008, `출수량 저하`로 공식 근거 7개를 직접 TopicFilter에 투입 | **1개 통과** (`symptom_low_flow`) | `조금` 표현으로 저출수 근거만 남김 |
+| `MissingFieldChecker` (필터/관리 문의) | high 필수 필드 **0개** | 추가 질문 없이 검색에 진입할 가능성 |
+| `MissingFieldChecker` (출수량 저하) | high 필수 필드 **`target_water_type`** | 필수 출수 종류 질문으로 검색 전 대기 가능성 |
+
+**실험 경계:** 7개 청크는 `ChunkLoader().load_verified_chunks()`로 읽은 **검증 샘플 전체를 필터에 직접 제공**한 결과다. 실제 pgvector 검색의 결과 개수가 아니다. 규칙 기반 오분류가 실제 LLM 기반 증상 구조화·최종 고객 응답에서도 발생한다고 확정할 수 없다.
+
+### 4. 검색 전 정책 검사 — 원문 그대로 입력한 여섯 사례
+
+`VectorSearchService(object(), object()).execution_path(RetrievalQuery(...))`로 **임베딩·DB 실행 없이 정책 판정**을 확인했다.
+
+| 검사 | 실제 반환 | 해석 |
+|---|---|---|
+| Q008, `WPUJAC104DWH` | `PGVECTOR_QUERY` | 검색이 허용됨(**정답 검색 성공을 의미하지 않음**) |
+| `WPU-IAC506` | `POLICY_BLOCK_UNSUPPORTED_MODEL` | 지원 범위 밖 모델 |
+| `UNKNOWNMODEL` | `POLICY_BLOCK_UNREGISTERED_EXACT_SALES_CODE` | 등록되지 않은 정확 판매코드 |
+| 필터 가격 문의 | `POLICY_BLOCK_OUT_OF_MANUAL_SCOPE` | 정적 설명서로 답할 수 없는 가격 |
+| 얼음 기능 문의 | `POLICY_BLOCK_UNSUPPORTED_CAPABILITY` | 해당 제품의 미지원 기능 |
+| 미검증 FAQ만 요구 | `POLICY_BLOCK_UNVERIFIED_SOURCE` | 비공식/미검증 단독 근거 차단 |
+
+### 5. 세 가지 실패 경로를 구별해야 한다
+
+- **정책 차단:** 검색 전에 `execution_path()`가 `POLICY_BLOCK_...`을 반환할 수 있다. 실제 `VectorSearchService.search()`의 정책 차단 반환값은 빈 리스트이므로, 이후 단계에서 `NO_MATCH`가 기록될 수 있다. 정확한 원인 판정에는 정책 진단 경로가 필요하다.
+- **검색 실행 후 유효 근거 없음:** 질의 실행 또는 후처리 후 청크가 남지 않아 `RetrievalOutcome.NO_MATCH`가 될 수 있다. 정책 차단과 같은 의미가 아니다.
+- **검색 예외:** DB/Provider 오류가 발생하고 재시도 정책이 소진되면 `RetrievalExecutionError`가 발생한다. 빈 검색과 시스템 오류를 분리해야 한다.
+- **검색 미실행:** 위험 상황 또는 필수 문진 대기 경로를 지나면 검색을 아예 실행하지 않을 수 있다(`NOT_RUN` 등). 이 역시 근거 부족 검색 실패로 취급하지 않는다.
+
+### 6. S03의 결론과 이어질 작업
+
+- **확인된 사실:** 실제 서비스는 단순 유사도 정렬만 하는 것이 아니라 제품/정책 사전 검사, 증상 구조화, 공식 근거 선별, 추가 문진, 안전 안내 생성·검증을 조합한다.
+- **검증할 가설:** `Q008`에서 규칙 기반 증상 분류 오류가 해당 질문의 필수 문진·근거 제한을 달라지게 한다. **LLM 구조화가 활성화된 서비스에서도 같은 오류인지, 실제 응답까지 영향이 있는지는 미검증**이다.
+- **기술 선택:** S02의 RRF를 바로 서비스에 이식하지 않는다. 구조화·검색 후보·후처리의 오류를 분리해 S04의 독립 평가 데이터를 설계하고 S05의 RAG 응대 기준선에서 확인한다.
+- **S03 완료 범위:** 코드 경로 연결 + 로컬 분류/필터/정책 판정 3종 실행 확인. DB와 LLM이 연결된 E2E 검증은 후속 단계로 남긴다.
+
+### 7. 면접 준비: 왜 모델 코드를 먼저 확인하는가?
+
+제품마다 버튼·동작·안전 조치가 달라서 **다른 모델의 공식 설명서라도 현재 고객에게 잘못 적용할 수 있기 때문**이다. 정확 판매코드와 세대를 검색 전 필터와 검증 과정에 사용해 제품 간 근거 혼용을 방지한다. 이 설계가 실제로 다른 모델의 근거를 잘 차단하는지는 별도 실행 테스트에서 검증해야 한다.
