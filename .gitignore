@@ -68,3 +68,6 @@ mobile/signing/*.keystore
 portfolio_upgrade/data/manuals/raw/
 portfolio_upgrade/data/processed/
 portfolio_upgrade/models/
+
+# WaterBridge local data and generated reports
+portfolio_upgrade/experiments/step04/metrics_recomputed.md
