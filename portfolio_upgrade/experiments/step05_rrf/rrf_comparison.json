@@ -1,0 +1,674 @@
+{
+  "scope": "LEARNING_ONLY; same 8 passages and 10 correlated manual questions; not an independent validation",
+  "method": "rrf_bm25_plus_e5",
+  "rank_constant": 60,
+  "candidate_k": 3,
+  "top_k": 3,
+  "tie_break": "chunk_id_ascending",
+  "source": "Saved BM25 and E5 ranking IDs from step04; no embedding/model rerun",
+  "summary": {
+    "bm25": {
+      "questions": 10,
+      "hit_at_1": 6,
+      "hit_at_3": 7,
+      "mrr_at_3": 0.6333
+    },
+    "embedding": {
+      "questions": 10,
+      "hit_at_1": 6,
+      "hit_at_3": 8,
+      "mrr_at_3": 0.6833
+    },
+    "rrf": {
+      "questions": 10,
+      "hit_at_1": 6,
+      "hit_at_3": 9,
+      "mrr_at_3": 0.7
+    }
+  },
+  "cases": [
+    {
+      "case_id": "Q001",
+      "question": "정수기에서 물이 전혀 나오지 않을 때 무엇을 확인해야 하나요?",
+      "gold_ids": [
+        "WB-S02-001",
+        "WB-S02-002",
+        "WB-S02-003",
+        "WB-S02-004"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-003",
+          "WB-S02-004",
+          "WB-S02-001"
+        ],
+        "embedding": [
+          "WB-S02-003",
+          "WB-S02-004",
+          "WB-S02-007"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-003",
+          "rrf_score": 0.03278688524590164,
+          "source_ranks": {
+            "bm25": 1,
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-004",
+          "rrf_score": 0.03225806451612903,
+          "source_ranks": {
+            "bm25": 2,
+            "embedding": 2
+          }
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "rrf_score": 0.015873015873015872,
+          "source_ranks": {
+            "bm25": 3
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "embedding": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "rrf": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        }
+      }
+    },
+    {
+      "case_id": "Q002",
+      "question": "정수기에서 물이 평소보다 조금씩 나올 때 어떻게 해야 하나요?",
+      "gold_ids": [
+        "WB-S02-005",
+        "WB-S02-006",
+        "WB-S02-007"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-003",
+          "WB-S02-004",
+          "WB-S02-001"
+        ],
+        "embedding": [
+          "WB-S02-003",
+          "WB-S02-007",
+          "WB-S02-004"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-003",
+          "rrf_score": 0.03278688524590164,
+          "source_ranks": {
+            "bm25": 1,
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-004",
+          "rrf_score": 0.03200204813108039,
+          "source_ranks": {
+            "bm25": 2,
+            "embedding": 3
+          }
+        },
+        {
+          "chunk_id": "WB-S02-007",
+          "rrf_score": 0.016129032258064516,
+          "source_ranks": {
+            "embedding": 2
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 0,
+          "hit_at_3": 0,
+          "first_gold_rank": null,
+          "rr_at_3": 0.0
+        },
+        "embedding": {
+          "hit_at_1": 0,
+          "hit_at_3": 1,
+          "first_gold_rank": 2,
+          "rr_at_3": 0.5
+        },
+        "rrf": {
+          "hit_at_1": 0,
+          "hit_at_3": 1,
+          "first_gold_rank": 3,
+          "rr_at_3": 0.3333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "Q003",
+      "question": "정수기 아래에서 물이 새는 것 같으면 어떤 조치를 해야 하나요?",
+      "gold_ids": [
+        "WB-S02-008"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-004",
+          "WB-S02-001",
+          "WB-S02-002"
+        ],
+        "embedding": [
+          "WB-S02-003",
+          "WB-S02-002",
+          "WB-S02-004"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-004",
+          "rrf_score": 0.032266458495966696,
+          "source_ranks": {
+            "bm25": 1,
+            "embedding": 3
+          }
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "rrf_score": 0.03200204813108039,
+          "source_ranks": {
+            "bm25": 3,
+            "embedding": 2
+          }
+        },
+        {
+          "chunk_id": "WB-S02-003",
+          "rrf_score": 0.01639344262295082,
+          "source_ranks": {
+            "embedding": 1
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 0,
+          "hit_at_3": 0,
+          "first_gold_rank": null,
+          "rr_at_3": 0.0
+        },
+        "embedding": {
+          "hit_at_1": 0,
+          "hit_at_3": 0,
+          "first_gold_rank": null,
+          "rr_at_3": 0.0
+        },
+        "rrf": {
+          "hit_at_1": 0,
+          "hit_at_3": 0,
+          "first_gold_rank": null,
+          "rr_at_3": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "Q004",
+      "question": "필터 교체 후에도 정수기에서 물이 한 방울도 안 나와요. 어떻게 해야 하죠?",
+      "gold_ids": [
+        "WB-S02-002"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-002",
+          "WB-S02-006",
+          "WB-S02-001"
+        ],
+        "embedding": [
+          "WB-S02-002",
+          "WB-S02-001",
+          "WB-S02-003"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-002",
+          "rrf_score": 0.03278688524590164,
+          "source_ranks": {
+            "bm25": 1,
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-001",
+          "rrf_score": 0.03200204813108039,
+          "source_ranks": {
+            "bm25": 3,
+            "embedding": 2
+          }
+        },
+        {
+          "chunk_id": "WB-S02-006",
+          "rrf_score": 0.016129032258064516,
+          "source_ranks": {
+            "bm25": 2
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "embedding": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "rrf": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        }
+      }
+    },
+    {
+      "case_id": "Q005",
+      "question": "집에 수돗물이 끊겼다가 다시 나와요. 정수기 원수 밸브랑 전원은 어떻게 하죠?",
+      "gold_ids": [
+        "WB-S02-003"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-003",
+          "WB-S02-008",
+          "WB-S02-002"
+        ],
+        "embedding": [
+          "WB-S02-003",
+          "WB-S02-002",
+          "WB-S02-008"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-003",
+          "rrf_score": 0.03278688524590164,
+          "source_ranks": {
+            "bm25": 1,
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "rrf_score": 0.03200204813108039,
+          "source_ranks": {
+            "bm25": 3,
+            "embedding": 2
+          }
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "rrf_score": 0.03200204813108039,
+          "source_ranks": {
+            "bm25": 2,
+            "embedding": 3
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "embedding": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "rrf": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        }
+      }
+    },
+    {
+      "case_id": "Q006",
+      "question": "정수기 연결 호스가 구부러져 있어요. 어떤 부분을 확인해야 해요?",
+      "gold_ids": [
+        "WB-S02-004"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-004",
+          "WB-S02-008"
+        ],
+        "embedding": [
+          "WB-S02-004",
+          "WB-S02-003",
+          "WB-S02-008"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-004",
+          "rrf_score": 0.03278688524590164,
+          "source_ranks": {
+            "bm25": 1,
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "rrf_score": 0.03200204813108039,
+          "source_ranks": {
+            "bm25": 2,
+            "embedding": 3
+          }
+        },
+        {
+          "chunk_id": "WB-S02-003",
+          "rrf_score": 0.016129032258064516,
+          "source_ranks": {
+            "embedding": 2
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "embedding": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "rrf": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        }
+      }
+    },
+    {
+      "case_id": "Q007",
+      "question": "조리수를 같이 쓰고 있는데 정수기 물줄기가 약해졌어요. 왜 그런가요?",
+      "gold_ids": [
+        "WB-S02-005"
+      ],
+      "source_ranking": {
+        "bm25": [],
+        "embedding": [
+          "WB-S02-005",
+          "WB-S02-004",
+          "WB-S02-003"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-005",
+          "rrf_score": 0.01639344262295082,
+          "source_ranks": {
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-004",
+          "rrf_score": 0.016129032258064516,
+          "source_ranks": {
+            "embedding": 2
+          }
+        },
+        {
+          "chunk_id": "WB-S02-003",
+          "rrf_score": 0.015873015873015872,
+          "source_ranks": {
+            "embedding": 3
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 0,
+          "hit_at_3": 0,
+          "first_gold_rank": null,
+          "rr_at_3": 0.0
+        },
+        "embedding": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "rrf": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        }
+      }
+    },
+    {
+      "case_id": "Q008",
+      "question": "필터를 이미 갈았는데도 물이 조금씩만 나와요. 어떻게 하죠?",
+      "gold_ids": [
+        "WB-S02-006"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-006",
+          "WB-S02-004",
+          "WB-S02-001"
+        ],
+        "embedding": [
+          "WB-S02-002",
+          "WB-S02-001",
+          "WB-S02-003"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-001",
+          "rrf_score": 0.03200204813108039,
+          "source_ranks": {
+            "bm25": 3,
+            "embedding": 2
+          }
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "rrf_score": 0.01639344262295082,
+          "source_ranks": {
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-006",
+          "rrf_score": 0.01639344262295082,
+          "source_ranks": {
+            "bm25": 1
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "embedding": {
+          "hit_at_1": 0,
+          "hit_at_3": 0,
+          "first_gold_rank": null,
+          "rr_at_3": 0.0
+        },
+        "rrf": {
+          "hit_at_1": 0,
+          "hit_at_3": 1,
+          "first_gold_rank": 3,
+          "rr_at_3": 0.3333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "Q009",
+      "question": "온수 뽑을 때 냉수보다 출수가 느린데 제품 고장인가요?",
+      "gold_ids": [
+        "WB-S02-007"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-007",
+          "WB-S02-008",
+          "WB-S02-002"
+        ],
+        "embedding": [
+          "WB-S02-007",
+          "WB-S02-005",
+          "WB-S02-002"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-007",
+          "rrf_score": 0.03278688524590164,
+          "source_ranks": {
+            "bm25": 1,
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-002",
+          "rrf_score": 0.031746031746031744,
+          "source_ranks": {
+            "bm25": 3,
+            "embedding": 3
+          }
+        },
+        {
+          "chunk_id": "WB-S02-005",
+          "rrf_score": 0.016129032258064516,
+          "source_ranks": {
+            "embedding": 2
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "embedding": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        },
+        "rrf": {
+          "hit_at_1": 1,
+          "hit_at_3": 1,
+          "first_gold_rank": 1,
+          "rr_at_3": 1.0
+        }
+      }
+    },
+    {
+      "case_id": "Q010",
+      "question": "물이 새는 것 같아요. 원수 밸브와 전원 플러그는 어떻게 해야 하나요?",
+      "gold_ids": [
+        "WB-S02-008"
+      ],
+      "source_ranking": {
+        "bm25": [
+          "WB-S02-003",
+          "WB-S02-002",
+          "WB-S02-008"
+        ],
+        "embedding": [
+          "WB-S02-002",
+          "WB-S02-003",
+          "WB-S02-008"
+        ]
+      },
+      "rrf_ranking": [
+        {
+          "chunk_id": "WB-S02-002",
+          "rrf_score": 0.03252247488101534,
+          "source_ranks": {
+            "bm25": 2,
+            "embedding": 1
+          }
+        },
+        {
+          "chunk_id": "WB-S02-003",
+          "rrf_score": 0.03252247488101534,
+          "source_ranks": {
+            "bm25": 1,
+            "embedding": 2
+          }
+        },
+        {
+          "chunk_id": "WB-S02-008",
+          "rrf_score": 0.031746031746031744,
+          "source_ranks": {
+            "bm25": 3,
+            "embedding": 3
+          }
+        }
+      ],
+      "metrics": {
+        "bm25": {
+          "hit_at_1": 0,
+          "hit_at_3": 1,
+          "first_gold_rank": 3,
+          "rr_at_3": 0.3333333333333333
+        },
+        "embedding": {
+          "hit_at_1": 0,
+          "hit_at_3": 1,
+          "first_gold_rank": 3,
+          "rr_at_3": 0.3333333333333333
+        },
+        "rrf": {
+          "hit_at_1": 0,
+          "hit_at_3": 1,
+          "first_gold_rank": 3,
+          "rr_at_3": 0.3333333333333333
+        }
+      }
+    }
+  ],
+  "input_sha256": {
+    "saved_rankings": "df8cc1a7e2cc8b739af087e23516d452e02a34c757d32a768654dba3f0bb30ec",
+    "gold": "81fc454e8315bcb2a382a0cd0fe5e92c7bae386f93deaadb9f5cba37a67daa98"
+  }
+}
