@@ -1,0 +1,65 @@
+{
+  "run_date": "2026-10-30",
+  "scope": "S06 PDF source fact-check, not SFT training or model quality evaluation",
+  "source_files": [
+    {
+      "filename": "WPU-IAC425-얼음정수기메뉴얼(2).pdf",
+      "title": "WPU-IAC425 얼음 냉온정수기",
+      "rev": "REV.02",
+      "sha": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "code": "IAC425",
+      "verified_sha256": "97C027CE75BEC40386307C867DD3983513CB70FAC687F2D2DB6F1167EC9CAEC8",
+      "pages_total": 52
+    },
+    {
+      "filename": "WPUIAC606SNW MegaIceMini메뉴얼(2).pdf",
+      "title": "WPU-IAC606 얼음 냉온정수기",
+      "rev": "REV.00",
+      "sha": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "code": "IAC606",
+      "verified_sha256": "A062C0DD5C2ED17BC3734215C3106DCC82AB69346CF546BDDD9EDD328EA49572",
+      "pages_total": 48
+    },
+    {
+      "filename": "WPU-JAC104,WPU-JCC104-냉온정수기메뉴얼(1).pdf",
+      "title": "WPU-JAC104(D)/WPU-JCC104(D) 냉온정수기/냉정수기",
+      "rev": "REV.00",
+      "sha": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "code": "JAC104",
+      "verified_sha256": "0C6B94AF53F23211F5FE542CB7712109E4A769A6F42ED758DA7792FC62E44B2C",
+      "pages_total": 44
+    }
+  ],
+  "selected_count": 15,
+  "pdf_checked_count": 15,
+  "action_labels_consistent_count": 13,
+  "action_labels_need_review": [
+    "SYN-IAC606-110",
+    "SYN-IAC425-110"
+  ],
+  "gold_missing_from_s04": [
+    "SYN-IAC606-110",
+    "SYN-IAC425-110"
+  ],
+  "team_evidence_primary_action_gap": [
+    "SYN-IAC425-106",
+    "SYN-IAC425-102",
+    "SYN-IAC606-102"
+  ],
+  "s04_action_counts": {
+    "ANSWER": 6,
+    "ESCALATE": 5,
+    "ASK": 4
+  },
+  "training_ready_count": 0,
+  "split_counts": {
+    "train": 15
+  },
+  "manual_review_complete": true,
+  "non_equivalences": [
+    "공식 PDF 근거 확인 != 실제 RAG 검색 성공",
+    "평가용 Gold ID != 모델에 제공된 evidence",
+    "PDF 답변 확인 != 학습/배포 승인",
+    "수기 검수 결과 != 모델 성능"
+  ]
+}

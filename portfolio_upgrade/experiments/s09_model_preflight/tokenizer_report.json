@@ -1,0 +1,132 @@
+{
+  "status": "TOKENIZER_CHECK_PASSED",
+  "candidate_model": "Qwen/Qwen3-1.7B",
+  "model_card_license": "Apache-2.0",
+  "model_license_reference": "https://huggingface.co/Qwen/Qwen3-1.7B",
+  "owner_manual_training_rights": "NOT_CONFIRMED",
+  "S07_draft_count": 26,
+  "S07_training_ready": 0,
+  "tokenizer_check_sample_count": 20,
+  "training_performed": false,
+  "baseline_measured": false,
+  "training_config_state": "DRAFT_NOT_EXECUTED",
+  "data_sha256": "bcf3091e45bc0ef6c2aa1768b6fdd4a3d5526432c797b5c57ba2391cafb92d96",
+  "pilot_max_length": 1536,
+  "chat_template_enable_thinking": false,
+  "notes": [
+    "Qwen3 text-only candidate; stable same-base comparison required",
+    "Actual training needs independent permission/usage review for manual-derived materials",
+    "SFT model input must use the same frozen retrieved evidence as baseline",
+    "No model weights downloaded by this preflight"
+  ],
+  "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "model_license_runtime": "apache-2.0",
+  "tokenizer_class": "Qwen2Tokenizer",
+  "token_lengths": [
+    {
+      "example_id": "S07-SYN-IAC425-101-BASE",
+      "tokens_estimate": 390,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC425-101-PAR1",
+      "tokens_estimate": 393,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC606-103-BASE",
+      "tokens_estimate": 336,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC606-103-PAR1",
+      "tokens_estimate": 352,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC606-104-BASE",
+      "tokens_estimate": 352,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC606-104-PAR1",
+      "tokens_estimate": 359,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC425-106-BASE",
+      "tokens_estimate": 299,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC425-106-PAR1",
+      "tokens_estimate": 305,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC425-108-BASE",
+      "tokens_estimate": 360,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC425-108-PAR1",
+      "tokens_estimate": 366,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-JAC104-028-BASE",
+      "tokens_estimate": 335,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-JAC104-028-PAR1",
+      "tokens_estimate": 339,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC606-101-BASE",
+      "tokens_estimate": 387,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC606-101-PAR1",
+      "tokens_estimate": 381,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC606-107-BASE",
+      "tokens_estimate": 354,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-IAC606-107-PAR1",
+      "tokens_estimate": 365,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-JAC104-026-BASE",
+      "tokens_estimate": 277,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-JAC104-026-PAR1",
+      "tokens_estimate": 286,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-JAC104-027-BASE",
+      "tokens_estimate": 333,
+      "over_max_length": false
+    },
+    {
+      "example_id": "S07-SYN-JAC104-027-PAR1",
+      "tokens_estimate": 345,
+      "over_max_length": false
+    }
+  ],
+  "min_tokens": 277,
+  "median_tokens": 352.0,
+  "max_tokens": 393,
+  "torch_version": "2.13.0+cpu",
+  "cuda_available": false
+}

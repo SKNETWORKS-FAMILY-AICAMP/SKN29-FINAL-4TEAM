@@ -1,0 +1,38 @@
+{
+  "status": "S08_STRUCTURE_PASS_MODEL_BASELINE_PENDING",
+  "split_counts": {
+    "train": 18,
+    "dev": 6,
+    "holdout": 6
+  },
+  "semantic_groups_all": 16,
+  "semantic_groups_by_split": {
+    "train": 9,
+    "dev": 4,
+    "holdout": 3
+  },
+  "s07_samples": 26,
+  "s07_original_groups": 6,
+  "dev_targets": 6,
+  "dev_model_inputs_generated": 6,
+  "held_action_labels": [
+    "SYN-IAC425-110",
+    "SYN-IAC606-110"
+  ],
+  "blocked": [
+    "S07 train usage approval and real retrieval evidence",
+    "S09 model/checkpoint/tokenizer validation",
+    "Dev base model inference and scored results",
+    "Dataset expansion and independent larger holdout"
+  ],
+  "source_sha256": {
+    "portfolio_upgrade\\data\\splits\\s04_reviewed_pilot_split_v2.csv": "49fb97682aada3eebdeeab62384ad171c3f9e4aa0bb71d1cf18dc2bfdd3b9085",
+    "data\\synthetic\\candidates\\manual_3model_candidate_scenarios.json": "f6f992872d5c2dde3d35b0e163f8cdc8f70f81675ddbdca92effc672caa32195",
+    "portfolio_upgrade\\data\\training\\train_draft_s07_reviewed_v1.jsonl": "bcf3091e45bc0ef6c2aa1768b6fdd4a3d5526432c797b5c57ba2391cafb92d96"
+  },
+  "retrieval_sha256": "57836eee9203c9fbecfb37d2b4bbd90f5c7e673ad239c4d8657e453ee7c03913",
+  "duplicate_header_same_value": [
+    "manual_answerable"
+  ],
+  "note": "S05 GPT-4.1-mini results are NOT the Qwen3 baseline. No Holdout used for tuning."
+}

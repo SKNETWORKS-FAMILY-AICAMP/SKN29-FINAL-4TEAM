@@ -1,0 +1,49 @@
+{
+  "status": "DRAFT_NOT_TRAIN_READY",
+  "source": {
+    "s04_csv": "C:\\SKN projects\\final\\portfolio_upgrade\\data\\splits\\s04_reviewed_pilot_split_v2.csv",
+    "s04_csv_sha256": "49fb97682aada3eebdeeab62384ad171c3f9e4aa0bb71d1cf18dc2bfdd3b9085",
+    "synthetic_scenarios_json": "C:\\SKN projects\\final\\data\\synthetic\\candidates\\manual_3model_candidate_scenarios.json",
+    "synthetic_scenarios_sha256": "f6f992872d5c2dde3d35b0e163f8cdc8f70f81675ddbdca92effc672caa32195",
+    "duplicate_csv_header_names_same_value": [
+      "manual_answerable"
+    ]
+  },
+  "counts": {
+    "s04_all": 30,
+    "s04_splits": {
+      "dev": 6,
+      "holdout": 6,
+      "train": 18
+    },
+    "train": 18,
+    "train_semantic_groups": 9,
+    "selected": 15,
+    "selected_semantic_groups": 7,
+    "selected_source_actions": {
+      "ANSWER": 6,
+      "ASK": 4,
+      "ESCALATE": 5
+    },
+    "mapping_review_excluded": 2,
+    "total_review_needed": 15
+  },
+  "selection_policy": "Train only; standard ANSWER/ASK/ESCALATE only; group coverage then product/action diversity",
+  "skipped_nonstandard_actions": [
+    {
+      "scenario_id": "SYN-IAC606-109",
+      "original_action": "ANSWER_THEN_CONFIRM"
+    },
+    {
+      "scenario_id": "SYN-JAC104-032",
+      "original_action": "EXPLAIN_UNSUPPORTED"
+    }
+  ],
+  "not_done": [
+    "공식 PDF S06 직접 재검증",
+    "15개 답변 본문 작성 및 금지 주장 검수",
+    "추론 근거 생성·동일 검색 조건 확정",
+    "학습 활용 허용 여부 판단",
+    "학습 또는 모델 성능 평가"
+  ]
+}

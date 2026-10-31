@@ -1,0 +1,23 @@
+# S09 -> M3 S10 실행 전 검토용 설계 초안. 이 파일 자체로 학습은 실행되지 않습니다.
+status: DRAFT_NOT_APPROVED
+base_model: Qwen/Qwen3-1.7B
+base_model_revision: VERIFY_AND_PIN_ON_RUNPOD
+model_card_license: apache-2.0
+manual_derived_data_training_permission: NOT_CONFIRMED
+train_data: NOT_READY  # S07의 26건을 지금 학습에 넣지 않음
+same_evidence_as_base_model: REQUIRED
+chat_template_enable_thinking: false
+training_approach: LoRA # GPU 메모리 부족 시 4-bit QLoRA를 비교/검토
+lora_rank: 16
+lora_alpha: 32
+lora_dropout: 0.05
+learning_rate: 0.0001
+max_seq_length: 1536
+micro_batch_size: 1
+gradient_accumulation_steps: 4
+max_steps_pilot: 10  # 구조·OOM 확인용, 성능 개선을 입증하는 학습 아님
+seed: 42
+loss_on: assistant_completion_only
+train_dev_holdout_rule: train_only_for_updates_dev_for_selection_holdout_final_only
+model_inference_baseline: NOT_RUN
+cuda_vram_requirement: MEASURE_ON_TARGET_GPU

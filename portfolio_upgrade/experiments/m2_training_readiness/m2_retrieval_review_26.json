@@ -1,0 +1,662 @@
+{
+  "summary": {
+    "status": "DATA_RETRIEVAL_AUDITED_NOT_TRAIN_READY",
+    "n_examples": 26,
+    "source_scenarios": 13,
+    "semantic_groups": 6,
+    "train_only": true,
+    "at_least_one_gold_hit": 26,
+    "all_gold_present": 25,
+    "first_gold_rank_distribution": {
+      "1": 21,
+      "3": 1,
+      "2": 4
+    },
+    "cited_ids_exist_in_retrieval": 26,
+    "training_ready": 0,
+    "training_rights_approved": false,
+    "raw_file_sha256": "3a91e5343907926cc4c834b086916f0cd6fcf7ab467cb8ec62f490e7b4ee6f94",
+    "audit_scope": "retrieved group ID completeness + source PDF spot-check + claim support; not model generalization measurement"
+  },
+  "cases": [
+    {
+      "example_id": "S07-SYN-IAC425-101-BASE",
+      "source_scenario_id": "SYN-IAC425-101",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "WPU-IAC425에서 냉수 버튼을 누르면 소리가 나고 잠금 표시가 깜빡입니다. 정수는 나옵니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-LOCK-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-LOCK-001",
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+        "EVD-WPUIAC425SNW-NO-ICE-001",
+        "EVD-WPUIAC425SNW-NOISE-NORMAL-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "추가 근거",
+      "review_note": "정답 해제 절차는 사용설명서 27쪽에 있으나 검색 그룹은 43쪽 요약만 제공"
+    },
+    {
+      "example_id": "S07-SYN-IAC425-101-PAR1",
+      "source_scenario_id": "SYN-IAC425-101",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC425 냉수를 선택할 때 알림음이 들리고 잠금 표시가 깜빡여요. 정수는 정상적으로 나옵니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-LOCK-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-LOCK-001",
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC425SNW-NO-ICE-001",
+        "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+        "EVD-WPUIAC425SNW-NOISE-NORMAL-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "추가 근거",
+      "review_note": "정답 해제 절차는 사용설명서 27쪽에 있으나 검색 그룹은 43쪽 요약만 제공"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-103-BASE",
+      "source_scenario_id": "SYN-IAC606-103",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "상담에서 기다렸다 다시 받아보라고 해서 해결 확인 대기 중이었는데, 전원은 정상이고 2시간이 지나도 냉수가 계속 미지근합니다.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC606SNW-NO-HOT-WATER-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+        "EVD-WPUIAC606SNW-COLD-LOCK-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "기대 행동 ESCALATE와 검색된 냉각부 이상 문맥이 일치"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-103-PAR1",
+      "source_scenario_id": "SYN-IAC606-103",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC606입니다. 상담에서 기다렸다가 다시 받아보라는 안내를 받고 해결 여부를 확인하는 중이었는데, 전원은 정상이고 2시간이 지나도 냉수가 계속 미지근해요.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC606SNW-COLD-LOCK-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+        "EVD-WPUIAC606SNW-NO-ICE-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "기대 행동 ESCALATE와 검색된 냉각부 이상 문맥이 일치"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-104-BASE",
+      "source_scenario_id": "SYN-IAC606-104",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "밤에 정수기에서 물 흐르는 소리도 나고 달그락하거나 공기 빠지는 것 같은 소리도 나요. 고장인가요?",
+      "expected_action": "ASK",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-DEFROST-NOISE-001",
+        "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-NOISE-NORMAL-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001",
+        "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001",
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001"
+      ],
+      "first_gold_rank": 3,
+      "missing_gold_ids": [
+        "EVD-WPUIAC606SNW-DEFROST-NOISE-001"
+      ],
+      "all_gold_present": false,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "부분 누락",
+      "review_note": "필수 Gold 2개 중 DEFROST-NOISE 근거 누락. 정답 문장은 냉매 순환을 설명하지만 검색으로 제공되지 않음."
+    },
+    {
+      "example_id": "S07-SYN-IAC606-104-PAR1",
+      "source_scenario_id": "SYN-IAC606-104",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC606에서 밤에 물 흐르는 소리와 달그락거리는 소리, 공기가 빠지는 듯한 소리가 나요. 고장일까요?",
+      "expected_action": "ASK",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-DEFROST-NOISE-001",
+        "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001",
+        "EVD-WPUIAC606SNW-NOISE-NORMAL-001",
+        "EVD-WPUIAC606SNW-DEFROST-NOISE-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001",
+        "EVD-WPUIAC606SNW-NOISE-VENTILATION-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "부분 누락",
+      "review_note": "두 Gold가 모두 검색되어 BASE와 다른 조건. 원본 누락을 수정했다고 간주하지 않음."
+    },
+    {
+      "example_id": "S07-SYN-IAC425-106-BASE",
+      "source_scenario_id": "SYN-IAC425-106",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "싱크대 조리수를 틀어둔 동안에만 정수기 물줄기가 약해지고, 조리수를 끄면 다시 정상으로 돌아옵니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-LOW-FLOW-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-LOW-FLOW-001",
+        "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001",
+        "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001",
+        "EVD-WPUIAC425SNW-NO-WATER-001",
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "동시 조리수 사용 후 저출수에 관한 근거 포함. 다른 증상 문서가 함께 들어옴"
+    },
+    {
+      "example_id": "S07-SYN-IAC425-106-PAR1",
+      "source_scenario_id": "SYN-IAC425-106",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC425인데 싱크대 조리수를 쓰는 동안에만 물줄기가 약해져요. 조리수를 끄면 다시 정상으로 나옵니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-LOW-FLOW-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-LOW-FLOW-001",
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001",
+        "EVD-WPUIAC425SNW-TASTE-ODOR-001",
+        "EVD-WPUIAC425SNW-NO-WATER-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "동시 조리수 사용 후 저출수에 관한 근거 포함. 다른 증상 문서가 함께 들어옴"
+    },
+    {
+      "example_id": "S07-SYN-IAC425-108-BASE",
+      "source_scenario_id": "SYN-IAC425-108",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "물받이 밖으로 물이 새고 버튼을 누를 때마다 띵띵띵 소리가 계속 납니다. 바닥에 물이 번지고 있어요.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-LEAK-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-LEAK-001",
+        "EVD-WPUIAC425SNW-NOISE-NORMAL-001",
+        "EVD-WPUIAC425SNW-ICE-MAKING-NOISE-001",
+        "EVD-WPUIAC425SNW-DEFROST-NOISE-001",
+        "EVD-WPUIAC425SNW-HOT-WATER-INTERRUPTION-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "추가 근거",
+      "review_note": "물받이 넘침 여부 확인은 PDF 5쪽에 있으나 검색 그룹은 45쪽 누수 조치만 제공"
+    },
+    {
+      "example_id": "S07-SYN-IAC425-108-PAR1",
+      "source_scenario_id": "SYN-IAC425-108",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC425 물받이 바깥으로 물이 새서 바닥까지 퍼져요. 버튼을 누를 때마다 띵띵띵 소리도 계속 납니다.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-LEAK-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-LEAK-001",
+        "EVD-WPUIAC425SNW-NOISE-NORMAL-001",
+        "EVD-WPUIAC425SNW-ICE-MAKING-NOISE-001",
+        "EVD-WPUIAC425SNW-DEFROST-NOISE-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "추가 근거",
+      "review_note": "물받이 넘침 여부 확인은 PDF 5쪽에 있으나 검색 그룹은 45쪽 누수 조치만 제공"
+    },
+    {
+      "example_id": "S07-SYN-JAC104-028-BASE",
+      "source_scenario_id": "SYN-JAC104-028",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "정수기에서 윙 소리도 나고 물 받을 때 툭 소리, 가끔 물 흐르는 소리도 나요. 소리가 큰지는 잘 모르겠어요.",
+      "expected_action": "ASK",
+      "gold_evidence_ids": [
+        "EVD-WPUJAC104DWH-NOISE-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUJAC104DWH-NOISE-001",
+        "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "EVD-WPUJAC104DWH-LEAK-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "순위 위험",
+      "review_note": "PAR1에서 온수 안전 문서가 1위이고 소음 정답 문서는 2위"
+    },
+    {
+      "example_id": "S07-SYN-JAC104-028-PAR1",
+      "source_scenario_id": "SYN-JAC104-028",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-JAC104에서 윙 소리가 나고 물 받을 때는 툭 소리, 가끔 물 흐르는 소리까지 들려요. 소리가 큰지는 모르겠습니다.",
+      "expected_action": "ASK",
+      "gold_evidence_ids": [
+        "EVD-WPUJAC104DWH-NOISE-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "EVD-WPUJAC104DWH-NOISE-001"
+      ],
+      "first_gold_rank": 2,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "순위 위험",
+      "review_note": "PAR1에서 온수 안전 문서가 1위이고 소음 정답 문서는 2위"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-101-BASE",
+      "source_scenario_id": "SYN-IAC606-101",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "WPU-IAC606인데 냉수 버튼을 누르면 부저음이 나고 잠금 표시가 깜빡여요. 물은 정수로는 나옵니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-LOCK-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-LOCK-001",
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+        "EVD-WPUIAC606SNW-NO-ICE-001",
+        "EVD-WPUIAC606SNW-NO-HOT-WATER-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "추가 근거",
+      "review_note": "잠금 해제 절차는 PDF 24쪽이나 검색 그룹은 40쪽 요약. PDF 40쪽의 29쪽 참조는 실제 위치와 다름"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-101-PAR1",
+      "source_scenario_id": "SYN-IAC606-101",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC606 냉수를 고르면 부저음과 함께 잠금 표시가 깜빡입니다. 정수는 잘 나오고 있어요.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-LOCK-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-LOCK-001",
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC606SNW-NO-ICE-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-STOPPED-001",
+        "EVD-WPUIAC606SNW-NO-HOT-WATER-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "추가 근거",
+      "review_note": "잠금 해제 절차는 PDF 24쪽이나 검색 그룹은 40쪽 요약. PDF 40쪽의 29쪽 참조는 실제 위치와 다름"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-107-BASE",
+      "source_scenario_id": "SYN-IAC606-107",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "물받이는 넘치지 않았는데 제품 밑으로 물이 번지고, 버튼을 누를 때마다 띵띵띵 소리가 납니다.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-LEAK-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-LEAK-001",
+        "EVD-WPUIAC606SNW-NOISE-NORMAL-001",
+        "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "누수 근거에 PDF 5·42쪽 조치가 포함돼 있어 누수 조건과 부합"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-107-PAR1",
+      "source_scenario_id": "SYN-IAC606-107",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC606에서 물받이가 넘친 것은 아닌데 기기 밑으로 물이 번져요. 버튼을 누를 때마다 띵띵띵 소리가 납니다.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-LEAK-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-LEAK-001",
+        "EVD-WPUIAC606SNW-NOISE-NORMAL-001",
+        "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001",
+        "EVD-WPUIAC606SNW-HOT-WATER-INTERRUPTION-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "누수 근거에 PDF 5·42쪽 조치가 포함돼 있어 누수 조건과 부합"
+    },
+    {
+      "example_id": "S07-SYN-JAC104-026-BASE",
+      "source_scenario_id": "SYN-JAC104-026",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "회의 중 여러 명이 냉수를 연속으로 많이 받은 뒤부터 덜 차가워졌어요. 그 전에는 정상입니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "EVD-WPUJAC104DWH-TASTE-ODOR-001",
+        "EVD-WPUJAC104DWH-LOW-FLOW-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "순위 위험",
+      "review_note": "PAR1에서 무관한 순간온수 안전 문서가 1위이고 냉수 정답 문서가 2위"
+    },
+    {
+      "example_id": "S07-SYN-JAC104-026-PAR1",
+      "source_scenario_id": "SYN-JAC104-026",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-JAC104 냉수를 회의 중에 여러 명이 연속으로 많이 사용했더니 그 후부터 덜 차갑습니다. 전에는 정상이었어요.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "EVD-WPUJAC104DWH-LOW-FLOW-001"
+      ],
+      "first_gold_rank": 2,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "순위 위험",
+      "review_note": "PAR1에서 무관한 순간온수 안전 문서가 1위이고 냉수 정답 문서가 2위"
+    },
+    {
+      "example_id": "S07-SYN-JAC104-027-BASE",
+      "source_scenario_id": "SYN-JAC104-027",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "전원은 AC 220V이고 냉수 잠금도 해제했습니다. 2시간 후에도 냉수가 계속 미지근합니다.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001",
+        "EVD-WPUJAC104DWH-TASTE-ODOR-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "조건 검토",
+      "review_note": "정답 그룹이 냉수 정상/고장 조건을 함께 포함. 2시간 경과·지속 이상 조건 보존 필요"
+    },
+    {
+      "example_id": "S07-SYN-JAC104-027-PAR1",
+      "source_scenario_id": "SYN-JAC104-027",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-JAC104 전원은 AC 220V로 정상이고 냉수 잠금도 해제했습니다. 2시간이 지난 지금도 냉수가 계속 미지근합니다.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUJAC104DWH-COLD-TEMPERATURE-001",
+        "EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "조건 검토",
+      "review_note": "정답 그룹이 냉수 정상/고장 조건을 함께 포함. 2시간 경과·지속 이상 조건 보존 필요"
+    },
+    {
+      "example_id": "S07-SYN-IAC425-103-BASE",
+      "source_scenario_id": "SYN-IAC425-103",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "220V 전원은 정상이고 냉수 잠금도 해제했습니다. 2시간 넘게 기다린 뒤 다시 받아도 계속 미지근합니다.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+        "EVD-WPUIAC425SNW-NO-HOT-WATER-001",
+        "EVD-WPUIAC425SNW-COLD-LOCK-001",
+        "EVD-WPUIAC425SNW-HOT-WATER-STOPPED-001"
+      ],
+      "first_gold_rank": 2,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "순위 위험",
+      "review_note": "BASE/PAR1 모두 정상 일시적 냉수 문서가 1위, 지속 이상 정답은 2위"
+    },
+    {
+      "example_id": "S07-SYN-IAC425-103-PAR1",
+      "source_scenario_id": "SYN-IAC425-103",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC425의 전원 220V도 정상이고 냉수 잠금은 해제했어요. 2시간 넘게 기다렸다가 다시 출수해도 미지근합니다.",
+      "expected_action": "ESCALATE",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+        "EVD-WPUIAC425SNW-COLD-LOCK-001",
+        "EVD-WPUIAC425SNW-NO-ICE-001",
+        "EVD-WPUIAC425SNW-NO-HOT-WATER-001"
+      ],
+      "first_gold_rank": 2,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "순위 위험",
+      "review_note": "BASE/PAR1 모두 정상 일시적 냉수 문서가 1위, 지속 이상 정답은 2위"
+    },
+    {
+      "example_id": "S07-SYN-IAC425-102-BASE",
+      "source_scenario_id": "SYN-IAC425-102",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "가족들이 냉수를 연달아 많이 받은 직후부터 덜 차갑습니다. 평소에는 정상이고 잠금 표시는 없습니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+        "EVD-WPUIAC425SNW-NO-ICE-001",
+        "EVD-WPUIAC425SNW-COLD-LOCK-001",
+        "EVD-WPUIAC425SNW-NO-HOT-WATER-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "냉수 다량 출수 직후 기다림 근거가 1위"
+    },
+    {
+      "example_id": "S07-SYN-IAC425-102-PAR1",
+      "source_scenario_id": "SYN-IAC425-102",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC425를 쓰는데 가족들이 냉수를 계속 많이 받은 직후부터 물이 덜 차가워졌어요. 그 전엔 정상이었고 잠금 표시도 없어요.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC425SNW-COLD-LOCK-001",
+        "EVD-WPUIAC425SNW-NO-ICE-001",
+        "EVD-WPUIAC425SNW-COLD-TEMPERATURE-FAULT-001",
+        "EVD-WPUIAC425SNW-NO-HOT-WATER-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "냉수 다량 출수 직후 기다림 근거가 1위"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-102-BASE",
+      "source_scenario_id": "SYN-IAC606-102",
+      "variant": "BASE",
+      "split": "train",
+      "customer_message": "손님 여러 명이 냉수를 연속으로 많이 받은 직후부터 물이 평소보다 덜 차가워졌어요. 그 전까지는 정상입니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+        "EVD-WPUIAC606SNW-ICE-QUALITY-001",
+        "EVD-WPUIAC606SNW-DEFROST-NOISE-001",
+        "EVD-WPUIAC606SNW-ICE-MAKING-NOISE-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "냉수 다량 출수 직후 기다림 근거가 1위"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-102-PAR1",
+      "source_scenario_id": "SYN-IAC606-102",
+      "variant": "PAR1",
+      "split": "train",
+      "customer_message": "WPU-IAC606에서 손님들이 냉수를 연달아 많이 사용한 직후 물이 평소보다 덜 차가워졌습니다. 이전엔 정상입니다.",
+      "expected_action": "ANSWER",
+      "gold_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001"
+      ],
+      "retrieved_evidence_ids": [
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-NORMAL-001",
+        "EVD-WPUIAC606SNW-COLD-TEMPERATURE-FAULT-001",
+        "EVD-WPUIAC606SNW-NO-ICE-001",
+        "EVD-WPUIAC606SNW-ICE-QUALITY-001",
+        "EVD-WPUIAC606SNW-COLD-LOCK-001"
+      ],
+      "first_gold_rank": 1,
+      "missing_gold_ids": [],
+      "all_gold_present": true,
+      "citation_ids_in_retrieval": true,
+      "note": "",
+      "review_category": "구조 통과",
+      "review_note": "냉수 다량 출수 직후 기다림 근거가 1위"
+    }
+  ]
+}

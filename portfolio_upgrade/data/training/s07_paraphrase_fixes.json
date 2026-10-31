@@ -1,0 +1,30 @@
+{
+  "source": "S07 generated paraphrases; supplemental review only",
+  "original_files_unchanged": true,
+  "fixes": [
+    {
+      "example_id": "S07-SYN-IAC606-103-PAR1",
+      "source_scenario_id": "SYN-IAC606-103",
+      "original_paraphrase": "WPU-IAC606입니다. 상담에서 기다렸다가 다시 받아 보라고 했고 전원도 정상인데, 2시간이 지나도 냉수가 계속 미지근해요.",
+      "revised": "WPU-IAC606입니다. 상담에서 기다렸다가 다시 받아보라는 안내를 받고 해결 여부를 확인하는 중이었는데, 전원은 정상이고 2시간이 지나도 냉수가 계속 미지근해요.",
+      "reason": "기존 상담 후 해결 여부를 확인 중이라는 원본 업무 맥락을 삭제함",
+      "pdf": "WPU-IAC606 REV.00 40쪽 — 전원 정상·2시간 경과 후에도 미지근하면 상담"
+    },
+    {
+      "example_id": "S07-SYN-IAC606-107-PAR1",
+      "source_scenario_id": "SYN-IAC606-107",
+      "original_paraphrase": "WPU-IAC606 물받이 넘침은 아닌데 기기 밑으로 물이 번져요. 버튼을 누르면 계속 띵띵띵 소리가 납니다.",
+      "revised": "WPU-IAC606에서 물받이가 넘친 것은 아닌데 기기 밑으로 물이 번져요. 버튼을 누를 때마다 띵띵띵 소리가 납니다.",
+      "reason": "버튼을 누를 때마다 나는 경고와 누른 뒤 계속 나는 경고를 구별하여 관찰 조건을 복원",
+      "pdf": "WPU-IAC606 REV.00 5쪽(누수 안전)·42쪽(버튼 누를 때마다 경고)"
+    },
+    {
+      "example_id": "S07-SYN-JAC104-027-PAR1",
+      "source_scenario_id": "SYN-JAC104-027",
+      "original_paraphrase": "WPU-JAC104 전원은 AC 220V로 정상이고 냉수 잠금도 풀었는데, 2시간 뒤 다시 받아도 물이 미지근합니다.",
+      "revised": "WPU-JAC104 전원은 AC 220V로 정상이고 냉수 잠금도 해제했습니다. 2시간이 지난 지금도 냉수가 계속 미지근합니다.",
+      "reason": "원문에 명시되지 않은 재출수 행동을 추가하고 냉수를 그냥 물로 바꾼 표현을 제거",
+      "pdf": "WPU-JAC104/JCC104 REV.00 37쪽 — 전원 정상·2시간 경과 후 냉수 미지근하면 상담"
+    }
+  ]
+}

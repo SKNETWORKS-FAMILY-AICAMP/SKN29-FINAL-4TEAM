@@ -1,0 +1,62 @@
+{
+  "status": "S07_CONTENT_REVIEWED_NOT_TRAIN_READY",
+  "input_file_sha256": {
+    "train_draft.jsonl": "4fa60287a151450b95abb5f9d96d55c3a06300c22c97a3b97f0d0c9a974cd25d",
+    "review_log.csv": "8cbcda37096458a1221060f7c4cb6847bdbe8aa29e0152c2b538a4d0157d0bad",
+    "s07_label_review_queue.jsonl": "f8268916f2881b785ad44f87d3fe373e8bd5e70b3e6409abc0724275e4719a70"
+  },
+  "counts": {
+    "input_draft": 26,
+    "original": 13,
+    "paraphrases": 13,
+    "paraphrase_direct_pass": 10,
+    "paraphrases_revised_then_pass": 3,
+    "held_action_labels": 2,
+    "distinct_source_scenarios": 13,
+    "distinct_semantic_groups": 6,
+    "training_ready": 0
+  },
+  "held_scenario_ids": [
+    "SYN-IAC606-110",
+    "SYN-IAC425-110"
+  ],
+  "revised_scenario_ids": [
+    "SYN-IAC606-103",
+    "SYN-IAC606-107",
+    "SYN-JAC104-027"
+  ],
+  "action_counts": {
+    "ANSWER": 12,
+    "ESCALATE": 10,
+    "ASK": 4
+  },
+  "group_counts": {
+    "sg-f9124d23a1c5": 4,
+    "sg-ef6b56fea3f1": 12,
+    "sg-9a4beeef51f2": 2,
+    "sg-524becf0fd6e": 2,
+    "sg-9c822fb31d16": 4,
+    "sg-5af91148a912": 2
+  },
+  "origin_pdfs": {
+    "IAC425": {
+      "file": "WPU-IAC425-얼음정수기메뉴얼(2).pdf",
+      "sha256": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8"
+    },
+    "IAC606": {
+      "file": "WPUIAC606SNW MegaIceMini메뉴얼(2).pdf",
+      "sha256": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572"
+    },
+    "JAC104": {
+      "file": "WPU-JAC104,WPU-JCC104-냉온정수기메뉴얼(1).pdf",
+      "sha256": "0c6b94af53f23211f5fe542cb7712109e4a769a6f42ed758da7792fc62e44b2c"
+    }
+  },
+  "not_verified_or_done": [
+    "SFT 학습 또는 성능 비교",
+    "검색 근거 입력/인용의 일치 여부",
+    "공식 PDF 학습/재배포 이용 허가",
+    "보류 2건 행동 라벨 확정",
+    "학습 데이터의 독립성·규모 충분성"
+  ]
+}

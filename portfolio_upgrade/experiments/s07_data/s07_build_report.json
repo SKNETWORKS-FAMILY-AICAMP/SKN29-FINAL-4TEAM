@@ -1,0 +1,32 @@
+{
+  "status": "PILOT_DRAFT_NOT_TRAIN_READY",
+  "s06_input_sha256": "0bec66692828ae670a03c0456611e6830cca5c489d7c104f7fc48baa4de8b412",
+  "source_s06_count": 15,
+  "eligible_source_count": 13,
+  "label_holdback_count": 2,
+  "generated_paraphrase_count": 13,
+  "draft_rows": 26,
+  "source_semantic_groups": 7,
+  "draft_semantic_groups": 6,
+  "action_distribution": {
+    "ANSWER": 12,
+    "ASK": 4,
+    "ESCALATE": 10
+  },
+  "held_ids": [
+    "SYN-IAC606-110",
+    "SYN-IAC425-110"
+  ],
+  "safety_and_escalation_rows": 10,
+  "need_manual_review": 26,
+  "training_ready": 0,
+  "leakage_policy": "Only S06 train inputs. Same semantic_group_id preserved. Dev/Holdout never read.",
+  "known_limitations": [
+    "패러프레이즈는 작성자 생성 초안이며 PDF 재검수/의미 보존 검수 전임",
+    "실제 검색 결과를 input.evidence에 아직 연결하지 않음",
+    "공식 PDF/합성 데이터의 학습 용도 이용 범위 별도 검토 필요",
+    "기초 사례 13건(6개 의미 그룹)의 표현 변형에 불과; 일반화 근거로 쓰지 않음",
+    "버튼 명칭 불일치 사례 2건은 행동 라벨과 인덱스 근거 공백 문제로 보류",
+    "모델 학습·평가·GPU 사용은 수행하지 않음"
+  ]
+}

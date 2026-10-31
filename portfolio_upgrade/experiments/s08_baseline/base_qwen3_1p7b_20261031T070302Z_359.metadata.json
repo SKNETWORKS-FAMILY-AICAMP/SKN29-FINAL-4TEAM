@@ -1,0 +1,23 @@
+{
+  "status": "BASELINE_GENERATED_NOT_HUMAN_GRADED",
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "dev_input_sha256": "b52adfb98546eb9d0bc096038ee64bcb7d34bcf571ab16a0e97491943a6f17ee",
+  "eval_contract_sha256": "db1b93f65c646cffda38dfb4789f8c5d209ba525eb03e58fd03c750635f424b1",
+  "retrieval_file_sha256": "57836eee9203c9fbecfb37d2b4bbd90f5c7e673ad239c4d8657e453ee7c03913",
+  "thinking_mode": "disabled",
+  "decoding": {
+    "do_sample": false,
+    "max_new_tokens": 512
+  },
+  "gpu": "NVIDIA A40",
+  "output_file": "/workspace/portfolio_upgrade/experiments/s08_baseline/base_qwen3_1p7b_20261031T070302Z_359.jsonl",
+  "count_expected": 6,
+  "count_finished": 6,
+  "action_counts": {
+    "PARSE_ERROR": 3,
+    "ANSWER": 3
+  },
+  "json_parse_failures": 3,
+  "citation_format_errors": 1
+}

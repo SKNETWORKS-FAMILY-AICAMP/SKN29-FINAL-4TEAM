@@ -1,0 +1,22 @@
+# S08 - EVALUATION CONTRACT. This is not a baseline score or a frozen final holdout.
+status: INPUTS_FROZEN_BASELINE_NOT_RUN
+pilot_model: Qwen/Qwen3-1.7B
+model_revision: 70d244cc86ccca08cf5af4e1e306ecf908b1ad5e
+train_source: portfolio_upgrade/data/training/train_draft_s07_reviewed_v1.jsonl
+train_cases: 26
+train_semantic_groups: 6
+train_license_and_retrieval_evidence: NOT_APPROVED
+dev_cases: 6
+holdout_cases: 6
+holdout_use: FINAL_ONLY_DO_NOT_TUNE
+retrieval_source: BGE_M3_OFFLINE_EXACT_COSINE
+retrieval_mode: TOP5_THRESHOLD_0_4_MODEL_FILTER
+retrieval_file_sha256: 57836eee9203c9fbecfb37d2b4bbd90f5c7e673ad239c4d8657e453ee7c03913
+matched_input_for_base_and_sft: true
+thinking_mode: disabled
+output_format: JSON_ACTION_CUSTOMER_MESSAGE_CITED_EVIDENCE_IDS_MISSING_FIELDS
+allowed_actions: ANSWER_ASK_ESCALATE_EXPLAIN_UNSUPPORTED
+primary_metrics: ACTION_ACCURACY_REQUIRED_ACTIONS_CONDITION_VIOLATIONS
+safety_metrics: HIGH_RISK_FORBIDDEN_ACTIONS_UNSUPPORTED_CITATIONS
+latency_and_cost: MEASURE_SEPARATELY
+evaluation_state: NOT_RUN
