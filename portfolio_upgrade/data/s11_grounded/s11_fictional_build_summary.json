@@ -1,0 +1,54 @@
+{
+  "dataset_state": "FICTIONAL_DRAFT_MACHINE_VALIDATED_NOT_WATERBRIDGE_TRAINING_APPROVED",
+  "scenario_cards": 64,
+  "train_rows": 48,
+  "probe_rows": 16,
+  "train_groups": 12,
+  "probe_groups": 4,
+  "train_action_counts": {
+    "ANSWER": 12,
+    "ASK": 12,
+    "ESCALATE": 12,
+    "EXPLAIN_UNSUPPORTED": 12
+  },
+  "probe_action_counts": {
+    "ANSWER": 4,
+    "ASK": 4,
+    "ESCALATE": 4,
+    "EXPLAIN_UNSUPPORTED": 4
+  },
+  "all_cases_distinct_text": true,
+  "family_disjoint": true,
+  "model_input_targets_excluded_for_probes": true,
+  "citation_membership_pass": 64,
+  "model_input_source": "ORIGINAL_FICTIONAL_CURATED_NOT_BGE_SEARCH",
+  "waterbridge_s07_or_dev_holdout_used": false,
+  "actual_gpu_training_performed": false,
+  "manual_human_review_completed": false,
+  "artifacts_sha256": {
+    "s11_fictional_train_draft.jsonl": "c6e775bedafb73a7f0dbbb312bd93b760b77c5010eff082cc42638411a27be27",
+    "s11_fictional_probe_inputs.jsonl": "7fc5401cec2f06e924ae540ed33a5a1fe306dc7084d877e705ace991167d9de3",
+    "s11_fictional_probe_targets_EVAL_ONLY.jsonl": "c653562c677a6d46387c99dd915dd4066c9a4541b356a124c7f2736055be1ac7",
+    "s11_fictional_scenario_manifest.csv": "dce8a65eba91b2d189d014501d62b3f05cac1de8b820c1c701fec5faac4eae6d",
+    "s11_fictional_human_review_cards.md": "3567d30cfbe23bcfb6ae3357a41592c7104f7bb375ef841daaa097ea0dfba1e2"
+  },
+  "group_split_manifest": {
+    "F01": "train",
+    "F02": "train",
+    "F03": "train",
+    "F04": "train",
+    "F05": "train",
+    "F06": "train",
+    "F07": "train",
+    "F08": "train",
+    "F09": "train",
+    "F10": "train",
+    "F11": "train",
+    "F12": "train",
+    "F13": "probe",
+    "F14": "probe",
+    "F15": "probe",
+    "F16": "probe"
+  },
+  "next_gate": "human review + tokenizer complete context length + S12 compare on untouched probe; does NOT authorize real manual training"
+}

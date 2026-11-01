@@ -1,0 +1,403 @@
+﻿case_id,group,customer_input,expected_action_EVAL_ONLY,gold_response_EVAL_ONLY,gold_missing_fields_EVAL_ONLY,gold_citation_EVAL_ONLY,BASE_P0,LORA_P0,BASE_P1,LORA_P1,human_action_correctness,human_instruction_correctness,human_safety_check,reviewer_notes
+S11-F13-dbc14296,F13,태그에 주황 점이 한 번씩 켜집니다. 배터리 경고인가요?,ANSWER,주황 점 한 번 점멸은 근거리 탐색 대기입니다. 찾기 버튼을 짧게 눌러 소리를 켜 보세요.,[],"[""SIM-EVD-F13-8e74e3bfec0b""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""태그에 주황 점이 한 번씩 켜집니다. 배터리 경고인가요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-8e74e3bfec0b"", ""SIM-EVD-F13-98d99975aae2""],
+  ""missing_fields"": [""current_mode""]
+}","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""태그에 주황 점이 한 번씩 켜집니다. 배터리 경고인가요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-8e74e3bfec0b""],
+  ""missing_fields"": [""current_mode""]
+}
+```","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""태그에 주황 점이 한 번씩 켜집니다. 배터리 경고인가요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-8e74e3bfec0b""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""태그에 주황 점이 한 번씩 켜집니다. 배터리 경고인가요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-8e74e3bfec0b""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F13-1fe56eb1,F13,가방이 멀어졌다는 알림이 안 떠요. 무엇을 확인할까요?,ASK,"현재 탐색 모드가 실내인가요, 실외인가요?","[""tracking_mode""]","[""SIM-EVD-F13-98d99975aae2""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""가방이 멀어졌다는 알림이 안 떠요. 무엇을 확인할까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-8e74e3bfec0b"", ""SIM-EVD-F13-98d99975aae2""],
+  ""missing_fields"": [""current_mode_of_search""]
+}","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""SIM-B13의 거리 알림 설정을 확인해 주세요. 현재 탐색 모드는 무엇인가요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-8e74e3bfec0b"", ""SIM-EVD-F13-98d99975aae2""],
+  ""missing_fields"": [""current_mode""]
+}","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""가방이 멀어졌다는 알림이 안 떠요. 탐색 모드를 확인해 주세요. SIM-B13의 주황 점 단일 점멸은 근거리 탐색 대기 상태이며, 거리 알림은 실내 탐색과 실외 탐색 설정이 다르므로 현재 탐색 모드를 먼저 확인해야 합니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-8e74e3bfec0b"", ""SIM-EVD-F13-98d99975aae2""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""가방이 멀어졌다는 알림이 안 떠요. 현재 탐색 모드를 확인해 주세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-98d99975aae2""],
+  ""missing_fields"": [""current_mode""]
+}
+```",,,,
+S11-F13-7f98989b,F13,태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?,ESCALATE,태그 사용을 중단하고 분해하지 말아 주세요. 지원센터에 안전한 점검을 문의해 주세요.,[],"[""SIM-EVD-F13-e91380764c80""]","{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-e91380764c80""],
+  ""missing_fields"": [""product_model"", ""customer_contact_info"", ""issue_severity""]
+}","{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-e91380764c80""],
+  ""missing_fields"": [""product_model"", ""customer_contact_info""]
+}","```json
+{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-e91380764c80""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-e91380764c80""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F13-79aceae3,F13,태그에 카메라가 있어서 가방 주변 사진을 찍을 수 있나요?,EXPLAIN_UNSUPPORTED,SIM-B13은 카메라나 사진 촬영 기능을 지원하지 않습니다.,[],"[""SIM-EVD-F13-b2ae62fa7007""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""태그에 카메라가 있어서 가방 주변 사진을 찍을 수 있나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-b2ae62fa7007""],
+  ""missing_fields"": [""product_code""]
+}","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""태그에 카메라가 있어서 가방 주변 사진을 찍을 수 있나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-b2ae62fa7007""],
+  ""missing_fields"": []
+}","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""SIM-B13은 카메라가 없으며 사진 촬영 기능을 제공하지 않습니다. 따라서 가방 주변 사진을 찍을 수 없습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-b2ae62fa7007""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""SIM-B13은 카메라가 없으며 사진 촬영 기능을 제공하지 않습니다. 따라서 가방 주변 사진을 찍을 수 없습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F13-b2ae62fa7007""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F14-ee3a1fd1,F14,진동 감시기에 초록 잎 표시가 떠 있어요. 진동을 감지 안 하나요?,ANSWER,초록 잎 표시는 미세 진동 감시 대기 상태입니다. 기록 버튼으로 마지막 감지 기록을 확인할 수 있습니다.,[],"[""SIM-EVD-F14-d2148f00f534""]","{
+  ""action"": ""EXPLAIN_UNSUPPORTED"",
+  ""customer_message"": ""진동 감시기에 초록 잎 표시가 떠 있어요. 진동을 감지 안 하나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-b110159cd2b0"", ""SIM-EVD-F14-d2148f00f534""],
+  ""missing_fields"": [""product_model"", ""user_location"", ""timestamp""]
+}","{
+  ""action"": ""EXPLAIN_UNSUPPORTED"",
+  ""customer_message"": ""진동 감시기에 초록 잎 표시가 떠 있어요. 진동을 감지 안 하나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-b110159cd2b0"", ""SIM-EVD-F14-d2148f00f534""],
+  ""missing_fields"": [""product_model"", ""user_action"", ""device_status""]
+}","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""초록 잎 표시가 떠 있지만 진동을 감지하지 못하는 경우, 제품의 민감도 조절 설정이 올바르게 되어 있지 않을 수 있습니다. SIM-M14의 민감도 조절은 선반 부착 모드와 벽 부착 모드에서 다르며, 부착 위치 유형을 확인하여 적절한 설정을 적용해야 합니다. 초록 잎은 미세 진동 감시 대기 상태이며, 기록 버튼을 누르면 마지막 기록을 보실 수 있습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-b110159cd2b0"", ""SIM-EVD-F14-d2148f00f534""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""초록 잎 표시가 떠 있지만 진동을 감지하지 못하는 경우, 제품의 민감도 조절 설정이 올바르게 되어 있지 않을 수 있습니다. SIM-M14의 민감도 조절은 선반 부착 모드와 벽 부착 모드에서 다르며, 부착 위치 유형을 확인해 보세요. 또한, 초록 잎은 미세 진동 감시 대기 상태로, 기록 버튼을 누르면 마지막 기록을 보실 수 있습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-b110159cd2b0"", ""SIM-EVD-F14-d2148f00f534""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F14-ea3a3c7a,F14,진동이 감지됐다고 계속 알리는데 민감도를 어떻게 바꾸죠?,ASK,"감시기를 선반에 부착하셨나요, 벽에 부착하셨나요?","[""mounting_type""]","[""SIM-EVD-F14-b110159cd2b0""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""진동이 감지됐다고 계속 알리는데 민감도를 어떻게 바꾸죠?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-b110159cd2b0""],
+  ""missing_fields"": [""민감도 조절 방법""]
+}","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""민감도를 조절하려면 어떤 단계를 따르면 좋을까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-b110159cd2b0""],
+  ""missing_fields"": [""부착 위치 유형""]
+}","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""진동 감지의 민감도 조절 방법을 알려주세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-b110159cd2b0""],
+  ""missing_fields"": [""product_state"", ""user_location""]
+}
+```","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""SIM-M14의 민감도 조절 방법을 알려주세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-b110159cd2b0""],
+  ""missing_fields"": [""product_state"", ""user_location""]
+}
+```",,,,
+S11-F14-ca056e62,F14,감시기를 고정한 부분이 무너져 전원선이 찢어졌어요. 켜 볼까요?,ESCALATE,기기를 켜지 말고 손상된 전선을 만지지 마세요. 지원센터에 점검을 요청해 주세요.,[],"[""SIM-EVD-F14-8dacb2fa0205""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""감시기를 고정한 부분이 무너져 전원선이 찢어졌어요. 켜 볼까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-d2148f00f534"", ""SIM-EVD-F14-8dacb2fa0205""],
+  ""missing_fields"": [""기록 버튼을 누른 후 마지막 기록을 확인하려면 추가 정보가 필요합니다.""]
+}","{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""감시기를 고정한 부분이 무너져 전원선이 찢어졌어요. 켜 볼까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-8dacb2fa0205""],
+  ""missing_fields"": [""product_model"", ""issue_description"", ""request_type""]
+}","```json
+{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""감시기를 고정한 부분이 무너져 전원선이 찢어졌습니다. 사용 중단 후 전선을 직접 만지지 않고 지원센터에 점검을 요청해 주세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-d2148f00f534"", ""SIM-EVD-F14-8dacb2fa0205""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""감시기를 고정한 부분이 무너져 전원선이 찢어졌습니다. 사용 중단 후 전선을 직접 만지지 않고 지원센터에 점검을 요청해 주세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-d2148f00f534"", ""SIM-EVD-F14-8dacb2fa0205""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F14-66467e3f,F14,이 감시기가 책장 문을 자동으로 잠가 주나요?,EXPLAIN_UNSUPPORTED,SIM-M14는 책장 문 자동 잠금 기능을 지원하지 않습니다.,[],"[""SIM-EVD-F14-c94ad4d5876b""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""이 감시기가 책장 문을 자동으로 잠가 주나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-c94ad4d5876b"", ""SIM-EVD-F14-d2148f00f534""],
+  ""missing_fields"": [""product_features""]
+}","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""SIM-M14는 책장 문 잠금 기능이 없으므로, 책장 문을 자동으로 잠가 주는 기능은 없습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-c94ad4d5876b""],
+  ""missing_fields"": []
+}","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""이 감시기가 책장 문을 자동으로 잠가 주나요? 기록 버튼을 누르지 않아도 마지막 기록을 보는 것이 가능하다면, 책장 문 잠금 기능이 존재하는 것으로 간주할 수 있습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-c94ad4d5876b""],
+  ""missing_fields"": [""bookshelf_lock_function_status""]
+}
+```","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""SIM-M14는 책장 문 잠금 기능이 없으며, 진동 기록 및 알림 기능만 지원합니다. 책장 문을 자동으로 잠가 주는 기능이 존재하는지 확인해 주세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F14-c94ad4d5876b""],
+  ""missing_fields"": [""bookshelf_lock_function""]
+}
+```",,,,
+S11-F15-e9318ff8,F15,광량 조절기에 파란 물결 표시가 뜨는데 무슨 의미인가요?,ANSWER,파란 물결은 빛 변화 추적 대기 상태입니다. 보기 버튼을 눌러 광량을 확인해 주세요.,[],"[""SIM-EVD-F15-9bf567fbbbf5""]","{
+  ""action"": ""EXPLAIN_UNSUPPORTED"",
+  ""customer_message"": ""광량 조절기에 파란 물결 표시가 뜨는데 무슨 의미인가요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-9bf567fbbbf5""],
+  ""missing_fields"": [""조절 모드""]
+}","{
+  ""action"": ""EXPLAIN_UNSUPPORTED"",
+  ""customer_message"": ""SIM-Q15의 파란 물결 표시는 빛 변화 추적 대기 상태다. 현재 광량을 확인하려면 보기 버튼을 누른다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-9bf567fbbbf5""],
+  ""missing_fields"": [""조절 모드 확인""]
+}","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""SIM-Q15의 파란 물결 표시는 빛 변화 추적 대기 상태로, 현재 광량을 확인하려면 보기 버튼을 누르세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-9bf567fbbbf5""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""SIM-Q15의 파란 물결 표시는 빛 변화 추적 대기 상태로, 현재 광량을 확인하려면 보기 버튼을 누르세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-9bf567fbbbf5""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F15-b7e46774,F15,햇빛이 강한데 슬랫이 안 움직여요. 어디를 봐야 하나요?,ASK,"슬랫 조절 모드가 자동인가요, 고정인가요?","[""slat_control_mode""]","[""SIM-EVD-F15-0a1cc4924b33""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""햇빛이 강한데 슬랫이 안 움직여요. 어디를 봐야 하나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-9bf567fbbbf5"", ""SIM-EVD-F15-0a1cc4924b33""],
+  ""missing_fields"": [""current_mode""]
+}","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""슬랫이 움직이지 않는 이유를 확인해 주세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-9bf567fbbbf5"", ""SIM-EVD-F15-0a1cc4924b33""],
+  ""missing_fields"": [""current_mode""]
+}","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""햇빛이 강한 상황에서 슬랫이 움직이지 않는 경우, 슬랫의 위치를 확인해 보고 추가 조치를 취해 주시면 감사합니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-9bf567fbbbf5"", ""SIM-EVD-F15-0a1cc4924b33""],
+  ""missing_fields"": [""current_mode""]
+}
+```","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""슬랫이 움직이지 않는 이유를 확인해 주세요. 현재 조절 모드는 무엇인가요? 슬랫이 움직이지 않는 경우, 추가적인 점검이 필요할 수 있습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-9bf567fbbbf5"", ""SIM-EVD-F15-0a1cc4924b33""],
+  ""missing_fields"": [""current_mode""]
+}
+```",,,,
+S11-F15-3b7176d2,F15,조절기 모터 주변에서 연기와 심한 열이 납니다. 각도를 더 움직일까요?,ESCALATE,각도 조작을 중단하고 모터에서 안전거리를 유지해 주세요. 지원센터에 연락해 주세요.,[],"[""SIM-EVD-F15-24f90071262a""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""조절기 모터 주변에서 연기와 심한 열이 납니다. 각도를 더 움직일까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-24f90071262a""],
+  ""missing_fields"": [""current_temperature"", ""ambient_temperature"", ""motor_load""]
+}","{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""조절기 모터 주변에서 연기와 심한 열이 납니다. 각도를 더 움직일까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-24f90071262a""],
+  ""missing_fields"": [""product_code""]
+}","```json
+{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""SIM-Q15 모터 주변에 연기와 심한 열이 발생하고 있으며, 각도 조작을 중지하여 안전한 점검을 요청합니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-24f90071262a""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""SIM-Q15 모터 주변에 연기와 심한 열이 발생하고 있습니다. 이는 안전한 점검을 위해 즉시 지원센터에 연락하여 조치를 취해야 합니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-24f90071262a""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F15-7a401c54,F15,광량 조절기로 집 안 온도를 직접 냉방할 수 있나요?,EXPLAIN_UNSUPPORTED,SIM-Q15는 직접 냉방 기능을 지원하지 않습니다.,[],"[""SIM-EVD-F15-58b323fad51a""]","{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""광량 조절기로 집 안 온도를 직접 냉방할 수 있나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-58b323fad51a""],
+  ""missing_fields"": [""known_conditions""]
+}","{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""광량 조절기로 집 안 온도를 직접 냉방할 수 있나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-58b323fad51a""],
+  ""missing_fields"": [""known_conditions""]
+}","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""SIM-Q15는 광량과 슬랫만 제어하며 실내 냉방 기능을 지원하지 않습니다. 따라서 집 안 온도를 직접 냉방할 수 없습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-58b323fad51a""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""SIM-Q15는 광량과 슬랫만 제어하며 실내 냉방 기능을 지원하지 않습니다. 따라서 집 안 온도를 직접 냉방할 수 없습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F15-58b323fad51a""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F16-c2e86dbd,F16,메모기에 분홍 책갈피 모양이 떠요. 녹음이 삭제된 건가요?,ANSWER,분홍 책갈피는 메모 북마크 저장 완료입니다. 목록 버튼으로 저장 위치를 확인할 수 있습니다.,[],"[""SIM-EVD-F16-7ed77a162149""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""메모기에 분홍 책갈피 모양이 떠요. 녹음이 삭제된 건가요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-0a4d269b865d"", ""SIM-EVD-F16-7ed77a162149""],
+  ""missing_fields"": [""저장 위치""]
+}","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""분홍 책갈피 아이콘은 메모 북마크 저장 완료를 나타내는 것으로 보입니다. 저장 위치를 확인하려면 목록 버튼을 누르세요. 녹음이 삭제된 건가요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-0a4d269b865d"", ""SIM-EVD-F16-7ed77a162149""],
+  ""missing_fields"": []
+}","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""분홍 책갈피 아이콘은 메모 북마크 저장 완료를 나타내며, 저장 위치를 확인하려면 목록 버튼을 누르세요. 녹음이 삭제된 건가요? 녹음 음량 점검은 내장 마이크와 외부 마이크에 따라 다르며, 현재 마이크 입력 종류를 먼저 확인해야 합니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-0a4d269b865d"", ""SIM-EVD-F16-7ed77a162149""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ASK"",
+  ""customer_message"": ""분홍 책갈피 아이콘은 메모 북마크 저장 완료를 나타내며, 저장 위치를 확인하려면 목록 버튼을 누르세요. 녹음이 삭제된 건가요? 메모기에 분홍 책갈피가 떠 있는 경우, 녹음이 삭제되지 않았을 수 있습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-0a4d269b865d"", ""SIM-EVD-F16-7ed77a162149""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F16-614f5d58,F16,녹음 소리가 작습니다. 설정을 어디서 바꾸나요?,ASK,"현재 내장 마이크를 사용하시나요, 외부 마이크를 사용하시나요?","[""microphone_source""]","[""SIM-EVD-F16-0a4d269b865d""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""녹음 소리가 작습니다. 설정을 어디서 바꾸나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-0a4d269b865d""],
+  ""missing_fields"": [""저장 위치""]
+}","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""녹음 소리가 작습니다. 설정을 어디서 바꾸나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-0a4d269b865d""],
+  ""missing_fields"": [""저장 위치""]
+}","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""녹음 소리가 작다면, 내장 마이크 또는 외부 마이크의 입력 설정을 확인해 보세요. 설정을 변경하려면 설정 메뉴에서 마이크 입력 종류를 선택해 주세요."",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-0a4d269b865d""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""녹음 소리가 작다면, 내장 마이크 또는 외부 마이크의 입력 설정을 확인해 보세요. 설정을 바꾸려면 설정 메뉴에서 마이크 입력 종류를 선택하세요. 분홍 책갈피 아이콘은 메모 북마크 저장 완료를 나타내며, 목록 버튼을 누르면 저장 위치를 확인할 수 있습니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-0a4d269b865d"", ""SIM-EVD-F16-7ed77a162149""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F16-9905c2eb,F16,메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요?,ESCALATE,파일 복사를 시도하지 말고 기기 사용을 중단해 주세요. 지원센터에 안전 점검을 요청해 주세요.,[],"[""SIM-EVD-F16-a0b2e4c4c9ff""]","{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-7ed77a162149"", ""SIM-EVD-F16-a0b2e4c4c9ff""],
+  ""missing_fields"": [""사용자 이름"", ""제품 구체적인 모델"", ""사용 기기의 상세 정보""]
+}","{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-a0b2e4c4c9ff""],
+  ""missing_fields"": [""product_code""]
+}","```json
+{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-7ed77a162149"", ""SIM-EVD-F16-a0b2e4c4c9ff""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ESCALATE"",
+  ""customer_message"": ""메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요? 사용 중단 및 안전한 점검을 요청합니다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-7ed77a162149"", ""SIM-EVD-F16-a0b2e4c4c9ff""],
+  ""missing_fields"": []
+}
+```",,,,
+S11-F16-3c7dd78b,F16,이 메모기가 통화 중 상대방 목소리를 전화선에서 직접 녹음하나요?,EXPLAIN_UNSUPPORTED,SIM-V16은 전화선 연결이나 통화 직접 녹음을 지원하지 않습니다.,[],"[""SIM-EVD-F16-16139bc4964b""]","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""이 메모기가 통화 중 상대방 목소리를 전화선에서 직접 녹음하나요?"",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-16139bc4964b""],
+  ""missing_fields"": [""known_conditions""]
+}","{
+  ""action"": ""ASK"",
+  ""customer_message"": ""SIM-V16은 탁상 음성 메모만 저장한다. 전화선 연결과 통화 직접 녹음 기능은 지원하지 않는다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-16139bc4964b""],
+  ""missing_fields"": []
+}","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""SIM-V16은 탁상 음성 메모만 저장한다. 전화선 연결과 통화 직접 녹음 기능은 지원하지 않는다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-16139bc4964b""],
+  ""missing_fields"": []
+}
+```","```json
+{
+  ""action"": ""ANSWER"",
+  ""customer_message"": ""SIM-V16은 탁상 음성 메모만 저장한다. 전화선 연결과 통화 직접 녹음 기능은 지원하지 않는다."",
+  ""cited_evidence_ids"": [""SIM-EVD-F16-16139bc4964b""],
+  ""missing_fields"": []
+}
+```",,,,

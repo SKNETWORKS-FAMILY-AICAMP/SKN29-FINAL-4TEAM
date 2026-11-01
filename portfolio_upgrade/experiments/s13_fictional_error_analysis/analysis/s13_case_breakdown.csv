@@ -1,0 +1,17 @@
+﻿case_id,group,gold_action,base_action,lora_action,base_schema_valid,lora_schema_valid,base_citation_exact_ID_only,lora_citation_exact_ID_only,base_missing_contract_valid,lora_missing_contract_valid,base_question_echo,lora_question_echo,base_missing_fields,lora_missing_fields,gold_missing_fields,lora_parse_fenced
+S11-F13-dbc14296,F13,ANSWER,ASK,(UNPARSEABLE),1,0,0,0,1,0,1,0,"[""current_mode""]",[],[],1
+S11-F13-1fe56eb1,F13,ASK,ASK,ASK,1,1,0,0,1,1,1,0,"[""current_mode_of_search""]","[""current_mode""]","[""tracking_mode""]",0
+S11-F13-7f98989b,F13,ESCALATE,ESCALATE,ESCALATE,0,0,1,1,0,0,1,1,"[""product_model"", ""customer_contact_info"", ""issue_severity""]","[""product_model"", ""customer_contact_info""]",[],0
+S11-F13-79aceae3,F13,EXPLAIN_UNSUPPORTED,ASK,ASK,1,0,1,1,1,0,1,1,"[""product_code""]",[],[],0
+S11-F14-ee3a1fd1,F14,ANSWER,EXPLAIN_UNSUPPORTED,EXPLAIN_UNSUPPORTED,0,0,0,0,0,0,1,1,"[""product_model"", ""user_location"", ""timestamp""]","[""product_model"", ""user_action"", ""device_status""]",[],0
+S11-F14-ea3a3c7a,F14,ASK,ASK,ASK,1,1,1,1,1,1,1,0,"[""민감도 조절 방법""]","[""부착 위치 유형""]","[""mounting_type""]",0
+S11-F14-ca056e62,F14,ESCALATE,ASK,ESCALATE,1,0,0,1,1,0,1,1,"[""기록 버튼을 누른 후 마지막 기록을 확인하려면 추가 정보가 필요합니다.""]","[""product_model"", ""issue_description"", ""request_type""]",[],0
+S11-F14-66467e3f,F14,EXPLAIN_UNSUPPORTED,ASK,ASK,1,0,0,1,1,0,1,0,"[""product_features""]",[],[],0
+S11-F15-e9318ff8,F15,ANSWER,EXPLAIN_UNSUPPORTED,EXPLAIN_UNSUPPORTED,0,0,1,1,0,0,1,0,"[""조절 모드""]","[""조절 모드 확인""]",[],0
+S11-F15-b7e46774,F15,ASK,ASK,ASK,1,1,0,0,1,1,1,0,"[""current_mode""]","[""current_mode""]","[""slat_control_mode""]",0
+S11-F15-3b7176d2,F15,ESCALATE,ASK,ESCALATE,1,0,1,1,1,0,1,1,"[""current_temperature"", ""ambient_temperature"", ""motor_load""]","[""product_code""]",[],0
+S11-F15-7a401c54,F15,EXPLAIN_UNSUPPORTED,ESCALATE,ESCALATE,0,0,1,1,0,0,1,1,"[""known_conditions""]","[""known_conditions""]",[],0
+S11-F16-c2e86dbd,F16,ANSWER,ASK,ASK,1,0,0,0,1,0,1,0,"[""저장 위치""]",[],[],0
+S11-F16-614f5d58,F16,ASK,ASK,ASK,1,1,1,1,1,1,1,1,"[""저장 위치""]","[""저장 위치""]","[""microphone_source""]",0
+S11-F16-9905c2eb,F16,ESCALATE,ESCALATE,ESCALATE,0,0,0,1,0,0,1,1,"[""사용자 이름"", ""제품 구체적인 모델"", ""사용 기기의 상세 정보""]","[""product_code""]",[],0
+S11-F16-3c7dd78b,F16,EXPLAIN_UNSUPPORTED,ASK,ASK,1,0,1,1,1,0,1,0,"[""known_conditions""]",[],[],0

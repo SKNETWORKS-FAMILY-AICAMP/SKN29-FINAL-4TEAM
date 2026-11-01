@@ -1,0 +1,1546 @@
+{
+  "status": "S13_FICTIONAL_DEV_FORENSICS_OFFLINE_NOT_FINAL_OR_WATERBRIDGE",
+  "source_sha256": {
+    "base_predictions.jsonl": "3f04ad4b3a4e5edb195defb5763ab6441c66b73247a847675f876268e8c66161",
+    "lora_predictions.jsonl": "e472ba292304e6f8dd934e429a77fe9495df3f9937a7f18cbe7086f9fa2762bb",
+    "s12_dev_comparison.json": "9b67a333a29d6acad314e590be8dd20394a7b7edf3e8879f34aae475e255828d",
+    "train_report.json": "c07e6c00be8b21278571347530649f77c12f5456993c5cb18f93549ec21035fd",
+    "s11_fictional_probe_inputs_v2.jsonl": "7fc5401cec2f06e924ae540ed33a5a1fe306dc7084d877e705ace991167d9de3",
+    "s11_fictional_probe_targets_EVAL_ONLY_v2.jsonl": "c653562c677a6d46387c99dd915dd4066c9a4541b356a124c7f2736055be1ac7"
+  },
+  "metrics": {
+    "BASE": {
+      "official_s12": {
+        "json_object": 16,
+        "fields_exact": 16,
+        "field_types_valid": 16,
+        "schema_valid": 11,
+        "citation_grounded": 16,
+        "missing_contract_valid": 11,
+        "raw_action_match": 6,
+        "strict_action_match": 4,
+        "citation_exact": 5,
+        "missing_fields_exact": 0,
+        "structured_target_match": 0
+      },
+      "predicted_action_histogram": {
+        "ASK": 11,
+        "ESCALATE": 3,
+        "EXPLAIN_UNSUPPORTED": 2
+      },
+      "by_gold_action": {
+        "ANSWER": {
+          "count": 4,
+          "raw_action_correct": 0,
+          "schema_valid": 2,
+          "strict_action_correct": 0
+        },
+        "ASK": {
+          "count": 4,
+          "raw_action_correct": 4,
+          "schema_valid": 4,
+          "strict_action_correct": 4
+        },
+        "ESCALATE": {
+          "count": 4,
+          "raw_action_correct": 2,
+          "schema_valid": 2,
+          "strict_action_correct": 0
+        },
+        "EXPLAIN_UNSUPPORTED": {
+          "count": 4,
+          "raw_action_correct": 0,
+          "schema_valid": 3,
+          "strict_action_correct": 0
+        }
+      },
+      "citation_exact_without_schema_gate": 8,
+      "all_provided_citation_ids_valid": 16,
+      "missing_fields_exact_without_schema_gate": 0,
+      "copied_input_question": 16,
+      "output_text_equals_gold_literal": 0,
+      "nonask_nonempty_missing": 5,
+      "ask_empty_missing": 0,
+      "markdown_fence_parse_failures": 0
+    },
+    "LORA": {
+      "official_s12": {
+        "json_object": 15,
+        "fields_exact": 15,
+        "field_types_valid": 15,
+        "schema_valid": 4,
+        "citation_grounded": 15,
+        "missing_contract_valid": 4,
+        "raw_action_match": 8,
+        "strict_action_match": 4,
+        "citation_exact": 2,
+        "missing_fields_exact": 0,
+        "structured_target_match": 0
+      },
+      "predicted_action_histogram": {
+        "None": 1,
+        "ASK": 8,
+        "ESCALATE": 5,
+        "EXPLAIN_UNSUPPORTED": 2
+      },
+      "by_gold_action": {
+        "ANSWER": {
+          "count": 4,
+          "raw_action_correct": 0,
+          "schema_valid": 0,
+          "strict_action_correct": 0
+        },
+        "ASK": {
+          "count": 4,
+          "raw_action_correct": 4,
+          "schema_valid": 4,
+          "strict_action_correct": 4
+        },
+        "ESCALATE": {
+          "count": 4,
+          "raw_action_correct": 4,
+          "schema_valid": 0,
+          "strict_action_correct": 0
+        },
+        "EXPLAIN_UNSUPPORTED": {
+          "count": 4,
+          "raw_action_correct": 0,
+          "schema_valid": 0,
+          "strict_action_correct": 0
+        }
+      },
+      "citation_exact_without_schema_gate": 11,
+      "all_provided_citation_ids_valid": 15,
+      "missing_fields_exact_without_schema_gate": 4,
+      "copied_input_question": 8,
+      "output_text_equals_gold_literal": 0,
+      "nonask_nonempty_missing": 7,
+      "ask_empty_missing": 4,
+      "markdown_fence_parse_failures": 1
+    }
+  },
+  "details": [
+    {
+      "case_id": "S11-F13-dbc14296",
+      "semantic_group_id": "F13",
+      "expected_action": "ANSWER",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F13-8e74e3bfec0b",
+          "SIM-EVD-F13-98d99975aae2"
+        ],
+        "missing_field_values": [
+          "current_mode"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F13-98d99975aae2"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F13-dbc14296",
+        "semantic_group_id": "F13",
+        "expected_action": "ANSWER",
+        "expected_citations": [
+          "SIM-EVD-F13-8e74e3bfec0b"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "태그에 주황 점이 한 번씩 켜집니다. 배터리 경고인가요?",
+        "output_text": "태그에 주황 점이 한 번씩 켜집니다. 배터리 경고인가요?",
+        "generation_tokens": 98
+      },
+      "lora": {
+        "json_object": false,
+        "fields_exact": false,
+        "field_types_valid": false,
+        "schema_valid": false,
+        "citation_grounded": false,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": false,
+        "output_text_equals_gold": false,
+        "predicted_action": null,
+        "provided_citations": [],
+        "missing_field_values": [],
+        "excess_citations": [],
+        "missing_gold_citations": [
+          "SIM-EVD-F13-8e74e3bfec0b"
+        ],
+        "parse_fail_markdown_code_fence": true,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F13-dbc14296",
+        "semantic_group_id": "F13",
+        "expected_action": "ANSWER",
+        "expected_citations": [
+          "SIM-EVD-F13-8e74e3bfec0b"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "태그에 주황 점이 한 번씩 켜집니다. 배터리 경고인가요?",
+        "output_text": "",
+        "generation_tokens": 82
+      }
+    },
+    {
+      "case_id": "S11-F13-1fe56eb1",
+      "semantic_group_id": "F13",
+      "expected_action": "ASK",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": true,
+        "strict_action_match": true,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F13-8e74e3bfec0b",
+          "SIM-EVD-F13-98d99975aae2"
+        ],
+        "missing_field_values": [
+          "current_mode_of_search"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F13-8e74e3bfec0b"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F13-1fe56eb1",
+        "semantic_group_id": "F13",
+        "expected_action": "ASK",
+        "expected_citations": [
+          "SIM-EVD-F13-98d99975aae2"
+        ],
+        "expected_missing_fields": [
+          "tracking_mode"
+        ],
+        "input_question": "가방이 멀어졌다는 알림이 안 떠요. 무엇을 확인할까요?",
+        "output_text": "가방이 멀어졌다는 알림이 안 떠요. 무엇을 확인할까요?",
+        "generation_tokens": 97
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": true,
+        "strict_action_match": true,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": false,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F13-8e74e3bfec0b",
+          "SIM-EVD-F13-98d99975aae2"
+        ],
+        "missing_field_values": [
+          "current_mode"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F13-8e74e3bfec0b"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F13-1fe56eb1",
+        "semantic_group_id": "F13",
+        "expected_action": "ASK",
+        "expected_citations": [
+          "SIM-EVD-F13-98d99975aae2"
+        ],
+        "expected_missing_fields": [
+          "tracking_mode"
+        ],
+        "input_question": "가방이 멀어졌다는 알림이 안 떠요. 무엇을 확인할까요?",
+        "output_text": "SIM-B13의 거리 알림 설정을 확인해 주세요. 현재 탐색 모드는 무엇인가요?",
+        "generation_tokens": 100
+      }
+    },
+    {
+      "case_id": "S11-F13-7f98989b",
+      "semantic_group_id": "F13",
+      "expected_action": "ESCALATE",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": true,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ESCALATE",
+        "provided_citations": [
+          "SIM-EVD-F13-e91380764c80"
+        ],
+        "missing_field_values": [
+          "product_model",
+          "customer_contact_info",
+          "issue_severity"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F13-7f98989b",
+        "semantic_group_id": "F13",
+        "expected_action": "ESCALATE",
+        "expected_citations": [
+          "SIM-EVD-F13-e91380764c80"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?",
+        "output_text": "태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?",
+        "generation_tokens": 96
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": true,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ESCALATE",
+        "provided_citations": [
+          "SIM-EVD-F13-e91380764c80"
+        ],
+        "missing_field_values": [
+          "product_model",
+          "customer_contact_info"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F13-7f98989b",
+        "semantic_group_id": "F13",
+        "expected_action": "ESCALATE",
+        "expected_citations": [
+          "SIM-EVD-F13-e91380764c80"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?",
+        "output_text": "태그 배터리 커버가 뜨겁고 변형됐어요. 다시 가방에 달아도 되나요?",
+        "generation_tokens": 91
+      }
+    },
+    {
+      "case_id": "S11-F13-79aceae3",
+      "semantic_group_id": "F13",
+      "expected_action": "EXPLAIN_UNSUPPORTED",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": true,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F13-b2ae62fa7007"
+        ],
+        "missing_field_values": [
+          "product_code"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F13-79aceae3",
+        "semantic_group_id": "F13",
+        "expected_action": "EXPLAIN_UNSUPPORTED",
+        "expected_citations": [
+          "SIM-EVD-F13-b2ae62fa7007"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "태그에 카메라가 있어서 가방 주변 사진을 찍을 수 있나요?",
+        "output_text": "태그에 카메라가 있어서 가방 주변 사진을 찍을 수 있나요?",
+        "generation_tokens": 74
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": true,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F13-b2ae62fa7007"
+        ],
+        "missing_field_values": [],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": true,
+        "model": "LORA",
+        "case_id": "S11-F13-79aceae3",
+        "semantic_group_id": "F13",
+        "expected_action": "EXPLAIN_UNSUPPORTED",
+        "expected_citations": [
+          "SIM-EVD-F13-b2ae62fa7007"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "태그에 카메라가 있어서 가방 주변 사진을 찍을 수 있나요?",
+        "output_text": "태그에 카메라가 있어서 가방 주변 사진을 찍을 수 있나요?",
+        "generation_tokens": 71
+      }
+    },
+    {
+      "case_id": "S11-F14-ee3a1fd1",
+      "semantic_group_id": "F14",
+      "expected_action": "ANSWER",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "EXPLAIN_UNSUPPORTED",
+        "provided_citations": [
+          "SIM-EVD-F14-b110159cd2b0",
+          "SIM-EVD-F14-d2148f00f534"
+        ],
+        "missing_field_values": [
+          "product_model",
+          "user_location",
+          "timestamp"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F14-b110159cd2b0"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F14-ee3a1fd1",
+        "semantic_group_id": "F14",
+        "expected_action": "ANSWER",
+        "expected_citations": [
+          "SIM-EVD-F14-d2148f00f534"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "진동 감시기에 초록 잎 표시가 떠 있어요. 진동을 감지 안 하나요?",
+        "output_text": "진동 감시기에 초록 잎 표시가 떠 있어요. 진동을 감지 안 하나요?",
+        "generation_tokens": 108
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "EXPLAIN_UNSUPPORTED",
+        "provided_citations": [
+          "SIM-EVD-F14-b110159cd2b0",
+          "SIM-EVD-F14-d2148f00f534"
+        ],
+        "missing_field_values": [
+          "product_model",
+          "user_action",
+          "device_status"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F14-b110159cd2b0"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F14-ee3a1fd1",
+        "semantic_group_id": "F14",
+        "expected_action": "ANSWER",
+        "expected_citations": [
+          "SIM-EVD-F14-d2148f00f534"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "진동 감시기에 초록 잎 표시가 떠 있어요. 진동을 감지 안 하나요?",
+        "output_text": "진동 감시기에 초록 잎 표시가 떠 있어요. 진동을 감지 안 하나요?",
+        "generation_tokens": 109
+      }
+    },
+    {
+      "case_id": "S11-F14-ea3a3c7a",
+      "semantic_group_id": "F14",
+      "expected_action": "ASK",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": true,
+        "strict_action_match": true,
+        "citation_exact": true,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F14-b110159cd2b0"
+        ],
+        "missing_field_values": [
+          "민감도 조절 방법"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F14-ea3a3c7a",
+        "semantic_group_id": "F14",
+        "expected_action": "ASK",
+        "expected_citations": [
+          "SIM-EVD-F14-b110159cd2b0"
+        ],
+        "expected_missing_fields": [
+          "mounting_type"
+        ],
+        "input_question": "진동이 감지됐다고 계속 알리는데 민감도를 어떻게 바꾸죠?",
+        "output_text": "진동이 감지됐다고 계속 알리는데 민감도를 어떻게 바꾸죠?",
+        "generation_tokens": 77
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": true,
+        "strict_action_match": true,
+        "citation_exact": true,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": false,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F14-b110159cd2b0"
+        ],
+        "missing_field_values": [
+          "부착 위치 유형"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F14-ea3a3c7a",
+        "semantic_group_id": "F14",
+        "expected_action": "ASK",
+        "expected_citations": [
+          "SIM-EVD-F14-b110159cd2b0"
+        ],
+        "expected_missing_fields": [
+          "mounting_type"
+        ],
+        "input_question": "진동이 감지됐다고 계속 알리는데 민감도를 어떻게 바꾸죠?",
+        "output_text": "민감도를 조절하려면 어떤 단계를 따르면 좋을까요?",
+        "generation_tokens": 75
+      }
+    },
+    {
+      "case_id": "S11-F14-ca056e62",
+      "semantic_group_id": "F14",
+      "expected_action": "ESCALATE",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F14-d2148f00f534",
+          "SIM-EVD-F14-8dacb2fa0205"
+        ],
+        "missing_field_values": [
+          "기록 버튼을 누른 후 마지막 기록을 확인하려면 추가 정보가 필요합니다."
+        ],
+        "excess_citations": [
+          "SIM-EVD-F14-d2148f00f534"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F14-ca056e62",
+        "semantic_group_id": "F14",
+        "expected_action": "ESCALATE",
+        "expected_citations": [
+          "SIM-EVD-F14-8dacb2fa0205"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "감시기를 고정한 부분이 무너져 전원선이 찢어졌어요. 켜 볼까요?",
+        "output_text": "감시기를 고정한 부분이 무너져 전원선이 찢어졌어요. 켜 볼까요?",
+        "generation_tokens": 118
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": true,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ESCALATE",
+        "provided_citations": [
+          "SIM-EVD-F14-8dacb2fa0205"
+        ],
+        "missing_field_values": [
+          "product_model",
+          "issue_description",
+          "request_type"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F14-ca056e62",
+        "semantic_group_id": "F14",
+        "expected_action": "ESCALATE",
+        "expected_citations": [
+          "SIM-EVD-F14-8dacb2fa0205"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "감시기를 고정한 부분이 무너져 전원선이 찢어졌어요. 켜 볼까요?",
+        "output_text": "감시기를 고정한 부분이 무너져 전원선이 찢어졌어요. 켜 볼까요?",
+        "generation_tokens": 89
+      }
+    },
+    {
+      "case_id": "S11-F14-66467e3f",
+      "semantic_group_id": "F14",
+      "expected_action": "EXPLAIN_UNSUPPORTED",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F14-c94ad4d5876b",
+          "SIM-EVD-F14-d2148f00f534"
+        ],
+        "missing_field_values": [
+          "product_features"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F14-d2148f00f534"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F14-66467e3f",
+        "semantic_group_id": "F14",
+        "expected_action": "EXPLAIN_UNSUPPORTED",
+        "expected_citations": [
+          "SIM-EVD-F14-c94ad4d5876b"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "이 감시기가 책장 문을 자동으로 잠가 주나요?",
+        "output_text": "이 감시기가 책장 문을 자동으로 잠가 주나요?",
+        "generation_tokens": 90
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": true,
+        "copied_input_question": false,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F14-c94ad4d5876b"
+        ],
+        "missing_field_values": [],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": true,
+        "model": "LORA",
+        "case_id": "S11-F14-66467e3f",
+        "semantic_group_id": "F14",
+        "expected_action": "EXPLAIN_UNSUPPORTED",
+        "expected_citations": [
+          "SIM-EVD-F14-c94ad4d5876b"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "이 감시기가 책장 문을 자동으로 잠가 주나요?",
+        "output_text": "SIM-M14는 책장 문 잠금 기능이 없으므로, 책장 문을 자동으로 잠가 주는 기능은 없습니다.",
+        "generation_tokens": 84
+      }
+    },
+    {
+      "case_id": "S11-F15-e9318ff8",
+      "semantic_group_id": "F15",
+      "expected_action": "ANSWER",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "EXPLAIN_UNSUPPORTED",
+        "provided_citations": [
+          "SIM-EVD-F15-9bf567fbbbf5"
+        ],
+        "missing_field_values": [
+          "조절 모드"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F15-e9318ff8",
+        "semantic_group_id": "F15",
+        "expected_action": "ANSWER",
+        "expected_citations": [
+          "SIM-EVD-F15-9bf567fbbbf5"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "광량 조절기에 파란 물결 표시가 뜨는데 무슨 의미인가요?",
+        "output_text": "광량 조절기에 파란 물결 표시가 뜨는데 무슨 의미인가요?",
+        "generation_tokens": 77
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": false,
+        "output_text_equals_gold": false,
+        "predicted_action": "EXPLAIN_UNSUPPORTED",
+        "provided_citations": [
+          "SIM-EVD-F15-9bf567fbbbf5"
+        ],
+        "missing_field_values": [
+          "조절 모드 확인"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F15-e9318ff8",
+        "semantic_group_id": "F15",
+        "expected_action": "ANSWER",
+        "expected_citations": [
+          "SIM-EVD-F15-9bf567fbbbf5"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "광량 조절기에 파란 물결 표시가 뜨는데 무슨 의미인가요?",
+        "output_text": "SIM-Q15의 파란 물결 표시는 빛 변화 추적 대기 상태다. 현재 광량을 확인하려면 보기 버튼을 누른다.",
+        "generation_tokens": 97
+      }
+    },
+    {
+      "case_id": "S11-F15-b7e46774",
+      "semantic_group_id": "F15",
+      "expected_action": "ASK",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": true,
+        "strict_action_match": true,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F15-9bf567fbbbf5",
+          "SIM-EVD-F15-0a1cc4924b33"
+        ],
+        "missing_field_values": [
+          "current_mode"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F15-9bf567fbbbf5"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F15-b7e46774",
+        "semantic_group_id": "F15",
+        "expected_action": "ASK",
+        "expected_citations": [
+          "SIM-EVD-F15-0a1cc4924b33"
+        ],
+        "expected_missing_fields": [
+          "slat_control_mode"
+        ],
+        "input_question": "햇빛이 강한데 슬랫이 안 움직여요. 어디를 봐야 하나요?",
+        "output_text": "햇빛이 강한데 슬랫이 안 움직여요. 어디를 봐야 하나요?",
+        "generation_tokens": 97
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": true,
+        "strict_action_match": true,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": false,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F15-9bf567fbbbf5",
+          "SIM-EVD-F15-0a1cc4924b33"
+        ],
+        "missing_field_values": [
+          "current_mode"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F15-9bf567fbbbf5"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F15-b7e46774",
+        "semantic_group_id": "F15",
+        "expected_action": "ASK",
+        "expected_citations": [
+          "SIM-EVD-F15-0a1cc4924b33"
+        ],
+        "expected_missing_fields": [
+          "slat_control_mode"
+        ],
+        "input_question": "햇빛이 강한데 슬랫이 안 움직여요. 어디를 봐야 하나요?",
+        "output_text": "슬랫이 움직이지 않는 이유를 확인해 주세요.",
+        "generation_tokens": 87
+      }
+    },
+    {
+      "case_id": "S11-F15-3b7176d2",
+      "semantic_group_id": "F15",
+      "expected_action": "ESCALATE",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": true,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F15-24f90071262a"
+        ],
+        "missing_field_values": [
+          "current_temperature",
+          "ambient_temperature",
+          "motor_load"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F15-3b7176d2",
+        "semantic_group_id": "F15",
+        "expected_action": "ESCALATE",
+        "expected_citations": [
+          "SIM-EVD-F15-24f90071262a"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "조절기 모터 주변에서 연기와 심한 열이 납니다. 각도를 더 움직일까요?",
+        "output_text": "조절기 모터 주변에서 연기와 심한 열이 납니다. 각도를 더 움직일까요?",
+        "generation_tokens": 91
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": true,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ESCALATE",
+        "provided_citations": [
+          "SIM-EVD-F15-24f90071262a"
+        ],
+        "missing_field_values": [
+          "product_code"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F15-3b7176d2",
+        "semantic_group_id": "F15",
+        "expected_action": "ESCALATE",
+        "expected_citations": [
+          "SIM-EVD-F15-24f90071262a"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "조절기 모터 주변에서 연기와 심한 열이 납니다. 각도를 더 움직일까요?",
+        "output_text": "조절기 모터 주변에서 연기와 심한 열이 납니다. 각도를 더 움직일까요?",
+        "generation_tokens": 85
+      }
+    },
+    {
+      "case_id": "S11-F15-7a401c54",
+      "semantic_group_id": "F15",
+      "expected_action": "EXPLAIN_UNSUPPORTED",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ESCALATE",
+        "provided_citations": [
+          "SIM-EVD-F15-58b323fad51a"
+        ],
+        "missing_field_values": [
+          "known_conditions"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F15-7a401c54",
+        "semantic_group_id": "F15",
+        "expected_action": "EXPLAIN_UNSUPPORTED",
+        "expected_citations": [
+          "SIM-EVD-F15-58b323fad51a"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "광량 조절기로 집 안 온도를 직접 냉방할 수 있나요?",
+        "output_text": "광량 조절기로 집 안 온도를 직접 냉방할 수 있나요?",
+        "generation_tokens": 77
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ESCALATE",
+        "provided_citations": [
+          "SIM-EVD-F15-58b323fad51a"
+        ],
+        "missing_field_values": [
+          "known_conditions"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F15-7a401c54",
+        "semantic_group_id": "F15",
+        "expected_action": "EXPLAIN_UNSUPPORTED",
+        "expected_citations": [
+          "SIM-EVD-F15-58b323fad51a"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "광량 조절기로 집 안 온도를 직접 냉방할 수 있나요?",
+        "output_text": "광량 조절기로 집 안 온도를 직접 냉방할 수 있나요?",
+        "generation_tokens": 77
+      }
+    },
+    {
+      "case_id": "S11-F16-c2e86dbd",
+      "semantic_group_id": "F16",
+      "expected_action": "ANSWER",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F16-0a4d269b865d",
+          "SIM-EVD-F16-7ed77a162149"
+        ],
+        "missing_field_values": [
+          "저장 위치"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F16-0a4d269b865d"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F16-c2e86dbd",
+        "semantic_group_id": "F16",
+        "expected_action": "ANSWER",
+        "expected_citations": [
+          "SIM-EVD-F16-7ed77a162149"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "메모기에 분홍 책갈피 모양이 떠요. 녹음이 삭제된 건가요?",
+        "output_text": "메모기에 분홍 책갈피 모양이 떠요. 녹음이 삭제된 건가요?",
+        "generation_tokens": 101
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": true,
+        "copied_input_question": false,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F16-0a4d269b865d",
+          "SIM-EVD-F16-7ed77a162149"
+        ],
+        "missing_field_values": [],
+        "excess_citations": [
+          "SIM-EVD-F16-0a4d269b865d"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": true,
+        "model": "LORA",
+        "case_id": "S11-F16-c2e86dbd",
+        "semantic_group_id": "F16",
+        "expected_action": "ANSWER",
+        "expected_citations": [
+          "SIM-EVD-F16-7ed77a162149"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "메모기에 분홍 책갈피 모양이 떠요. 녹음이 삭제된 건가요?",
+        "output_text": "분홍 책갈피 아이콘은 메모 북마크 저장 완료를 나타내는 것으로 보입니다. 저장 위치를 확인하려면 목록 버튼을 누르세요. 녹음이 삭제된 건가요?",
+        "generation_tokens": 122
+      }
+    },
+    {
+      "case_id": "S11-F16-614f5d58",
+      "semantic_group_id": "F16",
+      "expected_action": "ASK",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": true,
+        "strict_action_match": true,
+        "citation_exact": true,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F16-0a4d269b865d"
+        ],
+        "missing_field_values": [
+          "저장 위치"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F16-614f5d58",
+        "semantic_group_id": "F16",
+        "expected_action": "ASK",
+        "expected_citations": [
+          "SIM-EVD-F16-0a4d269b865d"
+        ],
+        "expected_missing_fields": [
+          "microphone_source"
+        ],
+        "input_question": "녹음 소리가 작습니다. 설정을 어디서 바꾸나요?",
+        "output_text": "녹음 소리가 작습니다. 설정을 어디서 바꾸나요?",
+        "generation_tokens": 72
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": true,
+        "strict_action_match": true,
+        "citation_exact": true,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F16-0a4d269b865d"
+        ],
+        "missing_field_values": [
+          "저장 위치"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F16-614f5d58",
+        "semantic_group_id": "F16",
+        "expected_action": "ASK",
+        "expected_citations": [
+          "SIM-EVD-F16-0a4d269b865d"
+        ],
+        "expected_missing_fields": [
+          "microphone_source"
+        ],
+        "input_question": "녹음 소리가 작습니다. 설정을 어디서 바꾸나요?",
+        "output_text": "녹음 소리가 작습니다. 설정을 어디서 바꾸나요?",
+        "generation_tokens": 72
+      }
+    },
+    {
+      "case_id": "S11-F16-9905c2eb",
+      "semantic_group_id": "F16",
+      "expected_action": "ESCALATE",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": true,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": false,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ESCALATE",
+        "provided_citations": [
+          "SIM-EVD-F16-7ed77a162149",
+          "SIM-EVD-F16-a0b2e4c4c9ff"
+        ],
+        "missing_field_values": [
+          "사용자 이름",
+          "제품 구체적인 모델",
+          "사용 기기의 상세 정보"
+        ],
+        "excess_citations": [
+          "SIM-EVD-F16-7ed77a162149"
+        ],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F16-9905c2eb",
+        "semantic_group_id": "F16",
+        "expected_action": "ESCALATE",
+        "expected_citations": [
+          "SIM-EVD-F16-a0b2e4c4c9ff"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요?",
+        "output_text": "메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요?",
+        "generation_tokens": 115
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": true,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ESCALATE",
+        "provided_citations": [
+          "SIM-EVD-F16-a0b2e4c4c9ff"
+        ],
+        "missing_field_values": [
+          "product_code"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": true,
+        "ask_empty_missing": false,
+        "model": "LORA",
+        "case_id": "S11-F16-9905c2eb",
+        "semantic_group_id": "F16",
+        "expected_action": "ESCALATE",
+        "expected_citations": [
+          "SIM-EVD-F16-a0b2e4c4c9ff"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요?",
+        "output_text": "메모기에서 누액과 열이 나는데 파일만 먼저 복사할까요?",
+        "generation_tokens": 74
+      }
+    },
+    {
+      "case_id": "S11-F16-3c7dd78b",
+      "semantic_group_id": "F16",
+      "expected_action": "EXPLAIN_UNSUPPORTED",
+      "base": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": true,
+        "citation_grounded": true,
+        "missing_contract_valid": true,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": true,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": false,
+        "copied_input_question": true,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F16-16139bc4964b"
+        ],
+        "missing_field_values": [
+          "known_conditions"
+        ],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": false,
+        "model": "BASE",
+        "case_id": "S11-F16-3c7dd78b",
+        "semantic_group_id": "F16",
+        "expected_action": "EXPLAIN_UNSUPPORTED",
+        "expected_citations": [
+          "SIM-EVD-F16-16139bc4964b"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "이 메모기가 통화 중 상대방 목소리를 전화선에서 직접 녹음하나요?",
+        "output_text": "이 메모기가 통화 중 상대방 목소리를 전화선에서 직접 녹음하나요?",
+        "generation_tokens": 78
+      },
+      "lora": {
+        "json_object": true,
+        "fields_exact": true,
+        "field_types_valid": true,
+        "schema_valid": false,
+        "citation_grounded": true,
+        "missing_contract_valid": false,
+        "raw_action_match": false,
+        "strict_action_match": false,
+        "citation_exact": false,
+        "missing_fields_exact": false,
+        "structured_target_match": false,
+        "citation_exact_without_schema_gate": true,
+        "missing_exact_without_schema_gate": true,
+        "copied_input_question": false,
+        "output_text_equals_gold": false,
+        "predicted_action": "ASK",
+        "provided_citations": [
+          "SIM-EVD-F16-16139bc4964b"
+        ],
+        "missing_field_values": [],
+        "excess_citations": [],
+        "missing_gold_citations": [],
+        "parse_fail_markdown_code_fence": false,
+        "nonask_nonempty_missing": false,
+        "ask_empty_missing": true,
+        "model": "LORA",
+        "case_id": "S11-F16-3c7dd78b",
+        "semantic_group_id": "F16",
+        "expected_action": "EXPLAIN_UNSUPPORTED",
+        "expected_citations": [
+          "SIM-EVD-F16-16139bc4964b"
+        ],
+        "expected_missing_fields": [],
+        "input_question": "이 메모기가 통화 중 상대방 목소리를 전화선에서 직접 녹음하나요?",
+        "output_text": "SIM-V16은 탁상 음성 메모만 저장한다. 전화선 연결과 통화 직접 녹음 기능은 지원하지 않는다.",
+        "generation_tokens": 85
+      }
+    }
+  ],
+  "caveats": [
+    "DEV 16 examples were AI-reviewed and are not blind final evaluation.",
+    "All product rules and answers were fictitious; no real WaterBridge performance.",
+    "No real retrieval (BGE-M3 or pgvector), no GPU, no inference, and no learning in this S13 audit.",
+    "citation_exact_without_schema_gate is an additional ID-only diagnostic; semantic justification not established.",
+    "customer_message_exact_target is a literal comparison only, not a semantic rating."
+  ]
+}

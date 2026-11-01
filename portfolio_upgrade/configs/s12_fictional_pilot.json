@@ -1,0 +1,32 @@
+{
+  "status": "S12_FICTIONAL_ENGINEERING_PILOT_ONLY",
+  "base_model": "Qwen/Qwen3-1.7B",
+  "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "source_summary": "portfolio_upgrade/data/s11_grounded/v2/s11_fictional_v2_summary.json",
+  "train_file": "portfolio_upgrade/data/s11_grounded/v2/s11_fictional_train_v2.jsonl",
+  "probe_input_file": "portfolio_upgrade/data/s11_grounded/v2/s11_fictional_probe_inputs_v2.jsonl",
+  "probe_target_file": "portfolio_upgrade/data/s11_grounded/v2/s11_fictional_probe_targets_EVAL_ONLY_v2.jsonl",
+  "output_folder": "portfolio_upgrade/experiments/s12_fictional_lora_pilot",
+  "max_length": 768,
+  "max_new_tokens": 256,
+  "max_steps": 12,
+  "per_device_train_batch_size": 1,
+  "gradient_accumulation_steps": 4,
+  "learning_rate": 5e-05,
+  "lora_r": 16,
+  "lora_alpha": 32,
+  "lora_dropout": 0.05,
+  "lora_target_modules": [
+    "q_proj",
+    "v_proj"
+  ],
+  "seed": 42,
+  "prompt_loss_mask": -100,
+  "enable_thinking": false,
+  "decode": "greedy",
+  "manual_data_training_authorized": false,
+  "production_claim_allowed": false,
+  "gpu_ack_required": true,
+  "probe_type": "DEV_ALREADY_AI_REVIEWED_NOT_BLIND",
+  "human_review_pending": true
+}

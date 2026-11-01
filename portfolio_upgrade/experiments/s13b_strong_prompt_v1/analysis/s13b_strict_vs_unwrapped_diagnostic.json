@@ -1,0 +1,213 @@
+{
+  "status": "S13B_POSTHOC_STRICT_VS_WRAPPER_DIAGNOSTIC_NOT_FINAL_EVALUATION",
+  "source_archive_sha256": "3d9822d8a1568114840380ab1bae72ab96053349c96e63a5498b0735f48eee22",
+  "source_run_manifest_sha256": "bb1718a827ea42dcaf32729ecf7c10903e7e36c4cf52b5f636e3e8cf57522730",
+  "n_probe": 16,
+  "n_strong_prompt_generations": 32,
+  "rule": "Raw outputs always scored strictly. Secondary diagnostic removes only one exact whole-string ```json ... ``` wrapper, then uses original S12 schema/action/citation scoring; no content/labels repaired.",
+  "metrics": {
+    "BASE_P0": {
+      "markdown_fenced_outputs": 0,
+      "strict_raw": {
+        "json_object": 16,
+        "fields_exact": 16,
+        "field_types_valid": 16,
+        "schema_valid": 11,
+        "citation_grounded": 16,
+        "missing_contract_valid": 11,
+        "raw_action_match": 6,
+        "strict_action_match": 4,
+        "citation_exact": 5,
+        "missing_fields_exact": 0,
+        "structured_target_match": 0
+      },
+      "envelope_only_removed": {
+        "json_object": 16,
+        "fields_exact": 16,
+        "field_types_valid": 16,
+        "schema_valid": 11,
+        "citation_grounded": 16,
+        "missing_contract_valid": 11,
+        "raw_action_match": 6,
+        "strict_action_match": 4,
+        "citation_exact": 5,
+        "missing_fields_exact": 0,
+        "structured_target_match": 0
+      },
+      "by_gold_action_after_unwrap": {
+        "ANSWER": {
+          "correct": 0,
+          "total": 4
+        },
+        "ASK": {
+          "correct": 4,
+          "total": 4
+        },
+        "ESCALATE": {
+          "correct": 2,
+          "total": 4
+        },
+        "EXPLAIN_UNSUPPORTED": {
+          "correct": 0,
+          "total": 4
+        }
+      },
+      "question_echo_after_unwrap": 16,
+      "exact_citation_id_after_unwrap_not_schema_gated": 8
+    },
+    "LORA_P0": {
+      "markdown_fenced_outputs": 1,
+      "strict_raw": {
+        "json_object": 15,
+        "fields_exact": 15,
+        "field_types_valid": 15,
+        "schema_valid": 4,
+        "citation_grounded": 15,
+        "missing_contract_valid": 4,
+        "raw_action_match": 8,
+        "strict_action_match": 4,
+        "citation_exact": 2,
+        "missing_fields_exact": 0,
+        "structured_target_match": 0
+      },
+      "envelope_only_removed": {
+        "json_object": 16,
+        "fields_exact": 16,
+        "field_types_valid": 16,
+        "schema_valid": 5,
+        "citation_grounded": 16,
+        "missing_contract_valid": 5,
+        "raw_action_match": 8,
+        "strict_action_match": 4,
+        "citation_exact": 3,
+        "missing_fields_exact": 0,
+        "structured_target_match": 0
+      },
+      "by_gold_action_after_unwrap": {
+        "ANSWER": {
+          "correct": 0,
+          "total": 4
+        },
+        "ASK": {
+          "correct": 4,
+          "total": 4
+        },
+        "ESCALATE": {
+          "correct": 4,
+          "total": 4
+        },
+        "EXPLAIN_UNSUPPORTED": {
+          "correct": 0,
+          "total": 4
+        }
+      },
+      "question_echo_after_unwrap": 9,
+      "exact_citation_id_after_unwrap_not_schema_gated": 12
+    },
+    "BASE_P1": {
+      "markdown_fenced_outputs": 16,
+      "strict_raw": {
+        "json_object": 0,
+        "fields_exact": 0,
+        "field_types_valid": 0,
+        "schema_valid": 0,
+        "citation_grounded": 0,
+        "missing_contract_valid": 0,
+        "raw_action_match": 0,
+        "strict_action_match": 0,
+        "citation_exact": 0,
+        "missing_fields_exact": 0,
+        "structured_target_match": 0
+      },
+      "envelope_only_removed": {
+        "json_object": 16,
+        "fields_exact": 16,
+        "field_types_valid": 16,
+        "schema_valid": 16,
+        "citation_grounded": 16,
+        "missing_contract_valid": 16,
+        "raw_action_match": 10,
+        "strict_action_match": 10,
+        "citation_exact": 10,
+        "missing_fields_exact": 11,
+        "structured_target_match": 4
+      },
+      "by_gold_action_after_unwrap": {
+        "ANSWER": {
+          "correct": 4,
+          "total": 4
+        },
+        "ASK": {
+          "correct": 2,
+          "total": 4
+        },
+        "ESCALATE": {
+          "correct": 4,
+          "total": 4
+        },
+        "EXPLAIN_UNSUPPORTED": {
+          "correct": 0,
+          "total": 4
+        }
+      },
+      "question_echo_after_unwrap": 3,
+      "exact_citation_id_after_unwrap_not_schema_gated": 10
+    },
+    "LORA_P1": {
+      "markdown_fenced_outputs": 16,
+      "strict_raw": {
+        "json_object": 0,
+        "fields_exact": 0,
+        "field_types_valid": 0,
+        "schema_valid": 0,
+        "citation_grounded": 0,
+        "missing_contract_valid": 0,
+        "raw_action_match": 0,
+        "strict_action_match": 0,
+        "citation_exact": 0,
+        "missing_fields_exact": 0,
+        "structured_target_match": 0
+      },
+      "envelope_only_removed": {
+        "json_object": 16,
+        "fields_exact": 16,
+        "field_types_valid": 16,
+        "schema_valid": 15,
+        "citation_grounded": 16,
+        "missing_contract_valid": 15,
+        "raw_action_match": 10,
+        "strict_action_match": 10,
+        "citation_exact": 10,
+        "missing_fields_exact": 10,
+        "structured_target_match": 4
+      },
+      "by_gold_action_after_unwrap": {
+        "ANSWER": {
+          "correct": 3,
+          "total": 4
+        },
+        "ASK": {
+          "correct": 3,
+          "total": 4
+        },
+        "ESCALATE": {
+          "correct": 4,
+          "total": 4
+        },
+        "EXPLAIN_UNSUPPORTED": {
+          "correct": 0,
+          "total": 4
+        }
+      },
+      "question_echo_after_unwrap": 2,
+      "exact_citation_id_after_unwrap_not_schema_gated": 10
+    }
+  },
+  "limits": [
+    "This is development-set posthoc analysis, NOT preregistered official S13b scores.",
+    "The P1 model disobeyed the no-Markdown contract in all 32 predictions.",
+    "Fixing the whole-string Markdown fence is a separate deterministic postprocess candidate; it cannot be credited to prompt compliance.",
+    "No real RAG retrieval or WaterBridge cases, no blind test; simulated evidence only.",
+    "Human safety/relevance review not signed off."
+  ]
+}

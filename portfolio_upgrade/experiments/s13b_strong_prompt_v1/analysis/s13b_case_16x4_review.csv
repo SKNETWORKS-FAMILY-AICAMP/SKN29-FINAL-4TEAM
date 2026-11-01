@@ -1,0 +1,17 @@
+﻿case_id,expected_action,base_p0_action,lora_p0_action,base_p1_action,lora_p1_action,base_p1_fenced,lora_p1_fenced,base_p1_schema_after_strip,lora_p1_schema_after_strip,base_p1_action_correct,lora_p1_action_correct,base_p1_cites_exact,lora_p1_cites_exact,base_p1_missing_exact,lora_p1_missing_exact,base_p1_question_echo,lora_p1_question_echo
+S11-F13-dbc14296,ANSWER,ASK,ASK,ANSWER,ANSWER,True,True,True,True,True,True,True,True,True,True,True,True
+S11-F13-1fe56eb1,ASK,ASK,ASK,ANSWER,ASK,True,True,True,True,False,True,False,True,False,False,False,False
+S11-F13-7f98989b,ESCALATE,ESCALATE,ESCALATE,ESCALATE,ESCALATE,True,True,True,True,True,True,True,True,True,True,True,True
+S11-F13-79aceae3,EXPLAIN_UNSUPPORTED,ASK,ASK,ANSWER,ANSWER,True,True,True,True,False,False,True,True,True,True,False,False
+S11-F14-ee3a1fd1,ANSWER,EXPLAIN_UNSUPPORTED,EXPLAIN_UNSUPPORTED,ANSWER,ANSWER,True,True,True,True,True,True,False,False,True,True,False,False
+S11-F14-ea3a3c7a,ASK,ASK,ASK,ASK,ASK,True,True,True,True,True,True,True,True,False,False,False,False
+S11-F14-ca056e62,ESCALATE,ASK,ESCALATE,ESCALATE,ESCALATE,True,True,True,True,True,True,False,False,True,True,False,False
+S11-F14-66467e3f,EXPLAIN_UNSUPPORTED,ASK,ASK,ASK,ASK,True,True,True,True,False,False,True,True,False,False,False,False
+S11-F15-e9318ff8,ANSWER,EXPLAIN_UNSUPPORTED,EXPLAIN_UNSUPPORTED,ANSWER,ANSWER,True,True,True,True,True,True,True,True,True,True,False,False
+S11-F15-b7e46774,ASK,ASK,ASK,ASK,ASK,True,True,True,True,True,True,False,False,False,False,False,False
+S11-F15-3b7176d2,ESCALATE,ASK,ESCALATE,ESCALATE,ESCALATE,True,True,True,True,True,True,True,True,True,True,False,False
+S11-F15-7a401c54,EXPLAIN_UNSUPPORTED,ESCALATE,ESCALATE,ANSWER,ANSWER,True,True,True,True,False,False,True,True,True,True,False,False
+S11-F16-c2e86dbd,ANSWER,ASK,ASK,ANSWER,ASK,True,True,True,False,True,False,False,False,True,True,False,False
+S11-F16-614f5d58,ASK,ASK,ASK,ANSWER,ANSWER,True,True,True,True,False,False,True,False,False,False,False,False
+S11-F16-9905c2eb,ESCALATE,ESCALATE,ESCALATE,ESCALATE,ESCALATE,True,True,True,True,True,True,False,False,True,True,True,False
+S11-F16-3c7dd78b,EXPLAIN_UNSUPPORTED,ASK,ASK,ANSWER,ANSWER,True,True,True,True,False,False,True,True,True,True,False,False

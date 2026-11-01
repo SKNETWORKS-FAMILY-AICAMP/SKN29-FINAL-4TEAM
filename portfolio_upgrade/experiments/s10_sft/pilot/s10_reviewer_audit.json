@@ -1,0 +1,48 @@
+{
+  "status": "REVIEWED_S10_TOY_TRAINING_PIPELINE_PASS_STRUCTURED_OUTPUT_REGRESSION",
+  "source": "user-provided GPU console log, training_report.json, toy_probe_predictions.jsonl, toy_probe_summary.json",
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "gpu": "NVIDIA A40",
+  "train_examples": 40,
+  "steps": 10,
+  "train_sha256_match_local_prepared_demo": true,
+  "probe_sha256_match_local_prepared_demo": true,
+  "trainable_params": 3211264,
+  "trainable_fraction": 0.001862913118508244,
+  "average_train_loss": 1.1473516881465913,
+  "first_logged_train_loss": 1.7005032300949097,
+  "last_logged_train_loss": 0.7335014939308167,
+  "peak_gpu_memory_gib_allocated": 4.149,
+  "trainer_train_runtime_seconds": 9.1084,
+  "loading_and_training_seconds": 26.519,
+  "base": {
+    "json_valid": 8,
+    "schema_valid": 8,
+    "action_matches": 5,
+    "action_and_schema": 5
+  },
+  "lora": {
+    "json_valid": 6,
+    "schema_valid": 1,
+    "action_matches": 6,
+    "action_and_schema": 1
+  },
+  "lora_missing_fields_omitted_when_parseable": 5,
+  "lora_multiple_json_objects_parse_fail": 2,
+  "inference_comparison": {
+    "only_difference": "LoRA enabled vs disabled with same model/prompt/questions/greedy decoding; according to saved local script",
+    "samples": 8,
+    "independent_customer_quality_claim": false
+  },
+  "not_available_from_uploaded_files": [
+    "adapter weights directory itself",
+    "RunPod GPU hour billing",
+    "production SFT performance"
+  ],
+  "next": [
+    "Backup actual adapter directory before stopping/deleting pod",
+    "Do not retrain on unapproved manual-derived corpus",
+    "S11: source permissions, evidence repair, independent training cases; keep Dev/Holdout separate"
+  ]
+}

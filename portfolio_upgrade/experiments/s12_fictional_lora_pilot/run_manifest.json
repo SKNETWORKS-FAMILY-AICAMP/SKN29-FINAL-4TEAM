@@ -1,0 +1,23 @@
+{
+  "status": "S12_FICTIONAL_DEV_BASELINE_FROZEN_BEFORE_TRAINING",
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "data_sha256": {
+    "source_summary": "a638fa8dd9c238ba05be85473f8321ea2bf682136e88cd13a67560d90e2ca31a",
+    "train_file": "a51884637b462ff905ea209a2c18e67bfa5a4bbce0ade8072f712455bfcaa351",
+    "probe_input_file": "7fc5401cec2f06e924ae540ed33a5a1fe306dc7084d877e705ace991167d9de3",
+    "probe_target_file": "c653562c677a6d46387c99dd915dd4066c9a4541b356a124c7f2736055be1ac7"
+  },
+  "config_sha256": "40f350f3eb1c31d53a27f2500595768f743d5fbbe6368de8e5ddb6199924c423",
+  "generation_config": {
+    "decode": "greedy",
+    "max_new_tokens": 256,
+    "enable_thinking": false
+  },
+  "training_configuration": {
+    "max_steps": 12,
+    "learning_rate": 5e-05,
+    "lora_r": 16,
+    "lora_alpha": 32
+  }
+}

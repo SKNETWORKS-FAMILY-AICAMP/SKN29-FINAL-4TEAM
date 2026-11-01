@@ -1,0 +1,51 @@
+{
+  "status": "RAG_REINDEX_PREVIEW_ONLY_NO_SFT",
+  "source_review": "2026-11-01 manual PDF visual + PyMuPDF text, exact SHA-256 verified",
+  "source_files_used_in_creation_not_bundled": true,
+  "original_53_index_sha256": "b4ba15c045d7c4eaf1e4cf90dff83ec9fa2c236f9cfcdad85467a42f1921eb78",
+  "s09_snapshot_sha256": "3a91e5343907926cc4c834b086916f0cd6fcf7ab467cb8ec62f490e7b4ee6f94",
+  "records": [
+    {
+      "model_code": "WPUIAC425SNW",
+      "family": "IAC425",
+      "source_pdf_filename": "WPU-IAC425-얼음정수기메뉴얼(2).pdf",
+      "source_pdf_sha256": "97c027ce75bec40386307c867dd3983513cb70fac687f2d2db6f1167ec9caec8",
+      "pdf_pages": 52,
+      "page_number": 27,
+      "page_text_sha256_pymupdf_sorted": "45a86b5b7b27c7980f9ae2ef39ed1016a90e9da4488f96aa83e7d32beab49b7b",
+      "manual_revision": "REV.02",
+      "text": "냉수 잠금 해제: [설정] 버튼을 3초간 누릅니다. 깜빡이는 [냉수] 버튼을 눌러 램프가 계속 켜진 상태로 바꿉니다. 마지막으로 [물] 버튼을 누르거나, 아무 버튼도 누르지 않고 7초가 지나면 설정이 완료됩니다.",
+      "completion_hint": "[물] 버튼 또는 7초 대기",
+      "primary_source_heading": "잠금 기능 설정/해제",
+      "status": "SOURCE_TEXT_AND_VISUAL_VERIFIED_RAG_PREVIEW_ONLY",
+      "approved_for_training": false,
+      "observed_pdf_anchors": [
+        "잠금 기능 설정/해제",
+        "잠금 해제",
+        "[설정] 버튼을 3초간",
+        "7초"
+      ]
+    },
+    {
+      "model_code": "WPUIAC606SNW",
+      "family": "IAC606",
+      "source_pdf_filename": "WPUIAC606SNW MegaIceMini메뉴얼(2).pdf",
+      "source_pdf_sha256": "a062c0dd5c2ed17bc3734215c3106dcc82ab69346cf546bddd9edd328ea49572",
+      "pdf_pages": 48,
+      "page_number": 24,
+      "page_text_sha256_pymupdf_sorted": "2858cbed4b4dcb8bb9a3282790d0484ca75284ef4f6ed162e756a4d67adc5d66",
+      "manual_revision": "REV.00",
+      "text": "냉수 잠금 해제: [설정] 버튼을 3초간 누릅니다. 깜빡이는 [냉수] 버튼을 눌러 램프가 계속 켜진 상태로 바꿉니다. 마지막으로 출수/출빙 버튼을 누르거나, 아무 버튼도 누르지 않고 약 7초가 지나면 설정이 완료됩니다.",
+      "completion_hint": "출수/출빙 버튼 또는 약 7초 대기",
+      "primary_source_heading": "잠금 기능 설정/해제",
+      "status": "SOURCE_TEXT_AND_VISUAL_VERIFIED_RAG_PREVIEW_ONLY",
+      "approved_for_training": false,
+      "observed_pdf_anchors": [
+        "잠금 기능 설정/해제",
+        "잠금 해제",
+        "[설정] 버튼을 3초간",
+        "7초"
+      ]
+    }
+  ]
+}

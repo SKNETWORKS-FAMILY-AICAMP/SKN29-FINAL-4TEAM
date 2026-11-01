@@ -1,0 +1,9 @@
+﻿example_id,scenario_id,variant,issue,required_evidence,core_evidence_pages,coverage,gold_coverage,training_ready
+S07-SYN-IAC425-101-BASE,SYN-IAC425-101,BASE,냉수 잠금 해제,원문 27쪽 상세 해제 절차가 검색 입력에 없음,[43],근거 부족,모두 포함,NO
+S07-SYN-IAC425-101-PAR1,SYN-IAC425-101,PAR1,냉수 잠금 해제,원문 27쪽 상세 해제 절차가 검색 입력에 없음,[43],근거 부족,모두 포함,NO
+S07-SYN-IAC606-104-BASE,SYN-IAC606-104,BASE,물 흐름·달그락·공기 빠짐 소음,원문 41쪽 냉매 순환 소리 근거가 검색 목록에 모두 있는지,검색 누락,근거 부족,일부 누락,NO
+S07-SYN-IAC606-104-PAR1,SYN-IAC606-104,PAR1,물 흐름·달그락·공기 빠짐 소음,원문 41쪽 냉매 순환 소리 근거가 검색 목록에 모두 있는지,[41],근거 확보,모두 포함,NO
+S07-SYN-IAC425-108-BASE,SYN-IAC425-108,BASE,누수 안전 안내,5쪽 물받이/감전 주의 문단 제공 여부,[45],근거 부족,모두 포함,NO
+S07-SYN-IAC425-108-PAR1,SYN-IAC425-108,PAR1,누수 안전 안내,5쪽 물받이/감전 주의 문단 제공 여부,"[45, 5]",근거 확보,모두 포함,NO
+S07-SYN-IAC606-101-BASE,SYN-IAC606-101,BASE,냉수 잠금 해제,원문 24쪽 상세 해제 절차가 검색 입력에 없음; 40쪽의 29쪽 참조는 오기,[40],근거 부족,모두 포함,NO
+S07-SYN-IAC606-101-PAR1,SYN-IAC606-101,PAR1,냉수 잠금 해제,원문 24쪽 상세 해제 절차가 검색 입력에 없음; 40쪽의 29쪽 참조는 오기,[40],근거 부족,모두 포함,NO

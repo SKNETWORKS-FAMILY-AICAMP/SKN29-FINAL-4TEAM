@@ -1,0 +1,63 @@
+{
+  "status": "S11_AUDIT_DONE_TRAINING_NOT_APPROVED",
+  "purpose": "Prioritize known issues in existing S07/S09; not new PDF/legal review and not SFT",
+  "source_sha256": {
+    "s07_train": "bcf3091e45bc0ef6c2aa1768b6fdd4a3d5526432c797b5c57ba2391cafb92d96",
+    "s09_preview": "3a91e5343907926cc4c834b086916f0cd6fcf7ab467cb8ec62f490e7b4ee6f94",
+    "m2_review": "19afcf296d61ee2faeb7f26268e6de011a0c7599202ed5c18d3c08cbb2b5859e"
+  },
+  "n_train_rows": 26,
+  "original_scenarios": 13,
+  "semantic_groups": 6,
+  "variant_counts": {
+    "source": 13,
+    "paraphrase": 13
+  },
+  "action_rows": {
+    "ANSWER": 12,
+    "ASK": 4,
+    "ESCALATE": 10,
+    "EXPLAIN_UNSUPPORTED": 0
+  },
+  "action_original_scenarios": {
+    "ANSWER": 6,
+    "ASK": 2,
+    "ESCALATE": 5,
+    "EXPLAIN_UNSUPPORTED": 0
+  },
+  "s11_key_gap": "EXPLAIN_UNSUPPORTED: 0 independent Train scenarios",
+  "declared_semantic_groups_with_multiple_expected_actions": {
+    "sg-ef6b56fea3f1": [
+      "ANSWER",
+      "ESCALATE"
+    ]
+  },
+  "retrieval": {
+    "at_least_one_gold_top5": 26,
+    "all_declared_gold_top5": 25,
+    "citation_ids_in_retrieved_list": 26
+  },
+  "m2_human_review_categories_26_rows": {
+    "구조 통과": 10,
+    "부분 누락": 2,
+    "순위 위험": 6,
+    "조건 검토": 2,
+    "추가 근거": 6
+  },
+  "m2_human_review_categories_13_scenarios": {
+    "구조 통과": 5,
+    "부분 누락": 1,
+    "순위 위험": 3,
+    "조건 검토": 1,
+    "추가 근거": 3
+  },
+  "source_use_approved_count": 0,
+  "training_ready_count": 0,
+  "next_steps": [
+    "매뉴얼 유래 자료의 학습 목적 이용 근거가 미확정",
+    "검색 근거의 완전성·인용의 주장 지원 여부가 일부 미확정",
+    "독립 의미 그룹 6개만 존재하고 EXPLAIN_UNSUPPORTED 학습 사례가 없음",
+    "실제 검색 문맥 전체 토큰 길이 및 SFT 후 JSON 스키마 신뢰성 미검증"
+  ],
+  "notes": "Gold 하나 이상 존재/모든 ID 존재/인용 ID 멤버십은 내용의 정확성 또는 합법성 증거가 아님. M2 카테고리는 이전 사람 검수의 기록이며 이 스크립트가 PDF를 읽어 재검증한 것이 아님."
+}

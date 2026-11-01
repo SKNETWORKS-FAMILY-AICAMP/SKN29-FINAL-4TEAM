@@ -1,0 +1,104 @@
+{
+  "status": "S12_FICTIONAL_DEV_ABLATION_NOT_WATERBRIDGE_ACCURACY",
+  "n_dev_probe": 16,
+  "baseline_metrics": {
+    "json_object": 16,
+    "fields_exact": 16,
+    "field_types_valid": 16,
+    "schema_valid": 11,
+    "citation_grounded": 16,
+    "missing_contract_valid": 11,
+    "raw_action_match": 6,
+    "strict_action_match": 4,
+    "citation_exact": 5,
+    "missing_fields_exact": 0,
+    "structured_target_match": 0
+  },
+  "adapter_metrics": {
+    "json_object": 15,
+    "fields_exact": 15,
+    "field_types_valid": 15,
+    "schema_valid": 4,
+    "citation_grounded": 15,
+    "missing_contract_valid": 4,
+    "raw_action_match": 8,
+    "strict_action_match": 4,
+    "citation_exact": 2,
+    "missing_fields_exact": 0,
+    "structured_target_match": 0
+  },
+  "adapter_minus_baseline": {
+    "json_object": -1,
+    "fields_exact": -1,
+    "field_types_valid": -1,
+    "schema_valid": -7,
+    "citation_grounded": -1,
+    "missing_contract_valid": -7,
+    "raw_action_match": 2,
+    "strict_action_match": 0,
+    "citation_exact": -3,
+    "missing_fields_exact": 0,
+    "structured_target_match": 0
+  },
+  "changed_cases": [
+    {
+      "case_id": "S11-F13-dbc14296",
+      "base_action": "ASK",
+      "lora_action": null,
+      "base_schema_ok": true,
+      "lora_schema_ok": false
+    },
+    {
+      "case_id": "S11-F13-79aceae3",
+      "base_action": "ASK",
+      "lora_action": "ASK",
+      "base_schema_ok": true,
+      "lora_schema_ok": false
+    },
+    {
+      "case_id": "S11-F14-ca056e62",
+      "base_action": "ASK",
+      "lora_action": "ESCALATE",
+      "base_schema_ok": true,
+      "lora_schema_ok": false
+    },
+    {
+      "case_id": "S11-F14-66467e3f",
+      "base_action": "ASK",
+      "lora_action": "ASK",
+      "base_schema_ok": true,
+      "lora_schema_ok": false
+    },
+    {
+      "case_id": "S11-F15-3b7176d2",
+      "base_action": "ASK",
+      "lora_action": "ESCALATE",
+      "base_schema_ok": true,
+      "lora_schema_ok": false
+    },
+    {
+      "case_id": "S11-F16-c2e86dbd",
+      "base_action": "ASK",
+      "lora_action": "ASK",
+      "base_schema_ok": true,
+      "lora_schema_ok": false
+    },
+    {
+      "case_id": "S11-F16-3c7dd78b",
+      "base_action": "ASK",
+      "lora_action": "ASK",
+      "base_schema_ok": true,
+      "lora_schema_ok": false
+    }
+  ],
+  "human_review_pending": true,
+  "real_manual_sft_authorized": false,
+  "blind_final_performance_measured": false,
+  "customer_answer_semantics_measured": false,
+  "notes": [
+    "Gold loaded only for offline scoring after generation.",
+    "Same 16 fixed fictional DEV prompts, Qwen3 revision, greedy decoding and max_new_tokens for both.",
+    "Generations use curated simulated evidence, NOT actual BGE-M3 retrieval.",
+    "Do NOT use DEV results as proof of generalization or claim production performance."
+  ]
+}
