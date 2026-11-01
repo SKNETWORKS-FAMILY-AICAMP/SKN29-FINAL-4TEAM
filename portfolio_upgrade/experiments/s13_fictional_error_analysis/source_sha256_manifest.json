@@ -1,8 +1,0 @@
-{
-  "base_predictions.jsonl": "3f04ad4b3a4e5edb195defb5763ab6441c66b73247a847675f876268e8c66161",
-  "lora_predictions.jsonl": "e472ba292304e6f8dd934e429a77fe9495df3f9937a7f18cbe7086f9fa2762bb",
-  "s12_dev_comparison.json": "9b67a333a29d6acad314e590be8dd20394a7b7edf3e8879f34aae475e255828d",
-  "train_report.json": "c07e6c00be8b21278571347530649f77c12f5456993c5cb18f93549ec21035fd",
-  "s11_fictional_probe_inputs_v2.jsonl": "7fc5401cec2f06e924ae540ed33a5a1fe306dc7084d877e705ace991167d9de3",
-  "s11_fictional_probe_targets_EVAL_ONLY_v2.jsonl": "c653562c677a6d46387c99dd915dd4066c9a4541b356a124c7f2736055be1ac7"
-}

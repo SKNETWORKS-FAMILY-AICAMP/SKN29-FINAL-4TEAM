@@ -1,4 +1,0 @@
-﻿evidence_group_id,payload_variants,example_count,page_ref_variants,exact_excerpt_hashes
-EVD-WPUIAC425SNW-LEAK-001,2,2,"[45]; [45, 5]",c3f622596dbb; 21789593faa2
-EVD-WPUJAC104DWH-COLD-TEMPERATURE-001,2,4,[37]; [37],fb72d15e618b; ae265e8342e2
-EVD-WPUJAC104DWH-INSTANT-HOT-WATER-SAFETY-001,6,6,"[38]; [38, 39]; [39]; [39, 38]; [39]; [39, 38]",9cafa12e2919; bc266dd1b338; 2a3ba70ce136; 4517df882dcf; 91b079ba2deb; 6f7475b9cbaf

@@ -1,9 +1,0 @@
-# Install these in an existing CUDA-compatible environment.
-# Do NOT blindly reinstall torch: check the pod's CUDA torch first.
-# Versions are minimums for the SFTTrainer/PEFT interfaces used in this package.
-transformers>=4.55
-trl>=0.21
-peft>=0.16
-datasets>=3.6
-accelerate>=1.6
-safetensors>=0.4
